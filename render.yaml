@@ -1,0 +1,38 @@
+services:
+  # Backend Service
+  - type: web
+    name: catering-app-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/index.js
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: catering-db
+          property: connectionString
+      - key: NODE_VERSION
+        value: 20.11.0
+
+  # Frontend Static Site
+  - type: static
+    name: catering-app-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: catering-app-backend
+          property: url
+
+databases:
+  - name: catering-db
+    plan: free
+    databaseName: catering
+    user: catering_user
