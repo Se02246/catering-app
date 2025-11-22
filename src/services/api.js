@@ -16,13 +16,17 @@ export const api = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
-        if (!res.ok) throw new Error('Login failed');
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Login failed' }));
+            throw new Error(error.error || 'Login failed');
+        }
         return res.json();
     },
 
     // Products
     getProducts: async () => {
         const res = await fetch(`${API_URL}/products`);
+        if (!res.ok) throw new Error('Failed to fetch products');
         return res.json();
     },
 
@@ -32,6 +36,10 @@ export const api = {
             headers: getHeaders(),
             body: JSON.stringify(product)
         });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to add product' }));
+            throw new Error(error.error || 'Failed to add product');
+        }
         return res.json();
     },
 
@@ -41,6 +49,10 @@ export const api = {
             headers: getHeaders(),
             body: JSON.stringify(product)
         });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to update product' }));
+            throw new Error(error.error || 'Failed to update product');
+        }
         return res.json();
     },
 
@@ -49,12 +61,17 @@ export const api = {
             method: 'DELETE',
             headers: getHeaders()
         });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to delete product' }));
+            throw new Error(error.error || 'Failed to delete product');
+        }
         return res.json();
     },
 
     // Caterings
     getCaterings: async () => {
         const res = await fetch(`${API_URL}/caterings`);
+        if (!res.ok) throw new Error('Failed to fetch caterings');
         return res.json();
     },
 
@@ -64,6 +81,10 @@ export const api = {
             headers: getHeaders(),
             body: JSON.stringify(catering)
         });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to create catering' }));
+            throw new Error(error.error || 'Failed to create catering');
+        }
         return res.json();
     }
 };

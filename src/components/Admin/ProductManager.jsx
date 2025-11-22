@@ -23,16 +23,22 @@ const ProductManager = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const productToSave = {
+                ...currentProduct,
+                price_per_kg: currentProduct.price_per_kg ? parseFloat(currentProduct.price_per_kg) : 0
+            };
+
             if (currentProduct.id) {
-                await api.updateProduct(currentProduct.id, currentProduct);
+                await api.updateProduct(currentProduct.id, productToSave);
             } else {
-                await api.addProduct(currentProduct);
+                await api.addProduct(productToSave);
             }
             setIsEditing(false);
             setCurrentProduct({ name: '', description: '', price_per_kg: '', image_url: '' });
             loadProducts();
         } catch (err) {
-            alert('Error saving product');
+            console.error(err);
+            alert(err.message || 'Error saving product');
         }
     };
 
