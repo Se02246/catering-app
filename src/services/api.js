@@ -1,3 +1,6 @@
+// src/services/api.js
+
+// Usa VITE_API_URL se esiste (su Render), altrimenti usa localhost (sul tuo PC)
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api';
 
 const getHeaders = () => {
