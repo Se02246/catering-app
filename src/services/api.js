@@ -1,6 +1,4 @@
-// src/services/api.js
-
-// Usa VITE_API_URL se esiste (su Render), altrimenti usa localhost (sul tuo PC)
+// Questa riga è la chiave: usa la variabile d'ambiente di Render se c'è, altrimenti usa localhost
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api';
 
 const getHeaders = () => {
@@ -14,6 +12,7 @@ const getHeaders = () => {
 export const api = {
     // Auth
     login: async (username, password) => {
+        constHP
         const res = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
