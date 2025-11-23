@@ -20,7 +20,7 @@ const QuoteBuilder = () => {
                 pieces_per_kg: p.pieces_per_kg ? parseFloat(p.pieces_per_kg) : null,
                 min_order_quantity: p.min_order_quantity ? parseFloat(p.min_order_quantity) : 1,
                 order_increment: p.order_increment ? parseFloat(p.order_increment) : 1,
-                show_servings: p.show_servings,
+                show_servings: Boolean(p.show_servings),
                 servings_per_unit: p.servings_per_unit ? parseFloat(p.servings_per_unit) : null
             }));
             setProducts(parsedData);
