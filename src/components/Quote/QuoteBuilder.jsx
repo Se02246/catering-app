@@ -27,26 +27,46 @@ const QuoteBuilder = () => {
     const addToCart = (product) => {
         const existing = cart.find(item => item.id === product.id);
         if (existing) {
+            const increment = product.order_increment || 1;
             setCart(cart.map(item =>
-                item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                item.id === product.id ? { ...item, quantity: item.quantity + increment } : item
             ));
         } else {
-            setCart([...cart, { ...product, quantity: 1 }]);
+            const initialQty = product.min_order_quantity || 1;
+            setCart([...cart, { ...product, quantity: initialQty }]);
         }
     };
 
     const updateQuantity = (id, delta) => {
         setCart(cart.map(item => {
             if (item.id === id) {
-                const newQty = Math.max(0, item.quantity + delta);
+                const increment = item.order_increment || 1;
+                const minQty = item.min_order_quantity || 1;
+                // delta is 1 or -1, multiply by increment
+                const change = delta * increment;
+                const newQty = item.quantity + change;
+
+                // If going below minQty, remove item (or keep at minQty? User usually wants to remove if they go below min)
+                // Let's say if they click minus at minQty, it removes it.
+                if (newQty < minQty) return null;
+
                 return { ...item, quantity: newQty };
             }
             return item;
-        }).filter(item => item.quantity > 0));
+        }).filter(Boolean)); // Filter out nulls
+    };
+
+    const calculateItemPrice = (item) => {
+        if (item.pieces_per_kg) {
+            // Price is per kg, but quantity is in pieces
+            // Price per piece = price_per_kg / pieces_per_kg
+            return (item.price_per_kg / item.pieces_per_kg) * item.quantity;
+        }
+        return item.price_per_kg * item.quantity;
     };
 
     const calculateTotal = () => {
-        return cart.reduce((sum, item) => sum + (item.price_per_kg * item.quantity), 0);
+        return cart.reduce((sum, item) => sum + calculateItemPrice(item), 0);
     };
 
     const generatePDF = () => {
@@ -63,16 +83,23 @@ const QuoteBuilder = () => {
         doc.text('Preventivo Personalizzato', 105, 30, null, null, 'center');
 
         // Table
-        const tableData = cart.map(item => [
-            item.name,
-            `€ ${item.price_per_kg} / kg`,
-            item.quantity,
-            `€ ${(item.price_per_kg * item.quantity).toFixed(2)}`
-        ]);
+        const tableData = cart.map(item => {
+            const unit = item.pieces_per_kg ? 'pz' : 'kg';
+            const priceUnit = item.pieces_per_kg
+                ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
+                : `€ ${item.price_per_kg} / kg`;
+
+            return [
+                item.name,
+                priceUnit,
+                `${item.quantity} ${unit}`,
+                `€ ${calculateItemPrice(item).toFixed(2)}`
+            ];
+        });
 
         doc.autoTable({
             startY: 40,
-            head: [['Prodotto', 'Prezzo Unitario', 'Quantità (kg/pz)', 'Totale']],
+            head: [['Prodotto', 'Prezzo Unitario', 'Quantità', 'Totale']],
             body: tableData,
             theme: 'grid',
             headStyles: { fillColor: [125, 28, 74] },
@@ -130,17 +157,22 @@ const QuoteBuilder = () => {
                                 <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontWeight: '600' }}>{item.name}</div>
-                                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>€ {item.price_per_kg} x {item.quantity}</div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                                            {item.pieces_per_kg
+                                                ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
+                                                : `€ ${item.price_per_kg} / kg`}
+                                            {' x '} {item.quantity} {item.pieces_per_kg ? 'pz' : 'kg'}
+                                        </div>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => updateQuantity(item.id, -1)}>
                                             <Minus size={14} />
                                         </button>
-                                        <span>{item.quantity}</span>
+                                        <span style={{ minWidth: '2rem', textAlign: 'center' }}>{item.quantity}</span>
                                         <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => updateQuantity(item.id, 1)}>
                                             <Plus size={14} />
                                         </button>
-                                        <button className="btn btn-outline" style={{ padding: '0.25rem', color: 'red', borderColor: 'red' }} onClick={() => updateQuantity(item.id, -item.quantity)}>
+                                        <button className="btn btn-outline" style={{ padding: '0.25rem', color: 'red', borderColor: 'red' }} onClick={() => updateQuantity(item.id, -1000)}> {/* Hack to force remove */}
                                             <Trash2 size={14} />
                                         </button>
                                     </div>

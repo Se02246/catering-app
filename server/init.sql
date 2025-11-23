@@ -12,6 +12,9 @@ CREATE TABLE IF NOT EXISTS products (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     price_per_kg DECIMAL(10, 2) NOT NULL,
+    pieces_per_kg DECIMAL(10, 2),
+    min_order_quantity DECIMAL(10, 2) DEFAULT 1,
+    order_increment DECIMAL(10, 2) DEFAULT 1,
     image_url TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

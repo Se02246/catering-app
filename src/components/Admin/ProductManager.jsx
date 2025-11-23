@@ -25,7 +25,10 @@ const ProductManager = () => {
         try {
             const productToSave = {
                 ...currentProduct,
-                price_per_kg: currentProduct.price_per_kg ? parseFloat(currentProduct.price_per_kg) : 0
+                price_per_kg: currentProduct.price_per_kg ? parseFloat(currentProduct.price_per_kg) : 0,
+                pieces_per_kg: currentProduct.pieces_per_kg ? parseFloat(currentProduct.pieces_per_kg) : null,
+                min_order_quantity: currentProduct.min_order_quantity ? parseFloat(currentProduct.min_order_quantity) : 1,
+                order_increment: currentProduct.order_increment ? parseFloat(currentProduct.order_increment) : 1
             };
 
             if (currentProduct.id) {
@@ -34,7 +37,10 @@ const ProductManager = () => {
                 await api.addProduct(productToSave);
             }
             setIsEditing(false);
-            setCurrentProduct({ name: '', description: '', price_per_kg: '', image_url: '' });
+            setCurrentProduct({
+                name: '', description: '', price_per_kg: '', image_url: '',
+                pieces_per_kg: '', min_order_quantity: '', order_increment: ''
+            });
             loadProducts();
         } catch (err) {
             console.error(err);
@@ -103,6 +109,38 @@ const ProductManager = () => {
                                     value={currentProduct.image_url}
                                     onChange={e => setCurrentProduct({ ...currentProduct, image_url: e.target.value })}
                                 />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                <div>
+                                    <label>Pezzi per Kg</label>
+                                    <input
+                                        type="number" step="0.1"
+                                        style={{ width: '100%', padding: '0.5rem' }}
+                                        value={currentProduct.pieces_per_kg || ''}
+                                        onChange={e => setCurrentProduct({ ...currentProduct, pieces_per_kg: e.target.value })}
+                                        placeholder="Opzionale"
+                                    />
+                                </div>
+                                <div>
+                                    <label>Minimo Ordine</label>
+                                    <input
+                                        type="number" step="0.1"
+                                        style={{ width: '100%', padding: '0.5rem' }}
+                                        value={currentProduct.min_order_quantity || ''}
+                                        onChange={e => setCurrentProduct({ ...currentProduct, min_order_quantity: e.target.value })}
+                                        placeholder="Default 1"
+                                    />
+                                </div>
+                                <div>
+                                    <label>Incremento</label>
+                                    <input
+                                        type="number" step="0.1"
+                                        style={{ width: '100%', padding: '0.5rem' }}
+                                        value={currentProduct.order_increment || ''}
+                                        onChange={e => setCurrentProduct({ ...currentProduct, order_increment: e.target.value })}
+                                        placeholder="Default 1"
+                                    />
+                                </div>
                             </div>
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                                 <button type="button" className="btn btn-outline" onClick={() => setIsEditing(false)}>Annulla</button>
