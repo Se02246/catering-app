@@ -68,31 +68,210 @@ const PackageBuilder = () => {
         }, 0);
     };
 
-    {
-        packages.map(pkg => (
-            <div key={pkg.id} style={{
-                padding: '1.5rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-md)',
-                display: 'flex', flexDirection: 'column'
-            }}>
-                {pkg.image_url && <img src={pkg.image_url} alt={pkg.name} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '1rem' }} />}
-                <h3 style={{ marginBottom: '0.5rem' }}>{pkg.name}</h3>
-                <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem', flex: 1 }}>{pkg.description}</p>
-                <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-primary)' }}>
-                    € {pkg.total_price}
-                </div>
-                <div style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-                    <strong>Include:</strong>
-                    <ul style={{ paddingLeft: '1.2rem', marginTop: '0.5rem' }}>
-                        {pkg.items && pkg.items.map((item, idx) => (
-                            <li key={idx}>{item.quantity}kg {item.name}</li>
-                        ))}
-                    </ul>
-                </div>
+    const handleSave = async (e) => {
+        e.preventDefault();
+        try {
+            await api.createCatering(newPackage);
+            setIsCreating(false);
+            setNewPackage({ name: '', description: '', image_url: '', total_price: 0, items: [] });
+            loadData();
+        } catch (err) {
+            alert('Error creating package');
+        }
+    };
+
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h2>Gestione Pacchetti Catering</h2>
+                <button className="btn btn-primary" onClick={() => setIsCreating(true)}>
+                    <Plus size={18} style={{ marginRight: '8px' }} />
+                    Nuovo Pacchetto
+                </button>
             </div>
-        ))
-    }
-            </div >
-        </div >
+
+            {isCreating && (
+                <div className="modal-overlay" style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000
+                }}>
+                    <div className="modal-content" style={{ width: '1200px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto', backgroundColor: 'var(--color-bg)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3>Nuovo Pacchetto Catering</h3>
+                            <button className="btn btn-outline" onClick={() => setIsCreating(false)}>Chiudi</button>
+                        </div>
+
+                        <form onSubmit={handleSave} className="grid-quote-builder">
+
+                            {/* Left Column: Product Selection (Grid of Cards) */}
+                            <div style={{ overflowY: 'auto', maxHeight: '70vh', paddingRight: '0.5rem' }}>
+                                <h4 style={{ marginBottom: '1rem' }}>Seleziona Prodotti</h4>
+                                <input
+                                    type="text"
+                                    placeholder="Cerca prodotto..."
+                                    style={{ width: '100%', padding: '0.75rem', marginBottom: '1.5rem', borderRadius: 'var(--radius-full)', border: '1px solid var(--color-border)' }}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                                <div className="grid-responsive" style={{ gap: '1rem' }}>
+                                    {products.filter(p => p.name.toLowerCase().includes((searchTerm || '').toLowerCase())).map(p => (
+                                        <div key={p.id} style={{
+                                            padding: '1rem', backgroundColor: 'white', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
+                                            display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: 'var(--shadow-sm)'
+                                        }}>
+                                            {p.image_url && (
+                                                <img
+                                                    src={p.image_url}
+                                                    alt={p.name}
+                                                    style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '0.5rem' }}
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300?text=No+Img'; }}
+                                                />
+                                            )}
+                                            <div>
+                                                <h4 style={{ marginBottom: '0.25rem', fontSize: '1rem' }}>{p.name}</h4>
+                                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>€ {p.price_per_kg} / kg</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline"
+                                                style={{ marginTop: '1rem', width: '100%', borderRadius: 'var(--radius-full)' }}
+                                                onClick={() => {
+                                                    const existing = newPackage.items.find(i => i.product_id === p.id);
+                                                    if (existing) {
+                                                        updateItem(existing.tempId, 'quantity', parseFloat(existing.quantity) + 1);
+                                                    } else {
+                                                        setNewPackage({
+                                                            ...newPackage,
+                                                            items: [...newPackage.items, { product_id: p.id, quantity: 1, tempId: Date.now() }]
+                                                        });
+                                                    }
+                                                }}
+                                            >
+                                                Aggiungi
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Right Column: Package Summary (Cart Style) */}
+                            <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', height: 'fit-content' }}>
+                                <h4 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Dettagli Pacchetto</h4>
+
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Nome</label>
+                                    <input
+                                        className="form-control"
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', marginBottom: '0.5rem' }}
+                                        value={newPackage.name}
+                                        onChange={e => setNewPackage({ ...newPackage, name: e.target.value })}
+                                        required
+                                        placeholder="Es. Buffet Compleanno"
+                                    />
+
+                                    <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Prezzo (€)</label>
+                                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                        <input
+                                            type="number" step="0.01"
+                                            style={{ flex: 1, padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
+                                            value={newPackage.total_price}
+                                            onChange={e => setNewPackage({ ...newPackage, total_price: e.target.value })}
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline"
+                                            style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
+                                            onClick={() => setNewPackage({ ...newPackage, total_price: calculateSuggestedPrice().toFixed(2) })}
+                                        >
+                                            Suggerito: €{calculateSuggestedPrice().toFixed(2)}
+                                        </button>
+                                    </div>
+
+                                    <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Descrizione</label>
+                                    <textarea
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', height: '60px', marginBottom: '0.5rem' }}
+                                        value={newPackage.description}
+                                        onChange={e => setNewPackage({ ...newPackage, description: e.target.value })}
+                                        placeholder="Breve descrizione..."
+                                    />
+
+                                    <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>URL Immagine</label>
+                                    <input
+                                        type="text"
+                                        style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
+                                        value={newPackage.image_url}
+                                        onChange={e => setNewPackage({ ...newPackage, image_url: e.target.value })}
+                                        placeholder="https://..."
+                                    />
+                                </div>
+
+                                <h5 style={{ marginBottom: '0.5rem', marginTop: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Prodotti Inclusi ({newPackage.items.length})</h5>
+                                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                    {newPackage.items.length === 0 ? (
+                                        <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', fontSize: '0.9rem' }}>Nessun prodotto aggiunto.</p>
+                                    ) : (
+                                        newPackage.items.map((item) => {
+                                            const product = products.find(p => p.id === item.product_id);
+                                            return (
+                                                <div key={item.tempId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', fontSize: '0.9rem' }}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: '600' }}>{product ? product.name : 'Unknown'}</div>
+                                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>€ {product?.price_per_kg}/kg</div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                                        <input
+                                                            type="number" step="0.1"
+                                                            style={{ width: '50px', padding: '0.25rem', borderRadius: '4px', border: '1px solid var(--color-border)', textAlign: 'center' }}
+                                                            value={item.quantity}
+                                                            onChange={e => updateItem(item.tempId, 'quantity', e.target.value)}
+                                                        />
+                                                        <span style={{ fontSize: '0.8rem' }}>kg</span>
+                                                        <button type="button" className="btn btn-outline" style={{ color: 'red', borderColor: 'red', padding: '0.25rem', border: 'none' }} onClick={() => removeItem(item.tempId)}>
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
+                                <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
+                                    <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+                                        <Save size={18} style={{ marginRight: '8px' }} />
+                                        Salva Pacchetto
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                {packages.map(pkg => (
+                    <div key={pkg.id} style={{
+                        padding: '1.5rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-md)',
+                        display: 'flex', flexDirection: 'column'
+                    }}>
+                        {pkg.image_url && <img src={pkg.image_url} alt={pkg.name} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '1rem' }} />}
+                        <h3 style={{ marginBottom: '0.5rem' }}>{pkg.name}</h3>
+                        <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem', flex: 1 }}>{pkg.description}</p>
+                        <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-primary)' }}>
+                            € {pkg.total_price}
+                        </div>
+                        <div style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
+                            <strong>Include:</strong>
+                            <ul style={{ paddingLeft: '1.2rem', marginTop: '0.5rem' }}>
+                                {pkg.items && pkg.items.map((item, idx) => (
+                                    <li key={idx}>{item.quantity}kg {item.name}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 };
 
