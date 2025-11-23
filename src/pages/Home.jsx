@@ -103,8 +103,10 @@ const Home = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
                             <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>€ {selectedPackage.total_price}</span>
                             <button className="btn btn-primary" onClick={() => {
-                                // Future: Implement add to cart or quote
-                                alert('Funzionalità di prenotazione in arrivo!');
+                                const phoneNumber = "393495416637";
+                                const message = `Ciao Barbara, sarei interessat a questo pacchetto, e\` possibile avere maggiori informazioni?\n\n*${selectedPackage.name}*\n${selectedPackage.description}\n\nPrezzo: € ${selectedPackage.total_price}`;
+                                const encodedMessage = encodeURIComponent(message);
+                                window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
                             }}>Prenota Ora</button>
                         </div>
                     </div>
