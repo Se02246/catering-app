@@ -16,7 +16,14 @@ const QuoteBuilder = () => {
     const loadProducts = async () => {
         try {
             const data = await api.getProducts();
-            setProducts(data);
+            const parsedData = data.map(p => ({
+                ...p,
+                price_per_kg: parseFloat(p.price_per_kg),
+                pieces_per_kg: p.pieces_per_kg ? parseFloat(p.pieces_per_kg) : null,
+                min_order_quantity: p.min_order_quantity ? parseFloat(p.min_order_quantity) : 1,
+                order_increment: p.order_increment ? parseFloat(p.order_increment) : 1
+            }));
+            setProducts(parsedData);
         } catch (err) {
             console.error('Failed to load products', err);
         } finally {
