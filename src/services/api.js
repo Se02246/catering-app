@@ -12,7 +12,7 @@ const getHeaders = () => {
 export const api = {
     // Auth
     login: async (username, password) => {
-        constHP
+
         const res = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
