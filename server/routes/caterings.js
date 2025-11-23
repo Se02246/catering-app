@@ -62,4 +62,77 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Update a catering package
+router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, description, total_price, image_url, items } = req.body;
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Update catering details
+        const cateringResult = await client.query(
+            'UPDATE caterings SET name = $1, description = $2, total_price = $3, image_url = $4 WHERE id = $5 RETURNING *',
+            [name, description, total_price, image_url, id]
+        );
+
+        if (cateringResult.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Catering package not found' });
+        }
+
+        // Delete existing items
+        await client.query('DELETE FROM catering_items WHERE catering_id = $1', [id]);
+
+        // Insert new items
+        for (let item of items) {
+            await client.query(
+                'INSERT INTO catering_items (catering_id, product_id, quantity) VALUES ($1, $2, $3)',
+                [id, item.product_id, item.quantity]
+            );
+        }
+
+        await client.query('COMMIT');
+        res.json({ ...cateringResult.rows[0], items });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        client.release();
+    }
+});
+
+// Delete a catering package
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Items are deleted automatically via CASCADE if configured, but let's be safe/explicit or rely on FK
+        // Assuming ON DELETE CASCADE is NOT set for safety in this snippet, we delete items first.
+        // If your schema has ON DELETE CASCADE, this is redundant but harmless.
+        await client.query('DELETE FROM catering_items WHERE catering_id = $1', [id]);
+
+        const result = await client.query('DELETE FROM caterings WHERE id = $1 RETURNING *', [id]);
+
+        if (result.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Catering package not found' });
+        }
+
+        await client.query('COMMIT');
+        res.json({ message: 'Catering package deleted successfully' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        client.release();
+    }
+});
+
 export default router;

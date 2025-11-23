@@ -88,5 +88,30 @@ export const api = {
             throw new Error(error.error || 'Failed to create catering');
         }
         return res.json();
+    },
+
+    updateCatering: async (id, catering) => {
+        const res = await fetch(`${API_URL}/caterings/${id}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify(catering)
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to update catering' }));
+            throw new Error(error.error || 'Failed to update catering');
+        }
+        return res.json();
+    },
+
+    deleteCatering: async (id) => {
+        const res = await fetch(`${API_URL}/caterings/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to delete catering' }));
+            throw new Error(error.error || 'Failed to delete catering');
+        }
+        return res.json();
     }
 };

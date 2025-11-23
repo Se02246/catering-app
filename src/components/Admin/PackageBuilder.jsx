@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { Trash2, Plus, Save } from 'lucide-react';
+import { Trash2, Plus, Save, Pencil } from 'lucide-react';
 
 const PackageBuilder = () => {
     const [packages, setPackages] = useState([]);
     const [products, setProducts] = useState([]);
     const [isCreating, setIsCreating] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [editingId, setEditingId] = useState(null);
 
     // New Package State
     const [newPackage, setNewPackage] = useState({
@@ -17,9 +18,7 @@ const PackageBuilder = () => {
         items: [] // { product_id, quantity, tempId }
     });
 
-    useEffect(() => {
-        loadData();
-    }, []);
+
 
     const loadData = async () => {
         try {
@@ -34,16 +33,11 @@ const PackageBuilder = () => {
         }
     };
 
-    const handleAddItem = () => {
-        if (products.length === 0) return;
-        setNewPackage({
-            ...newPackage,
-            items: [
-                ...newPackage.items,
-                { product_id: products[0].id, quantity: 1, tempId: Date.now() }
-            ]
-        });
-    };
+    useEffect(() => {
+        loadData();
+    }, []);
+
+
 
     const updateItem = (tempId, field, value) => {
         setNewPackage({
@@ -71,12 +65,39 @@ const PackageBuilder = () => {
     const handleSave = async (e) => {
         e.preventDefault();
         try {
-            await api.createCatering(newPackage);
+            if (editingId) {
+                await api.updateCatering(editingId, newPackage);
+            } else {
+                await api.createCatering(newPackage);
+            }
             setIsCreating(false);
+            setEditingId(null);
             setNewPackage({ name: '', description: '', image_url: '', total_price: 0, items: [] });
             loadData();
-        } catch (err) {
-            alert('Error creating package');
+        } catch {
+            alert('Error saving package');
+        }
+    };
+
+    const handleEdit = (pkg) => {
+        setEditingId(pkg.id);
+        setNewPackage({
+            name: pkg.name,
+            description: pkg.description,
+            image_url: pkg.image_url,
+            total_price: pkg.total_price,
+            items: pkg.items.map(i => ({ ...i, tempId: Date.now() + Math.random() }))
+        });
+        setIsCreating(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Sei sicuro di voler eliminare questo pacchetto?')) return;
+        try {
+            await api.deleteCatering(id);
+            loadData();
+        } catch {
+            alert('Errore durante l\'eliminazione');
         }
     };
 
@@ -84,7 +105,11 @@ const PackageBuilder = () => {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h2>Gestione Pacchetti Catering</h2>
-                <button className="btn btn-primary" onClick={() => setIsCreating(true)}>
+                <button className="btn btn-primary" onClick={() => {
+                    setIsCreating(true);
+                    setEditingId(null);
+                    setNewPackage({ name: '', description: '', image_url: '', total_price: 0, items: [] });
+                }}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
                     Nuovo Pacchetto
                 </button>
@@ -97,7 +122,7 @@ const PackageBuilder = () => {
                 }}>
                     <div className="modal-content" style={{ width: '1200px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto', backgroundColor: 'var(--color-bg)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h3>Nuovo Pacchetto Catering</h3>
+                            <h3>{editingId ? 'Modifica Pacchetto' : 'Nuovo Pacchetto Catering'}</h3>
                             <button className="btn btn-outline" onClick={() => setIsCreating(false)}>Chiudi</button>
                         </div>
 
@@ -239,7 +264,7 @@ const PackageBuilder = () => {
                                 <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
                                     <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
                                         <Save size={18} style={{ marginRight: '8px' }} />
-                                        Salva Pacchetto
+                                        {editingId ? 'Aggiorna Pacchetto' : 'Salva Pacchetto'}
                                     </button>
                                 </div>
                             </div>
@@ -267,6 +292,14 @@ const PackageBuilder = () => {
                                     <li key={idx}>{item.quantity}kg {item.name}</li>
                                 ))}
                             </ul>
+                        </div>
+                        <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+                            <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => handleEdit(pkg)}>
+                                <Pencil size={16} style={{ marginRight: '4px' }} /> Modifica
+                            </button>
+                            <button className="btn btn-outline" style={{ flex: 1, color: 'red', borderColor: 'red' }} onClick={() => handleDelete(pkg.id)}>
+                                <Trash2 size={16} style={{ marginRight: '4px' }} /> Elimina
+                            </button>
                         </div>
                     </div>
                 ))}
