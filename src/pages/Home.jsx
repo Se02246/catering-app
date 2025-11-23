@@ -104,7 +104,14 @@ const Home = () => {
                             <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>€ {selectedPackage.total_price}</span>
                             <button className="btn btn-primary" onClick={() => {
                                 const phoneNumber = "393495416637";
-                                const message = `Ciao Barbara, sarei interessat a questo pacchetto, e\` possibile avere maggiori informazioni?\n\n*${selectedPackage.name}*\n${selectedPackage.description}\n\nPrezzo: € ${selectedPackage.total_price}`;
+                                let message = `Ciao Barbara, sarei interessat a questo pacchetto, e\` possibile avere maggiori informazioni?\n\n*${selectedPackage.name}*\n${selectedPackage.description}\n\n*Prodotti inclusi:*\n`;
+
+                                selectedPackage.items?.forEach(item => {
+                                    message += `• ${item.name}: ${item.quantity} kg\n`;
+                                });
+
+                                message += `\n*Prezzo: € ${selectedPackage.total_price}*`;
+
                                 const encodedMessage = encodeURIComponent(message);
                                 window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
                             }}>Prenota Ora</button>
