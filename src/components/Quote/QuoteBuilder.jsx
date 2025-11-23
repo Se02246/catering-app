@@ -134,7 +134,14 @@ const QuoteBuilder = () => {
                             padding: '1rem', border: '1px solid var(--color-border)', borderRadius: '8px',
                             display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
                         }}>
-                            {p.image_url && <img src={p.image_url} alt={p.name} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }} />}
+                            {p.image_url && (
+                                <img
+                                    src={p.image_url}
+                                    alt={p.name}
+                                    style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300?text=No+Img'; }}
+                                />
+                            )}
                             <div>
                                 <h4 style={{ marginBottom: '0.5rem' }}>{p.name}</h4>
                                 <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>€ {p.price_per_kg} / kg</p>

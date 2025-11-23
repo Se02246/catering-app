@@ -158,7 +158,14 @@ const ProductManager = () => {
                         padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-sm)'
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            {p.image_url && <img src={p.image_url} alt={p.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />}
+                            {p.image_url && (
+                                <img
+                                    src={p.image_url}
+                                    alt={p.name}
+                                    style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50?text=No+Img'; }}
+                                />
+                            )}
                             <div>
                                 <h4 style={{ margin: 0 }}>{p.name}</h4>
                                 <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>€ {p.price_per_kg} / kg</p>
