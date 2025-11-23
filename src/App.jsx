@@ -16,10 +16,10 @@ function App() {
       <div className="app-container">
         {/* Mobile Header */}
         <div className="mobile-header">
-          <h3>Catering App</h3>
           <button className="hamburger-btn" onClick={() => setIsSidebarOpen(true)}>
             <Menu size={24} />
           </button>
+          <h3>Catering App</h3>
         </div>
 
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />

@@ -177,7 +177,8 @@ button {
   background-color: var(--color-primary);
   color: white;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 1rem;
   position: sticky;
   top: 0;
   z-index: 900;
@@ -248,5 +249,30 @@ button {
   .modal-overlay>div {
     width: 90% !important;
     padding: 1rem !important;
+  }
+
+  /* Show CTA banner only on mobile */
+  .cta-banner {
+    display: block !important;
+  }
+}
+
+/* Bounce animation for CTA */
+@keyframes bounce {
+
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-10px);
+  }
+
+  60% {
+    transform: translateY(-5px);
   }
 }
