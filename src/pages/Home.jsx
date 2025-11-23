@@ -4,9 +4,9 @@ const Home = () => {
     return (
         <div className="container">
             <header style={{ textAlign: 'center', marginBottom: '4rem' }}>
-                <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>Catering d'Eccellenza</h1>
+                <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>Muse Catering</h1>
                 <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)' }}>
-                    Il gusto della tradizione, l'eleganza del servizio.
+                    Catering dolci e salati preparati con passione.
                 </p>
             </header>
 
