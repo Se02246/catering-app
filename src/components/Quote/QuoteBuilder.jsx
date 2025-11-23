@@ -124,11 +124,11 @@ const QuoteBuilder = () => {
     if (loading) return <p>Caricamento prodotti...</p>;
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+        <div className="grid-quote-builder">
             {/* Product List */}
             <div>
                 <h2 style={{ marginBottom: '1rem' }}>Seleziona Prodotti</h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                <div className="grid-responsive" style={{ gap: '1rem' }}>
                     {products.map(p => (
                         <div key={p.id} style={{
                             padding: '1rem', border: '1px solid var(--color-border)', borderRadius: '8px',

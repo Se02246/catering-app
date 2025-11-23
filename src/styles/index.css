@@ -1,15 +1,19 @@
 :root {
   /* Brand Colors */
-  --color-primary: #7D1C4A; /* Rosso Porpora */
+  --color-primary: #7D1C4A;
+  /* Rosso Porpora */
   --color-primary-dark: #5a1235;
   --color-primary-light: #a33b6b;
-  --color-accent: #D4AF37; /* Gold/Bronze */
+  --color-accent: #D4AF37;
+  /* Gold/Bronze */
   --color-accent-light: #f3cf55;
-  
+
   /* Neutral Colors */
-  --color-bg: #FDFBF7; /* Creamy White */
+  --color-bg: #FDFBF7;
+  /* Creamy White */
   --color-surface: #FFFFFF;
-  --color-text: #2C2C2C; /* Charcoal */
+  --color-text: #2C2C2C;
+  /* Charcoal */
   --color-text-muted: #666666;
   --color-border: #E5E5E5;
 
@@ -43,7 +47,12 @@ body {
   line-height: 1.6;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
   color: var(--color-primary);
   font-weight: 700;
@@ -96,4 +105,113 @@ button {
 .btn-outline:hover {
   background-color: var(--color-primary);
   color: white;
+}
+
+/* Responsive Layout */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--color-primary);
+  color: white;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  margin-left: 250px;
+  transition: margin-left 0.3s ease-in-out;
+  width: 100%;
+}
+
+/* Responsive Grids */
+.grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.grid-2-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.grid-3-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.grid-quote-builder {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+/* Mobile Header / Hamburger */
+.mobile-header {
+  display: none;
+  padding: 1rem;
+  background-color: var(--color-primary);
+  color: white;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+
+.hamburger-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    /* Hide sidebar by default */
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    /* Show when open */
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .mobile-header {
+    display: flex;
+  }
+
+  /* Stack Grids */
+  .grid-2-cols,
+  .grid-3-cols,
+  .grid-quote-builder {
+    grid-template-columns: 1fr;
+  }
+
+  /* Adjustments */
+  .modal-overlay>div {
+    width: 90% !important;
+    padding: 1rem !important;
+  }
 }

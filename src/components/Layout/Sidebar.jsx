@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Lock, LogOut } from 'lucide-react';
+import { Home, FileText, Lock, LogOut, X } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
     const location = useLocation();
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
@@ -21,39 +21,40 @@ const Sidebar = () => {
     });
 
     return (
-        <aside style={{
-            width: '250px',
-            height: '100vh',
-            position: 'fixed',
-            left: 0,
-            top: 0,
+        <aside className={`sidebar ${isOpen ? 'open' : ''}`} style={{
             backgroundColor: 'white',
             borderRight: '1px solid var(--color-border)',
             display: 'flex',
             flexDirection: 'column',
-            zIndex: 1000
         }}>
-            <div style={{ padding: '2rem', borderBottom: '1px solid var(--color-border)' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--color-primary)' }}>Catering App</h2>
+            <div style={{ padding: '2rem', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '1.5rem', color: 'var(--color-primary)', margin: 0 }}>Catering App</h2>
+                <button
+                    onClick={onClose}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'none' }}
+                    className="mobile-close-btn"
+                >
+                    <X size={24} />
+                </button>
             </div>
 
             <nav style={{ flex: 1, padding: '1rem 0' }}>
-                <Link to="/" style={linkStyle('/')}>
+                <Link to="/" style={linkStyle('/')} onClick={onClose}>
                     <Home size={20} style={{ marginRight: '10px' }} />
                     Home
                 </Link>
-                <Link to="/quote" style={linkStyle('/quote')}>
+                <Link to="/quote" style={linkStyle('/quote')} onClick={onClose}>
                     <FileText size={20} style={{ marginRight: '10px' }} />
                     Crea Preventivo
                 </Link>
                 {!isAdmin && (
-                    <Link to="/login" style={linkStyle('/login')}>
+                    <Link to="/login" style={linkStyle('/login')} onClick={onClose}>
                         <Lock size={20} style={{ marginRight: '10px' }} />
                         Admin Login
                     </Link>
                 )}
                 {isAdmin && (
-                    <Link to="/admin" style={linkStyle('/admin')}>
+                    <Link to="/admin" style={linkStyle('/admin')} onClick={onClose}>
                         <Lock size={20} style={{ marginRight: '10px' }} />
                         Dashboard
                     </Link>
@@ -75,6 +76,13 @@ const Sidebar = () => {
                     </button>
                 </div>
             )}
+            <style>{`
+                @media (max-width: 768px) {
+                    .mobile-close-btn {
+                        display: block !important;
+                    }
+                }
+            `}</style>
         </aside>
     );
 };

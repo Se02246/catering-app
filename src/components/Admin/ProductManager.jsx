@@ -110,7 +110,7 @@ const ProductManager = () => {
                                     onChange={e => setCurrentProduct({ ...currentProduct, image_url: e.target.value })}
                                 />
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                            <div className="grid-3-cols" style={{ marginBottom: '1rem' }}>
                                 <div>
                                     <label>Pezzi per Kg</label>
                                     <input
@@ -151,7 +151,7 @@ const ProductManager = () => {
                 </div>
             )}
 
-            <div style={{ display: 'grid', gap: '1rem' }}>
+            <div className="grid-responsive" style={{ gap: '1rem' }}>
                 {products.map(p => (
                     <div key={p.id} style={{
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
