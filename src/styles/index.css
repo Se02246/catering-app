@@ -1,9 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Outfit:wght@400;500;700&display=swap');
+
 :root {
   /* Brand Colors */
-  --color-primary: #7D1C4A;
-  /* Rosso Porpora */
-  --color-primary-dark: #5a1235;
-  --color-primary-light: #a33b6b;
+  --color-primary: #C62828;
+  /* Vibrant Deep Red */
+  --color-primary-dark: #8E0000;
+  --color-primary-light: #FF5F52;
   --color-accent: #D4AF37;
   /* Gold/Bronze */
   --color-accent-light: #f3cf55;
@@ -18,8 +20,8 @@
   --color-border: #E5E5E5;
 
   /* Typography */
-  --font-heading: 'Playfair Display', serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Nunito', sans-serif;
 
   /* Spacing */
   --spacing-xs: 0.25rem;
@@ -29,9 +31,15 @@
   --spacing-xl: 4rem;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.12);
+
+  /* Shapes */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
 }
 
 * {
@@ -81,10 +89,12 @@ button {
   align-items: center;
   justify-content: center;
   padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  font-weight: 600;
-  transition: all 0.2s;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  transition: all 0.2s ease;
   border: none;
+  font-family: var(--font-heading);
+  letter-spacing: 0.5px;
 }
 
 .btn-primary {
@@ -191,10 +201,11 @@ button {
 .modal-content {
   background-color: white;
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   width: 500px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: var(--shadow-lg);
 }
 
 /* Mobile Styles */
