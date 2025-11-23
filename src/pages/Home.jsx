@@ -25,26 +25,6 @@ const Home = () => {
 
     return (
         <div className="container">
-            {/* Call to Action Banner - only visible on mobile */}
-            <div style={{
-                display: 'none',
-                position: 'fixed',
-                top: '80px',
-                left: '20px',
-                backgroundColor: 'var(--color-accent)',
-                color: 'white',
-                padding: '0.75rem 1rem',
-                borderRadius: '8px',
-                boxShadow: 'var(--shadow-md)',
-                zIndex: 800,
-                animation: 'bounce 2s infinite'
-            }} className="cta-banner">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold' }}>
-                    <span style={{ fontSize: '1.5rem' }}>↖</span>
-                    <span>Crea il tuo preventivo!</span>
-                </div>
-            </div>
-
             <header style={{ textAlign: 'center', marginBottom: '4rem' }}>
                 <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>Muse Catering</h1>
                 <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)' }}>
