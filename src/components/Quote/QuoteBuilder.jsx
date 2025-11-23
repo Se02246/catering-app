@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { Plus, Minus, Trash2, FileDown } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { Plus, Minus, Trash2, Send } from 'lucide-react';
 
 const QuoteBuilder = () => {
     const [products, setProducts] = useState([]);
@@ -78,53 +76,28 @@ const QuoteBuilder = () => {
         return cart.reduce((sum, item) => sum + calculateItemPrice(item), 0);
     };
 
-    const generatePDF = () => {
-        const doc = new jsPDF();
+    const sendToWhatsApp = () => {
+        const phoneNumber = "393495416637"; // Updated business number
+        let message = "*Richiesta Preventivo Catering*\n\n";
 
-        // Header
-        doc.setFont('times', 'bold');
-        doc.setFontSize(22);
-        doc.setTextColor(125, 28, 74); // #7D1C4A
-        doc.text('Catering d\'Eccellenza', 105, 20, null, null, 'center');
-
-        doc.setFontSize(16);
-        doc.setTextColor(0, 0, 0);
-        doc.text('Preventivo Personalizzato', 105, 30, null, null, 'center');
-
-        // Table
-        const tableData = cart.map(item => {
+        cart.forEach(item => {
             const unit = item.pieces_per_kg ? 'pz' : 'kg';
             const priceUnit = item.pieces_per_kg
                 ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
                 : `€ ${item.price_per_kg} / kg`;
 
             const servingsText = (item.show_servings && item.servings_per_unit)
-                ? ` / per ${(item.servings_per_unit * item.quantity).toFixed(0)} persone`
+                ? ` (per ${(item.servings_per_unit * item.quantity).toFixed(0)} persone)`
                 : '';
 
-            return [
-                item.name + servingsText,
-                priceUnit,
-                `${item.quantity} ${unit}`,
-                `€ ${calculateItemPrice(item).toFixed(2)}`
-            ];
+            message += `• *${item.name}*${servingsText}\n`;
+            message += `  ${item.quantity} ${unit} x ${priceUnit} = € ${calculateItemPrice(item).toFixed(2)}\n\n`;
         });
 
-        doc.autoTable({
-            startY: 40,
-            head: [['Prodotto', 'Prezzo Unitario', 'Quantità', 'Totale']],
-            body: tableData,
-            theme: 'grid',
-            headStyles: { fillColor: [125, 28, 74] },
-            foot: [['', '', 'Totale Complessivo', `€ ${calculateTotal().toFixed(2)}`]]
-        });
+        message += `*Totale: € ${calculateTotal().toFixed(2)}*`;
 
-        // Footer
-        const finalY = doc.lastAutoTable.finalY || 40;
-        doc.setFontSize(10);
-        doc.text('Grazie per averci scelto!', 105, finalY + 20, null, null, 'center');
-
-        doc.save('preventivo_catering.pdf');
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
     };
 
     if (loading) return <p>Caricamento prodotti...</p>;
@@ -213,10 +186,10 @@ const QuoteBuilder = () => {
                             <button
                                 className="btn btn-primary"
                                 style={{ width: '100%' }}
-                                onClick={generatePDF}
+                                onClick={sendToWhatsApp}
                             >
-                                <FileDown size={18} style={{ marginRight: '8px' }} />
-                                Scarica PDF
+                                <Send size={18} style={{ marginRight: '8px' }} />
+                                Invia su WhatsApp
                             </button>
                         </div>
                     </>
