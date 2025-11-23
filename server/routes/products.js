@@ -16,11 +16,11 @@ router.get('/', async (req, res) => {
 
 // Add a product
 router.post('/', async (req, res) => {
-    const { name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment } = req.body;
+    const { name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment, show_servings, servings_per_unit } = req.body;
     try {
         const result = await pool.query(
-            'INSERT INTO products (name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity || 1, order_increment || 1]
+            'INSERT INTO products (name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment, show_servings, servings_per_unit) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+            [name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity || 1, order_increment || 1, show_servings || false, servings_per_unit]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -32,11 +32,11 @@ router.post('/', async (req, res) => {
 // Update a product
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment } = req.body;
+    const { name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment, show_servings, servings_per_unit } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE products SET name = $1, description = $2, price_per_kg = $3, image_url = $4, pieces_per_kg = $5, min_order_quantity = $6, order_increment = $7 WHERE id = $8 RETURNING *',
-            [name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity || 1, order_increment || 1, id]
+            'UPDATE products SET name = $1, description = $2, price_per_kg = $3, image_url = $4, pieces_per_kg = $5, min_order_quantity = $6, order_increment = $7, show_servings = $8, servings_per_unit = $9 WHERE id = $10 RETURNING *',
+            [name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity || 1, order_increment || 1, show_servings || false, servings_per_unit, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Product not found' });

@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS products (
     pieces_per_kg DECIMAL(10, 2),
     min_order_quantity DECIMAL(10, 2) DEFAULT 1,
     order_increment DECIMAL(10, 2) DEFAULT 1,
+    show_servings BOOLEAN DEFAULT FALSE,
+    servings_per_unit DECIMAL(10, 2),
     image_url TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

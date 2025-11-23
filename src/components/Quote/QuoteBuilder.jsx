@@ -21,7 +21,9 @@ const QuoteBuilder = () => {
                 price_per_kg: parseFloat(p.price_per_kg),
                 pieces_per_kg: p.pieces_per_kg ? parseFloat(p.pieces_per_kg) : null,
                 min_order_quantity: p.min_order_quantity ? parseFloat(p.min_order_quantity) : 1,
-                order_increment: p.order_increment ? parseFloat(p.order_increment) : 1
+                order_increment: p.order_increment ? parseFloat(p.order_increment) : 1,
+                show_servings: p.show_servings,
+                servings_per_unit: p.servings_per_unit ? parseFloat(p.servings_per_unit) : null
             }));
             setProducts(parsedData);
         } catch (err) {
@@ -96,8 +98,12 @@ const QuoteBuilder = () => {
                 ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
                 : `€ ${item.price_per_kg} / kg`;
 
+            const servingsText = (item.show_servings && item.servings_per_unit)
+                ? ` / per ${(item.servings_per_unit * item.quantity).toFixed(0)} persone`
+                : '';
+
             return [
-                item.name,
+                item.name + servingsText,
                 priceUnit,
                 `${item.quantity} ${unit}`,
                 `€ ${calculateItemPrice(item).toFixed(2)}`
@@ -176,6 +182,11 @@ const QuoteBuilder = () => {
                                                 ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
                                                 : `€ ${item.price_per_kg} / kg`}
                                             {' x '} {item.quantity} {item.pieces_per_kg ? 'pz' : 'kg'}
+                                            {item.show_servings && item.servings_per_unit && (
+                                                <span style={{ color: 'var(--color-primary)', marginLeft: '0.5rem', fontWeight: 'bold' }}>
+                                                    / per {(item.servings_per_unit * item.quantity).toFixed(0)} persone
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
