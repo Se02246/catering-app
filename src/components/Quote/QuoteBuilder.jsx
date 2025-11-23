@@ -78,7 +78,7 @@ const QuoteBuilder = () => {
 
     const sendToWhatsApp = () => {
         const phoneNumber = "393495416637"; // Updated business number
-        let message = "*Richiesta Preventivo Catering*\n\n";
+        let message = "*Ciao Barbara, ho creato un prventivo sul tuo sito, e` possibile avere maggiori informazioni?\n\n*";
 
         cart.forEach(item => {
             const unit = item.pieces_per_kg ? 'pz' : 'kg';
