@@ -1,24 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Outfit:wght@400;500;700&display=swap');
 
 :root {
-  /* Brand Colors - Beige & Vivid Red Theme */
+  /* Brand Colors - Beige & Intermediate Red Theme */
   --color-bg: #F9F7F2;
   /* Light Beige / Off-White */
-  --color-primary: #D32F2F;
-  /* Vivid Red */
-  --color-primary-dark: #B71C1C;
-  /* Darker Vivid Red */
-  --color-primary-light: #EF5350;
-  /* Lighter Vivid Red */
+  --color-primary: #AF4448;
+  /* Intermediate Red / Terra Cotta */
+  --color-primary-dark: #8E3236;
+  /* Darker shade */
+  --color-primary-light: #C96F73;
+  /* Lighter shade */
   --color-accent: #d4af37;
   /* Gold accent for subtle highlights */
 
   /* Glassmorphism Variables */
   --glass-bg: rgba(255, 255, 255, 0.6);
   /* More opaque for light bg */
-  --glass-border: 1px solid rgba(211, 47, 47, 0.2);
+  --glass-border: 1px solid rgba(175, 68, 72, 0.2);
   /* Subtle red border */
-  --glass-shadow: 0 8px 32px 0 rgba(211, 47, 47, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(175, 68, 72, 0.1);
   --glass-blur: blur(20px);
 
   /* Neutral Colors */
@@ -119,13 +119,13 @@ button {
 .btn-primary {
   background-color: var(--color-primary);
   color: white;
-  box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+  box-shadow: 0 4px 15px rgba(175, 68, 72, 0.3);
 }
 
 .btn-primary:hover {
   background-color: var(--color-primary-dark);
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(211, 47, 47, 0.4);
+  box-shadow: 0 6px 20px rgba(175, 68, 72, 0.4);
 }
 
 .btn-outline {
@@ -149,8 +149,8 @@ button {
 
 .sidebar {
   width: 280px;
-  background: rgba(211, 47, 47, 0.95);
-  /* Vivid Red with slight transparency */
+  background: rgba(175, 68, 72, 0.95);
+  /* Intermediate Red with slight transparency */
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
@@ -252,7 +252,7 @@ button {
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(211, 47, 47, 0.1);
+  border: 1px solid rgba(175, 68, 72, 0.1);
   color: var(--color-text);
 }
 
