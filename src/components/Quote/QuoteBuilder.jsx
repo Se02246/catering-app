@@ -35,35 +35,41 @@ const QuoteBuilder = () => {
     };
 
     const addToCart = (product) => {
-        const existing = cart.find(item => item.id === product.id);
-        if (existing) {
-            if (product.allow_multiple) {
-                const increment = product.order_increment || 1;
-                setCart(cart.map(item =>
-                    item.id === product.id ? { ...item, quantity: item.quantity + increment } : item
-                ));
-            } else {
-                // If not allow_multiple, maybe toggle off (remove)?
-                // User said "diventi aggiunto", implies state. If clicked again, let's remove it to allow deselecting.
-                setCart(cart.filter(item => item.id !== product.id));
-            }
+        if (product.allow_multiple) {
+            // Always add a new instance
+            const newItem = {
+                ...product,
+                quantity: product.min_order_quantity || 1,
+                instanceId: Date.now() + Math.random() // Unique ID for this instance
+            };
+            setCart([...cart, newItem]);
         } else {
-            const initialQty = product.min_order_quantity || 1;
-            setCart([...cart, { ...product, quantity: initialQty }]);
+            const existing = cart.find(item => item.id === product.id);
+            if (existing) {
+                // Toggle off
+                setCart(cart.filter(item => item.id !== product.id));
+            } else {
+                // Add new
+                const newItem = {
+                    ...product,
+                    quantity: product.min_order_quantity || 1,
+                    instanceId: Date.now() + Math.random()
+                };
+                setCart([...cart, newItem]);
+            }
         }
     };
 
-    const updateQuantity = (id, delta) => {
+    const updateQuantity = (instanceId, delta) => {
         setCart(cart.map(item => {
-            if (item.id === id) {
+            if (item.instanceId === instanceId) {
                 const increment = item.order_increment || 1;
                 const minQty = item.min_order_quantity || 1;
                 // delta is 1 or -1, multiply by increment
                 const change = delta * increment;
                 const newQty = item.quantity + change;
 
-                // If going below minQty, remove item (or keep at minQty? User usually wants to remove if they go below min)
-                // Let's say if they click minus at minQty, it removes it.
+                // If going below minQty, remove item
                 if (newQty < minQty) return null;
 
                 return { ...item, quantity: newQty };
@@ -135,14 +141,14 @@ const QuoteBuilder = () => {
                                 <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>€ {p.price_per_kg} / kg</p>
                             </div>
                             <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                                {p.allow_multiple && cart.find(item => item.id === p.id) && (
+                                {p.allow_multiple && cart.filter(item => item.id === p.id).length > 0 && (
                                     <div style={{
                                         backgroundColor: 'var(--color-primary)', color: 'white',
                                         borderRadius: '50%', width: '30px', height: '30px',
                                         display: 'flex', justifyContent: 'center', alignItems: 'center',
                                         fontWeight: 'bold', fontSize: '0.9rem'
                                     }}>
-                                        {cart.find(item => item.id === p.id).quantity}
+                                        {cart.filter(item => item.id === p.id).length}
                                     </div>
                                 )}
                                 <button
@@ -168,7 +174,7 @@ const QuoteBuilder = () => {
                     <>
                         <div style={{ marginBottom: '1rem' }}>
                             {cart.map(item => (
-                                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                <div key={item.instanceId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontWeight: '600' }}>{item.name}</div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
@@ -184,14 +190,14 @@ const QuoteBuilder = () => {
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => updateQuantity(item.id, -1)}>
+                                        <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => updateQuantity(item.instanceId, -1)}>
                                             <Minus size={14} />
                                         </button>
                                         <span style={{ minWidth: '2rem', textAlign: 'center' }}>{item.quantity}</span>
-                                        <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => updateQuantity(item.id, 1)}>
+                                        <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => updateQuantity(item.instanceId, 1)}>
                                             <Plus size={14} />
                                         </button>
-                                        <button className="btn btn-outline" style={{ padding: '0.25rem', color: 'red', borderColor: 'red' }} onClick={() => updateQuantity(item.id, -1000)}> {/* Hack to force remove */}
+                                        <button className="btn btn-outline" style={{ padding: '0.25rem', color: 'red', borderColor: 'red' }} onClick={() => updateQuantity(item.instanceId, -1000)}> {/* Hack to force remove */}
                                             <Trash2 size={14} />
                                         </button>
                                     </div>
