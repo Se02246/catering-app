@@ -45,13 +45,9 @@ const QuoteBuilder = () => {
                 quantity: product.min_order_quantity || 1,
                 instanceId: Date.now() + Math.random() // Unique ID for this instance
             };
-            // Check max quantity for this specific instance (though usually max applies to total, for allow_multiple it's ambiguous, assuming per instance for now or total?)
-            // If allow_multiple is true, usually max_order_quantity might apply to the sum of all instances or per instance.
-            // Given the context of "allow multiple" usually meaning distinct configurations, let's apply max per instance for now, OR check total.
-            // Let's assume max_order_quantity applies to the TOTAL quantity of that product ID in the cart.
 
-            const currentTotal = cart.filter(i => i.id === product.id).reduce((sum, i) => sum + i.quantity, 0);
-            if (product.max_order_quantity && (currentTotal + newItem.quantity) > product.max_order_quantity) {
+            // Check max quantity for this specific instance
+            if (product.max_order_quantity && newItem.quantity > product.max_order_quantity) {
                 alert(`Hai raggiunto il limite massimo di ${product.max_order_quantity} per questo prodotto.`);
                 return;
             }
@@ -97,11 +93,8 @@ const QuoteBuilder = () => {
                 // If going below minQty, remove item
                 if (newQty < minQty) return null;
 
-                // Check max quantity
-                // For allow_multiple, we need to check total quantity of this product across all instances
-                const productTotal = cart.filter(i => i.id === item.id && i.instanceId !== instanceId).reduce((sum, i) => sum + i.quantity, 0);
-
-                if (item.max_order_quantity && (productTotal + newQty) > item.max_order_quantity) {
+                // Check max quantity PER INSTANCE
+                if (item.max_order_quantity && newQty > item.max_order_quantity) {
                     // Don't update if exceeds max
                     return item;
                 }
@@ -232,7 +225,11 @@ const QuoteBuilder = () => {
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         {item.order_increment !== 0 && (
-                                            <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => updateQuantity(item.instanceId, -1)}>
+                                            <button
+                                                className="btn btn-outline"
+                                                style={{ padding: '0.25rem' }}
+                                                onClick={() => updateQuantity(item.instanceId, -1)}
+                                            >
                                                 <Minus size={14} />
                                             </button>
                                         )}
@@ -242,7 +239,7 @@ const QuoteBuilder = () => {
                                                 className="btn btn-outline"
                                                 style={{ padding: '0.25rem' }}
                                                 onClick={() => updateQuantity(item.instanceId, 1)}
-                                                disabled={item.max_order_quantity && (cart.filter(i => i.id === item.id).reduce((sum, i) => sum + i.quantity, 0) + (item.order_increment || 1)) > item.max_order_quantity}
+                                                disabled={item.max_order_quantity && (item.quantity + (item.order_increment || 1)) > item.max_order_quantity}
                                             >
                                                 <Plus size={14} />
                                             </button>
