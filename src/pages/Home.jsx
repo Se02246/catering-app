@@ -26,24 +26,24 @@ const Home = () => {
     return (
         <div className="container">
             <header style={{ textAlign: 'center', marginBottom: '4rem', paddingTop: '2rem' }}>
-                <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem', textShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>Muse Catering</h1>
-                <p style={{ fontSize: '1.2rem', color: 'var(--color-white-transparent)', maxWidth: '600px', margin: '0 auto' }}>
+                <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem', color: 'var(--color-primary-dark)' }}>Muse Catering</h1>
+                <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto' }}>
                     Catering dolci e salati preparati con passione. Esperienze culinarie uniche per i tuoi eventi speciali.
                 </p>
             </header>
 
             <section>
-                <h2 style={{ marginBottom: '2rem', display: 'inline-block', paddingBottom: '0.5rem', borderBottom: '2px solid rgba(255,255,255,0.3)' }}>
+                <h2 style={{ marginBottom: '2rem', display: 'inline-block', paddingBottom: '0.5rem', borderBottom: '2px solid var(--color-primary)' }}>
                     I Nostri Pacchetti
                 </h2>
 
-                {loading && <p style={{ color: 'white' }}>Caricamento pacchetti...</p>}
+                {loading && <p style={{ color: 'var(--color-text)' }}>Caricamento pacchetti...</p>}
                 {error && <p style={{ color: '#ffcccb' }}>{error}</p>}
 
                 {!loading && !error && (
                     <div className="grid-responsive">
                         {packages.length === 0 ? (
-                            <p style={{ color: 'white' }}>Nessun pacchetto disponibile al momento.</p>
+                            <p style={{ color: 'var(--color-text)' }}>Nessun pacchetto disponibile al momento.</p>
                         ) : (
                             packages.map((pkg) => (
                                 <div key={pkg.id} className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s ease' }}>
