@@ -61,7 +61,20 @@ const Home = () => {
                                     <h3 style={{ marginBottom: '0.5rem', color: 'var(--color-text)' }}>{pkg.name}</h3>
                                     <p style={{ marginBottom: '1.5rem', color: 'var(--color-text-muted)', flexGrow: 1, lineHeight: '1.6' }}>{pkg.description}</p>
                                     <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <p style={{ fontWeight: '800', fontSize: '1.5rem', color: 'var(--color-primary-dark)' }}>€ {pkg.total_price}</p>
+                                        <div>
+                                            {pkg.discount_percentage > 0 ? (
+                                                <>
+                                                    <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1rem', marginRight: '0.5rem' }}>
+                                                        € {pkg.total_price}
+                                                    </span>
+                                                    <span style={{ fontWeight: '800', fontSize: '1.5rem', color: '#e63946' }}>
+                                                        € {(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <p style={{ fontWeight: '800', fontSize: '1.5rem', color: 'var(--color-primary-dark)' }}>€ {pkg.total_price}</p>
+                                            )}
+                                        </div>
                                         <button className="btn btn-primary" onClick={() => setSelectedPackage(pkg)}>Dettagli</button>
                                     </div>
                                 </div>
@@ -100,16 +113,34 @@ const Home = () => {
                         </ul>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
-                            <span style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {selectedPackage.total_price}</span>
+                            <div>
+                                {selectedPackage.discount_percentage > 0 ? (
+                                    <>
+                                        <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1.2rem', marginRight: '0.5rem' }}>
+                                            € {selectedPackage.total_price}
+                                        </span>
+                                        <span style={{ fontSize: '2rem', fontWeight: '800', color: '#e63946' }}>
+                                            € {(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {selectedPackage.total_price}</span>
+                                )}
+                            </div>
                             <button className="btn btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }} onClick={() => {
                                 const phoneNumber = "393495416637";
+                                let finalPrice = selectedPackage.total_price;
+                                if (selectedPackage.discount_percentage > 0) {
+                                    finalPrice = (selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2);
+                                }
+
                                 let message = `Ciao Barbara, sarei interessat a questo pacchetto, e\` possibile avere maggiori informazioni?\n\n*${selectedPackage.name}*\n${selectedPackage.description}\n\n*Prodotti inclusi:*\n`;
 
                                 selectedPackage.items?.forEach(item => {
                                     message += `• ${item.name}: ${item.quantity} kg\n`;
                                 });
 
-                                message += `\n*Prezzo: € ${selectedPackage.total_price}*`;
+                                message += `\n*Prezzo: € ${finalPrice}*`;
 
                                 const encodedMessage = encodeURIComponent(message);
                                 window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');

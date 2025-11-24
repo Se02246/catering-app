@@ -15,6 +15,7 @@ const PackageBuilder = () => {
         description: '',
         image_url: '',
         total_price: 0,
+        discount_percentage: 0,
         items: [] // { product_id, quantity, tempId }
     });
 
@@ -72,7 +73,9 @@ const PackageBuilder = () => {
             }
             setIsCreating(false);
             setEditingId(null);
-            setNewPackage({ name: '', description: '', image_url: '', total_price: 0, items: [] });
+            setEditingId(null);
+            setNewPackage({ name: '', description: '', image_url: '', total_price: 0, discount_percentage: 0, items: [] });
+            loadData();
             loadData();
         } catch {
             alert('Error saving package');
@@ -86,6 +89,7 @@ const PackageBuilder = () => {
             description: pkg.description,
             image_url: pkg.image_url,
             total_price: pkg.total_price,
+            discount_percentage: pkg.discount_percentage || 0,
             items: pkg.items.map(i => ({ ...i, tempId: Date.now() + Math.random() }))
         });
         setIsCreating(true);
@@ -108,7 +112,8 @@ const PackageBuilder = () => {
                 <button className="btn btn-primary" onClick={() => {
                     setIsCreating(true);
                     setEditingId(null);
-                    setNewPackage({ name: '', description: '', image_url: '', total_price: 0, items: [] });
+                    setEditingId(null);
+                    setNewPackage({ name: '', description: '', image_url: '', total_price: 0, discount_percentage: 0, items: [] });
                 }}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
                     Nuovo Pacchetto
@@ -211,6 +216,21 @@ const PackageBuilder = () => {
                                             Suggerito: €{calculateSuggestedPrice().toFixed(2)}
                                         </button>
                                     </div>
+
+                                    <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Sconto (%)</label>
+                                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                        <input
+                                            type="number" step="1" min="0" max="100"
+                                            style={{ flex: 1, padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
+                                            value={newPackage.discount_percentage}
+                                            onChange={e => setNewPackage({ ...newPackage, discount_percentage: e.target.value })}
+                                        />
+                                    </div>
+                                    {newPackage.discount_percentage > 0 && (
+                                        <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'green' }}>
+                                            Prezzo scontato: € {(newPackage.total_price * (1 - newPackage.discount_percentage / 100)).toFixed(2)}
+                                        </div>
+                                    )}
 
                                     <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Descrizione</label>
                                     <textarea

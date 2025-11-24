@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
 
 // Create a new catering package
 router.post('/', async (req, res) => {
-    const { name, description, total_price, image_url, items } = req.body;
+    const { name, description, total_price, image_url, items, discount_percentage } = req.body;
     // items is an array of { product_id, quantity }
 
     const client = await pool.connect();
@@ -39,8 +39,8 @@ router.post('/', async (req, res) => {
         await client.query('BEGIN');
 
         const cateringResult = await client.query(
-            'INSERT INTO caterings (name, description, total_price, image_url) VALUES ($1, $2, $3, $4) RETURNING *',
-            [name, description, total_price, image_url]
+            'INSERT INTO caterings (name, description, total_price, image_url, discount_percentage) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [name, description, total_price, image_url, discount_percentage || 0]
         );
         const cateringId = cateringResult.rows[0].id;
 
@@ -65,7 +65,7 @@ router.post('/', async (req, res) => {
 // Update a catering package
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, description, total_price, image_url, items } = req.body;
+    const { name, description, total_price, image_url, items, discount_percentage } = req.body;
 
     const client = await pool.connect();
     try {
@@ -73,8 +73,8 @@ router.put('/:id', async (req, res) => {
 
         // Update catering details
         const cateringResult = await client.query(
-            'UPDATE caterings SET name = $1, description = $2, total_price = $3, image_url = $4 WHERE id = $5 RETURNING *',
-            [name, description, total_price, image_url, id]
+            'UPDATE caterings SET name = $1, description = $2, total_price = $3, image_url = $4, discount_percentage = $5 WHERE id = $6 RETURNING *',
+            [name, description, total_price, image_url, discount_percentage || 0, id]
         );
 
         if (cateringResult.rows.length === 0) {
