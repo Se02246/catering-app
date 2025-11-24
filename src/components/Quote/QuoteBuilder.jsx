@@ -61,6 +61,10 @@ const QuoteBuilder = () => {
         }
     };
 
+    const removeFromCart = (instanceId) => {
+        setCart(cart.filter(item => item.instanceId !== instanceId));
+    };
+
     const updateQuantity = (instanceId, delta) => {
         setCart(cart.map(item => {
             if (item.instanceId === instanceId) {
@@ -210,7 +214,7 @@ const QuoteBuilder = () => {
                                                 <Plus size={14} />
                                             </button>
                                         )}
-                                        <button className="btn btn-outline" style={{ padding: '0.25rem', color: 'red', borderColor: 'red' }} onClick={() => updateQuantity(item.instanceId, -1000)}> {/* Hack to force remove */}
+                                        <button className="btn btn-outline" style={{ padding: '0.25rem', color: 'red', borderColor: 'red' }} onClick={() => removeFromCart(item.instanceId)}>
                                             <Trash2 size={14} />
                                         </button>
                                     </div>
