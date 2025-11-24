@@ -23,7 +23,8 @@ const QuoteBuilder = () => {
                     min_order_quantity: p.min_order_quantity ? parseFloat(p.min_order_quantity) : 1,
                     order_increment: p.order_increment ? parseFloat(p.order_increment) : 1,
                     show_servings: Boolean(p.show_servings),
-                    servings_per_unit: p.servings_per_unit ? parseFloat(p.servings_per_unit) : null
+                    servings_per_unit: p.servings_per_unit ? parseFloat(p.servings_per_unit) : null,
+                    allow_multiple: Boolean(p.allow_multiple)
                 }));
             setProducts(parsedData);
         } catch (err) {
@@ -36,10 +37,16 @@ const QuoteBuilder = () => {
     const addToCart = (product) => {
         const existing = cart.find(item => item.id === product.id);
         if (existing) {
-            const increment = product.order_increment || 1;
-            setCart(cart.map(item =>
-                item.id === product.id ? { ...item, quantity: item.quantity + increment } : item
-            ));
+            if (product.allow_multiple) {
+                const increment = product.order_increment || 1;
+                setCart(cart.map(item =>
+                    item.id === product.id ? { ...item, quantity: item.quantity + increment } : item
+                ));
+            } else {
+                // If not allow_multiple, maybe toggle off (remove)?
+                // User said "diventi aggiunto", implies state. If clicked again, let's remove it to allow deselecting.
+                setCart(cart.filter(item => item.id !== product.id));
+            }
         } else {
             const initialQty = product.min_order_quantity || 1;
             setCart([...cart, { ...product, quantity: initialQty }]);
@@ -127,13 +134,25 @@ const QuoteBuilder = () => {
                                 <h4 style={{ marginBottom: '0.5rem' }}>{p.name}</h4>
                                 <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>€ {p.price_per_kg} / kg</p>
                             </div>
-                            <button
-                                className="btn btn-outline"
-                                style={{ marginTop: '1rem', width: '100%' }}
-                                onClick={() => addToCart(p)}
-                            >
-                                Aggiungi
-                            </button>
+                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                {p.allow_multiple && cart.find(item => item.id === p.id) && (
+                                    <div style={{
+                                        backgroundColor: 'var(--color-primary)', color: 'white',
+                                        borderRadius: '50%', width: '30px', height: '30px',
+                                        display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                        fontWeight: 'bold', fontSize: '0.9rem'
+                                    }}>
+                                        {cart.find(item => item.id === p.id).quantity}
+                                    </div>
+                                )}
+                                <button
+                                    className={`btn ${!p.allow_multiple && cart.find(item => item.id === p.id) ? 'btn-primary' : 'btn-outline'}`}
+                                    style={{ width: p.allow_multiple ? 'auto' : '100%', flex: p.allow_multiple ? 1 : 'none' }}
+                                    onClick={() => addToCart(p)}
+                                >
+                                    {!p.allow_multiple && cart.find(item => item.id === p.id) ? 'Aggiunto' : 'Aggiungi'}
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>

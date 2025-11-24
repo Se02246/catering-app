@@ -5,7 +5,7 @@ import { Trash2, Edit, Plus, Eye, EyeOff } from 'lucide-react';
 const ProductManager = () => {
     const [products, setProducts] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', is_visible: true });
+    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', is_visible: true, allow_multiple: false });
 
     useEffect(() => {
         loadProducts();
@@ -31,7 +31,8 @@ const ProductManager = () => {
                 order_increment: currentProduct.order_increment ? parseFloat(currentProduct.order_increment) : 1,
                 show_servings: currentProduct.show_servings || false,
                 servings_per_unit: currentProduct.servings_per_unit ? parseFloat(currentProduct.servings_per_unit) : null,
-                is_visible: currentProduct.is_visible !== undefined ? currentProduct.is_visible : true
+                is_visible: currentProduct.is_visible !== undefined ? currentProduct.is_visible : true,
+                allow_multiple: currentProduct.allow_multiple || false
             };
 
             if (currentProduct.id) {
@@ -43,7 +44,7 @@ const ProductManager = () => {
             setCurrentProduct({
                 name: '', description: '', price_per_kg: '', image_url: '',
                 pieces_per_kg: '', min_order_quantity: '', order_increment: '',
-                show_servings: false, servings_per_unit: '', is_visible: true
+                show_servings: false, servings_per_unit: '', is_visible: true, allow_multiple: false
             });
             loadProducts();
         } catch (err) {
@@ -183,6 +184,21 @@ const ProductManager = () => {
                                         </small>
                                     </div>
                                 )}
+                            </div>
+                            <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <input
+                                        type="checkbox"
+                                        id="allow_multiple"
+                                        checked={currentProduct.allow_multiple || false}
+                                        onChange={e => setCurrentProduct({ ...currentProduct, allow_multiple: e.target.checked })}
+                                        style={{ marginRight: '0.5rem' }}
+                                    />
+                                    <label htmlFor="allow_multiple" style={{ fontWeight: 'bold' }}>Abilita "più di uno"</label>
+                                </div>
+                                <small style={{ display: 'block', marginTop: '0.25rem', color: '#666' }}>
+                                    Se abilitato, permette di aggiungere il prodotto più volte (mostrando un contatore). Se disabilitato, il tasto diventa "Aggiunto".
+                                </small>
                             </div>
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                                 <button type="button" className="btn btn-outline" onClick={() => setIsEditing(false)}>Annulla</button>
