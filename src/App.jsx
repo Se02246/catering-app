@@ -8,19 +8,8 @@ import { Lock } from 'lucide-react';
 import './styles/index.css';
 
 function AppContent() {
-  const location = useLocation();
-  const isHomePage = location.pathname === '/';
-
   return (
     <div className="app-container">
-      {/* Mobile Header */}
-      <div className="mobile-header">
-        <Link to="/admin" className="hamburger-btn" style={{ color: 'var(--color-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Lock size={24} />
-        </Link>
-        {!isHomePage && <h3>Catering App</h3>}
-      </div>
-
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
