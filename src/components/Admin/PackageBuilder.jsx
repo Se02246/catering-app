@@ -303,7 +303,18 @@ const PackageBuilder = () => {
                         <h3 style={{ marginBottom: '0.5rem' }}>{pkg.name}</h3>
                         <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem', flex: 1 }}>{pkg.description}</p>
                         <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-primary)' }}>
-                            € {pkg.total_price}
+                            {pkg.discount_percentage > 0 ? (
+                                <div>
+                                    <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1rem', marginRight: '0.5rem' }}>
+                                        € {pkg.total_price}
+                                    </span>
+                                    <span>
+                                        € {(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
+                                    </span>
+                                </div>
+                            ) : (
+                                <span>€ {pkg.total_price}</span>
+                            )}
                         </div>
                         <div style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
                             <strong>Include:</strong>

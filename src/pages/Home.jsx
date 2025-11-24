@@ -34,7 +34,7 @@ const Home = () => {
 
             <section>
                 <h2 style={{ marginBottom: '2rem', display: 'inline-block', paddingBottom: '0.5rem', borderBottom: '2px solid var(--color-primary)' }}>
-                    I Nostri Pacchetti
+                    Pacchetti
                 </h2>
 
                 {loading && <p style={{ color: 'var(--color-text)' }}>Caricamento pacchetti...</p>}
