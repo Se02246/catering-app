@@ -59,18 +59,18 @@ const Home = () => {
                                     <h3 style={{ marginBottom: '0.5rem', color: 'var(--color-text)' }}>{pkg.name}</h3>
                                     <p style={{ marginBottom: '1.5rem', color: 'var(--color-text-muted)', flexGrow: 1, lineHeight: '1.6' }}>{pkg.description}</p>
                                     <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                                             {pkg.discount_percentage > 0 ? (
                                                 <>
-                                                    <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1rem', marginRight: '0.5rem' }}>
-                                                        € {pkg.total_price}
+                                                    <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+                                                        €&nbsp;{pkg.total_price}
                                                     </span>
                                                     <span style={{ fontWeight: '800', fontSize: '1.5rem', color: '#e63946' }}>
-                                                        € {(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
+                                                        €&nbsp;{(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
                                                     </span>
                                                 </>
                                             ) : (
-                                                <p style={{ fontWeight: '800', fontSize: '1.5rem', color: 'var(--color-primary-dark)' }}>€ {pkg.total_price}</p>
+                                                <p style={{ fontWeight: '800', fontSize: '1.5rem', color: 'var(--color-primary-dark)', margin: 0 }}>€&nbsp;{pkg.total_price}</p>
                                             )}
                                         </div>
                                         <button className="btn btn-primary" onClick={() => setSelectedPackage(pkg)}>Dettagli</button>
@@ -111,18 +111,18 @@ const Home = () => {
                         </ul>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
-                            <div>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                                 {selectedPackage.discount_percentage > 0 ? (
                                     <>
-                                        <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1.2rem', marginRight: '0.5rem' }}>
-                                            € {selectedPackage.total_price}
+                                        <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '0.2rem' }}>
+                                            €&nbsp;{selectedPackage.total_price}
                                         </span>
                                         <span style={{ fontSize: '2rem', fontWeight: '800', color: '#e63946' }}>
-                                            € {(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
+                                            €&nbsp;{(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
                                         </span>
                                     </>
                                 ) : (
-                                    <span style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {selectedPackage.total_price}</span>
+                                    <span style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€&nbsp;{selectedPackage.total_price}</span>
                                 )}
                             </div>
                             <button className="btn btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }} onClick={() => {
