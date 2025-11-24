@@ -24,7 +24,17 @@ const Login = () => {
     };
 
     return (
-        <div className="container" style={{ maxWidth: '400px', marginTop: '4rem' }}>
+        <div className="container" style={{ maxWidth: '400px', marginTop: '4rem', position: 'relative' }}>
+            <button
+                onClick={() => navigate('/')}
+                className="btn btn-outline"
+                style={{ position: 'absolute', top: '-3rem', left: '0', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: 'none', color: 'var(--color-primary-dark)' }}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Torna alla Home
+            </button>
             <div style={{ padding: '2rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-md)' }}>
                 <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>Admin Login</h1>
                 <form onSubmit={handleLogin}>
