@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
@@ -6,10 +6,17 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            navigate('/admin');
+        }
+    }, [navigate]);
+
     const handleLogin = (e) => {
         e.preventDefault();
         if (username === 'admin' && password === '160902Se!') {
-            localStorage.setItem('isAdmin', 'true');
+            localStorage.setItem('token', 'admin-token');
             navigate('/admin');
         } else {
             alert('Credenziali non valide');
