@@ -20,6 +20,14 @@ const ProductManager = () => {
         }
     };
 
+    const resetForm = () => {
+        setCurrentProduct({
+            name: '', description: '', price_per_kg: '', image_url: '',
+            pieces_per_kg: '', min_order_quantity: '', order_increment: '',
+            show_servings: false, servings_per_unit: '', is_visible: true, allow_multiple: false
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -41,11 +49,7 @@ const ProductManager = () => {
                 await api.addProduct(productToSave);
             }
             setIsEditing(false);
-            setCurrentProduct({
-                name: '', description: '', price_per_kg: '', image_url: '',
-                pieces_per_kg: '', min_order_quantity: '', order_increment: '',
-                show_servings: false, servings_per_unit: '', is_visible: true, allow_multiple: false
-            });
+            resetForm();
             loadProducts();
         } catch (err) {
             console.error(err);
@@ -74,7 +78,7 @@ const ProductManager = () => {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h2>Gestione Prodotti</h2>
-                <button className="btn btn-primary" onClick={() => setIsEditing(true)}>
+                <button className="btn btn-primary" onClick={() => { resetForm(); setIsEditing(true); }}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
                     Nuovo Prodotto
                 </button>
@@ -201,7 +205,7 @@ const ProductManager = () => {
                                 </small>
                             </div>
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                                <button type="button" className="btn btn-outline" onClick={() => setIsEditing(false)}>Annulla</button>
+                                <button type="button" className="btn btn-outline" onClick={() => { setIsEditing(false); resetForm(); }}>Annulla</button>
                                 <button type="submit" className="btn btn-primary">Salva</button>
                             </div>
                         </form>
