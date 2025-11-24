@@ -7,7 +7,17 @@ const AdminDashboard = () => {
 
     return (
         <div className="container" style={{ position: 'relative' }}>
-            <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+            <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.5rem' }}>
+                <button
+                    onClick={() => {
+                        localStorage.removeItem('token');
+                        window.location.href = '/login';
+                    }}
+                    className="btn btn-outline"
+                    style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-primary)', color: 'var(--color-primary)' }}
+                >
+                    Logout
+                </button>
                 <button
                     onClick={() => window.location.href = '/'}
                     className="btn btn-outline"

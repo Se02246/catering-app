@@ -22,7 +22,7 @@ const QuoteBuilder = () => {
                     price_per_kg: parseFloat(p.price_per_kg),
                     pieces_per_kg: p.pieces_per_kg ? parseFloat(p.pieces_per_kg) : null,
                     min_order_quantity: p.min_order_quantity ? parseFloat(p.min_order_quantity) : 1,
-                    order_increment: p.order_increment ? parseFloat(p.order_increment) : 1,
+                    order_increment: p.order_increment !== undefined ? parseFloat(p.order_increment) : 1,
                     show_servings: Boolean(p.show_servings),
                     servings_per_unit: p.servings_per_unit ? parseFloat(p.servings_per_unit) : null,
                     allow_multiple: Boolean(p.allow_multiple)
@@ -64,7 +64,8 @@ const QuoteBuilder = () => {
     const updateQuantity = (instanceId, delta) => {
         setCart(cart.map(item => {
             if (item.instanceId === instanceId) {
-                const increment = item.order_increment || 1;
+                const increment = item.order_increment !== undefined ? item.order_increment : 1;
+                if (increment === 0) return item; // No changes allowed if increment is 0
                 const minQty = item.min_order_quantity || 1;
                 // delta is 1 or -1, multiply by increment
                 const change = delta * increment;
@@ -198,13 +199,17 @@ const QuoteBuilder = () => {
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => updateQuantity(item.instanceId, -1)}>
-                                            <Minus size={14} />
-                                        </button>
+                                        {item.order_increment !== 0 && (
+                                            <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => updateQuantity(item.instanceId, -1)}>
+                                                <Minus size={14} />
+                                            </button>
+                                        )}
                                         <span style={{ minWidth: '2rem', textAlign: 'center' }}>{item.quantity}</span>
-                                        <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => updateQuantity(item.instanceId, 1)}>
-                                            <Plus size={14} />
-                                        </button>
+                                        {item.order_increment !== 0 && (
+                                            <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => updateQuantity(item.instanceId, 1)}>
+                                                <Plus size={14} />
+                                            </button>
+                                        )}
                                         <button className="btn btn-outline" style={{ padding: '0.25rem', color: 'red', borderColor: 'red' }} onClick={() => updateQuantity(item.instanceId, -1000)}> {/* Hack to force remove */}
                                             <Trash2 size={14} />
                                         </button>

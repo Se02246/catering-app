@@ -33,9 +33,19 @@ const Header = () => {
         <header style={{ textAlign: 'center', marginBottom: '3rem', paddingTop: '2rem', position: 'relative' }}>
             {/* Admin Lock Icon - Absolute positioned */}
             <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
-                <Link to="/admin" style={{ color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem' }}>
+                <div
+                    onClick={() => {
+                        const token = localStorage.getItem('token');
+                        if (token) {
+                            navigate('/admin');
+                        } else {
+                            navigate('/login');
+                        }
+                    }}
+                    style={{ color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', cursor: 'pointer' }}
+                >
                     <Lock size={24} />
-                </Link>
+                </div>
             </div>
 
             <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem', color: 'var(--color-primary-dark)' }}>Muse Catering</h1>
