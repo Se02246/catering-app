@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { Trash2, Edit, Plus } from 'lucide-react';
+import { Trash2, Edit, Plus, Eye, EyeOff } from 'lucide-react';
 
 const ProductManager = () => {
     const [products, setProducts] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '' });
+    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', is_visible: true });
 
     useEffect(() => {
         loadProducts();
@@ -30,7 +30,8 @@ const ProductManager = () => {
                 min_order_quantity: currentProduct.min_order_quantity ? parseFloat(currentProduct.min_order_quantity) : 1,
                 order_increment: currentProduct.order_increment ? parseFloat(currentProduct.order_increment) : 1,
                 show_servings: currentProduct.show_servings || false,
-                servings_per_unit: currentProduct.servings_per_unit ? parseFloat(currentProduct.servings_per_unit) : null
+                servings_per_unit: currentProduct.servings_per_unit ? parseFloat(currentProduct.servings_per_unit) : null,
+                is_visible: currentProduct.is_visible !== undefined ? currentProduct.is_visible : true
             };
 
             if (currentProduct.id) {
@@ -42,7 +43,7 @@ const ProductManager = () => {
             setCurrentProduct({
                 name: '', description: '', price_per_kg: '', image_url: '',
                 pieces_per_kg: '', min_order_quantity: '', order_increment: '',
-                show_servings: false, servings_per_unit: ''
+                show_servings: false, servings_per_unit: '', is_visible: true
             });
             loadProducts();
         } catch (err) {
@@ -55,6 +56,16 @@ const ProductManager = () => {
         if (window.confirm('Are you sure?')) {
             await api.deleteProduct(id);
             loadProducts();
+        }
+    };
+
+    const toggleVisibility = async (product) => {
+        try {
+            await api.updateProduct(product.id, { ...product, is_visible: !product.is_visible });
+            loadProducts();
+        } catch (err) {
+            console.error('Failed to toggle visibility', err);
+            alert('Errore durante l\'aggiornamento della visibilità');
         }
     };
 
@@ -186,7 +197,8 @@ const ProductManager = () => {
                 {products.map(p => (
                     <div key={p.id} style={{
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-sm)'
+                        padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-sm)',
+                        opacity: p.is_visible === false ? 0.6 : 1
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             {p.image_url && (
@@ -198,11 +210,17 @@ const ProductManager = () => {
                                 />
                             )}
                             <div>
-                                <h4 style={{ margin: 0 }}>{p.name}</h4>
+                                <h4 style={{ margin: 0 }}>
+                                    {p.name}
+                                    {p.is_visible === false && <span style={{ fontSize: '0.8rem', color: 'red', marginLeft: '0.5rem' }}>(Nascosto)</span>}
+                                </h4>
                                 <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>€ {p.price_per_kg} / kg</p>
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button className="btn btn-outline" onClick={() => toggleVisibility(p)} title={p.is_visible !== false ? "Nascondi" : "Mostra"}>
+                                {p.is_visible !== false ? <Eye size={16} /> : <EyeOff size={16} />}
+                            </button>
                             <button className="btn btn-outline" onClick={() => { setCurrentProduct(p); setIsEditing(true); }}>
                                 <Edit size={16} />
                             </button>
