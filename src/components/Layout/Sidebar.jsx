@@ -29,7 +29,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             flexDirection: 'column',
         }}>
             <div style={{ padding: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '1.8rem', color: 'white', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>Muse</h2>
+                <h2 style={{ fontSize: '1.8rem', color: 'white', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>Catering App</h2>
                 <button
                     onClick={onClose}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'none', color: 'white' }}
