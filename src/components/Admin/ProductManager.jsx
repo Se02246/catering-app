@@ -5,7 +5,7 @@ import { Trash2, Edit, Plus, Eye, EyeOff } from 'lucide-react';
 const ProductManager = () => {
     const [products, setProducts] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', is_visible: true, allow_multiple: false });
+    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', is_visible: true, allow_multiple: false, max_order_quantity: '' });
 
     useEffect(() => {
         loadProducts();
@@ -23,7 +23,7 @@ const ProductManager = () => {
     const resetForm = () => {
         setCurrentProduct({
             name: '', description: '', price_per_kg: '', image_url: '',
-            pieces_per_kg: '', min_order_quantity: '', order_increment: '',
+            pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
             show_servings: false, servings_per_unit: '', is_visible: true, allow_multiple: false
         });
     };
@@ -40,7 +40,9 @@ const ProductManager = () => {
                 show_servings: currentProduct.show_servings || false,
                 servings_per_unit: currentProduct.servings_per_unit ? parseFloat(currentProduct.servings_per_unit) : null,
                 is_visible: currentProduct.is_visible !== undefined ? currentProduct.is_visible : true,
-                allow_multiple: currentProduct.allow_multiple || false
+                is_visible: currentProduct.is_visible !== undefined ? currentProduct.is_visible : true,
+                allow_multiple: currentProduct.allow_multiple || false,
+                max_order_quantity: currentProduct.max_order_quantity ? parseFloat(currentProduct.max_order_quantity) : null
             };
 
             if (currentProduct.id) {
@@ -160,6 +162,16 @@ const ProductManager = () => {
                                         placeholder="Default 1"
                                     />
                                 </div>
+                            </div>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label>Massimo Ordine</label>
+                                <input
+                                    type="number" step="0.1"
+                                    style={{ width: '100%', padding: '0.5rem' }}
+                                    value={currentProduct.max_order_quantity || ''}
+                                    onChange={e => setCurrentProduct({ ...currentProduct, max_order_quantity: e.target.value })}
+                                    placeholder="Lascia vuoto per infinito"
+                                />
                             </div>
 
                             <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
