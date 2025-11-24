@@ -198,33 +198,34 @@ const ProductManager = () => {
                     <div key={p.id} style={{
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                         padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-sm)',
-                        opacity: p.is_visible === false ? 0.6 : 1
+                        opacity: p.is_visible === false ? 0.6 : 1,
+                        flexWrap: 'wrap', gap: '1rem'
                     }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '200px' }}>
                             {p.image_url && (
                                 <img
                                     src={p.image_url}
                                     alt={p.name}
-                                    style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
+                                    style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }}
                                     onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50?text=No+Img'; }}
                                 />
                             )}
-                            <div>
-                                <h4 style={{ margin: 0 }}>
+                            <div style={{ minWidth: 0 }}>
+                                <h4 style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {p.name}
                                     {p.is_visible === false && <span style={{ fontSize: '0.8rem', color: 'red', marginLeft: '0.5rem' }}>(Nascosto)</span>}
                                 </h4>
                                 <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>€ {p.price_per_kg} / kg</p>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button className="btn btn-outline" onClick={() => toggleVisibility(p)} title={p.is_visible !== false ? "Nascondi" : "Mostra"}>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                            <button className="btn btn-outline" style={{ padding: '0.5rem' }} onClick={() => toggleVisibility(p)} title={p.is_visible !== false ? "Nascondi" : "Mostra"}>
                                 {p.is_visible !== false ? <Eye size={16} /> : <EyeOff size={16} />}
                             </button>
-                            <button className="btn btn-outline" onClick={() => { setCurrentProduct(p); setIsEditing(true); }}>
+                            <button className="btn btn-outline" style={{ padding: '0.5rem' }} onClick={() => { setCurrentProduct(p); setIsEditing(true); }}>
                                 <Edit size={16} />
                             </button>
-                            <button className="btn btn-outline" style={{ color: 'red', borderColor: 'red' }} onClick={() => handleDelete(p.id)}>
+                            <button className="btn btn-outline" style={{ padding: '0.5rem', color: 'red', borderColor: 'red' }} onClick={() => handleDelete(p.id)}>
                                 <Trash2 size={16} />
                             </button>
                         </div>
