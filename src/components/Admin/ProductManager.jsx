@@ -36,7 +36,7 @@ const ProductManager = () => {
                 price_per_kg: currentProduct.price_per_kg ? parseFloat(currentProduct.price_per_kg) : 0,
                 pieces_per_kg: currentProduct.pieces_per_kg ? parseFloat(currentProduct.pieces_per_kg) : null,
                 min_order_quantity: currentProduct.min_order_quantity ? parseFloat(currentProduct.min_order_quantity) : 1,
-                order_increment: currentProduct.order_increment ? parseFloat(currentProduct.order_increment) : 1,
+                order_increment: (currentProduct.order_increment !== '' && currentProduct.order_increment !== null && currentProduct.order_increment !== undefined) ? parseFloat(currentProduct.order_increment) : 1,
                 show_servings: currentProduct.show_servings || false,
                 servings_per_unit: currentProduct.servings_per_unit ? parseFloat(currentProduct.servings_per_unit) : null,
                 is_visible: currentProduct.is_visible !== undefined ? currentProduct.is_visible : true,
