@@ -32,7 +32,7 @@ const Header = () => {
     return (
         <header style={{ textAlign: 'center', marginBottom: '3rem', paddingTop: '2rem', position: 'relative' }}>
             {/* Admin Lock Icon - Absolute positioned */}
-            <div style={{ position: 'absolute', top: '1rem', left: '1rem' }}>
+            <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
                 <Link to="/admin" style={{ color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem' }}>
                     <Lock size={24} />
                 </Link>
