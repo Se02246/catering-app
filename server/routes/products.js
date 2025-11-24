@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
     try {
         const result = await pool.query(
             'INSERT INTO products (name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment, show_servings, servings_per_unit, is_visible, allow_multiple) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
-            [name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity || 1, order_increment || 1, show_servings || false, servings_per_unit, is_visible !== undefined ? is_visible : true, req.body.allow_multiple || false]
+            [name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity || 1, (order_increment !== undefined && order_increment !== null) ? order_increment : 1, show_servings || false, servings_per_unit, is_visible !== undefined ? is_visible : true, req.body.allow_multiple || false]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -36,7 +36,7 @@ router.put('/:id', async (req, res) => {
     try {
         const result = await pool.query(
             'UPDATE products SET name = $1, description = $2, price_per_kg = $3, image_url = $4, pieces_per_kg = $5, min_order_quantity = $6, order_increment = $7, show_servings = $8, servings_per_unit = $9, is_visible = $10, allow_multiple = $11 WHERE id = $12 RETURNING *',
-            [name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity || 1, order_increment || 1, show_servings || false, servings_per_unit, is_visible !== undefined ? is_visible : true, allow_multiple || false, id]
+            [name, description, price_per_kg, image_url, pieces_per_kg, min_order_quantity || 1, (order_increment !== undefined && order_increment !== null) ? order_increment : 1, show_servings || false, servings_per_unit, is_visible !== undefined ? is_visible : true, allow_multiple || false, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Product not found' });
