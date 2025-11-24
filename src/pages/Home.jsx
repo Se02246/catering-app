@@ -103,9 +103,16 @@ const Home = () => {
                         <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem', color: 'var(--color-primary)' }}>Cosa include</h3>
                         <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem' }}>
                             {selectedPackage.items && selectedPackage.items.map((item, idx) => (
-                                <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                                    <span style={{ color: 'var(--color-text)' }}>{item.name}</span>
-                                    <span style={{ fontWeight: 'bold', color: 'var(--color-primary-dark)' }}>{item.quantity} kg</span>
+                                <li key={idx} style={{ padding: '0.75rem 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ color: 'var(--color-text)', fontWeight: '600' }}>{item.name}</span>
+                                        <span style={{ fontWeight: 'bold', color: 'var(--color-primary-dark)' }}>{item.quantity} kg</span>
+                                    </div>
+                                    {item.description && (
+                                        <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
+                                            {item.description}
+                                        </p>
+                                    )}
                                 </li>
                             ))}
                         </ul>

@@ -6,6 +6,7 @@ const QuoteBuilder = () => {
     const [products, setProducts] = useState([]);
     const [cart, setCart] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     useEffect(() => {
         loadProducts();
@@ -124,11 +125,17 @@ const QuoteBuilder = () => {
                 <h2 style={{ marginBottom: '1rem' }}>Seleziona Prodotti</h2>
                 <div className="grid-responsive" style={{ gap: '1rem' }}>
                     {products.map(p => (
-                        <div key={p.id} style={{
-                            padding: '1rem', border: '1px solid rgba(175, 68, 72, 0.1)', borderRadius: '8px',
-                            backgroundColor: 'rgba(255, 255, 255, 0.6)', // Off-white / Glass effect
-                            display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
-                        }}>
+                        <div key={p.id}
+                            style={{
+                                padding: '1rem', border: '1px solid rgba(175, 68, 72, 0.1)', borderRadius: '8px',
+                                backgroundColor: 'rgba(255, 255, 255, 0.6)', // Off-white / Glass effect
+                                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                                cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                            }}
+                            onClick={() => setSelectedProduct(p)}
+                            onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
+                            onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                        >
                             {p.image_url && (
                                 <img
                                     src={p.image_url}
@@ -155,7 +162,7 @@ const QuoteBuilder = () => {
                                 <button
                                     className={`btn ${!p.allow_multiple && cart.find(item => item.id === p.id) ? 'btn-primary' : 'btn-outline'}`}
                                     style={{ width: p.allow_multiple ? 'auto' : '100%', flex: p.allow_multiple ? 1 : 'none' }}
-                                    onClick={() => addToCart(p)}
+                                    onClick={(e) => { e.stopPropagation(); addToCart(p); }}
                                 >
                                     {!p.allow_multiple && cart.find(item => item.id === p.id) ? 'Aggiunto' : 'Aggiungi'}
                                 </button>
@@ -223,6 +230,63 @@ const QuoteBuilder = () => {
                     </>
                 )}
             </div>
+            {/* Product Details Modal */}
+            {selectedProduct && (
+                <div className="modal-overlay" onClick={() => setSelectedProduct(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>{selectedProduct.name}</h2>
+                            <button className="btn btn-outline" style={{ borderColor: 'var(--color-text-muted)', color: 'var(--color-text-muted)', padding: '0.5rem 1rem' }} onClick={() => setSelectedProduct(null)}>Chiudi</button>
+                        </div>
+
+                        {selectedProduct.image_url && (
+                            <img
+                                src={selectedProduct.image_url}
+                                alt={selectedProduct.name}
+                                style={{ width: '100%', height: '300px', objectFit: 'cover', borderRadius: '16px', marginBottom: '2rem', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
+                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400?text=No+Img'; }}
+                            />
+                        )}
+
+                        <div style={{ marginBottom: '2rem' }}>
+                            <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--color-text)', marginBottom: '1rem' }}>
+                                {selectedProduct.description || 'Nessuna descrizione disponibile.'}
+                            </p>
+                            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                                <div>
+                                    <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Prezzo</span>
+                                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>€ {selectedProduct.price_per_kg} / kg</span>
+                                </div>
+                                {selectedProduct.pieces_per_kg && (
+                                    <div>
+                                        <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Pezzi per Kg</span>
+                                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{selectedProduct.pieces_per_kg}</span>
+                                    </div>
+                                )}
+                                {selectedProduct.show_servings && selectedProduct.servings_per_unit && (
+                                    <div>
+                                        <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Porzioni</span>
+                                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Per {selectedProduct.servings_per_unit} persone / unità</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
+                            <button
+                                className="btn btn-primary"
+                                style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}
+                                onClick={() => {
+                                    addToCart(selectedProduct);
+                                    setSelectedProduct(null);
+                                }}
+                            >
+                                Aggiungi al Preventivo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

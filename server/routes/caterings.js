@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
         // In production, use a JOIN or JSON_AGG for better performance
         for (let catering of caterings) {
             const itemsResult = await pool.query(
-                `SELECT ci.product_id, ci.quantity, p.name, p.price_per_kg, p.image_url 
+                `SELECT ci.product_id, ci.quantity, p.name, p.description, p.price_per_kg, p.image_url 
          FROM catering_items ci 
          JOIN products p ON ci.product_id = p.id 
          WHERE ci.catering_id = $1`,
