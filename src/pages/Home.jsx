@@ -32,6 +32,17 @@ const Home = () => {
         fetchPackages();
     }, []);
 
+    React.useEffect(() => {
+        if (selectedPackage) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [selectedPackage]);
+
     return (
         <div className="container">
             <Header />
@@ -52,7 +63,10 @@ const Home = () => {
                             packages.map((pkg) => (
                                 <div key={pkg.id} className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s ease' }}>
                                     {pkg.image_url && (
-                                        <div style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '1.5rem', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}>
+                                        <div
+                                            style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '1.5rem', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', cursor: 'pointer' }}
+                                            onClick={() => setSelectedPackage(pkg)}
+                                        >
                                             <img
                                                 src={pkg.image_url}
                                                 alt={pkg.name}

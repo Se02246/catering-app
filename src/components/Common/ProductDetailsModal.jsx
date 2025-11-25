@@ -1,6 +1,13 @@
 import React from 'react';
 
 const ProductDetailsModal = ({ product, onClose, onAddToCart }) => {
+    React.useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
+
     if (!product) return null;
 
     return (
