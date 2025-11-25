@@ -1,14 +1,14 @@
 import React from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Lock, Download } from 'lucide-react';
-import useInstallPrompt from '../../hooks/useInstallPrompt';
+import { useInstallPromptContext } from '../../context/InstallPromptContext';
 
 const Header = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const isHome = location.pathname === '/';
     const isQuote = location.pathname === '/quote';
-    const { showPrompt, handleInstallClick } = useInstallPrompt();
+    const { showPrompt, handleInstallClick } = useInstallPromptContext();
 
     const scrollToPackages = () => {
         if (isHome) {
@@ -114,18 +114,18 @@ const Header = () => {
                     <button
                         onClick={handleInstallClick}
                         style={{
-                            padding: '0.8rem 1.5rem',
-                            fontSize: '1rem',
-                            fontWeight: '600',
+                            padding: '1rem 2rem',
+                            fontSize: '1.2rem',
+                            fontWeight: 'bold',
                             color: 'white',
                             backgroundColor: 'var(--color-primary-dark)',
-                            border: 'none',
-                            borderRadius: 'var(--radius-full)',
+                            border: '2px solid var(--color-primary-dark)',
+                            borderRadius: 'var(--radius-md)',
                             cursor: 'pointer',
                             boxShadow: 'var(--shadow-sm)',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '0.5rem',
+                            gap: '0.8rem',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseOver={e => {
@@ -137,7 +137,7 @@ const Header = () => {
                             e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
                         }}
                     >
-                        <Download size={18} />
+                        <Download size={20} />
                         Installa App
                     </button>
                 </div>

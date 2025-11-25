@@ -6,6 +6,7 @@ import CreateQuote from './pages/CreateQuote';
 import Login from './pages/Login';
 import { Lock } from 'lucide-react';
 import './styles/index.css';
+import { InstallPromptProvider } from './context/InstallPromptContext';
 
 function AppContent() {
   return (
@@ -25,7 +26,9 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AppContent />
+      <InstallPromptProvider>
+        <AppContent />
+      </InstallPromptProvider>
     </Router>
   );
 }
