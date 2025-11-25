@@ -9,6 +9,15 @@ const ImageUpload = ({ onUpload, images = [] }) => {
     // Ensure images is always an array
     const imageList = Array.isArray(images) ? images : (images ? [images] : []);
 
+    const onUploadRef = useRef(onUpload);
+    const imagesRef = useRef(images);
+
+    // Update refs whenever props change
+    useEffect(() => {
+        onUploadRef.current = onUpload;
+        imagesRef.current = images;
+    }, [onUpload, images]);
+
     useEffect(() => {
         cloudinaryRef.current = window.cloudinary;
         widgetRef.current = cloudinaryRef.current.createUploadWidget({
@@ -40,11 +49,12 @@ const ImageUpload = ({ onUpload, images = [] }) => {
                 // Use secure_url and add optimization params
                 const optimizedUrl = result.info.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
 
-                // Add new image to the list
-                onUpload([...imageList, optimizedUrl]);
+                // Add new image to the list using the ref
+                const currentImages = Array.isArray(imagesRef.current) ? imagesRef.current : (imagesRef.current ? [imagesRef.current] : []);
+                onUploadRef.current([...currentImages, optimizedUrl]);
             }
         });
-    }, [onUpload, imageList]);
+    }, []); // Empty dependency array: initialize only once
 
     const handleRemove = (indexToRemove) => {
         const newImages = imageList.filter((_, index) => index !== indexToRemove);
