@@ -1,11 +1,8 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Lock, LogOut, X, Download } from 'lucide-react';
-import useInstallPrompt from '../../hooks/useInstallPrompt';
+import { Home, FileText, Lock, LogOut, X } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const location = useLocation();
-    const { showPrompt, handleInstallClick } = useInstallPrompt();
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
     const isActive = (path) => location.pathname === path;
@@ -50,25 +47,6 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <FileText size={20} style={{ marginRight: '12px' }} />
                     Crea Preventivo
                 </Link>
-                {showPrompt && (
-                    <button
-                        onClick={handleInstallClick}
-                        style={{
-                            ...linkStyle('install-button'), // Use same style base
-                            width: '100%',
-                            textAlign: 'left',
-                            background: 'transparent',
-                            border: 'none',
-                            borderLeft: '4px solid transparent',
-                            cursor: 'pointer',
-                            fontSize: 'inherit',
-                            fontFamily: 'inherit'
-                        }}
-                    >
-                        <Download size={20} style={{ marginRight: '12px' }} />
-                        Installa App
-                    </button>
-                )}
                 {!isAdmin && (
                     <Link to="/login" style={linkStyle('/login')} onClick={onClose}>
                         <Lock size={20} style={{ marginRight: '12px' }} />

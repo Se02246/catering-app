@@ -1,12 +1,14 @@
 import React from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Lock } from 'lucide-react';
+import { Lock, Download } from 'lucide-react';
+import useInstallPrompt from '../../hooks/useInstallPrompt';
 
 const Header = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const isHome = location.pathname === '/';
     const isQuote = location.pathname === '/quote';
+    const { showPrompt, handleInstallClick } = useInstallPrompt();
 
     const scrollToPackages = () => {
         if (isHome) {
@@ -105,6 +107,41 @@ const Header = () => {
                     Crea preventivo
                 </button>
             </div>
+
+            {/* PWA Install Button */}
+            {showPrompt && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+                    <button
+                        onClick={handleInstallClick}
+                        style={{
+                            padding: '0.8rem 1.5rem',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            color: 'white',
+                            backgroundColor: 'var(--color-primary-dark)',
+                            border: 'none',
+                            borderRadius: 'var(--radius-full)',
+                            cursor: 'pointer',
+                            boxShadow: 'var(--shadow-sm)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseOver={e => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                        }}
+                        onMouseOut={e => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                        }}
+                    >
+                        <Download size={18} />
+                        Installa App
+                    </button>
+                </div>
+            )}
         </header>
     );
 };
