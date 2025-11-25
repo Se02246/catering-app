@@ -143,31 +143,43 @@ const Home = () => {
                         <p style={{ fontSize: '1.1rem', marginBottom: '2rem', lineHeight: '1.8', color: 'var(--color-text)' }}>{selectedPackage.description}</p>
 
                         <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem', color: 'var(--color-primary)' }}>Cosa include</h3>
-                        <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2.5rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
                             {selectedPackage.items && selectedPackage.items.map((item, idx) => (
-                                <li key={idx} style={{ padding: '0.75rem 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: 'var(--color-text)', fontWeight: '600' }}>{item.name}</span>
-                                        <span style={{ fontWeight: 'bold', color: 'var(--color-primary-dark)' }}>{item.quantity} kg</span>
+                                <div
+                                    key={idx}
+                                    style={{
+                                        padding: '0.75rem',
+                                        border: '1px solid rgba(175, 68, 72, 0.1)',
+                                        borderRadius: '8px',
+                                        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                                        cursor: 'pointer',
+                                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '0.5rem'
+                                    }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedProduct(item);
+                                    }}
+                                    onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
+                                    onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                                >
+                                    <div style={{ width: '100%', height: '100px', borderRadius: '4px', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
+                                        <img
+                                            src={item.image_url || (item.images && item.images[0]) || 'https://placehold.co/300x200?text=No+Img'}
+                                            alt={item.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/300x200?text=No+Img'; }}
+                                        />
                                     </div>
-                                    {item.description && (
-                                        <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
-                                            {item.description}
-                                        </p>
-                                    )}
-                                    <button
-                                        className="btn btn-outline"
-                                        style={{ marginTop: '0.5rem', fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedProduct(item);
-                                        }}
-                                    >
-                                        Vedi Dettagli Prodotto
-                                    </button>
-                                </li>
+                                    <div>
+                                        <div style={{ fontWeight: '600', fontSize: '0.9rem', lineHeight: '1.2', marginBottom: '0.25rem', color: 'var(--color-text)' }}>{item.name}</div>
+                                        <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>{item.quantity} kg</div>
+                                    </div>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
