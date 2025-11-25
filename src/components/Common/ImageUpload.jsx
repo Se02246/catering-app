@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 
 const ImageUpload = ({ onUpload, currentImage }) => {
     const cloudinaryRef = useRef();
@@ -53,12 +53,21 @@ const ImageUpload = ({ onUpload, currentImage }) => {
                     Carica Immagine
                 </button>
                 {currentImage && (
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <img
                             src={currentImage}
                             alt="Preview"
                             style={{ height: '50px', width: '50px', objectFit: 'cover', borderRadius: '4px' }}
                         />
+                        <button
+                            type="button"
+                            className="btn btn-outline"
+                            style={{ padding: '0.25rem', color: 'red', borderColor: 'red' }}
+                            onClick={() => onUpload('')}
+                            title="Rimuovi immagine"
+                        >
+                            <X size={16} />
+                        </button>
                     </div>
                 )}
             </div>
