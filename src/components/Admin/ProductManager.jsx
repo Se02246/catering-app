@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { Trash2, Edit, Plus, Eye, EyeOff } from 'lucide-react';
+import ImageUpload from '../Common/ImageUpload';
 
 const ProductManager = () => {
     const [products, setProducts] = useState([]);
