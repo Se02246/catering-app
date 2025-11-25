@@ -139,7 +139,7 @@ const Home = () => {
                                     ))}
                                 </div>
                                 {selectedPackage.images.length > 1 && (
-                                    <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '-0.5rem' }}>
+                                    <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
                                         Scorri per vedere altre foto
                                     </div>
                                 )}
