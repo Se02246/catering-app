@@ -5,11 +5,13 @@ import AdminDashboard from './pages/AdminDashboard';
 import CreateQuote from './pages/CreateQuote';
 import Login from './pages/Login';
 import { Lock } from 'lucide-react';
+import InstallPrompt from './components/Common/InstallPrompt';
 import './styles/index.css';
 
 function AppContent() {
   return (
     <div className="app-container">
+      <InstallPrompt />
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
