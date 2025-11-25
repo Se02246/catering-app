@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import Header from '../components/Layout/Header';
+import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -9,6 +10,7 @@ const Home = () => {
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(null);
     const [selectedPackage, setSelectedPackage] = React.useState(null);
+    const [selectedProduct, setSelectedProduct] = React.useState(null);
 
     React.useEffect(() => {
         const fetchPackages = async () => {
@@ -153,6 +155,16 @@ const Home = () => {
                                             {item.description}
                                         </p>
                                     )}
+                                    <button
+                                        className="btn btn-outline"
+                                        style={{ marginTop: '0.5rem', fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedProduct(item);
+                                        }}
+                                    >
+                                        Vedi Dettagli Prodotto
+                                    </button>
                                 </li>
                             ))}
                         </ul>
@@ -193,6 +205,14 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
+            )}
+            {/* Product Details Modal (on top of Package Modal) */}
+            {selectedProduct && (
+                <ProductDetailsModal
+                    product={selectedProduct}
+                    onClose={() => setSelectedProduct(null)}
+                // No onAddToCart here as we are in Home, not QuoteBuilder
+                />
             )}
         </div>
     );
