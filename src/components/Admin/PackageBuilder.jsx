@@ -15,6 +15,7 @@ const PackageBuilder = () => {
         name: '',
         description: '',
         image_url: '',
+        images: [],
         total_price: 0,
         discount_percentage: 0,
         items: [] // { product_id, quantity, tempId }
@@ -89,6 +90,7 @@ const PackageBuilder = () => {
             name: pkg.name,
             description: pkg.description,
             image_url: pkg.image_url,
+            images: pkg.images || (pkg.image_url ? [pkg.image_url] : []),
             total_price: pkg.total_price,
             discount_percentage: pkg.discount_percentage || 0,
             items: pkg.items.map(i => ({ ...i, tempId: Date.now() + Math.random() }))
@@ -114,7 +116,7 @@ const PackageBuilder = () => {
                     setIsCreating(true);
                     setEditingId(null);
                     setEditingId(null);
-                    setNewPackage({ name: '', description: '', image_url: '', total_price: 0, discount_percentage: 0, items: [] });
+                    setNewPackage({ name: '', description: '', image_url: '', images: [], total_price: 0, discount_percentage: 0, items: [] });
                 }}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
                     Nuovo Pacchetto
@@ -241,10 +243,10 @@ const PackageBuilder = () => {
                                         placeholder="Breve descrizione..."
                                     />
 
-                                    <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Immagine</label>
+                                    <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Immagini (Trascina per riordinare)</label>
                                     <ImageUpload
-                                        currentImage={newPackage.image_url}
-                                        onUpload={(url) => setNewPackage({ ...newPackage, image_url: url })}
+                                        images={newPackage.images}
+                                        onUpload={(newImages) => setNewPackage({ ...newPackage, images: newImages })}
                                     />
                                 </div>
 

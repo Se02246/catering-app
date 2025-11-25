@@ -25,9 +25,9 @@ const QuoteBuilder = () => {
                     order_increment: p.order_increment !== undefined ? parseFloat(p.order_increment) : 1,
                     show_servings: Boolean(p.show_servings),
                     servings_per_unit: p.servings_per_unit ? parseFloat(p.servings_per_unit) : null,
-                    servings_per_unit: p.servings_per_unit ? parseFloat(p.servings_per_unit) : null,
                     allow_multiple: Boolean(p.allow_multiple),
-                    max_order_quantity: p.max_order_quantity ? parseFloat(p.max_order_quantity) : null
+                    max_order_quantity: p.max_order_quantity ? parseFloat(p.max_order_quantity) : null,
+                    images: p.images || (p.image_url ? [p.image_url] : [])
                 }));
             setProducts(parsedData);
         } catch (err) {
@@ -278,13 +278,49 @@ const QuoteBuilder = () => {
                             <button className="btn btn-outline" style={{ borderColor: 'var(--color-text-muted)', color: 'var(--color-text-muted)', padding: '0.5rem 1rem' }} onClick={() => setSelectedProduct(null)}>Chiudi</button>
                         </div>
 
-                        {selectedProduct.image_url && (
-                            <img
-                                src={selectedProduct.image_url}
-                                alt={selectedProduct.name}
-                                style={{ width: '100%', height: '300px', objectFit: 'cover', borderRadius: '16px', marginBottom: '2rem', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
-                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400?text=No+Img'; }}
-                            />
+                        {selectedProduct.images && selectedProduct.images.length > 0 ? (
+                            <div style={{ position: 'relative', marginBottom: '2rem' }}>
+                                <div style={{
+                                    display: 'flex',
+                                    overflowX: 'auto',
+                                    scrollSnapType: 'x mandatory',
+                                    gap: '1rem',
+                                    paddingBottom: '1rem',
+                                    WebkitOverflowScrolling: 'touch'
+                                }}>
+                                    {selectedProduct.images.map((img, idx) => (
+                                        <img
+                                            key={idx}
+                                            src={img}
+                                            alt={`${selectedProduct.name} ${idx + 1}`}
+                                            style={{
+                                                width: '100%',
+                                                height: '300px',
+                                                objectFit: 'cover',
+                                                borderRadius: '16px',
+                                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                                                flexShrink: 0,
+                                                scrollSnapAlign: 'center'
+                                            }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400?text=No+Img'; }}
+                                        />
+                                    ))}
+                                </div>
+                                {selectedProduct.images.length > 1 && (
+                                    <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '-0.5rem' }}>
+                                        Scorri per vedere altre foto
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            selectedProduct.image_url && (
+                                <img
+                                    src={selectedProduct.image_url}
+                                    alt={selectedProduct.name}
+                                    style={{ width: '100%', height: '300px', objectFit: 'cover', borderRadius: '16px', marginBottom: '2rem', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400?text=No+Img'; }}
+                                />
+                            )
                         )}
 
                         <div style={{ marginBottom: '2rem' }}>

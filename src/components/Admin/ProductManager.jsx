@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { Trash2, Edit, Plus, Eye, EyeOff } from 'lucide-react';
-import ImageUpload from '../Common/ImageUpload';
 
 const ProductManager = () => {
     const [products, setProducts] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', is_visible: true, allow_multiple: false, max_order_quantity: '' });
+    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', images: [], is_visible: true, allow_multiple: false, order_increment: '', max_order_quantity: '' });
 
     useEffect(() => {
         loadProducts();
@@ -23,7 +21,7 @@ const ProductManager = () => {
 
     const resetForm = () => {
         setCurrentProduct({
-            name: '', description: '', price_per_kg: '', image_url: '',
+            name: '', description: '', price_per_kg: '', image_url: '', images: [],
             pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
             show_servings: false, servings_per_unit: '', is_visible: true, allow_multiple: false
         });
@@ -124,10 +122,10 @@ const ProductManager = () => {
                                 />
                             </div>
                             <div style={{ marginBottom: '1rem' }}>
-                                <label>Immagine</label>
+                                <label>Immagini (Trascina per riordinare, la prima è la copertina)</label>
                                 <ImageUpload
-                                    currentImage={currentProduct.image_url}
-                                    onUpload={(url) => setCurrentProduct({ ...currentProduct, image_url: url })}
+                                    images={currentProduct.images}
+                                    onUpload={(newImages) => setCurrentProduct({ ...currentProduct, images: newImages })}
                                 />
                             </div>
                             <div className="grid-3-cols" style={{ marginBottom: '1rem' }}>

@@ -31,16 +31,20 @@ router.get('/', async (req, res) => {
 
 // Create a new catering package
 router.post('/', async (req, res) => {
-    const { name, description, total_price, image_url, items, discount_percentage } = req.body;
+    const { name, description, total_price, image_url, items, discount_percentage, images } = req.body;
     // items is an array of { product_id, quantity }
 
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
+        // Ensure images array is populated, fallback to image_url if needed
+        const imagesArray = images || (image_url ? [image_url] : []);
+        const mainImage = imagesArray.length > 0 ? imagesArray[0] : image_url;
+
         const cateringResult = await client.query(
-            'INSERT INTO caterings (name, description, total_price, image_url, discount_percentage) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [name, description, total_price, image_url, discount_percentage || 0]
+            'INSERT INTO caterings (name, description, total_price, image_url, discount_percentage, images) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray]
         );
         const cateringId = cateringResult.rows[0].id;
 
@@ -65,16 +69,19 @@ router.post('/', async (req, res) => {
 // Update a catering package
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, description, total_price, image_url, items, discount_percentage } = req.body;
+    const { name, description, total_price, image_url, items, discount_percentage, images } = req.body;
 
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
+        const imagesArray = images || (image_url ? [image_url] : []);
+        const mainImage = imagesArray.length > 0 ? imagesArray[0] : image_url;
+
         // Update catering details
         const cateringResult = await client.query(
-            'UPDATE caterings SET name = $1, description = $2, total_price = $3, image_url = $4, discount_percentage = $5 WHERE id = $6 RETURNING *',
-            [name, description, total_price, image_url, discount_percentage || 0, id]
+            'UPDATE caterings SET name = $1, description = $2, total_price = $3, image_url = $4, discount_percentage = $5, images = $6 WHERE id = $7 RETURNING *',
+            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, id]
         );
 
         if (cateringResult.rows.length === 0) {
