@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { Trash2, Edit, Plus, Eye, EyeOff } from 'lucide-react';
+import ImageUpload from '../Common/ImageUpload';
 
 const ProductManager = () => {
     const [products, setProducts] = useState([]);
@@ -123,12 +124,10 @@ const ProductManager = () => {
                                 />
                             </div>
                             <div style={{ marginBottom: '1rem' }}>
-                                <label>URL Immagine</label>
-                                <input
-                                    type="text"
-                                    style={{ width: '100%', padding: '0.5rem' }}
-                                    value={currentProduct.image_url}
-                                    onChange={e => setCurrentProduct({ ...currentProduct, image_url: e.target.value })}
+                                <label>Immagine</label>
+                                <ImageUpload
+                                    currentImage={currentProduct.image_url}
+                                    onUpload={(url) => setCurrentProduct({ ...currentProduct, image_url: url })}
                                 />
                             </div>
                             <div className="grid-3-cols" style={{ marginBottom: '1rem' }}>

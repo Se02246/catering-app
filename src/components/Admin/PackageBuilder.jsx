@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { Trash2, Plus, Save, Pencil } from 'lucide-react';
+import ImageUpload from '../Common/ImageUpload';
 
 const PackageBuilder = () => {
     const [packages, setPackages] = useState([]);
@@ -240,13 +241,10 @@ const PackageBuilder = () => {
                                         placeholder="Breve descrizione..."
                                     />
 
-                                    <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>URL Immagine</label>
-                                    <input
-                                        type="text"
-                                        style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
-                                        value={newPackage.image_url}
-                                        onChange={e => setNewPackage({ ...newPackage, image_url: e.target.value })}
-                                        placeholder="https://..."
+                                    <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Immagine</label>
+                                    <ImageUpload
+                                        currentImage={newPackage.image_url}
+                                        onUpload={(url) => setNewPackage({ ...newPackage, image_url: url })}
                                     />
                                 </div>
 
