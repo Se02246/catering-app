@@ -143,42 +143,48 @@ const Home = () => {
                         <p style={{ fontSize: '1.1rem', marginBottom: '2rem', lineHeight: '1.8', color: 'var(--color-text)' }}>{selectedPackage.description}</p>
 
                         <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem', color: 'var(--color-primary)' }}>Cosa include</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
-                            {selectedPackage.items && selectedPackage.items.map((item, idx) => (
-                                <div
-                                    key={idx}
-                                    style={{
-                                        padding: '0.75rem',
-                                        border: '1px solid rgba(175, 68, 72, 0.1)',
-                                        borderRadius: '8px',
-                                        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                                        cursor: 'pointer',
-                                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '0.5rem'
-                                    }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedProduct(item);
-                                    }}
-                                    onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
-                                    onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                                >
-                                    <div style={{ width: '100%', height: '100px', borderRadius: '4px', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
-                                        <img
-                                            src={item.image_url || (item.images && item.images[0]) || 'https://placehold.co/300x200?text=No+Img'}
-                                            alt={item.name}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/300x200?text=No+Img'; }}
-                                        />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2.5rem' }}>
+                            {selectedPackage.items && selectedPackage.items.map((item, idx) => {
+                                const hasImage = item.image_url || (item.images && item.images.length > 0 && item.images[0]);
+                                return (
+                                    <div
+                                        key={idx}
+                                        style={{
+                                            padding: '0.75rem',
+                                            border: '1px solid rgba(175, 68, 72, 0.1)',
+                                            borderRadius: '8px',
+                                            backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                                            cursor: 'pointer',
+                                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            gap: '1rem'
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedProduct(item);
+                                        }}
+                                        onMouseOver={e => { e.currentTarget.style.transform = 'translateX(4px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
+                                        onMouseOut={e => { e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                                    >
+                                        {hasImage && (
+                                            <div style={{ width: '60px', height: '60px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0 }}>
+                                                <img
+                                                    src={item.image_url || item.images[0]}
+                                                    alt={item.name}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                                />
+                                            </div>
+                                        )}
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: '600', fontSize: '1rem', color: 'var(--color-text)', marginBottom: '0.1rem' }}>{item.name}</div>
+                                            <div style={{ fontSize: '0.9rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>{item.quantity} kg</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div style={{ fontWeight: '600', fontSize: '0.9rem', lineHeight: '1.2', marginBottom: '0.25rem', color: 'var(--color-text)' }}>{item.name}</div>
-                                        <div style={{ fontSize: '0.85rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>{item.quantity} kg</div>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
