@@ -127,7 +127,11 @@ const ProductManager = () => {
                                 <label>Immagini (Trascina per riordinare, la prima è la copertina)</label>
                                 <ImageUpload
                                     images={currentProduct.images}
-                                    onUpload={(newImages) => setCurrentProduct({ ...currentProduct, images: newImages })}
+                                    onUpload={(newImages) => setCurrentProduct({
+                                        ...currentProduct,
+                                        images: newImages,
+                                        image_url: newImages.length > 0 ? newImages[0] : ''
+                                    })}
                                 />
                             </div>
                             <div className="grid-3-cols" style={{ marginBottom: '1rem' }}>

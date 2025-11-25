@@ -246,7 +246,11 @@ const PackageBuilder = () => {
                                     <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Immagini (Trascina per riordinare)</label>
                                     <ImageUpload
                                         images={newPackage.images}
-                                        onUpload={(newImages) => setNewPackage({ ...newPackage, images: newImages })}
+                                        onUpload={(newImages) => setNewPackage({
+                                            ...newPackage,
+                                            images: newImages,
+                                            image_url: newImages.length > 0 ? newImages[0] : ''
+                                        })}
                                     />
                                 </div>
 
