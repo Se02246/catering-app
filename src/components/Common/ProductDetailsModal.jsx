@@ -11,50 +11,49 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart }) => {
                     <button className="btn btn-outline" style={{ borderColor: 'var(--color-text-muted)', color: 'var(--color-text-muted)', padding: '0.5rem 1rem' }} onClick={onClose}>Chiudi</button>
                 </div>
 
-                {product.images && product.images.length > 0 ? (
-                    <div style={{ position: 'relative', marginBottom: '2rem' }}>
-                        <div style={{
-                            display: 'flex',
-                            overflowX: 'auto',
-                            scrollSnapType: 'x mandatory',
-                            gap: '1rem',
-                            paddingBottom: '1rem',
-                            WebkitOverflowScrolling: 'touch'
-                        }}>
-                            {product.images.map((img, idx) => (
-                                <img
-                                    key={idx}
-                                    src={img}
-                                    alt={`${product.name} ${idx + 1}`}
-                                    style={{
-                                        width: '100%',
-                                        height: '300px',
-                                        objectFit: 'cover',
-                                        borderRadius: '16px',
-                                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                                        flexShrink: 0,
-                                        scrollSnapAlign: 'center'
-                                    }}
-                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400?text=No+Img'; }}
-                                />
-                            ))}
-                        </div>
-                        {product.images.length > 1 && (
-                            <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '-0.5rem' }}>
-                                Scorri per vedere altre foto
+                {(() => {
+                    const validImages = product.images && product.images.length > 0
+                        ? product.images.filter(img => img && img.trim() !== '')
+                        : (product.image_url && product.image_url.trim() !== '' ? [product.image_url] : []);
+
+                    if (validImages.length === 0) return null;
+
+                    return (
+                        <div style={{ position: 'relative', marginBottom: '2rem' }}>
+                            <div style={{
+                                display: 'flex',
+                                overflowX: 'auto',
+                                scrollSnapType: 'x mandatory',
+                                gap: '1rem',
+                                paddingBottom: '1rem',
+                                WebkitOverflowScrolling: 'touch'
+                            }}>
+                                {validImages.map((img, idx) => (
+                                    <img
+                                        key={idx}
+                                        src={img}
+                                        alt={`${product.name} ${idx + 1}`}
+                                        style={{
+                                            width: '100%',
+                                            height: '300px',
+                                            objectFit: 'cover',
+                                            borderRadius: '16px',
+                                            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                                            flexShrink: 0,
+                                            scrollSnapAlign: 'center'
+                                        }}
+                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                    />
+                                ))}
                             </div>
-                        )}
-                    </div>
-                ) : (
-                    product.image_url && (
-                        <img
-                            src={product.image_url}
-                            alt={product.name}
-                            style={{ width: '100%', height: '300px', objectFit: 'cover', borderRadius: '16px', marginBottom: '2rem', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
-                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400?text=No+Img'; }}
-                        />
-                    )
-                )}
+                            {validImages.length > 1 && (
+                                <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '-0.5rem' }}>
+                                    Scorri per vedere altre foto
+                                </div>
+                            )}
+                        </div>
+                    );
+                })()}
 
                 <div style={{ marginBottom: '2rem' }}>
                     <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--color-text)', marginBottom: '1rem' }}>
