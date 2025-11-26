@@ -9,6 +9,18 @@ import './styles/index.css';
 import { InstallPromptProvider } from './context/InstallPromptContext';
 
 function AppContent() {
+  React.useEffect(() => {
+    const handleContextMenu = (e) => {
+      // Check if target is an image and NOT inside admin dashboard
+      if (e.target.tagName === 'IMG' && !e.target.closest('.admin-dashboard')) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    return () => document.removeEventListener('contextmenu', handleContextMenu);
+  }, []);
+
   return (
     <div className="app-container">
       <main className="main-content">
