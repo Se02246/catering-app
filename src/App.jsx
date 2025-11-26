@@ -17,8 +17,20 @@ function AppContent() {
       }
     };
 
+    const handleDragStart = (e) => {
+      // Check if target is an image and NOT inside admin dashboard
+      if (e.target.tagName === 'IMG' && !e.target.closest('.admin-dashboard')) {
+        e.preventDefault();
+      }
+    };
+
     document.addEventListener('contextmenu', handleContextMenu);
-    return () => document.removeEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('dragstart', handleDragStart);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('dragstart', handleDragStart);
+    };
   }, []);
 
   return (

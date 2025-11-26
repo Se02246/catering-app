@@ -55,11 +55,18 @@ const Header = () => {
                 Catering dolci e salati preparati con passione per i tuoi eventi speciali.
             </p>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '1.5rem',
+                maxWidth: '500px',
+                margin: '0 auto'
+            }}>
                 <button
                     onClick={scrollToPackages}
                     style={{
-                        padding: '1rem 2rem',
+                        padding: '1rem 0', // Removed horizontal padding, width handled by grid
+                        width: '100%',
                         fontSize: '1.2rem',
                         fontWeight: 'bold',
                         color: isHome ? 'white' : 'var(--color-primary-dark)',
@@ -84,7 +91,8 @@ const Header = () => {
                 <button
                     onClick={() => navigate('/quote')}
                     style={{
-                        padding: '1rem 2rem',
+                        padding: '1rem 0',
+                        width: '100%',
                         fontSize: '1.2rem',
                         fontWeight: 'bold',
                         color: isQuote ? 'white' : 'var(--color-primary-dark)',
@@ -106,15 +114,15 @@ const Header = () => {
                 >
                     Crea preventivo
                 </button>
-            </div>
 
-            {/* PWA Install Button */}
-            {showPrompt && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+                {/* PWA Install Button - Spans full width */}
+                {showPrompt && (
                     <button
                         onClick={handleInstallClick}
                         style={{
-                            padding: '1rem 2rem',
+                            gridColumn: '1 / -1',
+                            padding: '1rem 0',
+                            width: '100%',
                             fontSize: '1.2rem',
                             fontWeight: 'bold',
                             color: 'white',
@@ -125,6 +133,7 @@ const Header = () => {
                             boxShadow: 'var(--shadow-sm)',
                             display: 'flex',
                             alignItems: 'center',
+                            justifyContent: 'center',
                             gap: '0.8rem',
                             transition: 'all 0.2s ease'
                         }}
@@ -140,8 +149,8 @@ const Header = () => {
                         <Download size={20} />
                         Installa App
                     </button>
-                </div>
-            )}
+                )}
+            </div>
         </header>
     );
 };

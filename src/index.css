@@ -86,9 +86,6 @@ img {
   /* Internet Explorer/Edge */
   user-select: none;
   /* Non-prefixed version */
-  -webkit-user-drag: none;
-  /* Prevent dragging */
-  user-drag: none;
 }
 
 /* Restore for admin */
@@ -99,6 +96,4 @@ img {
   -moz-user-select: auto;
   -ms-user-select: auto;
   user-select: auto;
-  -webkit-user-drag: auto;
-  user-drag: auto;
 }
