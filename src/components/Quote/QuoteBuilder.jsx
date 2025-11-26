@@ -162,8 +162,14 @@ const QuoteBuilder = () => {
                 item.is_lactose_free ? '(senza lattosio)' : ''
             ].filter(Boolean).join(' ');
 
+            let quantityDisplay = `${item.quantity} ${unit}`;
+            if (item.pieces_per_kg) {
+                const weightInKg = item.quantity / item.pieces_per_kg;
+                quantityDisplay = `${item.quantity} pz (${weightInKg.toFixed(2)} kg)`;
+            }
+
             message += `• *${item.name}* ${dietaryInfo}${servingsText}\n`;
-            message += `  ${item.quantity} ${unit} x ${priceUnit} = € ${calculateItemPrice(item).toFixed(2)}\n\n`;
+            message += `  ${quantityDisplay} x ${priceUnit} = € ${calculateItemPrice(item).toFixed(2)}\n\n`;
 
             if (index === middleIndex) {
                 message += `• prezzo preventivo (€ ${total})\n\n`;

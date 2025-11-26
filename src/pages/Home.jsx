@@ -310,9 +310,11 @@ const Home = () => {
                                         item.is_lactose_free ? '(senza lattosio)' : ''
                                     ].filter(Boolean).join(' ');
 
-                                    message += `• ${item.name} ${dietaryInfo}: ${quantityText}\n`;
+                                    message += `• *${item.name}* ${dietaryInfo}\n`;
+                                    message += `  ${quantityText}\n\n`;
+
                                     if (index === middleIndex) {
-                                        message += `• prezzo pacchetto(€ ${finalPrice})\n`;
+                                        message += `• prezzo pacchetto(€ ${finalPrice})\n\n`;
                                     }
                                 });
 
