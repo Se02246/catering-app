@@ -205,12 +205,12 @@ const QuoteBuilder = () => {
                                 <h4 style={{ marginBottom: '0.25rem', fontSize: '1rem' }}>{p.name}</h4>
                                 <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
                                     {p.is_gluten_free && (
-                                        <span style={{ backgroundColor: '#FF9800', color: 'white', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                        <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
                                             Senza Glutine!
                                         </span>
                                     )}
                                     {p.is_lactose_free && (
-                                        <span style={{ backgroundColor: '#03A9F4', color: 'white', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                        <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
                                             Senza Lattosio!
                                         </span>
                                     )}
@@ -261,12 +261,12 @@ const QuoteBuilder = () => {
                                             {item.name}
                                             <div style={{ display: 'inline-flex', gap: '0.25rem', marginLeft: '0.5rem', flexWrap: 'wrap' }}>
                                                 {item.is_gluten_free && (
-                                                    <span style={{ backgroundColor: '#FF9800', color: 'white', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.6rem', fontWeight: 'bold' }}>
+                                                    <span style={{ color: '#FF9800', fontSize: '0.6rem', fontWeight: 'bold' }}>
                                                         Senza Glutine!
                                                     </span>
                                                 )}
                                                 {item.is_lactose_free && (
-                                                    <span style={{ backgroundColor: '#03A9F4', color: 'white', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.6rem', fontWeight: 'bold' }}>
+                                                    <span style={{ color: '#03A9F4', fontSize: '0.6rem', fontWeight: 'bold' }}>
                                                         Senza Lattosio!
                                                     </span>
                                                 )}

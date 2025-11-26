@@ -79,12 +79,12 @@ const Home = () => {
                                     <h3 style={{ marginBottom: '0.5rem', color: 'var(--color-text)' }}>{pkg.name}</h3>
                                     <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                                         {pkg.is_gluten_free && (
-                                            <span style={{ backgroundColor: '#FF9800', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                            <span style={{ color: '#FF9800', fontSize: '0.8rem', fontWeight: 'bold' }}>
                                                 Senza Glutine!
                                             </span>
                                         )}
                                         {pkg.is_lactose_free && (
-                                            <span style={{ backgroundColor: '#03A9F4', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                            <span style={{ color: '#03A9F4', fontSize: '0.8rem', fontWeight: 'bold' }}>
                                                 Senza Lattosio!
                                             </span>
                                         )}
@@ -122,12 +122,12 @@ const Home = () => {
                                 <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>{selectedPackage.name}</h2>
                                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                     {selectedPackage.is_gluten_free && (
-                                        <span style={{ backgroundColor: '#FF9800', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                        <span style={{ color: '#FF9800', fontSize: '0.9rem', fontWeight: 'bold' }}>
                                             Senza Glutine!
                                         </span>
                                     )}
                                     {selectedPackage.is_lactose_free && (
-                                        <span style={{ backgroundColor: '#03A9F4', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                        <span style={{ color: '#03A9F4', fontSize: '0.9rem', fontWeight: 'bold' }}>
                                             Senza Lattosio!
                                         </span>
                                     )}
@@ -233,12 +233,12 @@ const Home = () => {
                                                 {item.name}
                                                 <div style={{ display: 'inline-flex', gap: '0.25rem', marginLeft: '0.5rem', flexWrap: 'wrap' }}>
                                                     {item.is_gluten_free && (
-                                                        <span style={{ backgroundColor: '#FF9800', color: 'white', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                        <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
                                                             Senza Glutine!
                                                         </span>
                                                     )}
                                                     {item.is_lactose_free && (
-                                                        <span style={{ backgroundColor: '#03A9F4', color: 'white', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                        <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
                                                             Senza Lattosio!
                                                         </span>
                                                     )}

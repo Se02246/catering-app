@@ -277,6 +277,18 @@ const ProductManager = () => {
                                     {p.name}
                                     {p.is_visible === false && <span style={{ fontSize: '0.8rem', color: 'red', marginLeft: '0.5rem' }}>(Nascosto)</span>}
                                 </h4>
+                                <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                                    {p.is_gluten_free && (
+                                        <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                            Senza Glutine!
+                                        </span>
+                                    )}
+                                    {p.is_lactose_free && (
+                                        <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                            Senza Lattosio!
+                                        </span>
+                                    )}
+                                </div>
                                 <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>€ {p.price_per_kg} / kg</p>
                             </div>
                         </div>

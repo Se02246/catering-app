@@ -14,7 +14,21 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart }) => {
         <div className="modal-overlay" onClick={onClose} style={{ zIndex: 3000 }}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>{product.name}</h2>
+                    <div>
+                        <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>{product.name}</h2>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
+                            {product.is_gluten_free && (
+                                <span style={{ color: '#FF9800', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                    Senza Glutine!
+                                </span>
+                            )}
+                            {product.is_lactose_free && (
+                                <span style={{ color: '#03A9F4', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                    Senza Lattosio!
+                                </span>
+                            )}
+                        </div>
+                    </div>
                     <button className="btn btn-outline" style={{ borderColor: 'var(--color-text-muted)', color: 'var(--color-text-muted)', padding: '0.5rem 1rem' }} onClick={onClose}>Chiudi</button>
                 </div>
 
