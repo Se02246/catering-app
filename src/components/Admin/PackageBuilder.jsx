@@ -9,6 +9,7 @@ const PackageBuilder = () => {
     const [isCreating, setIsCreating] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [editingId, setEditingId] = useState(null);
+    const [discountedPriceInput, setDiscountedPriceInput] = useState('');
 
     // New Package State
     const [newPackage, setNewPackage] = useState({
@@ -75,9 +76,8 @@ const PackageBuilder = () => {
             }
             setIsCreating(false);
             setEditingId(null);
-            setEditingId(null);
             setNewPackage({ name: '', description: '', image_url: '', total_price: 0, discount_percentage: 0, items: [] });
-            loadData();
+            setDiscountedPriceInput('');
             loadData();
         } catch {
             alert('Error saving package');
@@ -86,6 +86,9 @@ const PackageBuilder = () => {
 
     const handleEdit = (pkg) => {
         setEditingId(pkg.id);
+        const price = pkg.total_price * (1 - (pkg.discount_percentage || 0) / 100);
+        setDiscountedPriceInput(pkg.discount_percentage > 0 ? price.toFixed(2) : '');
+
         setNewPackage({
             name: pkg.name,
             description: pkg.description,
@@ -115,8 +118,8 @@ const PackageBuilder = () => {
                 <button className="btn btn-primary" onClick={() => {
                     setIsCreating(true);
                     setEditingId(null);
-                    setEditingId(null);
                     setNewPackage({ name: '', description: '', image_url: '', images: [], total_price: 0, discount_percentage: 0, items: [] });
+                    setDiscountedPriceInput('');
                 }}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
                     Nuovo Pacchetto
@@ -219,7 +222,15 @@ const PackageBuilder = () => {
                                             type="number" step="0.01"
                                             style={{ flex: 1, padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
                                             value={newPackage.total_price}
-                                            onChange={e => setNewPackage({ ...newPackage, total_price: e.target.value })}
+                                            onChange={e => {
+                                                const newTotal = e.target.value;
+                                                setNewPackage({ ...newPackage, total_price: newTotal });
+                                                // Update discounted price input if percentage exists
+                                                if (newPackage.discount_percentage > 0 && newTotal) {
+                                                    const price = parseFloat(newTotal) * (1 - newPackage.discount_percentage / 100);
+                                                    setDiscountedPriceInput(price.toFixed(2));
+                                                }
+                                            }}
                                             required
                                         />
                                         <button
@@ -237,17 +248,20 @@ const PackageBuilder = () => {
                                         <input
                                             type="number" step="0.01"
                                             style={{ flex: 1, padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
-                                            value={newPackage.discount_percentage > 0
-                                                ? (newPackage.total_price * (1 - newPackage.discount_percentage / 100)).toFixed(2)
-                                                : ''}
+                                            value={discountedPriceInput}
                                             placeholder="Lascia vuoto per nessun sconto"
                                             onChange={e => {
-                                                const discountedPrice = parseFloat(e.target.value);
-                                                if (!isNaN(discountedPrice) && newPackage.total_price > 0) {
-                                                    const discount = ((1 - (discountedPrice / newPackage.total_price)) * 100);
-                                                    setNewPackage({ ...newPackage, discount_percentage: Math.max(0, discount) });
+                                                const val = e.target.value;
+                                                setDiscountedPriceInput(val);
+
+                                                const price = parseFloat(val);
+                                                const total = parseFloat(newPackage.total_price);
+
+                                                if (!isNaN(price) && !isNaN(total) && total > 0) {
+                                                    const discount = ((1 - (price / total)) * 100);
+                                                    setNewPackage(prev => ({ ...prev, discount_percentage: Math.max(0, discount) }));
                                                 } else {
-                                                    setNewPackage({ ...newPackage, discount_percentage: 0 });
+                                                    setNewPackage(prev => ({ ...prev, discount_percentage: 0 }));
                                                 }
                                             }}
                                         />
