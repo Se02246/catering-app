@@ -232,18 +232,29 @@ const PackageBuilder = () => {
                                         </button>
                                     </div>
 
-                                    <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Sconto (%)</label>
+                                    <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Prezzo Scontato (€)</label>
                                     <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                         <input
-                                            type="number" step="1" min="0" max="100"
+                                            type="number" step="0.01"
                                             style={{ flex: 1, padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
-                                            value={newPackage.discount_percentage}
-                                            onChange={e => setNewPackage({ ...newPackage, discount_percentage: e.target.value })}
+                                            value={newPackage.discount_percentage > 0
+                                                ? (newPackage.total_price * (1 - newPackage.discount_percentage / 100)).toFixed(2)
+                                                : ''}
+                                            placeholder="Lascia vuoto per nessun sconto"
+                                            onChange={e => {
+                                                const discountedPrice = parseFloat(e.target.value);
+                                                if (!isNaN(discountedPrice) && newPackage.total_price > 0) {
+                                                    const discount = ((1 - (discountedPrice / newPackage.total_price)) * 100);
+                                                    setNewPackage({ ...newPackage, discount_percentage: Math.max(0, discount) });
+                                                } else {
+                                                    setNewPackage({ ...newPackage, discount_percentage: 0 });
+                                                }
+                                            }}
                                         />
                                     </div>
                                     {newPackage.discount_percentage > 0 && (
                                         <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'green' }}>
-                                            Prezzo scontato: € {(newPackage.total_price * (1 - newPackage.discount_percentage / 100)).toFixed(2)}
+                                            Sconto applicato: {newPackage.discount_percentage.toFixed(1)}%
                                         </div>
                                     )}
 
