@@ -298,33 +298,42 @@ const PackageBuilder = () => {
                                     ) : (
                                         newPackage.items.map((item) => {
                                             const product = products.find(p => p.id === item.product_id);
+                                            const isPieces = product?.pieces_per_kg > 0;
+                                            const unit = isPieces ? 'pz' : 'kg';
+                                            const step = isPieces ? 1 : 0.1;
+                                            const min = isPieces ? 1 : 0.1;
+
                                             return (
                                                 <div key={item.tempId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', fontSize: '0.9rem' }}>
                                                     <div style={{ flex: 1 }}>
                                                         <div style={{ fontWeight: '600' }}>{product ? product.name : 'Unknown'}</div>
-                                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>€ {product?.price_per_kg}/kg</div>
+                                                        <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>
+                                                            {isPieces
+                                                                ? `€ ${(product?.price_per_kg / product.pieces_per_kg).toFixed(2)} / pz`
+                                                                : `€ ${product?.price_per_kg}/kg`}
+                                                        </div>
                                                     </div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                                         <button
                                                             type="button"
                                                             className="btn btn-outline"
                                                             style={{ padding: '0.25rem' }}
-                                                            onClick={() => updateItem(item.tempId, 'quantity', Math.max(0.1, parseFloat(item.quantity) - 0.1).toFixed(1))}
+                                                            onClick={() => updateItem(item.tempId, 'quantity', Math.max(min, parseFloat(item.quantity) - step).toFixed(isPieces ? 0 : 1))}
                                                         >
                                                             <Minus size={14} />
                                                         </button>
                                                         <span style={{ minWidth: '30px', textAlign: 'center', fontSize: '0.9rem' }}>
-                                                            {parseFloat(item.quantity).toFixed(1)}
+                                                            {parseFloat(item.quantity).toFixed(isPieces ? 0 : 1)}
                                                         </span>
                                                         <button
                                                             type="button"
                                                             className="btn btn-outline"
                                                             style={{ padding: '0.25rem' }}
-                                                            onClick={() => updateItem(item.tempId, 'quantity', (parseFloat(item.quantity) + 0.1).toFixed(1))}
+                                                            onClick={() => updateItem(item.tempId, 'quantity', (parseFloat(item.quantity) + step).toFixed(isPieces ? 0 : 1))}
                                                         >
                                                             <Plus size={14} />
                                                         </button>
-                                                        <span style={{ fontSize: '0.8rem', marginLeft: '0.25rem' }}>kg</span>
+                                                        <span style={{ fontSize: '0.8rem', marginLeft: '0.25rem' }}>{unit}</span>
                                                         <button type="button" className="btn btn-outline" style={{ color: 'red', borderColor: 'red', padding: '0.25rem', border: 'none', marginLeft: '0.5rem' }} onClick={() => removeItem(item.tempId)}>
                                                             <Trash2 size={14} />
                                                         </button>
@@ -374,7 +383,12 @@ const PackageBuilder = () => {
                             <strong>Include:</strong>
                             <ul style={{ paddingLeft: '1.2rem', marginTop: '0.5rem' }}>
                                 {pkg.items && pkg.items.map((item, idx) => (
-                                    <li key={idx}>{item.quantity}kg {item.name}</li>
+                                    <li key={idx}>
+                                        {item.pieces_per_kg > 0
+                                            ? `${item.quantity} pz ${item.name}`
+                                            : `${item.quantity}kg ${item.name}`
+                                        }
+                                    </li>
                                 ))}
                             </ul>
                         </div>
