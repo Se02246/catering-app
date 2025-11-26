@@ -204,7 +204,14 @@ const Home = () => {
                                         )}
                                         <div style={{ flex: 1 }}>
                                             <div style={{ fontWeight: '600', fontSize: '1rem', color: 'var(--color-text)', marginBottom: '0.1rem' }}>{item.name}</div>
-                                            <div style={{ fontSize: '0.9rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>{item.quantity} kg</div>
+                                            <div style={{ fontSize: '0.9rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>
+                                                {item.quantity} kg
+                                                {item.show_servings && item.servings_per_unit && (
+                                                    <span style={{ marginLeft: '0.5rem', fontWeight: 'normal', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                                                        (Per {Math.round(item.quantity * item.servings_per_unit)} persone)
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 );
