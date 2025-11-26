@@ -6,7 +6,7 @@ const router = express.Router();
 // Get all caterings (with items)
 router.get('/', async (req, res) => {
     try {
-        const cateringsResult = await pool.query('SELECT * FROM caterings ORDER BY created_at DESC');
+        const cateringsResult = await pool.query('SELECT * FROM caterings ORDER BY sort_order ASC, created_at DESC');
         const caterings = cateringsResult.rows;
 
         // For each catering, fetch its items
@@ -29,6 +29,36 @@ router.get('/', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Reorder packages
+router.put('/reorder', async (req, res) => {
+    const { packages } = req.body; // Array of { id, sort_order }
+
+    if (!packages || !Array.isArray(packages)) {
+        return res.status(400).json({ error: 'Invalid input' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        for (const pkg of packages) {
+            await client.query(
+                'UPDATE caterings SET sort_order = $1 WHERE id = $2',
+                [pkg.sort_order, pkg.id]
+            );
+        }
+
+        await client.query('COMMIT');
+        res.json({ message: 'Packages reordered successfully' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        client.release();
     }
 });
 

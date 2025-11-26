@@ -157,7 +157,12 @@ const QuoteBuilder = () => {
                 ? ` (per ${(item.servings_per_unit * item.quantity).toFixed(0)} persone)`
                 : '';
 
-            message += `• *${item.name}*${servingsText}\n`;
+            const dietaryInfo = [
+                item.is_gluten_free ? '(senza glutine)' : '',
+                item.is_lactose_free ? '(senza lattosio)' : ''
+            ].filter(Boolean).join(' ');
+
+            message += `• *${item.name}* ${dietaryInfo}${servingsText}\n`;
             message += `  ${item.quantity} ${unit} x ${priceUnit} = € ${calculateItemPrice(item).toFixed(2)}\n\n`;
 
             if (index === middleIndex) {

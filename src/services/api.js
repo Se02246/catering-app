@@ -113,5 +113,18 @@ export const api = {
             throw new Error(error.error || 'Failed to delete catering');
         }
         return res.json();
+    },
+
+    reorderCaterings: async (packages) => {
+        const res = await fetch(`${API_URL}/caterings/reorder`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify({ packages })
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to reorder caterings' }));
+            throw new Error(error.error || 'Failed to reorder caterings');
+        }
+        return res.json();
     }
 };

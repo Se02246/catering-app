@@ -302,7 +302,12 @@ const Home = () => {
                                         quantityText = `${item.quantity} kg`;
                                     }
 
-                                    message += `• ${item.name}: ${quantityText}\n`;
+                                    const dietaryInfo = [
+                                        item.is_gluten_free ? '(senza glutine)' : '',
+                                        item.is_lactose_free ? '(senza lattosio)' : ''
+                                    ].filter(Boolean).join(' ');
+
+                                    message += `• ${item.name} ${dietaryInfo}: ${quantityText}\n`;
                                     if (index === middleIndex) {
                                         message += `• prezzo pacchetto(€ ${finalPrice})\n`;
                                     }

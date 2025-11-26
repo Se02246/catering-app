@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { Trash2, Plus, Save, Pencil, Minus } from 'lucide-react';
+import { Trash2, Plus, Save, Pencil, Minus, ArrowUp, ArrowDown } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 
 const PackageBuilder = () => {
@@ -122,6 +122,48 @@ const PackageBuilder = () => {
             loadData();
         } catch {
             alert('Errore durante l\'eliminazione');
+        }
+    };
+
+    const handleMoveUp = async (index) => {
+        if (index === 0) return;
+        const newPackages = [...packages];
+        const temp = newPackages[index];
+        newPackages[index] = newPackages[index - 1];
+        newPackages[index - 1] = temp;
+
+        // Update sort_order for all
+        const updates = newPackages.map((pkg, idx) => ({ id: pkg.id, sort_order: idx }));
+
+        // Optimistic update
+        setPackages(newPackages);
+
+        try {
+            await api.reorderCaterings(updates);
+        } catch (err) {
+            console.error('Failed to reorder', err);
+            loadData(); // Revert on error
+        }
+    };
+
+    const handleMoveDown = async (index) => {
+        if (index === packages.length - 1) return;
+        const newPackages = [...packages];
+        const temp = newPackages[index];
+        newPackages[index] = newPackages[index + 1];
+        newPackages[index + 1] = temp;
+
+        // Update sort_order for all
+        const updates = newPackages.map((pkg, idx) => ({ id: pkg.id, sort_order: idx }));
+
+        // Optimistic update
+        setPackages(newPackages);
+
+        try {
+            await api.reorderCaterings(updates);
+        } catch (err) {
+            console.error('Failed to reorder', err);
+            loadData(); // Revert on error
         }
     };
 
@@ -425,11 +467,39 @@ const PackageBuilder = () => {
             )}
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                {packages.map(pkg => (
+                {packages.map((pkg, index) => (
                     <div key={pkg.id} style={{
                         padding: '1.5rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-md)',
-                        display: 'flex', flexDirection: 'column'
+                        display: 'flex', flexDirection: 'column', position: 'relative'
                     }}>
+                        <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.25rem', zIndex: 10 }}>
+                            <button
+                                className="btn btn-outline"
+                                style={{
+                                    padding: '0.25rem',
+                                    borderColor: index === 0 ? '#ccc' : 'var(--color-border)',
+                                    color: index === 0 ? '#ccc' : 'var(--color-text)',
+                                    cursor: index === 0 ? 'default' : 'pointer'
+                                }}
+                                onClick={() => handleMoveUp(index)}
+                                disabled={index === 0}
+                            >
+                                <ArrowUp size={16} />
+                            </button>
+                            <button
+                                className="btn btn-outline"
+                                style={{
+                                    padding: '0.25rem',
+                                    borderColor: index === packages.length - 1 ? '#ccc' : 'var(--color-border)',
+                                    color: index === packages.length - 1 ? '#ccc' : 'var(--color-text)',
+                                    cursor: index === packages.length - 1 ? 'default' : 'pointer'
+                                }}
+                                onClick={() => handleMoveDown(index)}
+                                disabled={index === packages.length - 1}
+                            >
+                                <ArrowDown size={16} />
+                            </button>
+                        </div>
                         {pkg.image_url && <img src={pkg.image_url} alt={pkg.name} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '1rem' }} />}
                         <h3 style={{ marginBottom: '0.5rem' }}>{pkg.name}</h3>
                         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
