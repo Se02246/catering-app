@@ -52,7 +52,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart }) => {
                                             alt={`${product.name} ${idx + 1}`}
                                             style={{
                                                 width: '100%',
-                                                height: '300px',
+                                                aspectRatio: '4/5',
                                                 objectFit: 'cover',
                                                 borderRadius: '16px',
                                                 boxShadow: '0 10px 25px rgba(0,0,0,0.1)',

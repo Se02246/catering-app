@@ -137,7 +137,7 @@ const Home = () => {
                                                 alt={`${selectedPackage.name} ${idx + 1}`}
                                                 style={{
                                                     width: '100%',
-                                                    height: '300px',
+                                                    aspectRatio: '4/5',
                                                     objectFit: 'cover',
                                                     borderRadius: '16px',
                                                     boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
@@ -159,7 +159,7 @@ const Home = () => {
                                 <img
                                     src={selectedPackage.image_url}
                                     alt={selectedPackage.name}
-                                    style={{ width: '100%', height: '300px', objectFit: 'cover', borderRadius: '16px', marginBottom: '2rem', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
+                                    style={{ width: '100%', aspectRatio: '4/5', objectFit: 'cover', borderRadius: '16px', marginBottom: '2rem', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
                                 />
                             )
                         )}
