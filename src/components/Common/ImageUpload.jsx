@@ -86,6 +86,43 @@ const ImageUpload = ({ onUpload, images = [] }) => {
         setDraggedIndex(null);
     };
 
+    // Touch Handlers for Mobile
+    const handleTouchStart = (e, index) => {
+        // Prevent default to stop scrolling/context menu while dragging
+        // e.preventDefault(); // We might not want to prevent default immediately to allow scrolling if not holding long enough, but for reordering usually we do.
+        // Let's rely on long press or just immediate drag. Immediate drag is easier to implement first.
+        setDraggedIndex(index);
+    };
+
+    const handleTouchMove = (e) => {
+        if (draggedIndex === null) return;
+        e.preventDefault(); // Stop scrolling
+
+        const touch = e.touches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        if (!target) return;
+
+        const dropZone = target.closest('[data-index]');
+        if (!dropZone) return;
+
+        const targetIndex = parseInt(dropZone.getAttribute('data-index'));
+
+        if (targetIndex !== draggedIndex && !isNaN(targetIndex)) {
+            const newImages = [...imageList];
+            const draggedItem = newImages[draggedIndex];
+            newImages.splice(draggedIndex, 1);
+            newImages.splice(targetIndex, 0, draggedItem);
+
+            onUpload(newImages);
+            setDraggedIndex(targetIndex);
+        }
+    };
+
+    const handleTouchEnd = () => {
+        setDraggedIndex(null);
+    };
+
     return (
         <div>
             <div style={{ marginBottom: '1rem' }}>
@@ -105,10 +142,19 @@ const ImageUpload = ({ onUpload, images = [] }) => {
                     {imageList.map((img, index) => (
                         <div
                             key={index}
+                            data-index={index}
                             draggable
                             onDragStart={(e) => handleDragStart(e, index)}
                             onDragOver={(e) => handleDragOver(e, index)}
                             onDragEnd={handleDragEnd}
+                            onTouchStart={(e) => handleTouchStart(e, index)}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                            onContextMenu={(e) => {
+                                // Prevent context menu only if we are interacting with it for reordering
+                                // For now, prevent it always on the image container to avoid popup
+                                e.preventDefault();
+                            }}
                             style={{
                                 position: 'relative',
                                 width: '100px',
