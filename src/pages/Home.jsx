@@ -43,6 +43,38 @@ const Home = () => {
         };
     }, [selectedPackage]);
 
+    // Handle browser back button for modals
+    React.useEffect(() => {
+        const handlePopState = (event) => {
+            if (selectedProduct) {
+                setSelectedProduct(null);
+            } else if (selectedPackage) {
+                setSelectedPackage(null);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [selectedPackage, selectedProduct]);
+
+    const openPackage = (pkg) => {
+        window.history.pushState({ modal: 'package' }, '');
+        setSelectedPackage(pkg);
+    };
+
+    const closePackage = () => {
+        window.history.back();
+    };
+
+    const openProduct = (prod) => {
+        window.history.pushState({ modal: 'product' }, '');
+        setSelectedProduct(prod);
+    };
+
+    const closeProduct = () => {
+        window.history.back();
+    };
+
     return (
         <div className="container">
             <Header />
@@ -65,7 +97,7 @@ const Home = () => {
                                     {pkg.image_url && (
                                         <div
                                             style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '1.5rem', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', cursor: 'pointer' }}
-                                            onClick={() => setSelectedPackage(pkg)}
+                                            onClick={() => openPackage(pkg)}
                                         >
                                             <img
                                                 src={pkg.image_url}
@@ -105,7 +137,7 @@ const Home = () => {
                                                 <p style={{ fontWeight: '800', fontSize: '1.5rem', color: 'var(--color-primary-dark)', margin: 0 }}>€&nbsp;{pkg.total_price}</p>
                                             )}
                                         </div>
-                                        <button className="btn btn-primary" onClick={() => setSelectedPackage(pkg)}>Dettagli</button>
+                                        <button className="btn btn-primary" onClick={() => openPackage(pkg)}>Dettagli</button>
                                     </div>
                                 </div>
                             ))
@@ -115,7 +147,7 @@ const Home = () => {
             </section>
 
             {selectedPackage && (
-                <div className="modal-overlay" onClick={() => setSelectedPackage(null)}>
+                <div className="modal-overlay" onClick={closePackage}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -133,7 +165,7 @@ const Home = () => {
                                     )}
                                 </div>
                             </div>
-                            <button className="btn btn-outline" style={{ borderColor: 'var(--color-text-muted)', color: 'var(--color-text-muted)', padding: '0.5rem 1rem' }} onClick={() => setSelectedPackage(null)}>Chiudi</button>
+                            <button className="btn btn-outline" style={{ borderColor: 'var(--color-text-muted)', color: 'var(--color-text-muted)', padding: '0.5rem 1rem' }} onClick={closePackage}>Chiudi</button>
                         </div>
 
                         {selectedPackage.images && selectedPackage.images.length > 0 ? (
@@ -213,7 +245,7 @@ const Home = () => {
                                         }}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            setSelectedProduct(item);
+                                            openProduct(item);
                                         }}
                                         onMouseOver={e => { e.currentTarget.style.transform = 'translateX(4px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
                                         onMouseOut={e => { e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.boxShadow = 'none'; }}
@@ -331,7 +363,7 @@ const Home = () => {
             {selectedProduct && (
                 <ProductDetailsModal
                     product={selectedProduct}
-                    onClose={() => setSelectedProduct(null)}
+                    onClose={closeProduct}
                 // No onAddToCart here as we are in Home, not QuoteBuilder
                 />
             )}

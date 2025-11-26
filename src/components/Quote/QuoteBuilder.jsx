@@ -182,6 +182,27 @@ const QuoteBuilder = () => {
         window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
     };
 
+    // Handle browser back button for modals
+    useEffect(() => {
+        const handlePopState = (event) => {
+            if (selectedProduct) {
+                setSelectedProduct(null);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [selectedProduct]);
+
+    const openProduct = (prod) => {
+        window.history.pushState({ modal: 'product' }, '');
+        setSelectedProduct(prod);
+    };
+
+    const closeProduct = () => {
+        window.history.back();
+    };
+
     if (loading) return <p>Caricamento prodotti...</p>;
 
     return (
@@ -198,7 +219,7 @@ const QuoteBuilder = () => {
                                 display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem',
                                 cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                             }}
-                            onClick={() => setSelectedProduct(p)}
+                            onClick={() => openProduct(p)}
                             onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
                             onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
@@ -401,7 +422,7 @@ const QuoteBuilder = () => {
             {selectedProduct && (
                 <ProductDetailsModal
                     product={selectedProduct}
-                    onClose={() => setSelectedProduct(null)}
+                    onClose={closeProduct}
                     onAddToCart={addToCart}
                 />
             )}
