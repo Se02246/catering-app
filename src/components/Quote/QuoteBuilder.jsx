@@ -284,57 +284,6 @@ const QuoteBuilder = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
                                 <span>Totale:</span>
                                 <span>€ {calculateTotal().toFixed(2)}</span>
-                                {/* Floating Cart Button */}
-                                {cart.length > 0 && !isQuoteVisible && (
-                                    <button
-                                        onClick={() => {
-                                            const element = document.getElementById('quote-summary');
-                                            if (element) {
-                                                element.scrollIntoView({ behavior: 'smooth' });
-                                            }
-                                        }}
-                                        style={{
-                                            position: 'fixed',
-                                            bottom: '2rem',
-                                            right: '2rem',
-                                            backgroundColor: 'var(--color-primary)',
-                                            color: 'white',
-                                            width: '60px',
-                                            height: '60px',
-                                            borderRadius: '50%',
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            zIndex: 1000,
-                                            transition: 'transform 0.2s ease'
-                                        }}
-                                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
-                                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                                    >
-                                        <ShoppingCart size={28} />
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '-5px',
-                                            right: '-5px',
-                                            backgroundColor: 'var(--color-accent)',
-                                            color: 'white',
-                                            borderRadius: '50%',
-                                            width: '24px',
-                                            height: '24px',
-                                            fontSize: '0.8rem',
-                                            fontWeight: 'bold',
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            border: '2px solid white'
-                                        }}>
-                                            {cart.length}
-                                        </div>
-                                    </button>
-                                )}
                             </div>
                             <button
                                 className="btn btn-primary"
@@ -348,6 +297,62 @@ const QuoteBuilder = () => {
                     </>
                 )}
             </div>
+
+            {/* Floating Cart Button */}
+            {cart.length > 0 && (
+                <button
+                    onClick={() => {
+                        const element = document.getElementById('quote-summary');
+                        if (element) {
+                            element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }}
+                    style={{
+                        position: 'fixed',
+                        bottom: '2rem',
+                        right: '2rem',
+                        backgroundColor: 'var(--color-primary)',
+                        color: 'white',
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        zIndex: 1000,
+                        transition: 'all 0.3s ease-in-out',
+                        opacity: isQuoteVisible ? 0 : 1,
+                        transform: isQuoteVisible ? 'scale(0.8)' : 'scale(1)',
+                        pointerEvents: isQuoteVisible ? 'none' : 'auto'
+                    }}
+                    onMouseOver={e => { if (!isQuoteVisible) e.currentTarget.style.transform = 'scale(1.1)'; }}
+                    onMouseOut={e => { if (!isQuoteVisible) e.currentTarget.style.transform = 'scale(1)'; }}
+                >
+                    <ShoppingCart size={28} />
+                    <div style={{
+                        position: 'absolute',
+                        top: '-5px',
+                        right: '-5px',
+                        backgroundColor: 'white',
+                        color: 'var(--color-primary)',
+                        borderRadius: '50%',
+                        width: '24px',
+                        height: '24px',
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        border: '2px solid var(--color-primary)'
+                    }}>
+                        {cart.length}
+                    </div>
+                </button>
+            )}
+
             {/* Product Details Modal */}
             {selectedProduct && (
                 <ProductDetailsModal
