@@ -163,24 +163,36 @@ const PackageBuilder = () => {
                                                 <h4 style={{ marginBottom: '0.25rem', fontSize: '1rem' }}>{p.name}</h4>
                                                 <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>€ {p.price_per_kg} / kg</p>
                                             </div>
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline"
-                                                style={{ marginTop: '1rem', width: '100%', borderRadius: 'var(--radius-full)' }}
-                                                onClick={() => {
-                                                    const existing = newPackage.items.find(i => i.product_id === p.id);
-                                                    if (existing) {
-                                                        updateItem(existing.tempId, 'quantity', parseFloat(existing.quantity) + 1);
-                                                    } else {
-                                                        setNewPackage({
-                                                            ...newPackage,
-                                                            items: [...newPackage.items, { product_id: p.id, quantity: 1, tempId: Date.now() }]
-                                                        });
-                                                    }
-                                                }}
-                                            >
-                                                Aggiungi
-                                            </button>
+                                            {(() => {
+                                                const existing = newPackage.items.find(i => i.product_id === p.id);
+                                                const isAdded = !!existing;
+                                                return (
+                                                    <button
+                                                        type="button"
+                                                        className={isAdded ? "btn btn-primary" : "btn btn-outline"}
+                                                        style={{ marginTop: '1rem', width: '100%', borderRadius: 'var(--radius-full)' }}
+                                                        onClick={() => {
+                                                            if (p.allow_multiple) {
+                                                                setNewPackage({
+                                                                    ...newPackage,
+                                                                    items: [...newPackage.items, { product_id: p.id, quantity: 1, tempId: Date.now() + Math.random() }]
+                                                                });
+                                                            } else {
+                                                                if (existing) {
+                                                                    updateItem(existing.tempId, 'quantity', parseFloat(existing.quantity) + 1);
+                                                                } else {
+                                                                    setNewPackage({
+                                                                        ...newPackage,
+                                                                        items: [...newPackage.items, { product_id: p.id, quantity: 1, tempId: Date.now() }]
+                                                                    });
+                                                                }
+                                                            }
+                                                        }}
+                                                    >
+                                                        {isAdded ? (p.allow_multiple ? 'Aggiungi un altro' : 'Aggiungi (+1)') : 'Aggiungi'}
+                                                    </button>
+                                                );
+                                            })()}
                                         </div>
                                     ))}
                                 </div>
