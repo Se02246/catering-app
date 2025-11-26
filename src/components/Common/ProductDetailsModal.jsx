@@ -31,6 +31,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart }) => {
                                 display: 'flex',
                                 overflowX: 'auto',
                                 scrollSnapType: 'x mandatory',
+                                scrollSnapStop: 'always',
                                 gap: '1rem',
                                 paddingBottom: '1rem',
                                 WebkitOverflowScrolling: 'touch'
