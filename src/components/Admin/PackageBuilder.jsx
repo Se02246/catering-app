@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { Trash2, Plus, Save, Pencil } from 'lucide-react';
+import { Trash2, Plus, Save, Pencil, Minus } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 
 const PackageBuilder = () => {
@@ -305,14 +305,27 @@ const PackageBuilder = () => {
                                                         <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>€ {product?.price_per_kg}/kg</div>
                                                     </div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                                        <input
-                                                            type="number" step="0.1"
-                                                            style={{ width: '50px', padding: '0.25rem', borderRadius: '4px', border: '1px solid var(--color-border)', textAlign: 'center' }}
-                                                            value={item.quantity}
-                                                            onChange={e => updateItem(item.tempId, 'quantity', e.target.value)}
-                                                        />
-                                                        <span style={{ fontSize: '0.8rem' }}>kg</span>
-                                                        <button type="button" className="btn btn-outline" style={{ color: 'red', borderColor: 'red', padding: '0.25rem', border: 'none' }} onClick={() => removeItem(item.tempId)}>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-outline"
+                                                            style={{ padding: '0.25rem' }}
+                                                            onClick={() => updateItem(item.tempId, 'quantity', Math.max(0.1, parseFloat(item.quantity) - 0.1).toFixed(1))}
+                                                        >
+                                                            <Minus size={14} />
+                                                        </button>
+                                                        <span style={{ minWidth: '30px', textAlign: 'center', fontSize: '0.9rem' }}>
+                                                            {parseFloat(item.quantity).toFixed(1)}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-outline"
+                                                            style={{ padding: '0.25rem' }}
+                                                            onClick={() => updateItem(item.tempId, 'quantity', (parseFloat(item.quantity) + 0.1).toFixed(1))}
+                                                        >
+                                                            <Plus size={14} />
+                                                        </button>
+                                                        <span style={{ fontSize: '0.8rem', marginLeft: '0.25rem' }}>kg</span>
+                                                        <button type="button" className="btn btn-outline" style={{ color: 'red', borderColor: 'red', padding: '0.25rem', border: 'none', marginLeft: '0.5rem' }} onClick={() => removeItem(item.tempId)}>
                                                             <Trash2 size={14} />
                                                         </button>
                                                     </div>
