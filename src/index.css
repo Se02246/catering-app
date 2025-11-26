@@ -104,21 +104,24 @@ img {
   position: relative;
   display: inline-block;
   text-decoration: none !important;
-  /* Remove gradient */
-  background-image: none;
+  /* Ensure no background overrides */
+  background: transparent;
 }
 
 .price-strikethrough::after {
-  content: '';
+  content: "";
   position: absolute;
+  top: 50%;
   left: -5%;
   width: 110%;
-  top: 50%;
   height: 2px;
   background-color: #ff0000;
   /* Red for verification */
-  transform: rotate(-12deg);
+  transform: rotate(-15deg);
   transform-origin: center;
-  opacity: 0.9;
+  z-index: 100;
+  /* Force on top */
   pointer-events: none;
+  display: block;
+  /* Ensure it has layout */
 }
