@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { Plus, Minus, Trash2, Send } from 'lucide-react';
+import { Plus, Minus, Trash2, Send, Check } from 'lucide-react';
 import ProductDetailsModal from '../Common/ProductDetailsModal';
 
 const QuoteBuilder = () => {
@@ -154,9 +154,9 @@ const QuoteBuilder = () => {
                     {products.map(p => (
                         <div key={p.id}
                             style={{
-                                padding: '1rem', border: '1px solid rgba(175, 68, 72, 0.1)', borderRadius: '8px',
+                                padding: '0.75rem', border: '1px solid rgba(175, 68, 72, 0.1)', borderRadius: '8px',
                                 backgroundColor: 'rgba(255, 255, 255, 0.6)', // Off-white / Glass effect
-                                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                                display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem',
                                 cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease'
                             }}
                             onClick={() => setSelectedProduct(p)}
@@ -164,34 +164,40 @@ const QuoteBuilder = () => {
                             onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
                             {p.image_url && (
-                                <img
-                                    src={p.image_url}
-                                    alt={p.name}
-                                    style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px', marginBottom: '0.5rem' }}
-                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300?text=No+Img'; }}
-                                />
+                                <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
+                                    <img
+                                        src={p.image_url}
+                                        alt={p.name}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300?text=No+Img'; }}
+                                    />
+                                </div>
                             )}
-                            <div>
-                                <h4 style={{ marginBottom: '0.5rem' }}>{p.name}</h4>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>€ {p.price_per_kg} / kg</p>
+                            <div style={{ flex: 1 }}>
+                                <h4 style={{ marginBottom: '0.25rem', fontSize: '1rem' }}>{p.name}</h4>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>€ {p.price_per_kg} / kg</p>
                             </div>
-                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 {p.allow_multiple && cart.filter(item => item.id === p.id).length > 0 && (
                                     <div style={{
                                         backgroundColor: 'var(--color-primary)', color: 'white',
-                                        borderRadius: '50%', width: '30px', height: '30px',
+                                        borderRadius: '50%', width: '24px', height: '24px',
                                         display: 'flex', justifyContent: 'center', alignItems: 'center',
-                                        fontWeight: 'bold', fontSize: '0.9rem'
+                                        fontWeight: 'bold', fontSize: '0.8rem'
                                     }}>
                                         {cart.filter(item => item.id === p.id).length}
                                     </div>
                                 )}
                                 <button
                                     className={`btn ${!p.allow_multiple && cart.find(item => item.id === p.id) ? 'btn-primary' : 'btn-outline'}`}
-                                    style={{ width: p.allow_multiple ? 'auto' : '100%', flex: p.allow_multiple ? 1 : 'none' }}
+                                    style={{
+                                        width: '40px', height: '40px', padding: 0,
+                                        borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                        flexShrink: 0
+                                    }}
                                     onClick={(e) => { e.stopPropagation(); addToCart(p); }}
                                 >
-                                    {!p.allow_multiple && cart.find(item => item.id === p.id) ? 'Aggiunto' : 'Aggiungi'}
+                                    {!p.allow_multiple && cart.find(item => item.id === p.id) ? <Check size={20} /> : <Plus size={20} />}
                                 </button>
                             </div>
                         </div>
