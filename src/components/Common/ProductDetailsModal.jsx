@@ -34,24 +34,33 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart }) => {
                                 scrollSnapStop: 'always',
                                 gap: '1rem',
                                 paddingBottom: '1rem',
-                                WebkitOverflowScrolling: 'touch'
+                                WebkitOverflowScrolling: 'touch',
+                                scrollBehavior: 'smooth',
+                                touchAction: 'pan-x'
                             }}>
                                 {validImages.map((img, idx) => (
-                                    <img
+                                    <div
                                         key={idx}
-                                        src={img}
-                                        alt={`${product.name} ${idx + 1}`}
                                         style={{
-                                            width: '100%',
-                                            height: '300px',
-                                            objectFit: 'cover',
-                                            borderRadius: '16px',
-                                            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                                            flexShrink: 0,
-                                            scrollSnapAlign: 'center'
+                                            minWidth: '100%',
+                                            scrollSnapAlign: 'center',
+                                            scrollSnapStop: 'always'
                                         }}
-                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
+                                    >
+                                        <img
+                                            src={img}
+                                            alt={`${product.name} ${idx + 1}`}
+                                            style={{
+                                                width: '100%',
+                                                height: '300px',
+                                                objectFit: 'cover',
+                                                borderRadius: '16px',
+                                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                                                display: 'block'
+                                            }}
+                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                        />
+                                    </div>
                                 ))}
                             </div>
                             {validImages.length > 1 && (

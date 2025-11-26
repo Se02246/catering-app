@@ -119,24 +119,33 @@ const Home = () => {
                                     scrollSnapStop: 'always',
                                     gap: '1rem',
                                     paddingBottom: '1rem',
-                                    WebkitOverflowScrolling: 'touch'
+                                    WebkitOverflowScrolling: 'touch',
+                                    scrollBehavior: 'smooth',
+                                    touchAction: 'pan-x'
                                 }}>
                                     {selectedPackage.images.map((img, idx) => (
-                                        <img
+                                        <div
                                             key={idx}
-                                            src={img}
-                                            alt={`${selectedPackage.name} ${idx + 1}`}
                                             style={{
-                                                width: '100%',
-                                                height: '300px',
-                                                objectFit: 'cover',
-                                                borderRadius: '16px',
-                                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                                                flexShrink: 0,
-                                                scrollSnapAlign: 'center'
+                                                minWidth: '100%',
+                                                scrollSnapAlign: 'center',
+                                                scrollSnapStop: 'always' // Added to child as well just in case, though usually on container
                                             }}
-                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400?text=No+Img'; }}
-                                        />
+                                        >
+                                            <img
+                                                src={img}
+                                                alt={`${selectedPackage.name} ${idx + 1}`}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '300px',
+                                                    objectFit: 'cover',
+                                                    borderRadius: '16px',
+                                                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                                                    display: 'block'
+                                                }}
+                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400?text=No+Img'; }}
+                                            />
+                                        </div>
                                     ))}
                                 </div>
                                 {selectedPackage.images.length > 1 && (
