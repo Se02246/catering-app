@@ -231,12 +231,20 @@ const Home = () => {
                                 let finalPrice = selectedPackage.total_price;
                                 if (selectedPackage.discount_percentage > 0) {
                                     finalPrice = (selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2);
+                                } else {
+                                    finalPrice = parseFloat(finalPrice).toFixed(2);
                                 }
 
-                                let message = `Ciao Barbara, sarei interessat a questo pacchetto, e\` possibile avere maggiori informazioni?\n\n*${selectedPackage.name}*\n${selectedPackage.description}\n\n*Prodotti inclusi:*\n`;
+                                let message = `Ciao Barbara, sarei interessat a questo pacchetto(€ ${finalPrice}), e\` possibile avere maggiori informazioni?\n\n*${selectedPackage.name}*\n${selectedPackage.description}\n\n*Prodotti inclusi:*\n`;
 
-                                selectedPackage.items?.forEach(item => {
+                                const items = selectedPackage.items || [];
+                                const middleIndex = Math.floor(items.length / 2);
+
+                                items.forEach((item, index) => {
                                     message += `• ${item.name}: ${item.quantity} kg\n`;
+                                    if (index === middleIndex) {
+                                        message += `• prezzo pacchetto(€ ${finalPrice})\n`;
+                                    }
                                 });
 
                                 message += `\n*Prezzo: € ${finalPrice}*`;

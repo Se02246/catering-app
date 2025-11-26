@@ -141,10 +141,13 @@ const QuoteBuilder = () => {
     };
 
     const sendToWhatsApp = () => {
-        const phoneNumber = "393495416637"; // Updated business number
-        let message = "*Ciao Barbara, ho creato un prventivo sul tuo sito, e` possibile avere maggiori informazioni?\n\n*";
+        const phoneNumber = "393495416637";
+        const total = calculateTotal().toFixed(2);
+        let message = `*Ciao Barbara, ho creato un prventivo (€ ${total}) sul tuo sito, e\` possibile avere maggiori informazioni?\n\n*`;
 
-        cart.forEach(item => {
+        const middleIndex = Math.floor(cart.length / 2);
+
+        cart.forEach((item, index) => {
             const unit = item.pieces_per_kg ? 'pz' : 'kg';
             const priceUnit = item.pieces_per_kg
                 ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
@@ -156,9 +159,13 @@ const QuoteBuilder = () => {
 
             message += `• *${item.name}*${servingsText}\n`;
             message += `  ${item.quantity} ${unit} x ${priceUnit} = € ${calculateItemPrice(item).toFixed(2)}\n\n`;
+
+            if (index === middleIndex) {
+                message += `• prezzo preventivo (€ ${total})\n\n`;
+            }
         });
 
-        message += `*Totale: € ${calculateTotal().toFixed(2)}*`;
+        message += `*Totale: € ${total}*`;
 
         const encodedMessage = encodeURIComponent(message);
         window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
