@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { Plus, Minus, Trash2, Send, Check } from 'lucide-react';
+import { Plus, Minus, Trash2, Send, Check, ShoppingCart } from 'lucide-react';
 import ProductDetailsModal from '../Common/ProductDetailsModal';
 
 const QuoteBuilder = () => {
@@ -8,10 +8,31 @@ const QuoteBuilder = () => {
     const [cart, setCart] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [isQuoteVisible, setIsQuoteVisible] = useState(false);
 
     useEffect(() => {
         loadProducts();
     }, []);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsQuoteVisible(entry.isIntersecting);
+            },
+            { threshold: 0.1 }
+        );
+
+        const quoteSection = document.getElementById('quote-summary');
+        if (quoteSection) {
+            observer.observe(quoteSection);
+        }
+
+        return () => {
+            if (quoteSection) {
+                observer.unobserve(quoteSection);
+            }
+        };
+    }, [cart.length]); // Re-run when cart changes as the section might appear/disappear
 
     const loadProducts = async () => {
         try {
@@ -206,7 +227,7 @@ const QuoteBuilder = () => {
             </div>
 
             {/* Cart / Quote Summary */}
-            <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '8px', boxShadow: 'var(--shadow-md)', height: 'fit-content' }}>
+            <div id="quote-summary" style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '8px', boxShadow: 'var(--shadow-md)', height: 'fit-content' }}>
                 <h2 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Il Tuo Preventivo</h2>
 
                 {cart.length === 0 ? (
@@ -263,6 +284,57 @@ const QuoteBuilder = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
                                 <span>Totale:</span>
                                 <span>€ {calculateTotal().toFixed(2)}</span>
+                                {/* Floating Cart Button */}
+                                {cart.length > 0 && !isQuoteVisible && (
+                                    <button
+                                        onClick={() => {
+                                            const element = document.getElementById('quote-summary');
+                                            if (element) {
+                                                element.scrollIntoView({ behavior: 'smooth' });
+                                            }
+                                        }}
+                                        style={{
+                                            position: 'fixed',
+                                            bottom: '2rem',
+                                            right: '2rem',
+                                            backgroundColor: 'var(--color-primary)',
+                                            color: 'white',
+                                            width: '60px',
+                                            height: '60px',
+                                            borderRadius: '50%',
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            zIndex: 1000,
+                                            transition: 'transform 0.2s ease'
+                                        }}
+                                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                                    >
+                                        <ShoppingCart size={28} />
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '-5px',
+                                            right: '-5px',
+                                            backgroundColor: 'var(--color-accent)',
+                                            color: 'white',
+                                            borderRadius: '50%',
+                                            width: '24px',
+                                            height: '24px',
+                                            fontSize: '0.8rem',
+                                            fontWeight: 'bold',
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            border: '2px solid white'
+                                        }}>
+                                            {cart.length}
+                                        </div>
+                                    </button>
+                                )}
                             </div>
                             <button
                                 className="btn btn-primary"
