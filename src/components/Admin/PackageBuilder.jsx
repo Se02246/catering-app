@@ -62,7 +62,17 @@ const PackageBuilder = () => {
     const calculateSuggestedPrice = () => {
         return newPackage.items.reduce((sum, item) => {
             const prod = products.find(p => p.id == item.product_id);
-            return sum + (prod ? prod.price_per_kg * item.quantity : 0);
+            if (!prod) return sum;
+
+            if (prod.pieces_per_kg > 0) {
+                // quantity is in pieces
+                // weight = quantity / pieces_per_kg
+                // price = weight * price_per_kg
+                return sum + ((item.quantity / prod.pieces_per_kg) * prod.price_per_kg);
+            } else {
+                // quantity is in kg
+                return sum + (prod.price_per_kg * item.quantity);
+            }
         }, 0);
     };
 
@@ -318,18 +328,23 @@ const PackageBuilder = () => {
                                                             type="button"
                                                             className="btn btn-outline"
                                                             style={{ padding: '0.25rem' }}
-                                                            onClick={() => updateItem(item.tempId, 'quantity', Math.max(min, parseFloat(item.quantity) - step).toFixed(isPieces ? 0 : 1))}
+                                                            onClick={() => updateItem(item.tempId, 'quantity', Math.max(min, (parseFloat(item.quantity) || 0) - step).toFixed(isPieces ? 0 : 1))}
                                                         >
                                                             <Minus size={14} />
                                                         </button>
-                                                        <span style={{ minWidth: '30px', textAlign: 'center', fontSize: '0.9rem' }}>
-                                                            {parseFloat(item.quantity).toFixed(isPieces ? 0 : 1)}
-                                                        </span>
+                                                        <input
+                                                            type="number"
+                                                            step={step}
+                                                            min={min}
+                                                            style={{ width: '60px', textAlign: 'center', fontSize: '0.9rem', padding: '0.25rem', border: '1px solid var(--color-border)', borderRadius: '4px' }}
+                                                            value={item.quantity}
+                                                            onChange={(e) => updateItem(item.tempId, 'quantity', e.target.value)}
+                                                        />
                                                         <button
                                                             type="button"
                                                             className="btn btn-outline"
                                                             style={{ padding: '0.25rem' }}
-                                                            onClick={() => updateItem(item.tempId, 'quantity', (parseFloat(item.quantity) + step).toFixed(isPieces ? 0 : 1))}
+                                                            onClick={() => updateItem(item.tempId, 'quantity', ((parseFloat(item.quantity) || 0) + step).toFixed(isPieces ? 0 : 1))}
                                                         >
                                                             <Plus size={14} />
                                                         </button>
