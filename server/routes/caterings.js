@@ -15,7 +15,8 @@ router.get('/', async (req, res) => {
             const itemsResult = await pool.query(
                 `SELECT ci.product_id, ci.quantity, p.name, p.description, p.price_per_kg, p.image_url, p.images, 
                         p.pieces_per_kg, p.min_order_quantity, p.order_increment, p.show_servings, 
-                        p.servings_per_unit, p.allow_multiple, p.max_order_quantity
+                        p.servings_per_unit, p.allow_multiple, p.max_order_quantity,
+                        p.is_gluten_free, p.is_lactose_free
          FROM catering_items ci 
          JOIN products p ON ci.product_id = p.id 
          WHERE ci.catering_id = $1`,
@@ -33,7 +34,7 @@ router.get('/', async (req, res) => {
 
 // Create a new catering package
 router.post('/', async (req, res) => {
-    const { name, description, total_price, image_url, items, discount_percentage, images } = req.body;
+    const { name, description, total_price, image_url, items, discount_percentage, images, is_gluten_free, is_lactose_free } = req.body;
     // items is an array of { product_id, quantity }
 
     const client = await pool.connect();
@@ -45,8 +46,8 @@ router.post('/', async (req, res) => {
         const mainImage = imagesArray.length > 0 ? imagesArray[0] : image_url;
 
         const cateringResult = await client.query(
-            'INSERT INTO caterings (name, description, total_price, image_url, discount_percentage, images) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray]
+            'INSERT INTO caterings (name, description, total_price, image_url, discount_percentage, images, is_gluten_free, is_lactose_free) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, is_gluten_free || false, is_lactose_free || false]
         );
         const cateringId = cateringResult.rows[0].id;
 
@@ -71,7 +72,7 @@ router.post('/', async (req, res) => {
 // Update a catering package
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, description, total_price, image_url, items, discount_percentage, images } = req.body;
+    const { name, description, total_price, image_url, items, discount_percentage, images, is_gluten_free, is_lactose_free } = req.body;
 
     const client = await pool.connect();
     try {
@@ -82,8 +83,8 @@ router.put('/:id', async (req, res) => {
 
         // Update catering details
         const cateringResult = await client.query(
-            'UPDATE caterings SET name = $1, description = $2, total_price = $3, image_url = $4, discount_percentage = $5, images = $6 WHERE id = $7 RETURNING *',
-            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, id]
+            'UPDATE caterings SET name = $1, description = $2, total_price = $3, image_url = $4, discount_percentage = $5, images = $6, is_gluten_free = $7, is_lactose_free = $8 WHERE id = $9 RETURNING *',
+            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, is_gluten_free || false, is_lactose_free || false, id]
         );
 
         if (cateringResult.rows.length === 0) {

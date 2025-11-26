@@ -19,7 +19,9 @@ const PackageBuilder = () => {
         images: [],
         total_price: 0,
         discount_percentage: 0,
-        items: [] // { product_id, quantity, tempId }
+        items: [], // { product_id, quantity, tempId }
+        is_gluten_free: false,
+        is_lactose_free: false
     });
 
 
@@ -106,7 +108,9 @@ const PackageBuilder = () => {
             images: pkg.images || (pkg.image_url ? [pkg.image_url] : []),
             total_price: pkg.total_price,
             discount_percentage: pkg.discount_percentage || 0,
-            items: pkg.items.map(i => ({ ...i, tempId: Date.now() + Math.random() }))
+            items: pkg.items.map(i => ({ ...i, tempId: Date.now() + Math.random() })),
+            is_gluten_free: pkg.is_gluten_free || false,
+            is_lactose_free: pkg.is_lactose_free || false
         });
         setIsCreating(true);
     };
@@ -290,6 +294,29 @@ const PackageBuilder = () => {
                                         placeholder="Breve descrizione..."
                                     />
 
+                                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <input
+                                                type="checkbox"
+                                                id="pkg_gluten_free"
+                                                checked={newPackage.is_gluten_free || false}
+                                                onChange={e => setNewPackage({ ...newPackage, is_gluten_free: e.target.checked })}
+                                                style={{ marginRight: '0.5rem' }}
+                                            />
+                                            <label htmlFor="pkg_gluten_free" style={{ fontWeight: 'bold', color: '#FF9800', fontSize: '0.9rem' }}>Senza Glutine!</label>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <input
+                                                type="checkbox"
+                                                id="pkg_lactose_free"
+                                                checked={newPackage.is_lactose_free || false}
+                                                onChange={e => setNewPackage({ ...newPackage, is_lactose_free: e.target.checked })}
+                                                style={{ marginRight: '0.5rem' }}
+                                            />
+                                            <label htmlFor="pkg_lactose_free" style={{ fontWeight: 'bold', color: '#03A9F4', fontSize: '0.9rem' }}>Senza Lattosio!</label>
+                                        </div>
+                                    </div>
+
                                     <label style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Immagini (Trascina per riordinare)</label>
                                     <ImageUpload
                                         images={newPackage.images}
@@ -379,6 +406,18 @@ const PackageBuilder = () => {
                     }}>
                         {pkg.image_url && <img src={pkg.image_url} alt={pkg.name} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '1rem' }} />}
                         <h3 style={{ marginBottom: '0.5rem' }}>{pkg.name}</h3>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                            {pkg.is_gluten_free && (
+                                <span style={{ backgroundColor: '#FF9800', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                    Senza Glutine!
+                                </span>
+                            )}
+                            {pkg.is_lactose_free && (
+                                <span style={{ backgroundColor: '#03A9F4', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                    Senza Lattosio!
+                                </span>
+                            )}
+                        </div>
                         <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem', flex: 1 }}>{pkg.description}</p>
                         <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-primary)' }}>
                             {pkg.discount_percentage > 0 ? (

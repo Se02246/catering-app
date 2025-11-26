@@ -77,6 +77,18 @@ const Home = () => {
                                         </div>
                                     )}
                                     <h3 style={{ marginBottom: '0.5rem', color: 'var(--color-text)' }}>{pkg.name}</h3>
+                                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                                        {pkg.is_gluten_free && (
+                                            <span style={{ backgroundColor: '#FF9800', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                Senza Glutine!
+                                            </span>
+                                        )}
+                                        {pkg.is_lactose_free && (
+                                            <span style={{ backgroundColor: '#03A9F4', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                Senza Lattosio!
+                                            </span>
+                                        )}
+                                    </div>
                                     <p style={{ marginBottom: '1.5rem', color: 'var(--color-text-muted)', flexGrow: 1, lineHeight: '1.6' }}>{pkg.description}</p>
                                     <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -106,7 +118,21 @@ const Home = () => {
                 <div className="modal-overlay" onClick={() => setSelectedPackage(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>{selectedPackage.name}</h2>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>{selectedPackage.name}</h2>
+                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                    {selectedPackage.is_gluten_free && (
+                                        <span style={{ backgroundColor: '#FF9800', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                            Senza Glutine!
+                                        </span>
+                                    )}
+                                    {selectedPackage.is_lactose_free && (
+                                        <span style={{ backgroundColor: '#03A9F4', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                            Senza Lattosio!
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
                             <button className="btn btn-outline" style={{ borderColor: 'var(--color-text-muted)', color: 'var(--color-text-muted)', padding: '0.5rem 1rem' }} onClick={() => setSelectedPackage(null)}>Chiudi</button>
                         </div>
 
@@ -203,7 +229,21 @@ const Home = () => {
                                             </div>
                                         )}
                                         <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: '600', fontSize: '1rem', color: 'var(--color-text)', marginBottom: '0.1rem' }}>{item.name}</div>
+                                            <div style={{ fontWeight: '600', fontSize: '1rem', color: 'var(--color-text)', marginBottom: '0.1rem' }}>
+                                                {item.name}
+                                                <div style={{ display: 'inline-flex', gap: '0.25rem', marginLeft: '0.5rem', flexWrap: 'wrap' }}>
+                                                    {item.is_gluten_free && (
+                                                        <span style={{ backgroundColor: '#FF9800', color: 'white', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                            Senza Glutine!
+                                                        </span>
+                                                    )}
+                                                    {item.is_lactose_free && (
+                                                        <span style={{ backgroundColor: '#03A9F4', color: 'white', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                            Senza Lattosio!
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
                                             <div style={{ fontSize: '0.9rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>
                                                 {item.pieces_per_kg > 0
                                                     ? `${item.quantity} pz (${(item.quantity / item.pieces_per_kg).toFixed(2)} kg)`

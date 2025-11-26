@@ -25,7 +25,8 @@ const ProductManager = () => {
         setCurrentProduct({
             name: '', description: '', price_per_kg: '', image_url: '', images: [],
             pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
-            show_servings: false, servings_per_unit: '', is_visible: true, allow_multiple: false
+            show_servings: false, servings_per_unit: '', is_visible: true, allow_multiple: false,
+            is_gluten_free: false, is_lactose_free: false
         });
     };
 
@@ -43,7 +44,9 @@ const ProductManager = () => {
                 is_visible: currentProduct.is_visible !== undefined ? currentProduct.is_visible : true,
                 is_visible: currentProduct.is_visible !== undefined ? currentProduct.is_visible : true,
                 allow_multiple: currentProduct.allow_multiple || false,
-                max_order_quantity: currentProduct.max_order_quantity ? parseFloat(currentProduct.max_order_quantity) : null
+                max_order_quantity: currentProduct.max_order_quantity ? parseFloat(currentProduct.max_order_quantity) : null,
+                is_gluten_free: currentProduct.is_gluten_free || false,
+                is_lactose_free: currentProduct.is_lactose_free || false
             };
 
             if (currentProduct.id) {
@@ -218,6 +221,30 @@ const ProductManager = () => {
                                 <small style={{ display: 'block', marginTop: '0.25rem', color: '#666' }}>
                                     Se abilitato, permette di aggiungere il prodotto più volte (mostrando un contatore). Se disabilitato, il tasto diventa "Aggiunto".
                                 </small>
+                            </div>
+                            <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+                                <div style={{ display: 'flex', gap: '2rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <input
+                                            type="checkbox"
+                                            id="is_gluten_free"
+                                            checked={currentProduct.is_gluten_free || false}
+                                            onChange={e => setCurrentProduct({ ...currentProduct, is_gluten_free: e.target.checked })}
+                                            style={{ marginRight: '0.5rem' }}
+                                        />
+                                        <label htmlFor="is_gluten_free" style={{ fontWeight: 'bold', color: '#FF9800' }}>Senza Glutine!</label>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <input
+                                            type="checkbox"
+                                            id="is_lactose_free"
+                                            checked={currentProduct.is_lactose_free || false}
+                                            onChange={e => setCurrentProduct({ ...currentProduct, is_lactose_free: e.target.checked })}
+                                            style={{ marginRight: '0.5rem' }}
+                                        />
+                                        <label htmlFor="is_lactose_free" style={{ fontWeight: 'bold', color: '#03A9F4' }}>Senza Lattosio!</label>
+                                    </div>
+                                </div>
                             </div>
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                                 <button type="button" className="btn btn-outline" onClick={() => { setIsEditing(false); resetForm(); }}>Annulla</button>
