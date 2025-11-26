@@ -98,7 +98,7 @@ const PackageBuilder = () => {
 
     const handleEdit = (pkg) => {
         setEditingId(pkg.id);
-        const price = pkg.total_price * (1 - (pkg.discount_percentage || 0) / 100);
+        const price = pkg.total_price * (1 - (parseFloat(pkg.discount_percentage) || 0) / 100);
         setDiscountedPriceInput(pkg.discount_percentage > 0 ? price.toFixed(2) : '');
 
         setNewPackage({
@@ -107,7 +107,7 @@ const PackageBuilder = () => {
             image_url: pkg.image_url,
             images: pkg.images || (pkg.image_url ? [pkg.image_url] : []),
             total_price: pkg.total_price,
-            discount_percentage: pkg.discount_percentage || 0,
+            discount_percentage: parseFloat(pkg.discount_percentage) || 0,
             items: pkg.items.map(i => ({ ...i, tempId: Date.now() + Math.random() })),
             is_gluten_free: pkg.is_gluten_free || false,
             is_lactose_free: pkg.is_lactose_free || false
