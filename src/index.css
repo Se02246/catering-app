@@ -113,7 +113,10 @@ img {
   right: -2px;
   top: 45%;
   height: 1.5px;
-  background-color: currentColor;
-  transform: rotate(-12deg);
-  opacity: 0.8;
+  background-color: #ff0000;
+  /* Temporary red for visibility check */
+  transform: rotate(-15deg);
+  opacity: 1;
+  z-index: 10;
+  pointer-events: none;
 }
