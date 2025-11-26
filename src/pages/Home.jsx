@@ -280,7 +280,10 @@ const Home = () => {
                                     finalPrice = parseFloat(finalPrice).toFixed(2);
                                 }
 
-                                let message = `Ciao Barbara, sarei interessat a questo pacchetto(€ ${finalPrice}), e\` possibile avere maggiori informazioni?\n\n*${selectedPackage.name}*\n${selectedPackage.description}\n\n*Prodotti inclusi:*\n`;
+                                let message = `Ciao Barbara, sarei interessat a questo pacchetto(€ ${finalPrice}), e\` possibile avere maggiori informazioni?\n\n*${selectedPackage.name}`;
+                                if (selectedPackage.is_gluten_free) message += ' (senza glutine)';
+                                if (selectedPackage.is_lactose_free) message += ' (senza lattosio)';
+                                message += `*\n${selectedPackage.description}\n\n*Prodotti inclusi:*\n`;
 
                                 const items = selectedPackage.items || [];
                                 const middleIndex = Math.floor(items.length / 2);
