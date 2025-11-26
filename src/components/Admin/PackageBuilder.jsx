@@ -346,7 +346,7 @@ const PackageBuilder = () => {
                         <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-primary)' }}>
                             {pkg.discount_percentage > 0 ? (
                                 <div>
-                                    <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1rem', marginRight: '0.5rem' }}>
+                                    <span className="price-strikethrough" style={{ color: 'var(--color-text-muted)', fontSize: '1rem', marginRight: '0.5rem' }}>
                                         € {pkg.total_price}
                                     </span>
                                     <span>

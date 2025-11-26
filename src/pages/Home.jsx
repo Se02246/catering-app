@@ -82,7 +82,7 @@ const Home = () => {
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                                             {pkg.discount_percentage > 0 ? (
                                                 <>
-                                                    <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+                                                    <span className="price-strikethrough" style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
                                                         €&nbsp;{pkg.total_price}
                                                     </span>
                                                     <span style={{ fontWeight: '800', fontSize: '1.5rem', color: '#e63946' }}>
@@ -215,7 +215,7 @@ const Home = () => {
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                                 {selectedPackage.discount_percentage > 0 ? (
                                     <>
-                                        <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '0.2rem' }}>
+                                        <span className="price-strikethrough" style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '0.2rem' }}>
                                             €&nbsp;{selectedPackage.total_price}
                                         </span>
                                         <span style={{ fontSize: '2rem', fontWeight: '800', color: '#e63946' }}>

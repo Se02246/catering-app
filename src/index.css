@@ -96,4 +96,24 @@ img {
   -moz-user-select: auto;
   -ms-user-select: auto;
   user-select: auto;
+  -webkit-user-drag: auto;
+}
+
+/* Oblique Strikethrough for Prices */
+.price-strikethrough {
+  position: relative;
+  display: inline-block;
+  text-decoration: none !important;
+}
+
+.price-strikethrough::after {
+  content: '';
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: 45%;
+  height: 1.5px;
+  background-color: currentColor;
+  transform: rotate(-12deg);
+  opacity: 0.8;
 }
