@@ -27,7 +27,7 @@ export const api = {
 
     // Products
     getProducts: async () => {
-        const res = await fetch(`${API_URL}/products`);
+        const res = await fetch(`${API_URL}/products?t=${Date.now()}`);
         if (!res.ok) throw new Error('Failed to fetch products');
         return res.json();
     },

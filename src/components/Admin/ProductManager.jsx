@@ -15,6 +15,7 @@ const ProductManager = () => {
     const loadProducts = async () => {
         try {
             const data = await api.getProducts();
+            console.log('Loaded products:', data); // DEBUG LOG
             setProducts(data);
         } catch (err) {
             console.error('Failed to load products', err);
