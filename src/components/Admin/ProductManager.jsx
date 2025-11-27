@@ -42,7 +42,6 @@ const ProductManager = () => {
                 show_servings: currentProduct.show_servings || false,
                 servings_per_unit: currentProduct.servings_per_unit ? parseFloat(currentProduct.servings_per_unit) : null,
                 is_visible: currentProduct.is_visible !== undefined ? currentProduct.is_visible : true,
-                is_visible: currentProduct.is_visible !== undefined ? currentProduct.is_visible : true,
                 allow_multiple: currentProduct.allow_multiple || false,
                 max_order_quantity: currentProduct.max_order_quantity ? parseFloat(currentProduct.max_order_quantity) : null,
                 is_gluten_free: currentProduct.is_gluten_free || false,
