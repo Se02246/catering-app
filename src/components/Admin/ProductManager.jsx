@@ -56,11 +56,13 @@ const ProductManager = () => {
             console.log('Saving product:', productToSave); // DEBUG LOG
             console.log('Discounted Price:', productToSave.discounted_price); // DEBUG LOG
 
+            let savedProduct;
             if (currentProduct.id) {
-                await api.updateProduct(currentProduct.id, productToSave);
+                savedProduct = await api.updateProduct(currentProduct.id, productToSave);
             } else {
-                await api.addProduct(productToSave);
+                savedProduct = await api.addProduct(productToSave);
             }
+            console.log('API Response:', savedProduct); // DEBUG LOG
             setIsEditing(false);
             resetForm();
             loadProducts();
@@ -90,7 +92,7 @@ const ProductManager = () => {
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h2>Gestione Prodotti <span style={{ fontSize: '0.8rem', backgroundColor: 'red', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>v2</span></h2>
+                <h2>Gestione Prodotti <span style={{ fontSize: '0.8rem', backgroundColor: 'blue', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>v3</span></h2>
                 <button className="btn btn-primary" onClick={() => { resetForm(); setIsEditing(true); }}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
                     Nuovo Prodotto
