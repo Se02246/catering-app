@@ -543,10 +543,10 @@ const PackageBuilder = () => {
                                 {pkg.items && pkg.items.map((item, idx) => (
                                     <li key={idx}>
                                         {item.is_sold_by_piece
-                                            ? `${item.quantity} pz ${item.name}`
+                                            ? `${parseFloat(item.quantity)} pz ${item.name}`
                                             : (item.pieces_per_kg > 0
-                                                ? `${item.quantity} pz ${item.name}`
-                                                : `${item.quantity}kg ${item.name}`
+                                                ? `${parseFloat(item.quantity)} pz ${item.name}`
+                                                : `${parseFloat(item.quantity)}kg ${item.name}`
                                             )
                                         }
                                     </li>

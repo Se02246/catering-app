@@ -278,10 +278,10 @@ const Home = () => {
                                             </div>
                                             <div style={{ fontSize: '0.9rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>
                                                 {item.is_sold_by_piece
-                                                    ? `${item.quantity} pz`
+                                                    ? `${parseFloat(item.quantity)} pz`
                                                     : (item.pieces_per_kg > 0
-                                                        ? `${item.quantity} pz (${(item.quantity / item.pieces_per_kg).toFixed(2)} kg)`
-                                                        : `${item.quantity} kg`
+                                                        ? `${parseFloat(item.quantity)} pz (${(item.quantity / item.pieces_per_kg).toFixed(2)} kg)`
+                                                        : `${parseFloat(item.quantity)} kg`
                                                     )
                                                 }
                                             </div>
@@ -327,12 +327,12 @@ const Home = () => {
                                     const isPieces = item.pieces_per_kg > 0;
                                     let quantityText = '';
                                     if (item.is_sold_by_piece) {
-                                        quantityText = `${item.quantity} pz`;
+                                        quantityText = `${parseFloat(item.quantity)} pz`;
                                     } else if (isPieces) {
                                         const weightInKg = item.quantity / item.pieces_per_kg;
-                                        quantityText = `${item.quantity} pz (${weightInKg.toFixed(2)} kg)`;
+                                        quantityText = `${parseFloat(item.quantity)} pz (${weightInKg.toFixed(2)} kg)`;
                                     } else {
-                                        quantityText = `${item.quantity} kg`;
+                                        quantityText = `${parseFloat(item.quantity)} kg`;
                                     }
 
                                     const dietaryInfo = [

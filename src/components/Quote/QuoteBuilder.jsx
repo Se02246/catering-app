@@ -169,23 +169,6 @@ const QuoteBuilder = () => {
             const servingsText = (item.show_servings && item.servings_per_unit)
                 ? ` (per ${(item.servings_per_unit * item.quantity).toFixed(0)} persone)`
                 : '';
-
-            const dietaryInfo = [
-                item.is_gluten_free ? '(senza glutine)' : '',
-                item.is_lactose_free ? '(senza lattosio)' : ''
-            ].filter(Boolean).join(' ');
-
-            let quantityDisplay = `${item.quantity} ${unit}`;
-            if (item.is_sold_by_piece) {
-                quantityDisplay = `${item.quantity} pz`;
-            } else if (item.pieces_per_kg) {
-                const weightInKg = item.quantity / item.pieces_per_kg;
-                quantityDisplay = `${item.quantity} pz (${weightInKg.toFixed(2)} kg)`;
-            }
-
-            message += `• *${item.name}* ${dietaryInfo}${servingsText}\n`;
-            message += `  ${quantityDisplay} x ${priceUnit} = € ${calculateItemPrice(item).toFixed(2)}\n\n`;
-
             if (index === middleIndex) {
                 message += `• prezzo preventivo (€ ${total})\n\n`;
             }
@@ -329,7 +312,7 @@ const QuoteBuilder = () => {
                                                     : `€ ${item.price_per_kg} / kg`
                                                 )
                                             }
-                                            {' x '} {item.quantity} {item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}
+                                            {' x '} {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}
                                             {item.show_servings && item.servings_per_unit && (
                                                 <span style={{ color: 'var(--color-primary)', marginLeft: '0.5rem', fontWeight: 'bold' }}>
                                                     / per {(item.servings_per_unit * item.quantity).toFixed(0)} persone
