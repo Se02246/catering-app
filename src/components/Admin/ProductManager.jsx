@@ -6,7 +6,7 @@ import ImageUpload from '../Common/ImageUpload';
 const ProductManager = () => {
     const [products, setProducts] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', images: [], is_visible: true, allow_multiple: false, order_increment: '', max_order_quantity: '' });
+    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', images: [], is_visible: true, allow_multiple: false, order_increment: '', max_order_quantity: '', is_sold_by_piece: false, price_per_piece: '' });
 
     useEffect(() => {
         loadProducts();
@@ -26,7 +26,7 @@ const ProductManager = () => {
             name: '', description: '', price_per_kg: '', image_url: '', images: [],
             pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
             show_servings: false, servings_per_unit: '', is_visible: true, allow_multiple: false,
-            is_gluten_free: false, is_lactose_free: false
+            is_gluten_free: false, is_lactose_free: false, is_sold_by_piece: false, price_per_piece: ''
         });
     };
 
@@ -46,7 +46,9 @@ const ProductManager = () => {
                 allow_multiple: currentProduct.allow_multiple || false,
                 max_order_quantity: currentProduct.max_order_quantity ? parseFloat(currentProduct.max_order_quantity) : null,
                 is_gluten_free: currentProduct.is_gluten_free || false,
-                is_lactose_free: currentProduct.is_lactose_free || false
+                is_lactose_free: currentProduct.is_lactose_free || false,
+                is_sold_by_piece: currentProduct.is_sold_by_piece || false,
+                price_per_piece: currentProduct.price_per_piece ? parseFloat(currentProduct.price_per_piece) : null
             };
 
             if (currentProduct.id) {
@@ -116,14 +118,40 @@ const ProductManager = () => {
                                     onChange={e => setCurrentProduct({ ...currentProduct, description: e.target.value })}
                                 />
                             </div>
+                            <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: '4px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <input
+                                        type="checkbox"
+                                        id="is_sold_by_piece"
+                                        checked={currentProduct.is_sold_by_piece || false}
+                                        onChange={e => setCurrentProduct({ ...currentProduct, is_sold_by_piece: e.target.checked })}
+                                        style={{ marginRight: '0.5rem' }}
+                                    />
+                                    <label htmlFor="is_sold_by_piece" style={{ fontWeight: 'bold' }}>Vendi al pezzo</label>
+                                </div>
+                                {currentProduct.is_sold_by_piece && (
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label>Prezzo al Pezzo (€)</label>
+                                        <input
+                                            type="number" step="0.01"
+                                            style={{ width: '100%', padding: '0.5rem' }}
+                                            value={currentProduct.price_per_piece || ''}
+                                            onChange={e => setCurrentProduct({ ...currentProduct, price_per_piece: e.target.value })}
+                                            required={currentProduct.is_sold_by_piece}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
                             <div style={{ marginBottom: '1rem' }}>
                                 <label>Prezzo al Kg (€)</label>
                                 <input
                                     type="number" step="0.01"
-                                    style={{ width: '100%', padding: '0.5rem' }}
+                                    style={{ width: '100%', padding: '0.5rem', backgroundColor: currentProduct.is_sold_by_piece ? '#eee' : 'white' }}
                                     value={currentProduct.price_per_kg}
                                     onChange={e => setCurrentProduct({ ...currentProduct, price_per_kg: e.target.value })}
-                                    required
+                                    required={!currentProduct.is_sold_by_piece}
+                                    disabled={currentProduct.is_sold_by_piece}
                                 />
                             </div>
                             <div style={{ marginBottom: '1rem' }}>
@@ -289,7 +317,9 @@ const ProductManager = () => {
                                         </span>
                                     )}
                                 </div>
-                                <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>€ {p.price_per_kg} / kg</p>
+                                <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>
+                                    {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                </p>
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>

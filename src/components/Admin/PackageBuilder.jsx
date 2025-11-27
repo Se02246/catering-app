@@ -66,7 +66,9 @@ const PackageBuilder = () => {
             const prod = products.find(p => p.id == item.product_id);
             if (!prod) return sum;
 
-            if (prod.pieces_per_kg > 0) {
+            if (prod.is_sold_by_piece) {
+                return sum + (prod.price_per_piece * item.quantity);
+            } else if (prod.pieces_per_kg > 0) {
                 // quantity is in pieces
                 // weight = quantity / pieces_per_kg
                 // price = weight * price_per_kg
@@ -232,7 +234,9 @@ const PackageBuilder = () => {
                                                         </span>
                                                     )}
                                                 </div>
-                                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>€ {p.price_per_kg} / kg</p>
+                                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                                                    {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                                </p>
                                             </div>
                                             {(() => {
                                                 const existing = newPackage.items.find(i => i.product_id === p.id);
@@ -389,7 +393,7 @@ const PackageBuilder = () => {
                                     ) : (
                                         newPackage.items.map((item) => {
                                             const product = products.find(p => p.id === item.product_id);
-                                            const isPieces = product?.pieces_per_kg > 0;
+                                            const isPieces = product?.pieces_per_kg > 0 || product?.is_sold_by_piece;
                                             const unit = isPieces ? 'pz' : 'kg';
                                             const step = isPieces ? 1 : 0.1;
                                             const min = isPieces ? 1 : 0.1;
@@ -413,9 +417,13 @@ const PackageBuilder = () => {
                                                             </div>
                                                         </div>
                                                         <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>
-                                                            {isPieces
-                                                                ? `€ ${(product?.price_per_kg / product.pieces_per_kg).toFixed(2)} / pz`
-                                                                : `€ ${product?.price_per_kg}/kg`}
+                                                            {product?.is_sold_by_piece
+                                                                ? `€ ${product.price_per_piece} / pz`
+                                                                : (product?.pieces_per_kg > 0
+                                                                    ? `€ ${(product.price_per_kg / product.pieces_per_kg).toFixed(2)} / pz`
+                                                                    : `€ ${product?.price_per_kg}/kg`
+                                                                )
+                                                            }
                                                         </div>
                                                     </div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -534,9 +542,12 @@ const PackageBuilder = () => {
                             <ul style={{ paddingLeft: '1.2rem', marginTop: '0.5rem' }}>
                                 {pkg.items && pkg.items.map((item, idx) => (
                                     <li key={idx}>
-                                        {item.pieces_per_kg > 0
+                                        {item.is_sold_by_piece
                                             ? `${item.quantity} pz ${item.name}`
-                                            : `${item.quantity}kg ${item.name}`
+                                            : (item.pieces_per_kg > 0
+                                                ? `${item.quantity} pz ${item.name}`
+                                                : `${item.quantity}kg ${item.name}`
+                                            )
                                         }
                                     </li>
                                 ))}

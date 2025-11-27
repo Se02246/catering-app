@@ -277,9 +277,12 @@ const Home = () => {
                                                 </div>
                                             </div>
                                             <div style={{ fontSize: '0.9rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>
-                                                {item.pieces_per_kg > 0
-                                                    ? `${item.quantity} pz (${(item.quantity / item.pieces_per_kg).toFixed(2)} kg)`
-                                                    : `${item.quantity} kg`
+                                                {item.is_sold_by_piece
+                                                    ? `${item.quantity} pz`
+                                                    : (item.pieces_per_kg > 0
+                                                        ? `${item.quantity} pz (${(item.quantity / item.pieces_per_kg).toFixed(2)} kg)`
+                                                        : `${item.quantity} kg`
+                                                    )
                                                 }
                                             </div>
                                         </div>
@@ -323,14 +326,9 @@ const Home = () => {
                                 items.forEach((item, index) => {
                                     const isPieces = item.pieces_per_kg > 0;
                                     let quantityText = '';
-                                    if (isPieces) {
-                                        const weight = (item.quantity * 1000 / item.pieces_per_kg) / 1000; // approx weight if needed, but item.quantity IS the pieces count now? 
-                                        // Wait, in PackageBuilder we store 'quantity'. If isPieces, quantity is count.
-                                        // But wait, the DB stores quantity. 
-                                        // If we changed PackageBuilder to store 'count' in 'quantity' column, then here 'item.quantity' is count.
-                                        // But we need to be careful about legacy data.
-                                        // Assuming new packages use count.
-                                        // Let's calculate weight for display: weight = count * (1 / pieces_per_kg)
+                                    if (item.is_sold_by_piece) {
+                                        quantityText = `${item.quantity} pz`;
+                                    } else if (isPieces) {
                                         const weightInKg = item.quantity / item.pieces_per_kg;
                                         quantityText = `${item.quantity} pz (${weightInKg.toFixed(2)} kg)`;
                                     } else {

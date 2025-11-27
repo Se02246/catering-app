@@ -53,6 +53,8 @@ const Header = () => {
             <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem', color: 'var(--color-primary-dark)' }}>Muse Catering</h1>
             <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto', marginBottom: '2rem' }}>
                 Catering dolci e salati preparati con passione per i tuoi eventi speciali.
+
+                Se hai domande o richieste, per favore, fammele dopo aver inviato il preventivo, faro` del mio meglio per aiutarti.
             </p>
 
             <div style={{

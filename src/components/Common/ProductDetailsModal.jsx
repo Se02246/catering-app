@@ -93,9 +93,14 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart }) => {
                     <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                         <div>
                             <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Prezzo</span>
-                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>€ {product.price_per_kg} / kg</span>
+                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                                {product.is_sold_by_piece
+                                    ? `€ ${product.price_per_piece} / pz`
+                                    : `€ ${product.price_per_kg} / kg`
+                                }
+                            </span>
                         </div>
-                        {product.pieces_per_kg && (
+                        {product.pieces_per_kg && !product.is_sold_by_piece && (
                             <div>
                                 <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Pezzi per Kg</span>
                                 <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{product.pieces_per_kg}</span>

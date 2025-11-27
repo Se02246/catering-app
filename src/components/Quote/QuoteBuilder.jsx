@@ -49,7 +49,9 @@ const QuoteBuilder = () => {
                     servings_per_unit: p.servings_per_unit ? parseFloat(p.servings_per_unit) : null,
                     allow_multiple: Boolean(p.allow_multiple),
                     max_order_quantity: p.max_order_quantity ? parseFloat(p.max_order_quantity) : null,
-                    images: p.images || (p.image_url ? [p.image_url] : [])
+                    images: p.images || (p.image_url ? [p.image_url] : []),
+                    is_sold_by_piece: Boolean(p.is_sold_by_piece),
+                    price_per_piece: p.price_per_piece ? parseFloat(p.price_per_piece) : null
                 }));
             setProducts(parsedData);
         } catch (err) {
@@ -128,9 +130,15 @@ const QuoteBuilder = () => {
     };
 
     const calculateItemPrice = (item) => {
+        if (item.is_sold_by_piece) {
+            return item.price_per_piece * item.quantity;
+        }
         if (item.pieces_per_kg) {
-            // Price is per kg, but quantity is in pieces
-            // Price per piece = price_per_kg / pieces_per_kg
+            // Legacy logic or specific use case where pieces_per_kg is set but not sold_by_piece (maybe sold by kg but tracked by piece?)
+            // For now, if is_sold_by_piece is true, we use that.
+            // If not, we assume standard weight based logic.
+            // But wait, if pieces_per_kg is set, the quantity might be in pieces?
+            // Let's stick to the new flag for the new behavior.
             return (item.price_per_kg / item.pieces_per_kg) * item.quantity;
         }
         return item.price_per_kg * item.quantity;
@@ -148,10 +156,15 @@ const QuoteBuilder = () => {
         const middleIndex = Math.floor(cart.length / 2);
 
         cart.forEach((item, index) => {
-            const unit = item.pieces_per_kg ? 'pz' : 'kg';
-            const priceUnit = item.pieces_per_kg
-                ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
-                : `€ ${item.price_per_kg} / kg`;
+            const unit = item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg');
+            let priceUnit = '';
+            if (item.is_sold_by_piece) {
+                priceUnit = `€ ${item.price_per_piece.toFixed(2)} / pz`;
+            } else if (item.pieces_per_kg) {
+                priceUnit = `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`;
+            } else {
+                priceUnit = `€ ${item.price_per_kg} / kg`;
+            }
 
             const servingsText = (item.show_servings && item.servings_per_unit)
                 ? ` (per ${(item.servings_per_unit * item.quantity).toFixed(0)} persone)`
@@ -163,7 +176,9 @@ const QuoteBuilder = () => {
             ].filter(Boolean).join(' ');
 
             let quantityDisplay = `${item.quantity} ${unit}`;
-            if (item.pieces_per_kg) {
+            if (item.is_sold_by_piece) {
+                quantityDisplay = `${item.quantity} pz`;
+            } else if (item.pieces_per_kg) {
                 const weightInKg = item.quantity / item.pieces_per_kg;
                 quantityDisplay = `${item.quantity} pz (${weightInKg.toFixed(2)} kg)`;
             }
@@ -247,7 +262,9 @@ const QuoteBuilder = () => {
                                         </span>
                                     )}
                                 </div>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>€ {p.price_per_kg} / kg</p>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                                    {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                </p>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 {p.allow_multiple && cart.filter(item => item.id === p.id).length > 0 && (
@@ -305,10 +322,14 @@ const QuoteBuilder = () => {
                                             </div>
                                         </div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                                            {item.pieces_per_kg
-                                                ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
-                                                : `€ ${item.price_per_kg} / kg`}
-                                            {' x '} {item.quantity} {item.pieces_per_kg ? 'pz' : 'kg'}
+                                            {item.is_sold_by_piece
+                                                ? `€ ${item.price_per_piece.toFixed(2)} / pz`
+                                                : (item.pieces_per_kg
+                                                    ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
+                                                    : `€ ${item.price_per_kg} / kg`
+                                                )
+                                            }
+                                            {' x '} {item.quantity} {item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}
                                             {item.show_servings && item.servings_per_unit && (
                                                 <span style={{ color: 'var(--color-primary)', marginLeft: '0.5rem', fontWeight: 'bold' }}>
                                                     / per {(item.servings_per_unit * item.quantity).toFixed(0)} persone
