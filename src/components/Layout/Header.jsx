@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Lock, Download } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
@@ -9,6 +9,25 @@ const Header = () => {
     const isHome = location.pathname === '/';
     const isQuote = location.pathname === '/quote';
     const { showPrompt, handleInstallClick } = useInstallPromptContext();
+    const [headerText, setHeaderText] = useState("Catering dolci e salati preparati con passione per i tuoi eventi speciali.\n\nSe hai domande o richieste, per favore, fammele dopo aver inviato il preventivo, faro` del mio meglio per aiutarti.");
+
+    useEffect(() => {
+        const fetchHeaderText = async () => {
+            try {
+                const response = await fetch('/api/settings/header_text');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.value) {
+                        setHeaderText(data.value);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching header text:', error);
+            }
+        };
+
+        fetchHeaderText();
+    }, []);
 
     const scrollToPackages = () => {
         if (isHome) {
@@ -51,10 +70,8 @@ const Header = () => {
             </div>
 
             <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem', color: 'var(--color-primary-dark)' }}>Muse Catering</h1>
-            <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto', marginBottom: '2rem' }}>
-                Catering dolci e salati preparati con passione per i tuoi eventi speciali.
-
-                Se hai domande o richieste, per favore, fammele dopo aver inviato il preventivo, faro` del mio meglio per aiutarti.
+            <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto', marginBottom: '2rem', whiteSpace: 'pre-line' }}>
+                {headerText}
             </p>
 
             <div style={{

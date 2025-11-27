@@ -21,10 +21,13 @@ app.get('/api/health', (req, res) => {
 import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import cateringRoutes from './routes/caterings.js';
+import settingsRoutes from './routes/settings.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/caterings', cateringRoutes);
+app.use('/api/settings', settingsRoutes);
+
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../dist')));

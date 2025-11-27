@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ProductManager from '../components/Admin/ProductManager';
 import PackageBuilder from '../components/Admin/PackageBuilder';
+import SettingsManager from '../components/Admin/SettingsManager';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('products');
@@ -30,26 +31,34 @@ const AdminDashboard = () => {
             </div>
             <h1 style={{ marginBottom: '2rem' }}>Admin Dashboard</h1>
 
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--color-border)', overflowX: 'auto' }}>
                 <button
                     className={`btn ${activeTab === 'products' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setActiveTab('products')}
+                    style={{ whiteSpace: 'nowrap' }}
                 >
                     Prodotti
                 </button>
                 <button
                     className={`btn ${activeTab === 'packages' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setActiveTab('packages')}
+                    style={{ whiteSpace: 'nowrap' }}
                 >
                     Pacchetti Catering
                 </button>
+                <button
+                    className={`btn ${activeTab === 'settings' ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setActiveTab('settings')}
+                    style={{ whiteSpace: 'nowrap' }}
+                >
+                    Impostazioni
+                </button>
             </div>
 
-            {activeTab === 'products' ? (
-                <ProductManager />
-            ) : (
-                <PackageBuilder />
-            )}
+            {activeTab === 'products' && <ProductManager />}
+            {activeTab === 'packages' && <PackageBuilder />}
+            {activeTab === 'settings' && <SettingsManager />}
+
         </div>
     );
 };
