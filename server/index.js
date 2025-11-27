@@ -35,7 +35,7 @@ app.get('/api/debug', (req, res) => {
 });
 
 import authRoutes from './routes/auth.js';
-import productRoutes from './routes/products_service.js';
+import productRoutes from './routes/products.js';
 import cateringRoutes from './routes/caterings.js';
 import settingsRoutes from './routes/settings.js';
 

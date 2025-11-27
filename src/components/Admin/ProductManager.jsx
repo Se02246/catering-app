@@ -6,7 +6,7 @@ import ImageUpload from '../Common/ImageUpload';
 const ProductManager = () => {
     const [products, setProducts] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', images: [], is_visible: true, allow_multiple: false, order_increment: '', max_order_quantity: '', is_sold_by_piece: false, price_per_piece: '', discounted_price: '' });
+    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', images: [], is_visible: true, allow_multiple: false, order_increment: '', max_order_quantity: '', is_sold_by_piece: false, price_per_piece: '' });
 
     useEffect(() => {
         loadProducts();
@@ -15,8 +15,6 @@ const ProductManager = () => {
     const loadProducts = async () => {
         try {
             const data = await api.getProducts();
-            console.log('Loaded products:', data); // DEBUG LOG
-            console.log('Products with discount:', data.filter(p => p.discounted_price)); // DEBUG LOG
             setProducts(data);
         } catch (err) {
             console.error('Failed to load products', err);
@@ -28,10 +26,9 @@ const ProductManager = () => {
             name: '', description: '', price_per_kg: '', image_url: '', images: [],
             pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
             show_servings: false, servings_per_unit: '', is_visible: true, allow_multiple: false,
-            is_gluten_free: false, is_lactose_free: false, is_sold_by_piece: false, price_per_piece: '', discounted_price: ''
+            is_gluten_free: false, is_lactose_free: false, is_sold_by_piece: false, price_per_piece: ''
         });
     };
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -50,19 +47,14 @@ const ProductManager = () => {
                 is_gluten_free: currentProduct.is_gluten_free || false,
                 is_lactose_free: currentProduct.is_lactose_free || false,
                 is_sold_by_piece: currentProduct.is_sold_by_piece || false,
-                price_per_piece: currentProduct.price_per_piece ? parseFloat(currentProduct.price_per_piece) : null,
-                discounted_price: currentProduct.discounted_price ? parseFloat(currentProduct.discounted_price) : null
+                price_per_piece: currentProduct.price_per_piece ? parseFloat(currentProduct.price_per_piece) : null
             };
-            console.log('Saving product:', productToSave); // DEBUG LOG
-            console.log('Discounted Price:', productToSave.discounted_price); // DEBUG LOG
 
-            let savedProduct;
             if (currentProduct.id) {
-                savedProduct = await api.updateProduct(currentProduct.id, productToSave);
+                await api.updateProduct(currentProduct.id, productToSave);
             } else {
-                savedProduct = await api.addProduct(productToSave);
+                await api.addProduct(productToSave);
             }
-            console.log('API Response:', savedProduct); // DEBUG LOG
             setIsEditing(false);
             resetForm();
             loadProducts();
@@ -92,7 +84,7 @@ const ProductManager = () => {
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h2>Gestione Prodotti <span style={{ fontSize: '0.8rem', backgroundColor: 'orange', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>v5</span></h2>
+                <h2>Gestione Prodotti</h2>
                 <button className="btn btn-primary" onClick={() => { resetForm(); setIsEditing(true); }}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
                     Nuovo Prodotto
@@ -160,19 +152,6 @@ const ProductManager = () => {
                                     required={!currentProduct.is_sold_by_piece}
                                     disabled={currentProduct.is_sold_by_piece}
                                 />
-                            </div>
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label>Prezzo Scontato (Opzionale)</label>
-                                <input
-                                    type="number" step="0.01"
-                                    style={{ width: '100%', padding: '0.5rem' }}
-                                    value={currentProduct.discounted_price || ''}
-                                    onChange={e => setCurrentProduct({ ...currentProduct, discounted_price: e.target.value })}
-                                    placeholder="Lascia vuoto per nessun sconto"
-                                />
-                                <small style={{ display: 'block', marginTop: '0.25rem', color: '#666' }}>
-                                    Questo prezzo sarà visibile solo nella sezione "Crea Preventivo" e non influirà sui pacchetti.
-                                </small>
                             </div>
                             <div style={{ marginBottom: '1rem' }}>
                                 <label>Immagini (Trascina per riordinare, la prima è la copertina)</label>
@@ -339,11 +318,6 @@ const ProductManager = () => {
                                 </div>
                                 <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>
                                     {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
-                                    {p.discounted_price && (
-                                        <span style={{ marginLeft: '0.5rem', color: 'green', fontWeight: 'bold' }}>
-                                            (Scontato: € {p.discounted_price})
-                                        </span>
-                                    )}
                                 </p>
                             </div>
                         </div>

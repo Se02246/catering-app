@@ -93,26 +93,12 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart }) => {
                     <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                         <div>
                             <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Prezzo</span>
-                            {product.discounted_price ? (
-                                <div>
-                                    <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1rem', marginRight: '0.5rem' }}>
-                                        {product.is_sold_by_piece
-                                            ? `€ ${product.price_per_piece} / pz`
-                                            : `€ ${product.price_per_kg} / kg`
-                                        }
-                                    </span>
-                                    <span style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
-                                        € {product.discounted_price} / {product.is_sold_by_piece ? 'pz' : 'kg'}
-                                    </span>
-                                </div>
-                            ) : (
-                                <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
-                                    {product.is_sold_by_piece
-                                        ? `€ ${product.price_per_piece} / pz`
-                                        : `€ ${product.price_per_kg} / kg`
-                                    }
-                                </span>
-                            )}
+                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                                {product.is_sold_by_piece
+                                    ? `€ ${product.price_per_piece} / pz`
+                                    : `€ ${product.price_per_kg} / kg`
+                                }
+                            </span>
                         </div>
                         {product.pieces_per_kg && !product.is_sold_by_piece && (
                             <div>
