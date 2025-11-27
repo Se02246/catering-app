@@ -51,7 +51,8 @@ const QuoteBuilder = () => {
                     max_order_quantity: p.max_order_quantity ? parseFloat(p.max_order_quantity) : null,
                     images: p.images || (p.image_url ? [p.image_url] : []),
                     is_sold_by_piece: Boolean(p.is_sold_by_piece),
-                    price_per_piece: p.price_per_piece ? parseFloat(p.price_per_piece) : null
+                    price_per_piece: p.price_per_piece ? parseFloat(p.price_per_piece) : null,
+                    discounted_price: p.discounted_price ? parseFloat(p.discounted_price) : null
                 }));
             setProducts(parsedData);
         } catch (err) {
@@ -130,15 +131,15 @@ const QuoteBuilder = () => {
     };
 
     const calculateItemPrice = (item) => {
+        // Use discounted price if available
+        if (item.discounted_price) {
+            return item.discounted_price * item.quantity;
+        }
+
         if (item.is_sold_by_piece) {
             return item.price_per_piece * item.quantity;
         }
         if (item.pieces_per_kg) {
-            // Legacy logic or specific use case where pieces_per_kg is set but not sold_by_piece (maybe sold by kg but tracked by piece?)
-            // For now, if is_sold_by_piece is true, we use that.
-            // If not, we assume standard weight based logic.
-            // But wait, if pieces_per_kg is set, the quantity might be in pieces?
-            // Let's stick to the new flag for the new behavior.
             return (item.price_per_kg / item.pieces_per_kg) * item.quantity;
         }
         return item.price_per_kg * item.quantity;
@@ -158,7 +159,9 @@ const QuoteBuilder = () => {
         cart.forEach((item, index) => {
             const unit = item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg');
             let priceUnit = '';
-            if (item.is_sold_by_piece) {
+            if (item.discounted_price) {
+                priceUnit = `€ ${item.discounted_price.toFixed(2)} / ${item.is_sold_by_piece || item.pieces_per_kg ? 'pz' : 'kg'} (SCONTATO)`;
+            } else if (item.is_sold_by_piece) {
                 priceUnit = `€ ${item.price_per_piece.toFixed(2)} / pz`;
             } else if (item.pieces_per_kg) {
                 priceUnit = `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`;
@@ -262,7 +265,18 @@ const QuoteBuilder = () => {
                                     )}
                                 </div>
                                 <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
-                                    {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                    {p.discounted_price ? (
+                                        <>
+                                            <span style={{ textDecoration: 'line-through', marginRight: '0.5rem' }}>
+                                                {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                            </span>
+                                            <span style={{ color: 'var(--color-primary)', fontWeight: 'bold', fontSize: '1rem' }}>
+                                                € {p.discounted_price} / {p.is_sold_by_piece || p.pieces_per_kg ? 'pz' : 'kg'}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`
+                                    )}
                                 </p>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -321,13 +335,29 @@ const QuoteBuilder = () => {
                                             </div>
                                         </div>
                                         <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                                            {item.is_sold_by_piece
-                                                ? `€ ${item.price_per_piece.toFixed(2)} / pz`
-                                                : (item.pieces_per_kg
-                                                    ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
-                                                    : `€ ${item.price_per_kg} / kg`
-                                                )
-                                            }
+                                            {item.discounted_price ? (
+                                                <>
+                                                    <span style={{ textDecoration: 'line-through', marginRight: '0.5rem' }}>
+                                                        {item.is_sold_by_piece
+                                                            ? `€ ${item.price_per_piece.toFixed(2)}`
+                                                            : (item.pieces_per_kg
+                                                                ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)}`
+                                                                : `€ ${item.price_per_kg}`
+                                                            )
+                                                        }
+                                                    </span>
+                                                    <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>
+                                                        € {item.discounted_price.toFixed(2)}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                item.is_sold_by_piece
+                                                    ? `€ ${item.price_per_piece.toFixed(2)} / pz`
+                                                    : (item.pieces_per_kg
+                                                        ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
+                                                        : `€ ${item.price_per_kg} / kg`
+                                                    )
+                                            )}
                                             {' x '} {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}
                                             {item.show_servings && item.servings_per_unit && (
                                                 <span style={{ color: 'var(--color-primary)', marginLeft: '0.5rem', fontWeight: 'bold' }}>

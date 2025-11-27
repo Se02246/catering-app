@@ -235,7 +235,18 @@ const PackageBuilder = () => {
                                                     )}
                                                 </div>
                                                 <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
-                                                    {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                                    {p.discounted_price ? (
+                                                        <>
+                                                            <span style={{ textDecoration: 'line-through', marginRight: '0.5rem' }}>
+                                                                {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                                            </span>
+                                                            <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>
+                                                                € {p.discounted_price} / {p.is_sold_by_piece || p.pieces_per_kg ? 'pz' : 'kg'}
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`
+                                                    )}
                                                 </p>
                                             </div>
                                             {(() => {
