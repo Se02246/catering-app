@@ -18,6 +18,15 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Catering App Backend is running' });
 });
 
+app.get('/api/debug', (req, res) => {
+  res.json({
+    url: req.url,
+    originalUrl: req.originalUrl,
+    baseUrl: req.baseUrl,
+    headers: req.headers
+  });
+});
+
 import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import cateringRoutes from './routes/caterings.js';
