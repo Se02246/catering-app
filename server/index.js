@@ -32,10 +32,10 @@ import productRoutes from './routes/products.js';
 import cateringRoutes from './routes/caterings.js';
 import settingsRoutes from './routes/settings.js';
 
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/caterings', cateringRoutes);
-app.use('/api/settings', settingsRoutes);
+app.use(['/api/auth', '/auth'], authRoutes);
+app.use(['/api/products', '/products'], productRoutes);
+app.use(['/api/caterings', '/caterings'], cateringRoutes);
+app.use(['/api/settings', '/settings'], settingsRoutes);
 
 
 // Serve static files from the React app
