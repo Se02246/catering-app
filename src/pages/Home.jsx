@@ -280,7 +280,7 @@ const Home = () => {
                                                 {item.is_sold_by_piece
                                                     ? `${parseFloat(item.quantity)} pz`
                                                     : (item.pieces_per_kg > 0
-                                                        ? `${parseFloat(item.quantity)} pz (${(item.quantity / item.pieces_per_kg).toFixed(2)} kg)`
+                                                        ? `${parseFloat(item.quantity)} pz`
                                                         : `${parseFloat(item.quantity)} kg`
                                                     )
                                                 }
@@ -329,8 +329,7 @@ const Home = () => {
                                     if (item.is_sold_by_piece) {
                                         quantityText = `${parseFloat(item.quantity)} pz`;
                                     } else if (isPieces) {
-                                        const weightInKg = item.quantity / item.pieces_per_kg;
-                                        quantityText = `${parseFloat(item.quantity)} pz (${weightInKg.toFixed(2)} kg)`;
+                                        quantityText = `${parseFloat(item.quantity)} pz`;
                                     } else {
                                         quantityText = `${parseFloat(item.quantity)} kg`;
                                     }

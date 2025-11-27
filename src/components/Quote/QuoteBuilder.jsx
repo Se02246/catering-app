@@ -169,6 +169,22 @@ const QuoteBuilder = () => {
             const servingsText = (item.show_servings && item.servings_per_unit)
                 ? ` (per ${(item.servings_per_unit * item.quantity).toFixed(0)} persone)`
                 : '';
+
+            const dietaryInfo = [
+                item.is_gluten_free ? '(senza glutine)' : '',
+                item.is_lactose_free ? '(senza lattosio)' : ''
+            ].filter(Boolean).join(' ');
+
+            let quantityDisplay = `${parseFloat(item.quantity)} ${unit}`;
+            if (item.is_sold_by_piece) {
+                quantityDisplay = `${parseFloat(item.quantity)} pz`;
+            } else if (item.pieces_per_kg) {
+                quantityDisplay = `${parseFloat(item.quantity)} pz`;
+            }
+
+            message += `• *${item.name}* ${dietaryInfo}${servingsText}\n`;
+            message += `  ${quantityDisplay} x ${priceUnit} = € ${calculateItemPrice(item).toFixed(2)}\n\n`;
+
             if (index === middleIndex) {
                 message += `• prezzo preventivo (€ ${total})\n\n`;
             }
