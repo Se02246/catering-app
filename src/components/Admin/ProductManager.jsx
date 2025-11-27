@@ -16,6 +16,7 @@ const ProductManager = () => {
         try {
             const data = await api.getProducts();
             console.log('Loaded products:', data); // DEBUG LOG
+            console.log('Products with discount:', data.filter(p => p.discounted_price)); // DEBUG LOG
             setProducts(data);
         } catch (err) {
             console.error('Failed to load products', err);
