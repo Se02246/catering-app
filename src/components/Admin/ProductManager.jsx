@@ -51,6 +51,8 @@ const ProductManager = () => {
                 price_per_piece: currentProduct.price_per_piece ? parseFloat(currentProduct.price_per_piece) : null,
                 discounted_price: currentProduct.discounted_price ? parseFloat(currentProduct.discounted_price) : null
             };
+            console.log('Saving product:', productToSave); // DEBUG LOG
+            console.log('Discounted Price:', productToSave.discounted_price); // DEBUG LOG
 
             if (currentProduct.id) {
                 await api.updateProduct(currentProduct.id, productToSave);
