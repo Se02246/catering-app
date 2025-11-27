@@ -92,7 +92,7 @@ const ProductManager = () => {
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h2>Gestione Prodotti <span style={{ fontSize: '0.8rem', backgroundColor: 'purple', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>v4</span></h2>
+                <h2>Gestione Prodotti <span style={{ fontSize: '0.8rem', backgroundColor: 'orange', color: 'white', padding: '2px 6px', borderRadius: '4px' }}>v5</span></h2>
                 <button className="btn btn-primary" onClick={() => { resetForm(); setIsEditing(true); }}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
                     Nuovo Prodotto
