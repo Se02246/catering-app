@@ -6,26 +6,43 @@ const router = express.Router();
 // Get all caterings (with items)
 router.get('/', async (req, res) => {
     try {
-        const cateringsResult = await pool.query('SELECT * FROM caterings ORDER BY sort_order ASC, created_at DESC');
-        const caterings = cateringsResult.rows;
+        const query = `
+            SELECT 
+                c.*,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'product_id', ci.product_id,
+                            'quantity', ci.quantity,
+                            'name', p.name,
+                            'description', p.description,
+                            'price_per_kg', p.price_per_kg,
+                            'image_url', p.image_url,
+                            'images', p.images,
+                            'pieces_per_kg', p.pieces_per_kg,
+                            'min_order_quantity', p.min_order_quantity,
+                            'order_increment', p.order_increment,
+                            'show_servings', p.show_servings,
+                            'servings_per_unit', p.servings_per_unit,
+                            'allow_multiple', p.allow_multiple,
+                            'max_order_quantity', p.max_order_quantity,
+                            'is_gluten_free', p.is_gluten_free,
+                            'is_lactose_free', p.is_lactose_free,
+                            'is_sold_by_piece', p.is_sold_by_piece,
+                            'price_per_piece', p.price_per_piece
+                        ) ORDER BY p.name
+                    ) FILTER (WHERE ci.id IS NOT NULL),
+                    '[]'
+                ) as items
+            FROM caterings c
+            LEFT JOIN catering_items ci ON c.id = ci.catering_id
+            LEFT JOIN products p ON ci.product_id = p.id
+            GROUP BY c.id
+            ORDER BY c.sort_order ASC, c.created_at DESC
+        `;
 
-        // For each catering, fetch its items
-        // In production, use a JOIN or JSON_AGG for better performance
-        for (let catering of caterings) {
-            const itemsResult = await pool.query(
-                `SELECT ci.product_id, ci.quantity, p.name, p.description, p.price_per_kg, p.image_url, p.images, 
-                        p.pieces_per_kg, p.min_order_quantity, p.order_increment, p.show_servings, 
-                        p.servings_per_unit, p.allow_multiple, p.max_order_quantity,
-                        p.is_gluten_free, p.is_lactose_free, p.is_sold_by_piece, p.price_per_piece
-         FROM catering_items ci 
-         JOIN products p ON ci.product_id = p.id 
-         WHERE ci.catering_id = $1`,
-                [catering.id]
-            );
-            catering.items = itemsResult.rows;
-        }
-
-        res.json(caterings);
+        const result = await pool.query(query);
+        res.json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
