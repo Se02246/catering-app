@@ -11,6 +11,8 @@ const Home = () => {
     const [error, setError] = React.useState(null);
     const [selectedPackage, setSelectedPackage] = React.useState(null);
     const [selectedProduct, setSelectedProduct] = React.useState(null);
+    const [isPackageClosing, setIsPackageClosing] = React.useState(false);
+    const [isProductClosing, setIsProductClosing] = React.useState(false);
 
     React.useEffect(() => {
         const fetchPackages = async () => {
@@ -47,9 +49,19 @@ const Home = () => {
     React.useEffect(() => {
         const handlePopState = (event) => {
             if (selectedProduct) {
-                setSelectedProduct(null);
+                // Trigger close animation for product
+                setIsProductClosing(true);
+                setTimeout(() => {
+                    setSelectedProduct(null);
+                    setIsProductClosing(false);
+                }, 500); // Match animation duration
             } else if (selectedPackage) {
-                setSelectedPackage(null);
+                // Trigger close animation for package
+                setIsPackageClosing(true);
+                setTimeout(() => {
+                    setSelectedPackage(null);
+                    setIsPackageClosing(false);
+                }, 500); // Match animation duration
             }
         };
 
@@ -92,8 +104,18 @@ const Home = () => {
                         {packages.length === 0 ? (
                             <p style={{ color: 'var(--color-text)' }}>Nessun pacchetto disponibile al momento.</p>
                         ) : (
-                            packages.map((pkg) => (
-                                <div key={pkg.id} className="glass-panel" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s ease' }}>
+                            packages.map((pkg, index) => (
+                                <div
+                                    key={pkg.id}
+                                    className="glass-panel bounce-in"
+                                    style={{
+                                        padding: '2rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        transition: 'transform 0.3s ease',
+                                        animationDelay: `${index * 0.1}s` // Staggered animation
+                                    }}
+                                >
                                     {pkg.image_url && (
                                         <div
                                             style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '1.5rem', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', cursor: 'pointer' }}
@@ -148,7 +170,10 @@ const Home = () => {
 
             {selectedPackage && (
                 <div className="modal-overlay" onClick={closePackage}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                    <div
+                        className={`modal-content ${isPackageClosing ? 'bounce-out' : 'bounce-in'}`}
+                        onClick={e => e.stopPropagation()}
+                    >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                 <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>{selectedPackage.name}</h2>
@@ -361,6 +386,7 @@ const Home = () => {
                 <ProductDetailsModal
                     product={selectedProduct}
                     onClose={closeProduct}
+                    isClosing={isProductClosing}
                 // No onAddToCart here as we are in Home, not QuoteBuilder
                 />
             )}

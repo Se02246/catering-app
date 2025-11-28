@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ProductDetailsModal = ({ product, onClose, onAddToCart }) => {
+const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
     React.useEffect(() => {
         document.body.style.overflow = 'hidden';
         return () => {
@@ -12,7 +12,10 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart }) => {
 
     return (
         <div className="modal-overlay" onClick={onClose} style={{ zIndex: 3000 }}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div
+                className={`modal-content ${isClosing ? 'bounce-out' : 'bounce-in'}`}
+                onClick={e => e.stopPropagation()}
+            >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <div>
                         <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>{product.name}</h2>

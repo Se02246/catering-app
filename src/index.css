@@ -97,3 +97,53 @@ img {
   -ms-user-select: auto;
   user-select: auto;
 }
+
+/* Bounce Animations */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  70% {
+    transform: scale(0.9);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bounceOut {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  20% {
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+.bounce-in {
+  animation: bounceIn 0.5s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
+}
+
+.bounce-out {
+  animation: bounceOut 0.5s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
+}
