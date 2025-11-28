@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
                             'price_per_piece', p.price_per_piece
                         ) ORDER BY p.name
                     ) FILTER (WHERE ci.id IS NOT NULL),
-                    '[]'
+                    '[]'::json
                 ) as items
             FROM caterings c
             LEFT JOIN catering_items ci ON c.id = ci.catering_id
