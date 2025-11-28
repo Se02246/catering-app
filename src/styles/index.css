@@ -250,432 +250,55 @@ button {
 
   /* Stack Grids */
   .grid-2-cols,
-  h5,
-  h6 {
-    font-family: var(--font-heading);
-    color: var(--color-primary);
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  a {
-    text-decoration: none;
-    color: inherit;
-  }
-
-  button {
-    cursor: pointer;
-    font-family: inherit;
-  }
-
-  /* Glassmorphism Utilities */
-  .glass-panel {
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: var(--glass-border);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--glass-shadow);
-  }
-
-  /* Utilities */
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 var(--spacing-md);
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius-full);
-    font-weight: 700;
-    transition: all 0.3s ease;
-    border: none;
-    font-family: var(--font-heading);
-    letter-spacing: 0.5px;
-    cursor: pointer;
-  }
-
-  .btn-primary {
-    background-color: var(--color-primary);
-    color: white;
-    box-shadow: 0 4px 15px rgba(175, 68, 72, 0.3);
-  }
-
-  .btn-primary:hover {
-    background-color: var(--color-primary-dark);
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 6px 20px rgba(175, 68, 72, 0.4);
-  }
-
-  .btn-outline {
-    background: transparent;
-    border: 2px solid var(--color-primary);
-    color: var(--color-primary);
-  }
-
-  .btn-outline:hover {
-    background: var(--color-primary);
-    color: white;
-    transform: translateY(-2px);
-  }
-
-  /* Responsive Layout */
-  .app-container {
-    display: flex;
-    min-height: 100vh;
-    position: relative;
-    flex-direction: column;
-    /* Ensure column layout */
-  }
-
-  .main-content {
-    flex: 1;
-    padding: 2rem;
-    width: 100%;
-    margin: 0 auto;
-    /* Center content */
-  }
-
-  /* Responsive Grids */
-  .grid-responsive {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
-  }
-
-  .grid-2-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
-
-  .grid-3-cols {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
-
+  .grid-3-cols,
   .grid-quote-builder {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
+    grid-template-columns: 1fr;
   }
 
-  /* Mobile Header - Hidden by default as we use the shared Header */
-  .mobile-header {
-    display: none;
+  /* Adjustments */
+  .modal-overlay>div {
+    width: 90% !important;
+    padding: 1.5rem !important;
+  }
+}
+
+/* Playful Animations (Slight Bounce) */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
   }
 
-  /* Modal Styles */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(5px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  70% {
+    transform: scale(1.02);
   }
 
-  .modal-content {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    padding: 2.5rem;
-    border-radius: var(--radius-xl);
-    width: 550px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(175, 68, 72, 0.1);
-    color: var(--color-text);
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounceOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
   }
 
-  /* Floating Animation */
-  @keyframes float {
-    0% {
-      transform: translateY(0px);
-    }
-
-    50% {
-      transform: translateY(-10px);
-    }
-
-    100% {
-      transform: translateY(0px);
-    }
+  30% {
+    transform: scale(1.02);
   }
 
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
   }
+}
 
-  /* Mobile Styles */
-  @media (max-width: 768px) {
-    .app-container {
-      flex-direction: column;
-      width: 100%;
-      overflow-x: hidden;
-    }
+.bounce-in {
+  animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
 
-    .main-content {
-      padding: 1.5rem;
-      width: 100%;
-    }
-
-    /* Stack Grids */
-    .grid-2-cols,
-    .app-container {
-      flex-direction: column;
-      width: 100%;
-      overflow-x: hidden;
-    }
-
-    .main-content {
-      padding: 1.5rem;
-      width: 100%;
-    }
-
-    /* Stack Grids */
-    .grid-2-cols,
-    h5,
-    h6 {
-      font-family: var(--font-heading);
-      color: var(--color-primary);
-      font-weight: 700;
-      line-height: 1.2;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    button {
-      cursor: pointer;
-      font-family: inherit;
-    }
-
-    /* Glassmorphism Utilities */
-    .glass-panel {
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: var(--glass-border);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--glass-shadow);
-    }
-
-    /* Utilities */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 var(--spacing-md);
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.75rem 1.5rem;
-      border-radius: var(--radius-full);
-      font-weight: 700;
-      transition: all 0.3s ease;
-      border: none;
-      font-family: var(--font-heading);
-      letter-spacing: 0.5px;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background-color: var(--color-primary);
-      color: white;
-      box-shadow: 0 4px 15px rgba(175, 68, 72, 0.3);
-    }
-
-    .btn-primary:hover {
-      background-color: var(--color-primary-dark);
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 6px 20px rgba(175, 68, 72, 0.4);
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 2px solid var(--color-primary);
-      color: var(--color-primary);
-    }
-
-    .btn-outline:hover {
-      background: var(--color-primary);
-      color: white;
-      transform: translateY(-2px);
-    }
-
-    /* Responsive Layout */
-    .app-container {
-      display: flex;
-      min-height: 100vh;
-      position: relative;
-      flex-direction: column;
-      /* Ensure column layout */
-    }
-
-    .main-content {
-      flex: 1;
-      padding: 2rem;
-      width: 100%;
-      margin: 0 auto;
-      /* Center content */
-    }
-
-    /* Responsive Grids */
-    .grid-responsive {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 2rem;
-    }
-
-    .grid-2-cols {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-    }
-
-    .grid-3-cols {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-    }
-
-    .grid-quote-builder {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 2rem;
-    }
-
-    /* Mobile Header - Hidden by default as we use the shared Header */
-    .mobile-header {
-      display: none;
-    }
-
-    /* Modal Styles */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(5px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .modal-content {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      padding: 2.5rem;
-      border-radius: var(--radius-xl);
-      width: 550px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-      border: 1px solid rgba(175, 68, 72, 0.1);
-      color: var(--color-text);
-    }
-
-    /* Floating Animation */
-    @keyframes float {
-      0% {
-        transform: translateY(0px);
-      }
-
-      50% {
-        transform: translateY(-10px);
-      }
-
-      100% {
-        transform: translateY(0px);
-      }
-    }
-
-    .animate-float {
-      animation: float 6s ease-in-out infinite;
-    }
-
-    /* Mobile Styles */
-    @media (max-width: 768px) {
-      .app-container {
-        flex-direction: column;
-        width: 100%;
-        overflow-x: hidden;
-      }
-
-      .main-content {
-        padding: 1.5rem;
-        width: 100%;
-      }
-
-      /* Stack Grids */
-      .grid-2-cols,
-      .grid-3-cols,
-      .grid-quote-builder {
-        grid-template-columns: 1fr;
-      }
-
-      /* Adjustments */
-      .modal-overlay>div {
-        width: 90% !important;
-        padding: 1.5rem !important;
-      }
-    }
-
-    /* Playful Animations (Slight Bounce) */
-    @keyframes bounceIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.9);
-      }
-
-      70% {
-        transform: scale(1.02);
-      }
-
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    @keyframes bounceOut {
-      0% {
-        opacity: 1;
-        transform: scale(1);
-      }
-
-      30% {
-        transform: scale(1.02);
-      }
-
-      100% {
-        opacity: 0;
-        transform: scale(0.9);
-      }
-    }
-
-    .bounce-in {
-      animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-    }
-
-    .bounce-out {
-      animation: bounceOut 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-    }
+.bounce-out {
+  animation: bounceOut 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
