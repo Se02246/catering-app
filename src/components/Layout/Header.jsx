@@ -10,7 +10,7 @@ const Header = () => {
     const isHome = location.pathname === '/';
     const isQuote = location.pathname === '/quote';
     const { showPrompt, handleInstallClick } = useInstallPromptContext();
-    const [headerText, setHeaderText] = useState("Catering dolci e salati preparati con passione per i tuoi eventi speciali.\n\nSe hai domande o richieste, per favore, fammele dopo aver inviato il preventivo, faro` del mio meglio per aiutarti.");
+    const [headerText, setHeaderText] = useState(" ");
 
     useEffect(() => {
         const fetchHeaderText = async () => {

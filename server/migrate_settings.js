@@ -26,7 +26,7 @@ async function migrate() {
     `);
 
         // Insert default header text if not exists
-        const defaultHeaderText = "Catering dolci e salati preparati con passione per i tuoi eventi speciali.\n\nSe hai domande o richieste, per favor, fammele dopo aver inviato il preventivo, faro` del mio meglio per aiutarti.";
+        const defaultHeaderText = " ";
 
         await client.query(`
       INSERT INTO settings (key, value)
