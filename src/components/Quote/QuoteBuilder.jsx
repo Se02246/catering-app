@@ -9,6 +9,7 @@ const QuoteBuilder = () => {
     const [loading, setLoading] = useState(true);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isQuoteVisible, setIsQuoteVisible] = useState(false);
+    const [isProductClosing, setIsProductClosing] = useState(false);
 
     useEffect(() => {
         loadProducts();
@@ -200,7 +201,12 @@ const QuoteBuilder = () => {
     useEffect(() => {
         const handlePopState = (event) => {
             if (selectedProduct) {
-                setSelectedProduct(null);
+                // Trigger close animation
+                setIsProductClosing(true);
+                setTimeout(() => {
+                    setSelectedProduct(null);
+                    setIsProductClosing(false);
+                }, 400); // Match animation duration
             }
         };
 
@@ -227,6 +233,7 @@ const QuoteBuilder = () => {
                 <div className="grid-responsive" style={{ gap: '1rem' }}>
                     {products.map(p => (
                         <div key={p.id}
+                            className="bounce-in"
                             style={{
                                 padding: '0.75rem', border: '1px solid rgba(175, 68, 72, 0.1)', borderRadius: '8px',
                                 backgroundColor: 'rgba(255, 255, 255, 0.6)', // Off-white / Glass effect
@@ -444,6 +451,7 @@ const QuoteBuilder = () => {
                     product={selectedProduct}
                     onClose={closeProduct}
                     onAddToCart={addToCart}
+                    isClosing={isProductClosing}
                 />
             )}
         </div>
