@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
-import ScrollAnimation from '../components/Common/ScrollAnimation';
-import { Star, ArrowRight } from 'lucide-react';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -89,10 +87,6 @@ const Home = () => {
         window.history.back();
     };
 
-    const calculateDiscountedPrice = (price, discount) => {
-        return (price * (1 - discount / 100)).toFixed(2);
-    };
-
     return (
         <div className="container">
             <Header />
@@ -111,75 +105,63 @@ const Home = () => {
                             <p style={{ color: 'var(--color-text)' }}>Nessun pacchetto disponibile al momento.</p>
                         ) : (
                             packages.map((pkg, index) => (
-                                <ScrollAnimation key={pkg.id} index={index}>
-                                    <div
-                                        style={{
-                                            backgroundColor: 'white', borderRadius: '16px', overflow: 'hidden',
-                                            boxShadow: '0 10px 30px rgba(0,0,0,0.08)', transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                            display: 'flex', flexDirection: 'column', height: '100%',
-                                            cursor: 'pointer', border: '1px solid rgba(0,0,0,0.05)'
-                                        }}
-                                        onClick={() => openPackage(pkg)}
-                                        onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.12)'; }}
-                                        onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.08)'; }}
-                                    >
-                                        <div style={{ height: '200px', overflow: 'hidden', position: 'relative' }}>
+                                <div
+                                    key={pkg.id}
+                                    className="glass-panel bounce-in"
+                                    style={{
+                                        padding: '2rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        transition: 'transform 0.3s ease',
+                                        animationDelay: `${index * 0.1}s` // Staggered animation
+                                    }}
+                                >
+                                    {pkg.image_url && (
+                                        <div
+                                            style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '1.5rem', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', cursor: 'pointer' }}
+                                            onClick={() => openPackage(pkg)}
+                                        >
                                             <img
                                                 src={pkg.image_url}
                                                 alt={pkg.name}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
-                                                onMouseOver={e => e.target.style.transform = 'scale(1.05)'}
-                                                onMouseOut={e => e.target.style.transform = 'scale(1)'}
-                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400?text=No+Image'; }}
+                                                style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block', transition: 'transform 0.5s ease' }}
+                                                onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                                                onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
                                             />
-                                            {pkg.is_popular && (
-                                                <div style={{
-                                                    position: 'absolute', top: '1rem', right: '1rem',
-                                                    backgroundColor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(4px)',
-                                                    padding: '0.25rem 0.75rem', borderRadius: '20px',
-                                                    fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--color-primary)',
-                                                    boxShadow: '0 4px 10px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '0.25rem'
-                                                }}>
-                                                    <Star size={14} fill="var(--color-primary)" /> Popolare
-                                                </div>
+                                        </div>
+                                    )}
+                                    <h3 style={{ marginBottom: '0.5rem', color: 'var(--color-text)' }}>{pkg.name}</h3>
+                                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                                        {pkg.is_gluten_free && (
+                                            <span style={{ color: '#FF9800', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                Senza Glutine!
+                                            </span>
+                                        )}
+                                        {pkg.is_lactose_free && (
+                                            <span style={{ color: '#03A9F4', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                Senza Lattosio!
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p style={{ marginBottom: '1.5rem', color: 'var(--color-text-muted)', flexGrow: 1, lineHeight: '1.6' }}>{pkg.description}</p>
+                                    <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                            {pkg.discount_percentage > 0 ? (
+                                                <>
+                                                    <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+                                                        €&nbsp;{pkg.total_price}
+                                                    </span>
+                                                    <span style={{ fontWeight: '800', fontSize: '1.5rem', color: '#e63946' }}>
+                                                        €&nbsp;{(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <p style={{ fontWeight: '800', fontSize: '1.5rem', color: 'var(--color-primary-dark)', margin: 0 }}>€&nbsp;{pkg.total_price}</p>
                                             )}
                                         </div>
-                                        <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                            <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem', color: 'var(--color-text)' }}>{pkg.name}</h3>
-                                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem', flex: 1, lineHeight: '1.5' }}>
-                                                {pkg.description}
-                                            </p>
-
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
-                                                <div>
-                                                    {pkg.discount_percentage > 0 ? (
-                                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                            <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                                                € {parseFloat(pkg.price).toFixed(2)}
-                                                            </span>
-                                                            <span style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--color-primary)' }}>
-                                                                € {calculateDiscountedPrice(pkg.price, pkg.discount_percentage)}
-                                                                <span style={{ fontSize: '0.9rem', fontWeight: 'normal', color: 'var(--color-text-muted)', marginLeft: '4px' }}>
-                                                                    / a persona
-                                                                </span>
-                                                            </span>
-                                                        </div>
-                                                    ) : (
-                                                        <span style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--color-primary)' }}>
-                                                            € {parseFloat(pkg.price).toFixed(2)}
-                                                            <span style={{ fontSize: '0.9rem', fontWeight: 'normal', color: 'var(--color-text-muted)', marginLeft: '4px' }}>
-                                                                / a persona
-                                                            </span>
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <button className="btn btn-outline" style={{ width: '40px', height: '40px', padding: 0, borderRadius: '50%' }}>
-                                                    <ArrowRight size={20} />
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <button className="btn btn-primary" onClick={() => openPackage(pkg)}>Dettagli</button>
                                     </div>
-                                </ScrollAnimation>
+                                </div>
                             ))
                         )}
                     </div>
