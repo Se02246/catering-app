@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { Plus, Minus, Trash2, Send, Check, ShoppingCart } from 'lucide-react';
 import ProductDetailsModal from '../Common/ProductDetailsModal';
+import ScrollAnimation from '../Common/ScrollAnimation';
 
 const QuoteBuilder = () => {
     const [products, setProducts] = useState([]);
@@ -231,71 +232,72 @@ const QuoteBuilder = () => {
             <div>
                 <h2 style={{ marginBottom: '1rem' }}>Seleziona Prodotti</h2>
                 <div className="grid-responsive" style={{ gap: '1rem' }}>
-                    {products.map(p => (
-                        <div key={p.id}
-                            className="bounce-in"
-                            style={{
-                                padding: '0.75rem', border: '1px solid rgba(175, 68, 72, 0.1)', borderRadius: '8px',
-                                backgroundColor: 'rgba(255, 255, 255, 0.6)', // Off-white / Glass effect
-                                display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem',
-                                cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                            }}
-                            onClick={() => openProduct(p)}
-                            onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
-                            onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                        >
-                            {p.image_url && (
-                                <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
-                                    <img
-                                        src={p.image_url}
-                                        alt={p.name}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300?text=No+Img'; }}
-                                    />
-                                </div>
-                            )}
-                            <div style={{ flex: 1 }}>
-                                <h4 style={{ marginBottom: '0.25rem', fontSize: '1rem' }}>{p.name}</h4>
-                                <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
-                                    {p.is_gluten_free && (
-                                        <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                            Senza Glutine!
-                                        </span>
-                                    )}
-                                    {p.is_lactose_free && (
-                                        <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                            Senza Lattosio!
-                                        </span>
-                                    )}
-                                </div>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
-                                    {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
-                                </p>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                {p.allow_multiple && cart.filter(item => item.id === p.id).length > 0 && (
-                                    <div style={{
-                                        backgroundColor: 'var(--color-primary)', color: 'white',
-                                        borderRadius: '50%', width: '24px', height: '24px',
-                                        display: 'flex', justifyContent: 'center', alignItems: 'center',
-                                        fontWeight: 'bold', fontSize: '0.8rem'
-                                    }}>
-                                        {cart.filter(item => item.id === p.id).length}
+                    {products.map((p, index) => (
+                        <ScrollAnimation key={p.id} index={index}>
+                            <div
+                                style={{
+                                    padding: '0.75rem', border: '1px solid rgba(175, 68, 72, 0.1)', borderRadius: '8px',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.6)', // Off-white / Glass effect
+                                    display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem',
+                                    cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                                }}
+                                onClick={() => openProduct(p)}
+                                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
+                                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                            >
+                                {p.image_url && (
+                                    <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
+                                        <img
+                                            src={p.image_url}
+                                            alt={p.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300?text=No+Img'; }}
+                                        />
                                     </div>
                                 )}
-                                <button
-                                    className={`btn ${!p.allow_multiple && cart.find(item => item.id === p.id) ? 'btn-primary' : 'btn-outline'}`}
-                                    style={{
-                                        width: '40px', height: '40px', padding: 0,
-                                        borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                                        flexShrink: 0
-                                    }}
-                                    onClick={(e) => { e.stopPropagation(); addToCart(p); }}
-                                >
-                                    {!p.allow_multiple && cart.find(item => item.id === p.id) ? <Check size={20} /> : <Plus size={20} />}
-                                </button>
+                                <div style={{ flex: 1 }}>
+                                    <h4 style={{ marginBottom: '0.25rem', fontSize: '1rem' }}>{p.name}</h4>
+                                    <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
+                                        {p.is_gluten_free && (
+                                            <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                Senza Glutine!
+                                            </span>
+                                        )}
+                                        {p.is_lactose_free && (
+                                            <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                Senza Lattosio!
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                                        {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                    </p>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    {p.allow_multiple && cart.filter(item => item.id === p.id).length > 0 && (
+                                        <div style={{
+                                            backgroundColor: 'var(--color-primary)', color: 'white',
+                                            borderRadius: '50%', width: '24px', height: '24px',
+                                            display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                            fontWeight: 'bold', fontSize: '0.8rem'
+                                        }}>
+                                            {cart.filter(item => item.id === p.id).length}
+                                        </div>
+                                    )}
+                                    <button
+                                        className={`btn ${!p.allow_multiple && cart.find(item => item.id === p.id) ? 'btn-primary' : 'btn-outline'}`}
+                                        style={{
+                                            width: '40px', height: '40px', padding: 0,
+                                            borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                            flexShrink: 0
+                                        }}
+                                        onClick={(e) => { e.stopPropagation(); addToCart(p); }}
+                                    >
+                                        {!p.allow_multiple && cart.find(item => item.id === p.id) ? <Check size={20} /> : <Plus size={20} />}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        </ScrollAnimation>
                     ))}
                 </div>
             </div>
