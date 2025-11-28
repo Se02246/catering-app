@@ -1,5 +1,7 @@
-// Questa riga è la chiave: usa la variabile d'ambiente di Render se c'è, altrimenti usa localhost
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api';
+// In production (Vercel), use relative path /api to leverage rewrites.
+// In development, use localhost:3000.
+const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '');
+const API_URL = `${BASE_URL}/api`;
 
 const getHeaders = () => {
     const token = localStorage.getItem('token');
