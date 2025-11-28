@@ -231,10 +231,11 @@ const QuoteBuilder = () => {
             <div>
                 <h2 style={{ marginBottom: '1rem' }}>Seleziona Prodotti</h2>
                 <div className="grid-responsive" style={{ gap: '1rem' }}>
-                    {products.map(p => (
+                    {products.map((p, index) => (
                         <div key={p.id}
                             className="bounce-in"
                             style={{
+                                animationDelay: `${index * 0.1}s`,
                                 padding: '0.75rem', border: '1px solid rgba(175, 68, 72, 0.1)', borderRadius: '8px',
                                 backgroundColor: 'rgba(255, 255, 255, 0.6)', // Off-white / Glass effect
                                 display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem',
