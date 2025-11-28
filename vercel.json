@@ -8,11 +8,5 @@
             "source": "/(.*)",
             "destination": "/index.html"
         }
-    ],
-    "crons": [
-        {
-            "path": "/api/caterings",
-            "schedule": "*/5 7-22 * * *"
-        }
     ]
 }
