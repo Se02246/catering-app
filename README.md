@@ -42,8 +42,8 @@ Applicazione web per la gestione di servizi di catering, preventivi personalizza
 - **Admin**: Login (`admin`/`admin`), Gestione Prodotti, Creazione Pacchetti.
 - **Cliente**: Visualizzazione Menu, Creazione Preventivo, Export PDF.
 
-## Deployment (Render)
-Il progetto include un file `render.yaml` per il deployment automatico su Render.com.
-1.  Crea un nuovo "Blueprint" su Render.
-2.  Collega questo repository.
-3.  Render creerà automaticamente il Web Service (Backend), il Sito Statico (Frontend) e il Database.
+## Deployment (Vercel)
+Il progetto è configurato per il deployment su Vercel.
+1.  Installa Vercel CLI o collega il repository GitHub a Vercel.
+2.  Assicurati che le variabili d'ambiente (es. `DATABASE_URL`) siano configurate nel progetto Vercel.
+3.  Deploya con `vercel` o tramite push su GitHub.
