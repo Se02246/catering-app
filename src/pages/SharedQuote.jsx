@@ -152,8 +152,11 @@ const SharedQuote = () => {
                 </div>
 
                 <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '1.5rem', marginTop: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Totale Preventivo</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Totale Preventivo</span>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>(prezzo indicativo)</span>
+                        </div>
                         <span style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {parseFloat(quote.total_price).toFixed(2)}</span>
                     </div>
 

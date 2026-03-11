@@ -401,8 +401,11 @@ const QuoteBuilder = () => {
                         </div>
 
                         <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginTop: '1rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-                                <span>Totale:</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span>Totale:</span>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontStyle: 'italic', fontWeight: 'normal' }}>(prezzo indicativo)</span>
+                                </div>
                                 <span>€ {calculateTotal().toFixed(2)}</span>
                             </div>
                             <button
