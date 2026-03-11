@@ -11,23 +11,28 @@ const SharedPackage = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchPackage = async () => {
+        const fetchPackage = async (isFirstLoad = false) => {
+            if (isFirstLoad) setLoading(true);
             try {
                 const caterings = await api.getCaterings();
                 const found = caterings.find(c => c.id === parseInt(id));
                 if (found) {
                     setPkg(found);
+                    setError(null);
                 } else {
-                    setError('Pacchetto non trovato.');
+                    if (isFirstLoad) setError('Pacchetto non trovato.');
                 }
             } catch (err) {
                 console.error('Error fetching package:', err);
-                setError('Errore nel caricamento del pacchetto.');
+                if (isFirstLoad) setError('Errore nel caricamento del pacchetto.');
             } finally {
-                setLoading(false);
+                if (isFirstLoad) setLoading(false);
             }
         };
-        fetchPackage();
+
+        fetchPackage(true);
+        const interval = setInterval(() => fetchPackage(false), 5000);
+        return () => clearInterval(interval);
     }, [id]);
 
     if (loading) return (

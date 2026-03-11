@@ -6,11 +6,21 @@ import ProductDetailsModal from '../Common/ProductDetailsModal';
 
 const QuoteBuilder = () => {
     const { products: rawProducts, isLoading } = useProducts();
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState(() => {
+        // Load initial cart from localStorage
+        const savedCart = localStorage.getItem('active_quote_cart');
+        return savedCart ? JSON.parse(savedCart) : [];
+    });
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isQuoteVisible, setIsQuoteVisible] = useState(false);
     const [isProductClosing, setIsProductClosing] = useState(false);
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
     const quoteSummaryRef = useRef(null);
+
+    // Save cart to localStorage whenever it changes
+    useEffect(() => {
+        localStorage.setItem('active_quote_cart', JSON.stringify(cart));
+    }, [cart]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -188,10 +198,20 @@ const QuoteBuilder = () => {
         window.history.back();
     };
 
+    const clearCart = () => {
+        setShowClearConfirm(true);
+    };
+
+    const confirmClearCart = () => {
+        setCart([]);
+        setShowClearConfirm(false);
+    };
+
     if (isLoading) return <p>Caricamento prodotti...</p>;
 
     return (
         <div className="grid-quote-builder">
+            {/* ... Product List and Cart UI ... */}
             {/* Product List */}
             <div>
                 <h2 style={{ marginBottom: '1rem' }}>Seleziona Prodotti</h2>
@@ -272,7 +292,28 @@ const QuoteBuilder = () => {
                 id="quote-summary" 
                 style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '8px', boxShadow: 'var(--shadow-md)', height: 'fit-content' }}
             >
-                <h2 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Il Tuo Preventivo</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>
+                    <h2 style={{ margin: 0 }}>Il Tuo Preventivo</h2>
+                    {cart.length > 0 && (
+                        <button 
+                            onClick={clearCart}
+                            style={{ 
+                                background: 'none', 
+                                border: 'none', 
+                                color: '#e63946', 
+                                cursor: 'pointer', 
+                                fontSize: '0.85rem', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '0.25rem',
+                                fontWeight: '600'
+                            }}
+                        >
+                            <Trash2 size={16} />
+                            Svuota carrello
+                        </button>
+                    )}
+                </div>
 
                 {cart.length === 0 ? (
                     <p style={{ color: 'var(--color-text-muted)' }}>Nessun prodotto selezionato.</p>
@@ -317,19 +358,36 @@ const QuoteBuilder = () => {
                                         {item.order_increment !== 0 && (
                                             <button
                                                 className="btn btn-outline"
-                                                style={{ padding: '0.25rem' }}
-                                                onClick={() => updateQuantity(item.instanceId, -1)}
+                                                style={{ 
+                                                    padding: '0.25rem',
+                                                    opacity: item.quantity <= (item.min_order_quantity || 1) ? 0.4 : 1,
+                                                    cursor: item.quantity <= (item.min_order_quantity || 1) ? 'default' : 'pointer',
+                                                    borderColor: item.quantity <= (item.min_order_quantity || 1) ? '#ccc' : 'var(--color-primary)',
+                                                    color: item.quantity <= (item.min_order_quantity || 1) ? '#999' : 'var(--color-primary)'
+                                                }}
+                                                onClick={() => {
+                                                    if (item.quantity > (item.min_order_quantity || 1)) {
+                                                        updateQuantity(item.instanceId, -1);
+                                                    }
+                                                }}
+                                                disabled={item.quantity <= (item.min_order_quantity || 1)}
                                             >
                                                 <Minus size={14} />
                                             </button>
                                         )}
-                                        <span style={{ minWidth: '2rem', textAlign: 'center' }}>{item.quantity}</span>
+                                        <span style={{ minWidth: '2rem', textAlign: 'center', fontWeight: 'bold' }}>{item.quantity}</span>
                                         {item.order_increment !== 0 && (
                                             <button
                                                 className="btn btn-outline"
-                                                style={{ padding: '0.25rem' }}
+                                                style={{ 
+                                                    padding: '0.25rem',
+                                                    opacity: item.max_order_quantity && item.quantity >= item.max_order_quantity ? 0.4 : 1,
+                                                    cursor: item.max_order_quantity && item.quantity >= item.max_order_quantity ? 'default' : 'pointer',
+                                                    borderColor: item.max_order_quantity && item.quantity >= item.max_order_quantity ? '#ccc' : 'var(--color-primary)',
+                                                    color: item.max_order_quantity && item.quantity >= item.max_order_quantity ? '#999' : 'var(--color-primary)'
+                                                }}
                                                 onClick={() => updateQuantity(item.instanceId, 1)}
-                                                disabled={item.max_order_quantity && (item.quantity + (item.order_increment || 1)) > item.max_order_quantity}
+                                                disabled={item.max_order_quantity && item.quantity >= item.max_order_quantity}
                                             >
                                                 <Plus size={14} />
                                             </button>
@@ -453,6 +511,52 @@ const QuoteBuilder = () => {
                     onAddToCart={addToCart}
                     isClosing={isProductClosing}
                 />
+            )}
+            {/* Clear Cart Confirmation Modal */}
+            {showClearConfirm && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.4)',
+                    backdropFilter: 'blur(4px)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 3000,
+                    padding: '1rem'
+                }}>
+                    <div className="glass-panel bounce-in" style={{
+                        padding: '2rem',
+                        maxWidth: '400px',
+                        width: '100%',
+                        textAlign: 'center',
+                        backgroundColor: 'white',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                    }}>
+                        <Trash2 size={48} color="#e63946" style={{ marginBottom: '1rem' }} />
+                        <h3 style={{ marginBottom: '1rem' }}>Svuota carrello</h3>
+                        <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>Vuoi davvero svuotare il carrello?</p>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button 
+                                className="btn btn-outline" 
+                                style={{ flex: 1 }} 
+                                onClick={() => setShowClearConfirm(false)}
+                            >
+                                No
+                            </button>
+                            <button 
+                                className="btn btn-primary" 
+                                style={{ flex: 1, backgroundColor: '#e63946', borderColor: '#e63946' }} 
+                                onClick={confirmClearCart}
+                            >
+                                Sì
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

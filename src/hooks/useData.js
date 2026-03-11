@@ -14,8 +14,9 @@ const fetcher = (url) => {
 
 export const useProducts = () => {
     const { data, error, mutate, isLoading } = useSWR('/products', fetcher, {
-        revalidateOnFocus: false,
-        dedupingInterval: 60000, // 1 minute
+        revalidateOnFocus: true,
+        refreshInterval: 5000,
+        dedupingInterval: 2000,
     });
 
     return {
@@ -28,8 +29,9 @@ export const useProducts = () => {
 
 export const useCaterings = () => {
     const { data, error, mutate, isLoading } = useSWR('/caterings', fetcher, {
-        revalidateOnFocus: false,
-        dedupingInterval: 60000, // 1 minute
+        revalidateOnFocus: true,
+        refreshInterval: 5000,
+        dedupingInterval: 2000,
     });
 
     return {
@@ -42,8 +44,9 @@ export const useCaterings = () => {
 
 export const useSetting = (key) => {
     const { data, error, mutate, isLoading } = useSWR(`/settings/${key}`, fetcher, {
-        revalidateOnFocus: false,
-        dedupingInterval: 60000, // 1 minute
+        revalidateOnFocus: true,
+        refreshInterval: 5000,
+        dedupingInterval: 2000,
     });
 
     return {

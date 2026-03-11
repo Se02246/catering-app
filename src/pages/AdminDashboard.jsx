@@ -1,11 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ProductManager from '../components/Admin/ProductManager';
 import PackageBuilder from '../components/Admin/PackageBuilder';
 import SettingsManager from '../components/Admin/SettingsManager';
 import QuoteManager from '../components/Admin/QuoteManager';
 
 const AdminDashboard = () => {
-    const [activeTab, setActiveTab] = useState('products');
+    const location = useLocation();
+    const navigate = useNavigate();
+    const queryParams = new URLSearchParams(location.search);
+    const [activeTab, setActiveTab] = useState(queryParams.get('tab') || 'products');
+    const searchId = queryParams.get('searchId') || '';
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+        }
+    }, [navigate]);
 
     return (
         <div className="container admin-dashboard" style={{ position: 'relative' }}>
@@ -66,7 +78,7 @@ const AdminDashboard = () => {
             {activeTab === 'products' && <ProductManager />}
             {activeTab === 'packages' && <PackageBuilder />}
             {activeTab === 'settings' && <SettingsManager />}
-            {activeTab === 'quotes' && <QuoteManager />}
+            {activeTab === 'quotes' && <QuoteManager initialSearchId={searchId} />}
 
         </div>
     );

@@ -11,18 +11,23 @@ const SharedQuote = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchQuote = async () => {
+        const fetchQuote = async (isFirstLoad = false) => {
+            if (isFirstLoad) setLoading(true);
             try {
                 const data = await api.getQuote(id);
                 setQuote(data);
+                setError(null);
             } catch (err) {
                 console.error('Error fetching quote:', err);
-                setError('Preventivo non trovato o scaduto.');
+                if (isFirstLoad) setError('Preventivo non trovato o scaduto.');
             } finally {
-                setLoading(false);
+                if (isFirstLoad) setLoading(false);
             }
         };
-        fetchQuote();
+
+        fetchQuote(true);
+        const interval = setInterval(() => fetchQuote(false), 5000);
+        return () => clearInterval(interval);
     }, [id]);
 
     if (loading) return (
@@ -83,9 +88,20 @@ const SharedQuote = () => {
                             <Calendar size={16} /> Creato il {new Date(quote.created_at).toLocaleDateString('it-IT')}
                         </p>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>ID Preventivo</p>
-                        <p style={{ fontWeight: 'bold', fontSize: '0.8rem' }}>{id.substring(0, 8).toUpperCase()}</p>
+                    <div 
+                        style={{ textAlign: 'right', cursor: 'pointer' }} 
+                        onClick={() => {
+                            const token = localStorage.getItem('token');
+                            if (token) {
+                                navigate(`/admin?tab=quotes&searchId=${id}`);
+                            } else {
+                                navigate(`/login?redirect=/admin?tab=quotes&searchId=${id}`);
+                            }
+                        }}
+                        title="Gestisci questo preventivo (Amministratore)"
+                    >
+                        <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>ID Preventivo</p>
+                        <p style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--color-primary)', textDecoration: 'underline' }}>{id.substring(0, 8).toUpperCase()}</p>
                     </div>
                 </div>
 

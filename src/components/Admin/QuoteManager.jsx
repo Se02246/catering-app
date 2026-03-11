@@ -3,13 +3,20 @@ import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
 import { Search, Save, Trash2, Plus, Minus, ExternalLink } from 'lucide-react';
 
-const QuoteManager = () => {
+const QuoteManager = ({ initialSearchId = '' }) => {
     const { products } = useProducts();
-    const [searchId, setSearchId] = useState('');
+    const [searchId, setSearchId] = useState(initialSearchId);
     const [currentQuote, setCurrentQuote] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState(null);
+    const [saving, setSaving] = useState(false);
+
+    // Auto-search if initialSearchId is provided
+    React.useEffect(() => {
+        if (initialSearchId) {
+            handleSearch(new Event('submit'));
+        }
+    }, [initialSearchId]);
 
     const handleSearch = async (e) => {
         if (e) e.preventDefault();
