@@ -140,7 +140,7 @@ const Home = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <p style={{ marginBottom: '1.5rem', color: 'var(--color-text-muted)', flexGrow: 1, lineHeight: '1.6' }}>{pkg.description}</p>
+                                    <p style={{ marginBottom: '1.5rem', color: 'var(--color-text-muted)', flexGrow: 1, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{formatCustomText(pkg.description)}</p>
                                     <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                                             {pkg.discount_percentage > 0 ? (
@@ -244,7 +244,7 @@ const Home = () => {
                             )
                         )}
 
-                        <p style={{ fontSize: '1.1rem', marginBottom: '2rem', lineHeight: '1.8', color: 'var(--color-text)' }}>{selectedPackage.description}</p>
+                        <p style={{ fontSize: '1.1rem', marginBottom: '2rem', lineHeight: '1.8', color: 'var(--color-text)', whiteSpace: 'pre-wrap' }}>{formatCustomText(selectedPackage.description)}</p>
 
                         <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem', color: 'var(--color-primary)' }}>Cosa include</h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2.5rem' }}>

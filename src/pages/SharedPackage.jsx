@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { ShoppingBag, ArrowLeft, Send, CheckCircle } from 'lucide-react';
+import { formatCustomText } from '../utils/textFormatting';
 
 const SharedPackage = () => {
     const { id } = useParams();
@@ -98,7 +99,7 @@ const SharedPackage = () => {
                                 )}
                             </span>
                         </h1>
-                        <p style={{ fontSize: '1.2rem', lineHeight: '1.6', color: 'var(--color-text)' }}>{pkg.description}</p>
+                        <p style={{ fontSize: '1.2rem', lineHeight: '1.6', color: 'var(--color-text)', whiteSpace: 'pre-wrap' }}>{formatCustomText(pkg.description)}</p>
                     </div>
 
                     <div style={{ marginBottom: '2.5rem' }}>
