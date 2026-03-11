@@ -148,5 +148,22 @@ export const api = {
             throw new Error(error.error || 'Failed to update setting');
         }
         return res.json();
+    },
+
+    // Quotes
+    saveQuote: async (items, total_price) => {
+        const res = await fetch(`${API_URL}/quotes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items, total_price })
+        });
+        if (!res.ok) throw new Error('Failed to save quote');
+        return res.json();
+    },
+
+    getQuote: async (id) => {
+        const res = await fetch(`${API_URL}/quotes/${id}`);
+        if (!res.ok) throw new Error('Quote not found');
+        return res.json();
     }
 };

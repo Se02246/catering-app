@@ -117,52 +117,26 @@ const QuoteBuilder = () => {
         return cart.reduce((sum, item) => sum + calculateItemPrice(item), 0);
     };
 
-    const sendToWhatsApp = () => {
-        const phoneNumber = "393495416637";
-        const total = calculateTotal().toFixed(2);
-        let message = `*Ciao Barbara, ho creato un prventivo (€ ${total}) sul tuo sito, e\` possibile avere maggiori informazioni?\n\n*`;
+    const [shareUrl, setShareUrl] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
 
-        const middleIndex = Math.floor(cart.length / 2);
-
-        cart.forEach((item, index) => {
-            const unit = item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg');
-            let priceUnit = '';
-            if (item.is_sold_by_piece) {
-                priceUnit = `€ ${item.price_per_piece.toFixed(2)} / pz`;
-            } else if (item.pieces_per_kg) {
-                priceUnit = `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`;
-            } else {
-                priceUnit = `€ ${item.price_per_kg} / kg`;
-            }
-
-            const servingsText = (item.show_servings && item.servings_per_unit)
-                ? ` (per ${(item.servings_per_unit * item.quantity).toFixed(0)} persone)`
-                : '';
-
-            const dietaryInfo = [
-                item.is_gluten_free ? '(senza glutine)' : '',
-                item.is_lactose_free ? '(senza lattosio)' : ''
-            ].filter(Boolean).join(' ');
-
-            let quantityDisplay = `${parseFloat(item.quantity)} ${unit}`;
-            if (item.is_sold_by_piece) {
-                quantityDisplay = `${parseFloat(item.quantity)} pz`;
-            } else if (item.pieces_per_kg) {
-                quantityDisplay = `${parseFloat(item.quantity)} pz`;
-            }
-
-            message += `• *${item.name}* ${dietaryInfo}${servingsText}\n`;
-            message += `  ${quantityDisplay} x ${priceUnit} = € ${calculateItemPrice(item).toFixed(2)}\n\n`;
-
-            if (index === middleIndex) {
-                message += `• prezzo preventivo (€ ${total})\n\n`;
-            }
-        });
-
-        message += `*Totale: € ${total}*`;
-
-        const encodedMessage = encodeURIComponent(message);
-        window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+    const handleShareQuote = async () => {
+        setIsSaving(true);
+        try {
+            const result = await api.saveQuote(cart, calculateTotal());
+            const url = `${window.location.origin}/quote/${result.id}`;
+            setShareUrl(url);
+            
+            // Optionally auto-open WhatsApp with the link
+            const phoneNumber = "393495416637";
+            const message = `Ciao Barbara, ho creato un preventivo sul tuo sito. Puoi visualizzarlo qui:\n\n${url}`;
+            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+        } catch (err) {
+            console.error('Error saving quote:', err);
+            alert('Errore durante il salvataggio del preventivo.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     // Handle browser back button for modals
@@ -348,12 +322,42 @@ const QuoteBuilder = () => {
                             </div>
                             <button
                                 className="btn btn-primary"
-                                style={{ width: '100%' }}
-                                onClick={sendToWhatsApp}
+                                style={{ width: '100%', marginBottom: shareUrl ? '1rem' : 0 }}
+                                onClick={handleShareQuote}
+                                disabled={isSaving}
                             >
                                 <Send size={18} style={{ marginRight: '8px' }} />
-                                Invia su WhatsApp
+                                {isSaving ? 'Salvataggio...' : 'Crea Link e Invia WhatsApp'}
                             </button>
+
+                            {shareUrl && (
+                                <div style={{ 
+                                    padding: '1rem', 
+                                    backgroundColor: 'rgba(175, 68, 72, 0.05)', 
+                                    borderRadius: '8px', 
+                                    border: '1px dashed var(--color-primary)',
+                                    fontSize: '0.85rem'
+                                }}>
+                                    <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Link Preventivo:</p>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <input 
+                                            readOnly 
+                                            value={shareUrl} 
+                                            style={{ flex: 1, padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)', fontSize: '0.8rem' }} 
+                                        />
+                                        <button 
+                                            className="btn btn-outline" 
+                                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(shareUrl);
+                                                alert('Link copiato!');
+                                            }}
+                                        >
+                                            Copia
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </>
                 )}

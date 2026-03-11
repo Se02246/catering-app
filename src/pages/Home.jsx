@@ -75,6 +75,35 @@ const Home = () => {
         window.history.back();
     };
 
+    const [isSaving, setIsSaving] = React.useState(false);
+
+    const handleBookPackage = async (pkg) => {
+        setIsSaving(true);
+        try {
+            // Save the package as a quote to get a unique link
+            const quoteItems = pkg.items.map(item => ({
+                ...item,
+                instanceId: Date.now() + Math.random()
+            }));
+
+            const finalPrice = pkg.discount_percentage > 0
+                ? (pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)
+                : parseFloat(pkg.total_price).toFixed(2);
+
+            const result = await api.saveQuote(quoteItems, finalPrice);
+            const url = `${window.location.origin}/quote/${result.id}`;
+
+            const phoneNumber = "393495416637";
+            const message = `Ciao Barbara, sono interessato al pacchetto "${pkg.name}". Puoi vedere i dettagli qui:\n\n${url}`;
+            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+        } catch (err) {
+            console.error('Error booking package:', err);
+            alert('Errore durante la creazione del preventivo.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <div className="container">
             <Header />
@@ -319,52 +348,14 @@ const Home = () => {
                                     <span style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€&nbsp;{selectedPackage.total_price}</span>
                                 )}
                             </div>
-                            <button className="btn btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }} onClick={() => {
-                                const phoneNumber = "393495416637";
-                                let finalPrice = selectedPackage.total_price;
-                                if (selectedPackage.discount_percentage > 0) {
-                                    finalPrice = (selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2);
-                                } else {
-                                    finalPrice = parseFloat(finalPrice).toFixed(2);
-                                }
-
-                                let message = `Ciao Barbara, sarei interessat a questo pacchetto(€ ${finalPrice}), e\` possibile avere maggiori informazioni?\n\n*${selectedPackage.name}`;
-                                if (selectedPackage.is_gluten_free) message += ' (senza glutine)';
-                                if (selectedPackage.is_lactose_free) message += ' (senza lattosio)';
-                                message += `*\n${selectedPackage.description}\n\n*Prodotti inclusi:*\n`;
-
-                                const items = selectedPackage.items || [];
-                                const middleIndex = Math.floor(items.length / 2);
-
-                                items.forEach((item, index) => {
-                                    const isPieces = item.pieces_per_kg > 0;
-                                    let quantityText = '';
-                                    if (item.is_sold_by_piece) {
-                                        quantityText = `${parseFloat(item.quantity)} pz`;
-                                    } else if (isPieces) {
-                                        quantityText = `${parseFloat(item.quantity)} pz`;
-                                    } else {
-                                        quantityText = `${parseFloat(item.quantity)} kg`;
-                                    }
-
-                                    const dietaryInfo = [
-                                        item.is_gluten_free ? '(senza glutine)' : '',
-                                        item.is_lactose_free ? '(senza lattosio)' : ''
-                                    ].filter(Boolean).join(' ');
-
-                                    message += `• *${item.name}* ${dietaryInfo}\n`;
-                                    message += `  ${quantityText}\n\n`;
-
-                                    if (index === middleIndex) {
-                                        message += `• prezzo pacchetto(€ ${finalPrice})\n\n`;
-                                    }
-                                });
-
-                                message += `\n*Prezzo: € ${finalPrice}*`;
-
-                                const encodedMessage = encodeURIComponent(message);
-                                window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
-                            }}>Prenota su WhatsApp</button>
+                            <button 
+                                className="btn btn-primary" 
+                                style={{ padding: '1rem 2rem', fontSize: '1.1rem' }} 
+                                disabled={isSaving}
+                                onClick={() => handleBookPackage(selectedPackage)}
+                            >
+                                {isSaving ? 'Salvataggio...' : 'Prenota su WhatsApp'}
+                            </button>
                         </div>
                     </div>
                 </div>
