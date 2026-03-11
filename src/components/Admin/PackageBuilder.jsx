@@ -65,14 +65,32 @@ const PackageBuilder = () => {
     const handleSave = async (e) => {
         e.preventDefault();
         try {
+            let packageToSave = { ...newPackage };
+
+            // If no images are manually selected for the package, 
+            // collect cover images from all included products
+            if (!packageToSave.images || packageToSave.images.length === 0) {
+                const productImages = newPackage.items
+                    .map(item => products.find(p => p.id === item.product_id)?.image_url)
+                    .filter(url => url && url.trim() !== ''); // Remove empty/null images
+                
+                // Remove duplicates
+                const uniqueProductImages = [...new Set(productImages)];
+                
+                if (uniqueProductImages.length > 0) {
+                    packageToSave.images = uniqueProductImages;
+                    packageToSave.image_url = uniqueProductImages[0];
+                }
+            }
+
             if (editingId) {
-                await api.updateCatering(editingId, newPackage);
+                await api.updateCatering(editingId, packageToSave);
             } else {
-                await api.createCatering(newPackage);
+                await api.createCatering(packageToSave);
             }
             setIsCreating(false);
             setEditingId(null);
-            setNewPackage({ name: '', description: '', image_url: '', total_price: 0, discount_percentage: 0, items: [] });
+            setNewPackage({ name: '', description: '', image_url: '', images: [], total_price: 0, discount_percentage: 0, items: [] });
             setDiscountedPriceInput('');
             mutateCaterings();
         } catch {
