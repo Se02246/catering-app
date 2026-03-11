@@ -10,7 +10,7 @@
  * @param {string} text - The input text to format.
  * @returns {string} - The HTML string with formatting applied.
  */
-export const formatHeaderText = (text) => {
+export const formatCustomText = (text) => {
     if (!text) return '';
 
     // Escape HTML special characters to prevent XSS

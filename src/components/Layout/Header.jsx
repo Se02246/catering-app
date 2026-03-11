@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Download } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
-import { formatHeaderText } from '../../utils/textFormatting';
+import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
 
 const Header = () => {
@@ -67,7 +67,7 @@ const Header = () => {
             <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem', color: 'var(--color-primary-dark)' }}>Muse Catering</h1>
             <p
                 style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto', marginBottom: '2rem' }}
-                dangerouslySetInnerHTML={{ __html: formatHeaderText(headerText) }}
+                dangerouslySetInnerHTML={{ __html: formatCustomText(headerText) }}
             />
 
             <div style={{

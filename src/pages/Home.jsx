@@ -140,7 +140,10 @@ const Home = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <p style={{ marginBottom: '1.5rem', color: 'var(--color-text-muted)', flexGrow: 1, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{formatCustomText(pkg.description)}</p>
+                                    <p 
+                                        style={{ marginBottom: '1.5rem', color: 'var(--color-text-muted)', flexGrow: 1, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}
+                                        dangerouslySetInnerHTML={{ __html: formatCustomText(pkg.description) }}
+                                    />
                                     <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                                             {pkg.discount_percentage > 0 ? (

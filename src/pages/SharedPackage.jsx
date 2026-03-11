@@ -99,7 +99,10 @@ const SharedPackage = () => {
                                 )}
                             </span>
                         </h1>
-                        <p style={{ fontSize: '1.2rem', lineHeight: '1.6', color: 'var(--color-text)', whiteSpace: 'pre-wrap' }}>{formatCustomText(pkg.description)}</p>
+                        <p 
+                            style={{ fontSize: '1.2rem', lineHeight: '1.6', color: 'var(--color-text)', whiteSpace: 'pre-wrap' }}
+                            dangerouslySetInnerHTML={{ __html: formatCustomText(pkg.description) }}
+                        />
                     </div>
 
                     <div style={{ marginBottom: '2.5rem' }}>
