@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
 import { Plus, Minus, Trash2, Send, Check, ShoppingCart } from 'lucide-react';
@@ -10,6 +10,29 @@ const QuoteBuilder = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isQuoteVisible, setIsQuoteVisible] = useState(false);
     const [isProductClosing, setIsProductClosing] = useState(false);
+    const quoteSummaryRef = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsQuoteVisible(entry.isIntersecting);
+            },
+            {
+                threshold: 0.1, // Trigger when 10% of the element is visible
+                rootMargin: '0px'
+            }
+        );
+
+        if (quoteSummaryRef.current) {
+            observer.observe(quoteSummaryRef.current);
+        }
+
+        return () => {
+            if (quoteSummaryRef.current) {
+                observer.unobserve(quoteSummaryRef.current);
+            }
+        };
+    }, [cart.length]); // Re-observe if cart changes as it might change the summary height
 
     const products = React.useMemo(() => {
         return rawProducts
@@ -244,7 +267,11 @@ const QuoteBuilder = () => {
             </div>
 
             {/* Cart / Quote Summary */}
-            <div id="quote-summary" style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '8px', boxShadow: 'var(--shadow-md)', height: 'fit-content' }}>
+            <div 
+                ref={quoteSummaryRef}
+                id="quote-summary" 
+                style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '8px', boxShadow: 'var(--shadow-md)', height: 'fit-content' }}
+            >
                 <h2 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Il Tuo Preventivo</h2>
 
                 {cart.length === 0 ? (
