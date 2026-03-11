@@ -91,6 +91,9 @@ const QuoteManager = () => {
         }
     };
 
+    const isQuoteGlutenFree = currentQuote && currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_gluten_free);
+    const isQuoteLactoseFree = currentQuote && currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_lactose_free);
+
     return (
         <div className="admin-card">
             <h2 style={{ marginBottom: '1.5rem', color: 'var(--color-primary-dark)' }}>Gestione Preventivi Clienti</h2>
@@ -127,7 +130,21 @@ const QuoteManager = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
                         <div>
                             <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Modifica Preventivo</p>
-                            <h3 style={{ margin: 0 }}>ID: {currentQuote.id.substring(0, 8)}...</h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                                <h3 style={{ margin: 0 }}>ID: {currentQuote.id.substring(0, 8)}...</h3>
+                                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                    {isQuoteGlutenFree && (
+                                        <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                            Senza Glutine
+                                        </span>
+                                    )}
+                                    {isQuoteLactoseFree && (
+                                        <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                            Senza Lattosio
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                         <a href={`/quote/${currentQuote.id}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 'bold' }}>
                             Vedi Pagina Pubblica <ExternalLink size={16} />
@@ -140,7 +157,21 @@ const QuoteManager = () => {
                             {currentQuote.items.map((item) => (
                                 <div key={item.instanceId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
                                     <div style={{ flex: 1 }}>
-                                        <p style={{ fontWeight: 'bold', margin: 0 }}>{item.name}</p>
+                                        <p style={{ fontWeight: 'bold', margin: 0 }}>
+                                            {item.name}
+                                            <span style={{ marginLeft: '0.5rem', display: 'inline-flex', gap: '0.25rem' }}>
+                                                {item.is_gluten_free && !isQuoteGlutenFree && (
+                                                    <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        SG
+                                                    </span>
+                                                )}
+                                                {item.is_lactose_free && !isQuoteLactoseFree && (
+                                                    <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        SL
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </p>
                                         <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
                                             Prezzo unitario applicato: € {((item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)}
                                         </p>
@@ -185,7 +216,12 @@ const QuoteManager = () => {
                         >
                             <option value="">-- Seleziona un prodotto da aggiungere --</option>
                             {products.map(p => (
-                                <option key={p.id} value={p.id}>{p.name} (€ {p.is_sold_by_piece ? p.price_per_piece : p.price_per_kg})</option>
+                                <option key={p.id} value={p.id}>
+                                    {p.name} 
+                                    {p.is_gluten_free && ' [SG]'}
+                                    {p.is_lactose_free && ' [SL]'}
+                                    {` (€ ${p.is_sold_by_piece ? p.price_per_piece : p.price_per_kg})`}
+                                </option>
                             ))}
                         </select>
                     </div>
