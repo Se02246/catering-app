@@ -193,7 +193,7 @@ const QuoteManager = () => {
                     <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                             <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Totale ricalcolato: </span>
-                            <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {currentQuote.total_price.toFixed(2)}</span>
+                            <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {parseFloat(currentQuote.total_price).toFixed(2)}</span>
                             <div style={{ marginTop: '0.5rem' }}>
                                 <label style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Sovrascrivi prezzo totale manualmente:</label>
                                 <input 
