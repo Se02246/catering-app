@@ -1,38 +1,26 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../services/api';
+import { useCaterings, useSetting } from '../hooks/useData';
 import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
+import { formatCustomText } from '../utils/textFormatting';
 
 const Home = () => {
     const navigate = useNavigate();
-    const [packages, setPackages] = React.useState([]);
-    const [loading, setLoading] = React.useState(true);
-    const [error, setError] = React.useState(null);
+    const { caterings, isLoading, isError } = useCaterings();
+    const { setting: headerSetting } = useSetting('header_text');
     const [selectedPackage, setSelectedPackage] = React.useState(null);
     const [selectedProduct, setSelectedProduct] = React.useState(null);
     const [isPackageClosing, setIsPackageClosing] = React.useState(false);
     const [isProductClosing, setIsProductClosing] = React.useState(false);
 
-    React.useEffect(() => {
-        const fetchPackages = async () => {
-            try {
-                const data = await api.getCaterings();
-                const parsedData = data.map(pkg => ({
-                    ...pkg,
-                    images: pkg.images || (pkg.image_url ? [pkg.image_url] : [])
-                }));
-                setPackages(parsedData);
-            } catch (err) {
-                console.error('Error fetching packages:', err);
-                setError('Impossibile caricare i pacchetti. Riprova più tardi.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPackages();
-    }, []);
+    // Pre-parse images for caterings if they aren't already
+    const processedCaterings = React.useMemo(() => {
+        return caterings.map(pkg => ({
+            ...pkg,
+            images: pkg.images || (pkg.image_url ? [pkg.image_url] : [])
+        }));
+    }, [caterings]);
 
     React.useEffect(() => {
         if (selectedPackage) {
@@ -96,15 +84,15 @@ const Home = () => {
                     Pacchetti
                 </h2>
 
-                {loading && <p style={{ color: 'var(--color-text)' }}>Caricamento pacchetti...</p>}
-                {error && <p style={{ color: '#ffcccb' }}>{error}</p>}
+                {isLoading && <p style={{ color: 'var(--color-text)' }}>Caricamento pacchetti...</p>}
+                {isError && <p style={{ color: '#ffcccb' }}>Impossibile caricare i pacchetti. Riprova più tardi.</p>}
 
-                {!loading && !error && (
+                {!isLoading && !isError && (
                     <div className="grid-responsive">
-                        {packages.length === 0 ? (
+                        {processedCaterings.length === 0 ? (
                             <p style={{ color: 'var(--color-text)' }}>Nessun pacchetto disponibile al momento.</p>
                         ) : (
-                            packages.map((pkg, index) => (
+                            processedCaterings.map((pkg, index) => (
                                 <div
                                     key={pkg.id}
                                     className="glass-panel bounce-in"

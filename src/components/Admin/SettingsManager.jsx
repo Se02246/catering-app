@@ -1,49 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Loader } from 'lucide-react';
+import { useSetting } from '../../hooks/useData';
+import { api } from '../../services/api';
 
 const SettingsManager = () => {
+    const { setting, isLoading, mutate } = useSetting('header_text');
     const [headerText, setHeaderText] = useState('');
-    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState(null);
 
     useEffect(() => {
-        fetchSettings();
-    }, []);
-
-    const fetchSettings = async () => {
-        try {
-            const response = await fetch('/api/settings/header_text');
-            if (response.ok) {
-                const data = await response.json();
-                setHeaderText(data.value);
-            }
-        } catch (error) {
-            console.error('Error fetching settings:', error);
-            setMessage({ type: 'error', text: 'Errore nel caricamento delle impostazioni' });
-        } finally {
-            setLoading(false);
+        if (setting) {
+            setHeaderText(setting.value);
         }
-    };
+    }, [setting]);
 
     const handleSave = async () => {
         setSaving(true);
         setMessage(null);
         try {
-            const response = await fetch('/api/settings/header_text', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ value: headerText })
-            });
-
-            if (response.ok) {
-                setMessage({ type: 'success', text: 'Impostazioni salvate con successo' });
-            } else {
-                throw new Error('Failed to save settings');
-            }
+            await api.updateSetting('header_text', headerText);
+            mutate();
+            setMessage({ type: 'success', text: 'Impostazioni salvate con successo' });
         } catch (error) {
             console.error('Error saving settings:', error);
             setMessage({ type: 'error', text: 'Errore nel salvataggio delle impostazioni' });
@@ -52,7 +30,7 @@ const SettingsManager = () => {
         }
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
                 <Loader className="animate-spin" />

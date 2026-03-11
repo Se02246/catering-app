@@ -6,6 +6,8 @@ const router = express.Router();
 // Get all caterings (with items)
 router.get('/', async (req, res) => {
     try {
+        // Enable Vercel CDN caching
+        res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=3600');
         const query = `
             SELECT 
                 c.*,

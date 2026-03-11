@@ -1,20 +1,14 @@
 import express from 'express';
-import pg from 'pg';
+import { pool } from '../db.js';
 
 const router = express.Router();
-const { Pool } = pg;
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
-});
 
 // Get a setting by key
 router.get('/:key', async (req, res) => {
     const { key } = req.params;
     try {
+        // Enable Vercel CDN caching
+        res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=3600');
         const result = await pool.query('SELECT value FROM settings WHERE key = $1', [key]);
         if (result.rows.length > 0) {
             res.json({ value: result.rows[0].value });

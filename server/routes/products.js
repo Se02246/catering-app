@@ -6,6 +6,8 @@ const router = express.Router();
 // Get all products
 router.get('/', async (req, res) => {
     try {
+        // Enable Vercel CDN caching
+        res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=3600');
         const result = await pool.query('SELECT * FROM products ORDER BY name');
         res.json(result.rows);
     } catch (err) {

@@ -1,66 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useProducts } from '../../hooks/useData';
 import { Plus, Minus, Trash2, Send, Check, ShoppingCart } from 'lucide-react';
 import ProductDetailsModal from '../Common/ProductDetailsModal';
 
 const QuoteBuilder = () => {
-    const [products, setProducts] = useState([]);
+    const { products: rawProducts, isLoading } = useProducts();
     const [cart, setCart] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isQuoteVisible, setIsQuoteVisible] = useState(false);
     const [isProductClosing, setIsProductClosing] = useState(false);
 
-    useEffect(() => {
-        loadProducts();
-    }, []);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsQuoteVisible(entry.isIntersecting);
-            },
-            { threshold: 0.1 }
-        );
-
-        const quoteSection = document.getElementById('quote-summary');
-        if (quoteSection) {
-            observer.observe(quoteSection);
-        }
-
-        return () => {
-            if (quoteSection) {
-                observer.unobserve(quoteSection);
-            }
-        };
-    }, [cart.length]); // Re-run when cart changes as the section might appear/disappear
-
-    const loadProducts = async () => {
-        try {
-            const data = await api.getProducts();
-            const parsedData = data
-                .filter(p => p.is_visible !== false) // Filter out hidden products
-                .map(p => ({
-                    ...p,
-                    price_per_kg: parseFloat(p.price_per_kg),
-                    pieces_per_kg: p.pieces_per_kg ? parseFloat(p.pieces_per_kg) : null,
-                    min_order_quantity: p.min_order_quantity ? parseFloat(p.min_order_quantity) : 1,
-                    order_increment: p.order_increment !== undefined ? parseFloat(p.order_increment) : 1,
-                    show_servings: Boolean(p.show_servings),
-                    servings_per_unit: p.servings_per_unit ? parseFloat(p.servings_per_unit) : null,
-                    allow_multiple: Boolean(p.allow_multiple),
-                    max_order_quantity: p.max_order_quantity ? parseFloat(p.max_order_quantity) : null,
-                    images: p.images || (p.image_url ? [p.image_url] : []),
-                    is_sold_by_piece: Boolean(p.is_sold_by_piece),
-                    price_per_piece: p.price_per_piece ? parseFloat(p.price_per_piece) : null
-                }));
-            setProducts(parsedData);
-        } catch (err) {
-            console.error('Failed to load products', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const products = React.useMemo(() => {
+        return rawProducts
+            .filter(p => p.is_visible !== false)
+            .map(p => ({
+                ...p,
+                price_per_kg: parseFloat(p.price_per_kg),
+                pieces_per_kg: p.pieces_per_kg ? parseFloat(p.pieces_per_kg) : null,
+                min_order_quantity: p.min_order_quantity ? parseFloat(p.min_order_quantity) : 1,
+                order_increment: p.order_increment !== undefined ? parseFloat(p.order_increment) : 1,
+                show_servings: Boolean(p.show_servings),
+                servings_per_unit: p.servings_per_unit ? parseFloat(p.servings_per_unit) : null,
+                allow_multiple: Boolean(p.allow_multiple),
+                max_order_quantity: p.max_order_quantity ? parseFloat(p.max_order_quantity) : null,
+                images: p.images || (p.image_url ? [p.image_url] : []),
+                is_sold_by_piece: Boolean(p.is_sold_by_piece),
+                price_per_piece: p.price_per_piece ? parseFloat(p.price_per_piece) : null
+            }));
+    }, [rawProducts]);
 
     const addToCart = (product) => {
         if (product.allow_multiple) {
@@ -223,7 +191,7 @@ const QuoteBuilder = () => {
         window.history.back();
     };
 
-    if (loading) return <p>Caricamento prodotti...</p>;
+    if (isLoading) return <p>Caricamento prodotti...</p>;
 
     return (
         <div className="grid-quote-builder">

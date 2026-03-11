@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Download } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
 import { formatHeaderText } from '../../utils/textFormatting';
+import { useSetting } from '../../hooks/useData';
 
 const Header = () => {
     const navigate = useNavigate();
@@ -10,25 +11,8 @@ const Header = () => {
     const isHome = location.pathname === '/';
     const isQuote = location.pathname === '/quote';
     const { showPrompt, handleInstallClick } = useInstallPromptContext();
-    const [headerText, setHeaderText] = useState(" ");
-
-    useEffect(() => {
-        const fetchHeaderText = async () => {
-            try {
-                const response = await fetch('/api/settings/header_text');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.value) {
-                        setHeaderText(data.value);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching header text:', error);
-            }
-        };
-
-        fetchHeaderText();
-    }, []);
+    const { setting: headerSetting } = useSetting('header_text');
+    const headerText = headerSetting?.value || " ";
 
     const scrollToPackages = () => {
         if (isHome) {

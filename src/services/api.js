@@ -128,5 +128,25 @@ export const api = {
             throw new Error(error.error || 'Failed to reorder caterings');
         }
         return res.json();
+    },
+
+    // Settings
+    getSetting: async (key) => {
+        const res = await fetch(`${API_URL}/settings/${key}`);
+        if (!res.ok) throw new Error('Failed to fetch setting');
+        return res.json();
+    },
+
+    updateSetting: async (key, value) => {
+        const res = await fetch(`${API_URL}/settings/${key}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify({ value })
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to update setting' }));
+            throw new Error(error.error || 'Failed to update setting');
+        }
+        return res.json();
     }
 };

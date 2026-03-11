@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { api } from '../../services/api';
+import { useProducts, useCaterings } from '../../hooks/useData';
 import { Trash2, Plus, Save, Pencil, Minus, ArrowUp, ArrowDown } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 
 const PackageBuilder = () => {
-    const [packages, setPackages] = useState([]);
-    const [products, setProducts] = useState([]);
+    const { caterings: packages, mutate: mutateCaterings } = useCaterings();
+    const { products } = useProducts();
     const [isCreating, setIsCreating] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [editingId, setEditingId] = useState(null);
@@ -23,25 +24,6 @@ const PackageBuilder = () => {
         is_gluten_free: false,
         is_lactose_free: false
     });
-
-
-
-    const loadData = async () => {
-        try {
-            const [pkgs, prods] = await Promise.all([
-                api.getCaterings(),
-                api.getProducts()
-            ]);
-            setPackages(pkgs);
-            setProducts(prods);
-        } catch (err) {
-            console.error('Failed to load data', err);
-        }
-    };
-
-    useEffect(() => {
-        loadData();
-    }, []);
 
 
 
@@ -92,7 +74,7 @@ const PackageBuilder = () => {
             setEditingId(null);
             setNewPackage({ name: '', description: '', image_url: '', total_price: 0, discount_percentage: 0, items: [] });
             setDiscountedPriceInput('');
-            loadData();
+            mutateCaterings();
         } catch {
             alert('Error saving package');
         }
@@ -121,7 +103,7 @@ const PackageBuilder = () => {
         if (!window.confirm('Sei sicuro di voler eliminare questo pacchetto?')) return;
         try {
             await api.deleteCatering(id);
-            loadData();
+            mutateCaterings();
         } catch {
             alert('Errore durante l\'eliminazione');
         }
@@ -138,13 +120,14 @@ const PackageBuilder = () => {
         const updates = newPackages.map((pkg, idx) => ({ id: pkg.id, sort_order: idx }));
 
         // Optimistic update
-        setPackages(newPackages);
+        mutateCaterings(newPackages, false);
 
         try {
             await api.reorderCaterings(updates);
+            mutateCaterings();
         } catch (err) {
             console.error('Failed to reorder', err);
-            loadData(); // Revert on error
+            mutateCaterings(); // Revert on error
         }
     };
 
@@ -159,13 +142,14 @@ const PackageBuilder = () => {
         const updates = newPackages.map((pkg, idx) => ({ id: pkg.id, sort_order: idx }));
 
         // Optimistic update
-        setPackages(newPackages);
+        mutateCaterings(newPackages, false);
 
         try {
             await api.reorderCaterings(updates);
+            mutateCaterings();
         } catch (err) {
             console.error('Failed to reorder', err);
-            loadData(); // Revert on error
+            mutateCaterings(); // Revert on error
         }
     };
 

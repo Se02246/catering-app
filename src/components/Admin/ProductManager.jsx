@@ -1,25 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { api } from '../../services/api';
+import { useProducts } from '../../hooks/useData';
 import { Trash2, Edit, Plus, Eye, EyeOff } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 
 const ProductManager = () => {
-    const [products, setProducts] = useState([]);
+    const { products, isLoading, mutate } = useProducts();
     const [isEditing, setIsEditing] = useState(false);
     const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', images: [], is_visible: true, allow_multiple: false, order_increment: '', max_order_quantity: '', is_sold_by_piece: false, price_per_piece: '' });
-
-    useEffect(() => {
-        loadProducts();
-    }, []);
-
-    const loadProducts = async () => {
-        try {
-            const data = await api.getProducts();
-            setProducts(data);
-        } catch (err) {
-            console.error('Failed to load products', err);
-        }
-    };
 
     const resetForm = () => {
         setCurrentProduct({
@@ -57,7 +45,7 @@ const ProductManager = () => {
             }
             setIsEditing(false);
             resetForm();
-            loadProducts();
+            mutate();
         } catch (err) {
             console.error(err);
             alert(err.message || 'Error saving product');
@@ -67,19 +55,21 @@ const ProductManager = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure?')) {
             await api.deleteProduct(id);
-            loadProducts();
+            mutate();
         }
     };
 
     const toggleVisibility = async (product) => {
         try {
             await api.updateProduct(product.id, { ...product, is_visible: !product.is_visible });
-            loadProducts();
+            mutate();
         } catch (err) {
             console.error('Failed to toggle visibility', err);
             alert('Errore durante l\'aggiornamento della visibilità');
         }
     };
+
+    if (isLoading) return <p>Caricamento prodotti...</p>;
 
     return (
         <div>
