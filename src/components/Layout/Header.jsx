@@ -37,8 +37,8 @@ const Header = () => {
 
     return (
         <header style={{ textAlign: 'center', marginBottom: '3rem', paddingTop: '2rem', position: 'relative' }}>
-            {/* Admin Lock Icon - Absolute positioned */}
-            <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+            {/* Admin Lock Icon - Invisible but clickable */}
+            <div style={{ position: 'absolute', top: '0', right: '0', width: '50px', height: '50px', zIndex: 100 }}>
                 <div
                     onClick={() => {
                         const token = localStorage.getItem('token');
@@ -48,9 +48,18 @@ const Header = () => {
                             navigate('/login');
                         }
                     }}
-                    style={{ color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', cursor: 'pointer' }}
+                    style={{ 
+                        color: 'transparent', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        padding: '0.5rem', 
+                        cursor: 'default',
+                        width: '100%',
+                        height: '100%'
+                    }}
                 >
-                    <Lock size={24} />
+                    <Lock size={24} style={{ opacity: 0 }} />
                 </div>
             </div>
 
