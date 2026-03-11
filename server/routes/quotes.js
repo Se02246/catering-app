@@ -33,4 +33,23 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// Update an existing quote (Admin)
+router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { items, total_price } = req.body;
+    try {
+        const result = await pool.query(
+            'UPDATE quotes SET items = $1, total_price = $2 WHERE id = $3 RETURNING *',
+            [JSON.stringify(items), total_price, id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Quote not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error updating quote:', err);
+        res.status(500).json({ error: 'Server error updating quote' });
+    }
+});
+
 export default router;

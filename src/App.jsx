@@ -5,6 +5,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import CreateQuote from './pages/CreateQuote';
 import Login from './pages/Login';
 import SharedQuote from './pages/SharedQuote';
+import SharedPackage from './pages/SharedPackage';
 import { Lock } from 'lucide-react';
 import './styles/index.css';
 import { InstallPromptProvider } from './context/InstallPromptContext';
@@ -42,6 +43,7 @@ function AppContent() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/quote" element={<CreateQuote />} />
           <Route path="/quote/:id" element={<SharedQuote />} />
+          <Route path="/package/:id" element={<SharedPackage />} />
           <Route path="/login" element={<Login />} />
         </Routes>
       </main>

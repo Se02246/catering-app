@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ProductManager from '../components/Admin/ProductManager';
 import PackageBuilder from '../components/Admin/PackageBuilder';
 import SettingsManager from '../components/Admin/SettingsManager';
+import QuoteManager from '../components/Admin/QuoteManager';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('products');
@@ -53,11 +54,19 @@ const AdminDashboard = () => {
                 >
                     Impostazioni
                 </button>
+                <button
+                    className={`btn ${activeTab === 'quotes' ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setActiveTab('quotes')}
+                    style={{ whiteSpace: 'nowrap' }}
+                >
+                    Preventivi Clienti
+                </button>
             </div>
 
             {activeTab === 'products' && <ProductManager />}
             {activeTab === 'packages' && <PackageBuilder />}
             {activeTab === 'settings' && <SettingsManager />}
+            {activeTab === 'quotes' && <QuoteManager />}
 
         </div>
     );

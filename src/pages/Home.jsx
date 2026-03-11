@@ -78,30 +78,10 @@ const Home = () => {
     const [isSaving, setIsSaving] = React.useState(false);
 
     const handleBookPackage = async (pkg) => {
-        setIsSaving(true);
-        try {
-            // Save the package as a quote to get a unique link
-            const quoteItems = pkg.items.map(item => ({
-                ...item,
-                instanceId: Date.now() + Math.random()
-            }));
-
-            const finalPrice = pkg.discount_percentage > 0
-                ? (pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)
-                : parseFloat(pkg.total_price).toFixed(2);
-
-            const result = await api.saveQuote(quoteItems, finalPrice);
-            const url = `${window.location.origin}/quote/${result.id}`;
-
-            const phoneNumber = "393495416637";
-            const message = `Ciao Barbara, sono interessato al pacchetto "${pkg.name}". Puoi vedere i dettagli qui:\n\n${url}`;
-            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
-        } catch (err) {
-            console.error('Error booking package:', err);
-            alert('Errore durante la creazione del preventivo.');
-        } finally {
-            setIsSaving(false);
-        }
+        const url = `${window.location.origin}/package/${pkg.id}`;
+        const phoneNumber = "393495416637";
+        const message = `Ciao Barbara, sono interessato al pacchetto "${pkg.name}". Puoi vedere i dettagli qui:\n\n${url}`;
+        window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
     return (

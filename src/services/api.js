@@ -165,5 +165,15 @@ export const api = {
         const res = await fetch(`${API_URL}/quotes/${id}`);
         if (!res.ok) throw new Error('Quote not found');
         return res.json();
+    },
+
+    updateQuote: async (id, items, total_price) => {
+        const res = await fetch(`${API_URL}/quotes/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items, total_price })
+        });
+        if (!res.ok) throw new Error('Failed to update quote');
+        return res.json();
     }
 };
