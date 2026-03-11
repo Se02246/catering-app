@@ -175,5 +175,25 @@ export const api = {
         });
         if (!res.ok) throw new Error('Failed to update quote');
         return res.json();
+    },
+
+    recalculateProductsPrices: async (percentage) => {
+        const res = await fetch(`${API_URL}/products/recalculate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ percentage })
+        });
+        if (!res.ok) throw new Error('Failed to recalculate product prices');
+        return res.json();
+    },
+
+    recalculateCateringsPrices: async (percentage) => {
+        const res = await fetch(`${API_URL}/caterings/recalculate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ percentage })
+        });
+        if (!res.ok) throw new Error('Failed to recalculate catering prices');
+        return res.json();
     }
 };

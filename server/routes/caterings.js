@@ -194,4 +194,25 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// Recalculate all catering package prices by a percentage
+router.post('/recalculate', async (req, res) => {
+    const { percentage } = req.body;
+    if (percentage === undefined || isNaN(percentage)) {
+        return res.status(400).json({ error: 'Invalid percentage value' });
+    }
+
+    const factor = 1 + (parseFloat(percentage) / 100);
+
+    try {
+        await pool.query(
+            'UPDATE caterings SET total_price = total_price * $1',
+            [factor]
+        );
+        res.json({ success: true, message: `Package prices updated by ${percentage}%` });
+    } catch (err) {
+        console.error('Error recalculating catering prices:', err);
+        res.status(500).json({ error: 'Server error recalculating prices' });
+    }
+});
+
 export default router;

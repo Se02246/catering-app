@@ -69,4 +69,25 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// Recalculate all product prices by a percentage
+router.post('/recalculate', async (req, res) => {
+    const { percentage } = req.body;
+    if (percentage === undefined || isNaN(percentage)) {
+        return res.status(400).json({ error: 'Invalid percentage value' });
+    }
+
+    const factor = 1 + (parseFloat(percentage) / 100);
+
+    try {
+        await pool.query(
+            'UPDATE products SET price_per_kg = price_per_kg * $1, price_per_piece = price_per_piece * $1',
+            [factor]
+        );
+        res.json({ success: true, message: `Prices updated by ${percentage}%` });
+    } catch (err) {
+        console.error('Error recalculating product prices:', err);
+        res.status(500).json({ error: 'Server error recalculating prices' });
+    }
+});
+
 export default router;
