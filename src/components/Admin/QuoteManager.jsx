@@ -27,6 +27,7 @@ const QuoteManager = () => {
         try {
             const data = await api.getQuote(idToSearch);
             setCurrentQuote(data);
+            setSearchId(data.id); // Update input field with the full UUID
         } catch (err) {
             console.error(err);
             setMessage({ type: 'error', text: 'Preventivo non trovato.' });

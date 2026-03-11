@@ -106,7 +106,21 @@ const SharedPackage = () => {
                                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
                                     <CheckCircle size={18} color="var(--color-primary)" />
                                     <div>
-                                        <p style={{ fontWeight: 'bold', margin: 0, fontSize: '0.95rem' }}>{item.name}</p>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                            <p style={{ fontWeight: 'bold', margin: 0, fontSize: '0.95rem' }}>{item.name}</p>
+                                            <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                                {item.is_gluten_free && !pkg.is_gluten_free && (
+                                                    <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        Senza Glutine
+                                                    </span>
+                                                )}
+                                                {item.is_lactose_free && !pkg.is_lactose_free && (
+                                                    <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        Senza Lattosio
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
                                         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', margin: 0 }}>
                                             {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}
                                         </p>

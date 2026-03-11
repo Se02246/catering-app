@@ -388,12 +388,12 @@ const PackageBuilder = () => {
                                                         <div style={{ fontWeight: '600' }}>
                                                             {product ? product.name : 'Unknown'}
                                                             <div style={{ display: 'inline-flex', gap: '0.25rem', marginLeft: '0.5rem', flexWrap: 'wrap' }}>
-                                                                {product?.is_gluten_free && (
+                                                                {product?.is_gluten_free && !newPackage.is_gluten_free && (
                                                                     <span style={{ color: '#FF9800', fontSize: '0.6rem', fontWeight: 'bold' }}>
                                                                         Senza Glutine!
                                                                     </span>
                                                                 )}
-                                                                {product?.is_lactose_free && (
+                                                                {product?.is_lactose_free && !newPackage.is_lactose_free && (
                                                                     <span style={{ color: '#03A9F4', fontSize: '0.6rem', fontWeight: 'bold' }}>
                                                                         Senza Lattosio!
                                                                     </span>
@@ -533,6 +533,18 @@ const PackageBuilder = () => {
                                                 : `${parseFloat(item.quantity)}kg ${item.name}`
                                             )
                                         }
+                                        <span style={{ marginLeft: '0.25rem' }}>
+                                            {item.is_gluten_free && !pkg.is_gluten_free && (
+                                                <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                    (SG)
+                                                </span>
+                                            )}
+                                            {item.is_lactose_free && !pkg.is_lactose_free && (
+                                                <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                    (SL)
+                                                </span>
+                                            )}
+                                        </span>
                                     </li>
                                 ))}
                             </ul>

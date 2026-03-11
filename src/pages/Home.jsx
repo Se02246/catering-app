@@ -286,12 +286,12 @@ const Home = () => {
                                             <div style={{ fontWeight: '600', fontSize: '1rem', color: 'var(--color-text)', marginBottom: '0.1rem' }}>
                                                 {item.name}
                                                 <div style={{ display: 'inline-flex', gap: '0.25rem', marginLeft: '0.5rem', flexWrap: 'wrap' }}>
-                                                    {item.is_gluten_free && (
+                                                    {item.is_gluten_free && !selectedPackage.is_gluten_free && (
                                                         <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
                                                             Senza Glutine!
                                                         </span>
                                                     )}
-                                                    {item.is_lactose_free && (
+                                                    {item.is_lactose_free && !selectedPackage.is_lactose_free && (
                                                         <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
                                                             Senza Lattosio!
                                                         </span>

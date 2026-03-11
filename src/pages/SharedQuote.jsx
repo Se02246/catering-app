@@ -47,6 +47,9 @@ const SharedQuote = () => {
         window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
+    const isQuoteGlutenFree = quote.items.length > 0 && quote.items.every(item => item.is_gluten_free);
+    const isQuoteLactoseFree = quote.items.length > 0 && quote.items.every(item => item.is_lactose_free);
+
     return (
         <div className="container" style={{ maxWidth: '800px', padding: '2rem 1rem' }}>
             <button 
@@ -61,7 +64,21 @@ const SharedQuote = () => {
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <div>
-                        <h1 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem' }}>Riepilogo Preventivo</h1>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                            <h1 style={{ color: 'var(--color-primary-dark)', margin: 0 }}>Riepilogo Preventivo</h1>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                {isQuoteGlutenFree && (
+                                    <span style={{ color: '#FF9800', fontSize: '0.8rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '4px 10px', borderRadius: '6px' }}>
+                                        Senza Glutine
+                                    </span>
+                                )}
+                                {isQuoteLactoseFree && (
+                                    <span style={{ color: '#03A9F4', fontSize: '0.8rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '4px 10px', borderRadius: '6px' }}>
+                                        Senza Lattosio
+                                    </span>
+                                )}
+                            </div>
+                        </div>
                         <p style={{ color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <Calendar size={16} /> Creato il {new Date(quote.created_at).toLocaleDateString('it-IT')}
                         </p>
@@ -88,12 +105,12 @@ const SharedQuote = () => {
                                         <p style={{ fontWeight: 'bold', margin: 0 }}>
                                             {item.name}
                                             <span style={{ marginLeft: '0.5rem', display: 'inline-flex', gap: '0.25rem' }}>
-                                                {item.is_gluten_free && (
+                                                {item.is_gluten_free && !isQuoteGlutenFree && (
                                                     <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
                                                         Senza Glutine
                                                     </span>
                                                 )}
-                                                {item.is_lactose_free && (
+                                                {item.is_lactose_free && !isQuoteLactoseFree && (
                                                     <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
                                                         Senza Lattosio
                                                     </span>
