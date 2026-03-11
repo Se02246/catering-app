@@ -320,6 +320,3 @@ const SettingsManager = () => {
 };
 
 export default SettingsManager;
-
-
-export default SettingsManager;
