@@ -32,8 +32,9 @@ router.get('/:id', async (req, res) => {
         }
 
         // If not found or not a full UUID, try a prefix match (casting UUID to TEXT)
+        // Using ILIKE for case-insensitive matching
         const partialResult = await pool.query(
-            'SELECT * FROM quotes WHERE id::text LIKE $1 LIMIT 1',
+            'SELECT * FROM quotes WHERE id::text ILIKE $1 LIMIT 1',
             [`${id}%`]
         );
 
