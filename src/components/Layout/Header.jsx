@@ -13,6 +13,7 @@ const Header = () => {
     const { showPrompt, handleInstallClick } = useInstallPromptContext();
     const { setting: headerSetting } = useSetting('header_text');
     const headerText = headerSetting?.value || " ";
+    const isLoggedIn = !!localStorage.getItem('token');
 
     const scrollToPackages = () => {
         if (isHome) {
@@ -37,7 +38,7 @@ const Header = () => {
 
     return (
         <header style={{ textAlign: 'center', marginBottom: '3rem', paddingTop: '2rem', position: 'relative' }}>
-            {/* Admin Lock Icon - Invisible but clickable */}
+            {/* Admin Lock Icon - Invisible for clients, visible for logged admin */}
             <div style={{ position: 'absolute', top: '0', right: '0', width: '50px', height: '50px', zIndex: 100 }}>
                 <div
                     onClick={() => {
@@ -49,17 +50,17 @@ const Header = () => {
                         }
                     }}
                     style={{ 
-                        color: 'transparent', 
+                        color: isLoggedIn ? 'var(--color-primary-dark)' : 'transparent', 
                         display: 'flex', 
                         alignItems: 'center', 
                         justifyContent: 'center', 
                         padding: '0.5rem', 
-                        cursor: 'default',
+                        cursor: isLoggedIn ? 'pointer' : 'default',
                         width: '100%',
                         height: '100%'
                     }}
                 >
-                    <Lock size={24} style={{ opacity: 0 }} />
+                    <Lock size={24} style={{ opacity: isLoggedIn ? 1 : 0 }} />
                 </div>
             </div>
 
