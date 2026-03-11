@@ -13,12 +13,19 @@ const QuoteManager = () => {
 
     const handleSearch = async (e) => {
         if (e) e.preventDefault();
-        if (!searchId.trim()) return;
+        let idToSearch = searchId.trim();
+        if (!idToSearch) return;
+
+        // If the user pasted a full URL, extract the last part (the UUID)
+        if (idToSearch.includes('/quote/')) {
+            const parts = idToSearch.split('/quote/');
+            idToSearch = parts[parts.length - 1];
+        }
 
         setLoading(true);
         setMessage(null);
         try {
-            const data = await api.getQuote(searchId.trim());
+            const data = await api.getQuote(idToSearch);
             setCurrentQuote(data);
         } catch (err) {
             console.error(err);

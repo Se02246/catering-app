@@ -85,7 +85,21 @@ const SharedQuote = () => {
                                         <img src={item.image_url} alt={item.name} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
                                     )}
                                     <div>
-                                        <p style={{ fontWeight: 'bold', margin: 0 }}>{item.name}</p>
+                                        <p style={{ fontWeight: 'bold', margin: 0 }}>
+                                            {item.name}
+                                            <span style={{ marginLeft: '0.5rem', display: 'inline-flex', gap: '0.25rem' }}>
+                                                {item.is_gluten_free && (
+                                                    <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                                        Senza Glutine
+                                                    </span>
+                                                )}
+                                                {item.is_lactose_free && (
+                                                    <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                                        Senza Lattosio
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </p>
                                         <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
                                             {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}
                                             {item.show_servings && item.servings_per_unit && (

@@ -78,7 +78,21 @@ const SharedPackage = () => {
                 
                 <div style={{ padding: '2.5rem' }}>
                     <div style={{ marginBottom: '2rem' }}>
-                        <h1 style={{ color: 'var(--color-primary-dark)', marginBottom: '1rem' }}>{pkg.name}</h1>
+                        <h1 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem' }}>
+                            {pkg.name}
+                            <span style={{ marginLeft: '1rem', display: 'inline-flex', gap: '0.5rem', verticalAlign: 'middle' }}>
+                                {pkg.is_gluten_free && (
+                                    <span style={{ color: '#FF9800', fontSize: '0.9rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '4px 10px', borderRadius: '6px' }}>
+                                        Senza Glutine
+                                    </span>
+                                )}
+                                {pkg.is_lactose_free && (
+                                    <span style={{ color: '#03A9F4', fontSize: '0.9rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '4px 10px', borderRadius: '6px' }}>
+                                        Senza Lattosio
+                                    </span>
+                                )}
+                            </span>
+                        </h1>
                         <p style={{ fontSize: '1.2rem', lineHeight: '1.6', color: 'var(--color-text)' }}>{pkg.description}</p>
                     </div>
 
