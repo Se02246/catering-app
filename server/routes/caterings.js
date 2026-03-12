@@ -215,4 +215,31 @@ router.post('/recalculate', async (req, res) => {
     }
 });
 
+// Batch update catering package prices
+router.post('/batch-update', async (req, res) => {
+    const { updates } = req.body; // Array of { id, total_price }
+    if (!Array.isArray(updates)) {
+        return res.status(400).json({ error: 'Invalid updates format' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        for (const update of updates) {
+            await client.query(
+                'UPDATE caterings SET total_price = $1 WHERE id = $2',
+                [update.total_price, update.id]
+            );
+        }
+        await client.query('COMMIT');
+        res.json({ success: true });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error in batch update caterings:', err);
+        res.status(500).json({ error: 'Server error during batch update' });
+    } finally {
+        client.release();
+    }
+});
+
 export default router;

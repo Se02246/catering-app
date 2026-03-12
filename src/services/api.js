@@ -195,5 +195,25 @@ export const api = {
         });
         if (!res.ok) throw new Error('Failed to recalculate catering prices');
         return res.json();
+    },
+
+    batchUpdateProducts: async (updates) => {
+        const res = await fetch(`${API_URL}/products/batch-update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ updates })
+        });
+        if (!res.ok) throw new Error('Failed to batch update products');
+        return res.json();
+    },
+
+    batchUpdateCaterings: async (updates) => {
+        const res = await fetch(`${API_URL}/caterings/batch-update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ updates })
+        });
+        if (!res.ok) throw new Error('Failed to batch update caterings');
+        return res.json();
     }
 };

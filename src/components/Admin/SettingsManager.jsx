@@ -47,38 +47,64 @@ const SettingsManager = () => {
         const factor = 1 + (percentage / 100);
         
         if (type === 'products') {
-            const preview = products.map(p => ({
-                id: p.id,
-                name: p.name,
-                oldPriceKg: p.price_per_kg,
-                newPriceKg: p.price_per_kg * factor,
-                oldPricePiece: p.price_per_piece,
-                newPricePiece: p.price_per_piece ? p.price_per_piece * factor : null,
-                isSoldByPiece: p.is_sold_by_piece
-            }));
+            const preview = products.map(p => {
+                // Round up to nearest 10 cents: Math.ceil(value * 10) / 10
+                const newPriceKg = Math.ceil((p.price_per_kg * factor) * 10) / 10;
+                const newPricePiece = p.price_per_piece ? Math.ceil((p.price_per_piece * factor) * 10) / 10 : null;
+                
+                return {
+                    id: p.id,
+                    name: p.name,
+                    oldPriceKg: p.price_per_kg,
+                    newPriceKg: newPriceKg,
+                    oldPricePiece: p.price_per_piece,
+                    newPricePiece: newPricePiece,
+                    isSoldByPiece: p.is_sold_by_piece
+                };
+            });
             setPreviewData(preview);
             setPreviewType('products');
         } else {
-            const preview = caterings.map(c => ({
-                id: c.id,
-                name: c.name,
-                oldPrice: c.total_price,
-                newPrice: c.total_price * factor
-            }));
+            const preview = caterings.map(c => {
+                // Round up to nearest Euro: Math.ceil(value)
+                const newPrice = Math.ceil(c.total_price * factor);
+                
+                return {
+                    id: c.id,
+                    name: c.name,
+                    oldPrice: c.total_price,
+                    newPrice: newPrice
+                };
+            });
             setPreviewData(preview);
             setPreviewType('packages');
         }
+    };
+
+    const handlePreviewPriceChange = (id, field, value) => {
+        setPreviewData(prev => prev.map(item => 
+            item.id === id ? { ...item, [field]: parseFloat(value) || 0 } : item
+        ));
     };
 
     const confirmRecalculation = async () => {
         setIsRecalculating(true);
         try {
             if (previewType === 'products') {
-                await api.recalculateProductsPrices(productInflation);
+                const updates = previewData.map(item => ({
+                    id: item.id,
+                    price_per_kg: item.newPriceKg,
+                    price_per_piece: item.newPricePiece
+                }));
+                await api.batchUpdateProducts(updates);
                 mutateProducts();
                 setProductInflation('');
             } else {
-                await api.recalculateCateringsPrices(packageInflation);
+                const updates = previewData.map(item => ({
+                    id: item.id,
+                    total_price: item.newPrice
+                }));
+                await api.batchUpdateCaterings(updates);
                 mutateCaterings();
                 setPackageInflation('');
             }
@@ -278,13 +304,43 @@ const SettingsManager = () => {
                                                     `€ ${parseFloat(item.oldPrice).toFixed(2)}`
                                                 )}
                                             </td>
-                                            <td style={{ padding: '0.75rem 0.5rem', fontWeight: 'bold', color: 'var(--color-primary-dark)' }}>
+                                            <td style={{ padding: '0.75rem 0.5rem', fontWeight: 'bold' }}>
                                                 {previewType === 'products' ? (
-                                                    item.isSoldByPiece 
-                                                        ? `€ ${item.newPricePiece.toFixed(2)} / pz`
-                                                        : `€ ${item.newPriceKg.toFixed(2)} / kg`
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                            <span style={{ fontSize: '0.8rem' }}>{item.isSoldByPiece ? '€ / pz:' : '€ / kg:'}</span>
+                                                            <input 
+                                                                type="number"
+                                                                step="0.1"
+                                                                value={item.isSoldByPiece ? item.newPricePiece : item.newPriceKg}
+                                                                onChange={(e) => handlePreviewPriceChange(item.id, item.isSoldByPiece ? 'newPricePiece' : 'newPriceKg', e.target.value)}
+                                                                style={{ width: '80px', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                                                            />
+                                                        </div>
+                                                        {!item.isSoldByPiece && item.oldPricePiece && (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                <span style={{ fontSize: '0.8rem' }}>€ / pz:</span>
+                                                                <input 
+                                                                    type="number"
+                                                                    step="0.1"
+                                                                    value={item.newPricePiece}
+                                                                    onChange={(e) => handlePreviewPriceChange(item.id, 'newPricePiece', e.target.value)}
+                                                                    style={{ width: '80px', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 ) : (
-                                                    `€ ${item.newPrice.toFixed(2)}`
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        <span>€</span>
+                                                        <input 
+                                                            type="number"
+                                                            step="1"
+                                                            value={item.newPrice}
+                                                            onChange={(e) => handlePreviewPriceChange(item.id, 'newPrice', e.target.value)}
+                                                            style={{ width: '100px', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                                                        />
+                                                    </div>
                                                 )}
                                             </td>
                                         </tr>

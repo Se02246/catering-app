@@ -90,4 +90,31 @@ router.post('/recalculate', async (req, res) => {
     }
 });
 
+// Batch update product prices
+router.post('/batch-update', async (req, res) => {
+    const { updates } = req.body; // Array of { id, price_per_kg, price_per_piece }
+    if (!Array.isArray(updates)) {
+        return res.status(400).json({ error: 'Invalid updates format' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        for (const update of updates) {
+            await client.query(
+                'UPDATE products SET price_per_kg = $1, price_per_piece = $2 WHERE id = $3',
+                [update.price_per_kg, update.price_per_piece, update.id]
+            );
+        }
+        await client.query('COMMIT');
+        res.json({ success: true });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error in batch update products:', err);
+        res.status(500).json({ error: 'Server error during batch update' });
+    } finally {
+        client.release();
+    }
+});
+
 export default router;
