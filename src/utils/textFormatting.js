@@ -27,8 +27,8 @@ export const formatCustomText = (text) => {
     // Bold: *phrase* -> <strong>phrase</strong>
     formattedText = formattedText.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
 
-    // Italic: ~phrase~ -> <em>phrase</em>
-    formattedText = formattedText.replace(/~(.*?)~/g, '<em>$1</em>');
+    // Italic: ~phrase~ -> <span style="font-style: italic">phrase</span>
+    formattedText = formattedText.replace(/~(.*?)~/g, '<span style="font-style: italic">$1</span>');
 
     // Red: $phrase$ -> <span style="color: var(--color-primary)">phrase</span>
     formattedText = formattedText.replace(/\$(.*?)\$/g, '<span style="color: var(--color-primary)">$1</span>');
