@@ -370,7 +370,10 @@ const Home = () => {
                                                     <div style={{ flex: 1 }}>
                                                         <div style={{ fontWeight: '700', fontSize: '1.05rem', color: 'var(--color-text)' }}>{item.name}</div>
                                                         <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 800, marginTop: '0.2rem' }}>
-                                                            {item.is_sold_by_piece ? `${item.quantity} pezzi` : `${item.quantity} kg`}
+                                                            {(item.is_sold_by_piece || (item.pieces_per_kg && parseFloat(item.pieces_per_kg) > 0)) 
+                                                                ? `${item.quantity} pz` 
+                                                                : `${item.quantity} kg`
+                                                            }
                                                         </div>
                                                     </div>
                                                     <ChevronRight size={20} color="var(--color-accent-light)" />
