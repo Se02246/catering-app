@@ -229,12 +229,6 @@ const Home = () => {
                                         
                                         <div 
                                             className="card-text"
-                                            style={{ 
-                                                display: '-webkit-box',
-                                                WebkitLineClamp: 3,
-                                                WebkitBoxOrient: 'vertical',
-                                                overflow: 'hidden'
-                                            }}
                                             dangerouslySetInnerHTML={{ __html: formatCustomText(pkg.description) }}
                                         />
 
