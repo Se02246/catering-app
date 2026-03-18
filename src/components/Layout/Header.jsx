@@ -39,7 +39,7 @@ const Header = () => {
         const performScroll = () => {
             const element = document.getElementById('catalog-top');
             if (element) {
-                const yOffset = -120; // Offset to land below the header/install button
+                const yOffset = -20; // Slight offset to land just above the title
                 const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
                 window.scrollTo({ top: y, behavior: 'smooth' });
             }

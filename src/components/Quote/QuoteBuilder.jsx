@@ -135,22 +135,22 @@ const QuoteBuilder = () => {
     return (
         <div className="grid-quote-builder">
             {/* Catalog Section */}
-            <div id="catalog-top" className="fade-in" style={{ paddingBottom: '4rem' }}>
+            <div className="fade-in" style={{ paddingBottom: '4rem' }}>
                 <div style={{ 
                     position: 'sticky', 
                     top: '0', 
                     zIndex: 100, 
-                    marginBottom: '1rem',
-                    padding: '0.75rem 0',
-                    backgroundColor: 'var(--color-bg)', // Matches background to hide items behind
-                    transition: 'all 0.3s ease'
+                    backgroundColor: 'var(--color-bg)',
+                    padding: '0.5rem 0 1rem',
+                    margin: '0 0 1rem'
                 }}>
                     <div style={{ 
                         position: 'relative',
-                        backdropFilter: 'blur(8px)',
+                        backdropFilter: 'blur(10px)',
                         backgroundColor: 'rgba(255, 255, 255, 0.8)',
                         borderRadius: 'var(--radius-lg)',
-                        padding: '2px'
+                        boxShadow: 'var(--shadow-md)',
+                        border: '1px solid rgba(155, 57, 61, 0.1)'
                     }}>
                         <Search style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-accent)' }} size={20} />
                         <input 
@@ -159,13 +159,11 @@ const QuoteBuilder = () => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             style={{
-                                width: '100%', padding: '1.2rem 1.2rem 1.2rem 3.2rem', borderRadius: 'var(--radius-lg)',
-                                border: '1px solid rgba(155, 57, 61, 0.1)', background: 'transparent',
-                                fontSize: '1rem', outline: 'none', boxShadow: 'var(--shadow-md)',
+                                width: '100%', padding: '1.2rem 1.2rem 1.2rem 3.5rem', borderRadius: 'var(--radius-lg)',
+                                border: 'none', background: 'transparent',
+                                fontSize: '1rem', outline: 'none',
                                 transition: 'all 0.3s ease'
                             }}
-                            onFocus={e => { e.target.style.borderColor = 'var(--color-primary)'; e.target.style.boxShadow = 'var(--shadow-lg)'; }}
-                            onBlur={e => { e.target.style.borderColor = 'rgba(155, 57, 61, 0.1)'; e.target.style.boxShadow = 'var(--shadow-md)'; }}
                         />
                     </div>
                 </div>
