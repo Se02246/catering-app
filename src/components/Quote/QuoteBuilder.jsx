@@ -135,29 +135,32 @@ const QuoteBuilder = () => {
     return (
         <div className="grid-quote-builder">
             {/* Catalog Section */}
-            <div id="catalog-top" className="fade-in" style={{ paddingBottom: '4rem', position: 'relative' }}>
+            <div id="catalog-top" className="fade-in" style={{ paddingBottom: '4rem' }}>
                 <div style={{ 
                     position: 'sticky', 
-                    top: '1rem', 
+                    top: '0', 
                     zIndex: 100, 
-                    marginBottom: '2rem',
-                    padding: '0.5rem',
-                    margin: '-0.5rem -0.5rem 1.5rem',
-                    borderRadius: 'var(--radius-lg)',
-                    backdropFilter: 'blur(8px)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                    marginBottom: '1rem',
+                    padding: '0.75rem 0',
+                    backgroundColor: 'var(--color-bg)', // Matches background to hide items behind
                     transition: 'all 0.3s ease'
                 }}>
-                    <div style={{ position: 'relative' }}>
-                        <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-accent)' }} size={20} />
+                    <div style={{ 
+                        position: 'relative',
+                        backdropFilter: 'blur(8px)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        borderRadius: 'var(--radius-lg)',
+                        padding: '2px'
+                    }}>
+                        <Search style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-accent)' }} size={20} />
                         <input 
                             type="text" 
                             placeholder="Cerca un prodotto nel catalogo..." 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             style={{
-                                width: '100%', padding: '1.2rem 1.2rem 1.2rem 3rem', borderRadius: 'var(--radius-lg)',
-                                border: '1px solid rgba(155, 57, 61, 0.1)', background: 'var(--color-white)',
+                                width: '100%', padding: '1.2rem 1.2rem 1.2rem 3.2rem', borderRadius: 'var(--radius-lg)',
+                                border: '1px solid rgba(155, 57, 61, 0.1)', background: 'transparent',
                                 fontSize: '1rem', outline: 'none', boxShadow: 'var(--shadow-md)',
                                 transition: 'all 0.3s ease'
                             }}

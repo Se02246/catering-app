@@ -36,19 +36,20 @@ const Header = () => {
     };
 
     const scrollToQuote = () => {
-        if (location.pathname === '/quote') {
+        const performScroll = () => {
             const element = document.getElementById('catalog-top');
             if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
+                const yOffset = -120; // Offset to land below the header/install button
+                const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
             }
+        };
+
+        if (location.pathname === '/quote') {
+            performScroll();
         } else {
             navigate('/quote');
-            setTimeout(() => {
-                const element = document.getElementById('catalog-top');
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                }
-            }, 100);
+            setTimeout(performScroll, 200); // Increased timeout to ensure page content is loaded
         }
     };
 
