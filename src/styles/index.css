@@ -180,9 +180,9 @@ h1, h2, h3, h4, h5, h6 {
   position: relative;
   display: flex;
   flex-direction: column;
-  opacity: 0;
-  transform: translateY(100vh); /* Start from bottom */
-  animation: modalSlideUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  opacity: 1; /* Base state is visible */
+  transform: translateY(0); /* Base state is center */
+  animation: modalSlideUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
   will-change: transform, opacity;
 }
 
