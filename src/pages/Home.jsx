@@ -148,6 +148,12 @@ const Home = () => {
                                     className="premium-card fade-in"
                                     style={{ animationDelay: `${index * 0.1}s` }}
                                 >
+                                    {pkg.hide_at && (
+                                        <div className="package-badge">
+                                            <Calendar size={14} /> Disponibile fino al {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
+                                        </div>
+                                    )}
+
                                     <div className="image-wrapper" onClick={() => openPackage(pkg)} style={{ cursor: 'pointer' }}>
                                         <img
                                             src={pkg.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
@@ -156,13 +162,6 @@ const Home = () => {
                                             className="card-hover-img"
                                         />
                                     </div>
-                                    
-                                    {/* Badge outside image-wrapper to avoid overflow clipping */}
-                                    {pkg.hide_at && (
-                                        <div className="package-badge" style={{ top: '-10px', right: '-10px' }}>
-                                            <Calendar size={14} /> Disponibile fino al {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
-                                        </div>
-                                    )}
 
                                     <div className="card-body">
                                         <div className="dietary-badges" style={{ marginBottom: '1rem' }}>
