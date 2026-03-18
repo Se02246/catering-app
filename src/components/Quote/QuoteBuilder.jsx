@@ -135,23 +135,36 @@ const QuoteBuilder = () => {
     return (
         <div className="grid-quote-builder">
             {/* Catalog Section */}
-            <div className="fade-in" style={{ paddingBottom: '4rem' }}>
-                <div style={{ position: 'relative', marginBottom: '2rem' }}>
-                    <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-accent)' }} size={20} />
-                    <input 
-                        type="text" 
-                        placeholder="Cerca un prodotto nel catalogo..." 
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{
-                            width: '100%', padding: '1.2rem 1.2rem 1.2rem 3rem', borderRadius: 'var(--radius-lg)',
-                            border: '1px solid rgba(155, 57, 61, 0.1)', background: 'var(--color-white)',
-                            fontSize: '1rem', outline: 'none', boxShadow: 'var(--shadow-sm)',
-                            transition: 'all 0.3s ease'
-                        }}
-                        onFocus={e => { e.target.style.borderColor = 'var(--color-primary)'; e.target.style.boxShadow = 'var(--shadow-md)'; }}
-                        onBlur={e => { e.target.style.borderColor = 'rgba(155, 57, 61, 0.1)'; e.target.style.boxShadow = 'var(--shadow-sm)'; }}
-                    />
+            <div className="fade-in" style={{ paddingBottom: '4rem', position: 'relative' }}>
+                <div style={{ 
+                    position: 'sticky', 
+                    top: '1rem', 
+                    zIndex: 100, 
+                    marginBottom: '2rem',
+                    padding: '0.5rem',
+                    margin: '-0.5rem -0.5rem 1.5rem',
+                    borderRadius: 'var(--radius-lg)',
+                    backdropFilter: 'blur(8px)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                    transition: 'all 0.3s ease'
+                }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-accent)' }} size={20} />
+                        <input 
+                            type="text" 
+                            placeholder="Cerca un prodotto nel catalogo..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{
+                                width: '100%', padding: '1.2rem 1.2rem 1.2rem 3rem', borderRadius: 'var(--radius-lg)',
+                                border: '1px solid rgba(155, 57, 61, 0.1)', background: 'var(--color-white)',
+                                fontSize: '1rem', outline: 'none', boxShadow: 'var(--shadow-md)',
+                                transition: 'all 0.3s ease'
+                            }}
+                            onFocus={e => { e.target.style.borderColor = 'var(--color-primary)'; e.target.style.boxShadow = 'var(--shadow-lg)'; }}
+                            onBlur={e => { e.target.style.borderColor = 'rgba(155, 57, 61, 0.1)'; e.target.style.boxShadow = 'var(--shadow-md)'; }}
+                        />
+                    </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>

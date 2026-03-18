@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Download, Utensils, FileText } from 'lucide-react';
+import { Lock, Download, Utensils, FileText, MessageCircle } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
 import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
@@ -33,6 +33,25 @@ const Header = () => {
                 }
             }, 100);
         }
+    };
+
+    const scrollToQuote = () => {
+        if (isHome) {
+            const element = document.getElementById('quote-section');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                navigate('/quote');
+            }
+        } else {
+            navigate('/quote');
+        }
+    };
+
+    const contactWhatsApp = () => {
+        const phoneNumber = "393495416637";
+        const message = "Ciao Barbara, vorrei avere maggiori informazioni sui vostri servizi di catering.";
+        window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
     return (
@@ -75,7 +94,7 @@ const Header = () => {
                             Pacchetti
                         </button>
                         <button
-                            onClick={() => navigate('/quote')}
+                            onClick={scrollToQuote}
                             className={`nav-btn ${isQuote ? 'active' : ''}`}
                         >
                             <FileText size={20} />
@@ -85,8 +104,17 @@ const Header = () => {
                 )}
             </div>
 
-            {showPrompt && (
-                <div style={{ maxWidth: '400px', margin: '1.5rem auto 0' }}>
+            <div style={{ maxWidth: '400px', margin: '1.5rem auto 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <button
+                    onClick={contactWhatsApp}
+                    className="btn btn-outline"
+                    style={{ borderColor: '#25D366', color: '#128C7E', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                >
+                    <MessageCircle size={20} />
+                    Contatta Barbara
+                </button>
+
+                {showPrompt && (
                     <button
                         onClick={handleInstallClick}
                         className="btn install-btn"
@@ -94,8 +122,8 @@ const Header = () => {
                         <Download size={20} style={{ marginRight: '0.5rem' }} />
                         Installa l'App
                     </button>
-                </div>
-            )}
+                )}
+            </div>
         </header>
     );
 };

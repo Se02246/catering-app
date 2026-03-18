@@ -204,6 +204,27 @@ const Home = () => {
                 )}
             </section>
 
+            <section id="quote-section" style={{ marginTop: '5rem' }}>
+                <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,245,245,0.8) 100%)' }}>
+                    <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ padding: '1rem', borderRadius: '50%', background: 'var(--color-primary-light)', color: 'var(--color-primary-dark)' }}>
+                            <FileText size={32} />
+                        </div>
+                    </div>
+                    <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '1rem' }}>Non trovi quello che cerchi?</h2>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto 2rem' }}>
+                        Crea il tuo preventivo personalizzato scegliendo i singoli prodotti dal nostro catalogo.
+                    </p>
+                    <button 
+                        className="btn btn-primary" 
+                        style={{ padding: '1rem 2rem', fontSize: '1.1rem', display: 'inline-flex', alignItems: 'center', gap: '0.75rem' }}
+                        onClick={() => navigate('/quote')}
+                    >
+                        Crea Preventivo Personalizzato <ChevronRight size={20} />
+                    </button>
+                </div>
+            </section>
+
             {selectedPackage && (
                 <div className="modal-overlay" onClick={closePackage} style={{ zIndex: 3000 }}>
                     <div 
