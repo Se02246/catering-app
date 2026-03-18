@@ -12,10 +12,10 @@ const Header = () => {
     const isQuote = location.pathname === '/quote';
     const { showPrompt, handleInstallClick } = useInstallPromptContext();
     const { setting: headerSetting } = useSetting('header_text');
-    const { setting: showQuoteSetting } = useSetting('show_quote_builder');
+    const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
     
     const headerText = headerSetting?.value || " ";
-    const showQuoteBuilder = showQuoteSetting?.value !== 'false';
+    const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false';
     const isLoggedIn = !!localStorage.getItem('token');
 
     const scrollToPackages = () => {

@@ -1,9 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, FileText, Lock, LogOut, X } from 'lucide-react';
+import { useSetting } from '../../hooks/useData';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const location = useLocation();
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
+    
+    const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false';
 
     const isActive = (path) => location.pathname === path;
 
@@ -43,10 +47,12 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <Home size={20} style={{ marginRight: '12px' }} />
                     Home
                 </Link>
-                <Link to="/quote" style={linkStyle('/quote')} onClick={onClose}>
-                    <FileText size={20} style={{ marginRight: '12px' }} />
-                    Crea Preventivo
-                </Link>
+                {showQuoteBuilder && (
+                    <Link to="/quote" style={linkStyle('/quote')} onClick={onClose}>
+                        <FileText size={20} style={{ marginRight: '12px' }} />
+                        Crea Preventivo
+                    </Link>
+                )}
                 {!isAdmin && (
                     <Link to="/login" style={linkStyle('/login')} onClick={onClose}>
                         <Lock size={20} style={{ marginRight: '12px' }} />

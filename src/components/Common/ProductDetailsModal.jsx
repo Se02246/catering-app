@@ -15,7 +15,26 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
             <div
                 className={`modal-content ${isClosing ? 'bounce-out' : 'bounce-in'}`}
                 onClick={e => e.stopPropagation()}
+                style={{ position: 'relative' }}
             >
+                {product.hide_at && (
+                    <div style={{
+                        position: 'absolute',
+                        top: '-10px',
+                        left: '20px',
+                        backgroundColor: 'var(--color-primary-dark)',
+                        color: 'white',
+                        padding: '0.4rem 0.8rem',
+                        borderRadius: '20px',
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                        zIndex: 100,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        pointerEvents: 'none'
+                    }}>
+                        Disponibile fino al {new Date(product.hide_at).toLocaleDateString('it-IT')}
+                    </div>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <div>
                         <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>{product.name}</h2>

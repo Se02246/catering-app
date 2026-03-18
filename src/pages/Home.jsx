@@ -96,9 +96,11 @@ const Home = () => {
             <Header />
 
             <section id="packages">
-                <h2 style={{ marginBottom: '2rem', display: 'inline-block', paddingBottom: '0.5rem', borderBottom: '2px solid var(--color-primary)' }}>
-                    Pacchetti
-                </h2>
+                {!isLoading && (
+                    <h2 style={{ marginBottom: '2rem', display: 'inline-block', paddingBottom: '0.5rem', borderBottom: '2px solid var(--color-primary)' }}>
+                        Pacchetti
+                    </h2>
+                )}
 
                 {isLoading && <p style={{ color: 'var(--color-text)' }}>Caricamento pacchetti...</p>}
                 {isError && <p style={{ color: '#ffcccb' }}>Impossibile caricare i pacchetti. Riprova più tardi.</p>}
@@ -117,9 +119,29 @@ const Home = () => {
                                         display: 'flex',
                                         flexDirection: 'column',
                                         transition: 'transform 0.3s ease',
-                                        animationDelay: `${index * 0.1}s` // Staggered animation
+                                        animationDelay: `${index * 0.1}s`, // Staggered animation
+                                        position: 'relative',
+                                        overflow: 'hidden'
                                     }}
                                 >
+                                    {pkg.hide_at && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '1rem',
+                                            left: '1rem',
+                                            backgroundColor: 'var(--color-primary-dark)',
+                                            color: 'white',
+                                            padding: '0.4rem 0.8rem',
+                                            borderRadius: '20px',
+                                            fontSize: '0.75rem',
+                                            fontWeight: 'bold',
+                                            zIndex: 10,
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                                            pointerEvents: 'none'
+                                        }}>
+                                            Disponibile fino al {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
+                                        </div>
+                                    )}
                                     {pkg.image_url && (
                                         <div
                                             style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '1.5rem', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', cursor: 'pointer' }}
@@ -134,7 +156,7 @@ const Home = () => {
                                             />
                                         </div>
                                     )}
-                                    <h3 style={{ marginBottom: '0.5rem', color: 'var(--color-text)' }}>{pkg.name}</h3>
+                                    <h3 style={{ marginBottom: '0.5rem', color: '#4A148C', fontSize: '1.8rem' }}>{pkg.name}</h3>
                                     <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                                         {pkg.is_gluten_free && (
                                             <span style={{ color: '#FF9800', fontSize: '0.8rem', fontWeight: 'bold' }}>

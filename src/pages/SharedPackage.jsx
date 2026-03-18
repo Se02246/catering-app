@@ -84,7 +84,7 @@ const SharedPackage = () => {
                 
                 <div style={{ padding: '2.5rem' }}>
                     <div style={{ marginBottom: '2rem' }}>
-                        <h1 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem' }}>
+                        <h1 style={{ color: '#4A148C', marginBottom: '0.5rem' }}>
                             {pkg.name}
                             <span style={{ marginLeft: '1rem', display: 'inline-flex', gap: '0.5rem', verticalAlign: 'middle' }}>
                                 {pkg.is_gluten_free && (

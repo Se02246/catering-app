@@ -64,7 +64,8 @@ const QuoteBuilder = () => {
                 max_order_quantity: p.max_order_quantity ? parseFloat(p.max_order_quantity) : null,
                 images: p.images || (p.image_url ? [p.image_url] : []),
                 is_sold_by_piece: Boolean(p.is_sold_by_piece),
-                price_per_piece: p.price_per_piece ? parseFloat(p.price_per_piece) : null
+                price_per_piece: p.price_per_piece ? parseFloat(p.price_per_piece) : null,
+                hide_at: p.hide_at
             }));
     }, [rawProducts]);
 
@@ -229,12 +230,31 @@ const QuoteBuilder = () => {
                                 padding: '0.75rem', border: '1px solid rgba(175, 68, 72, 0.1)', borderRadius: '8px',
                                 backgroundColor: 'rgba(255, 255, 255, 0.6)', // Off-white / Glass effect
                                 display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem',
-                                cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                                cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                position: 'relative'
                             }}
                             onClick={() => openProduct(p)}
                             onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
                             onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
+                            {p.hide_at && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '-8px',
+                                    left: '10px',
+                                    backgroundColor: 'var(--color-primary-dark)',
+                                    color: 'white',
+                                    padding: '0.2rem 0.6rem',
+                                    borderRadius: '12px',
+                                    fontSize: '0.65rem',
+                                    fontWeight: 'bold',
+                                    zIndex: 10,
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                    pointerEvents: 'none'
+                                }}>
+                                    Fino al {new Date(p.hide_at).toLocaleDateString('it-IT')}
+                                </div>
+                            )}
                             {p.image_url && (
                                 <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
                                     <img
