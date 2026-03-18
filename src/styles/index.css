@@ -434,12 +434,13 @@ h1, h2, h3, h4, h5, h6 {
 /* Elegant Badges */
 .package-badge {
   position: absolute;
-  top: -10px;
+  top: -12px;
   right: -5px;
   background: var(--color-primary);
   color: white;
-  padding: 0.5rem 1.2rem;
-  border-radius: var(--radius-full);
+  padding: 0 1.2rem;
+  height: 32px;
+  border-radius: 16px; /* Explicit half-height for perfect rounding */
   font-size: 0.75rem;
   font-weight: 700;
   display: flex;
@@ -448,11 +449,12 @@ h1, h2, h3, h4, h5, h6 {
   gap: 0.5rem;
   box-shadow: 0 4px 12px rgba(155, 57, 61, 0.3);
   border: 2px solid white;
-  z-index: 100;
+  z-index: 110;
   text-transform: none;
   letter-spacing: normal;
   pointer-events: none;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .badge-elegant {
