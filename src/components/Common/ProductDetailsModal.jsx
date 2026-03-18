@@ -144,9 +144,8 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                         )}
                         
                         {product.hide_at && (
-                            <div className="package-badge" style={{ top: '1rem', right: '1rem' }}>
-                                <Calendar size={14} />
-                                {new Date(product.hide_at).toLocaleDateString('it-IT')}
+                            <div className="package-badge" style={{ top: '-10px', right: '-10px' }}>
+                                <Calendar size={14} /> Disponibile fino al {new Date(product.hide_at).toLocaleDateString('it-IT')}
                             </div>
                         )}
                     </div>

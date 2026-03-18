@@ -146,9 +146,8 @@ const Home = () => {
                                 >
                                     <div className="image-wrapper" onClick={() => openPackage(pkg)} style={{ cursor: 'pointer' }}>
                                         {pkg.hide_at && (
-                                            <div className="package-badge">
-                                                <Calendar size={14} />
-                                                {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
+                                            <div className="package-badge" style={{ top: '-10px', right: '-10px' }}>
+                                                <Calendar size={14} /> Disponibile fino al {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
                                             </div>
                                         )}
                                         <img

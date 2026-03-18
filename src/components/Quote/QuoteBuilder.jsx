@@ -155,8 +155,8 @@ const QuoteBuilder = () => {
                                 onClick={() => openProduct(p)}
                             >
                                 {p.hide_at && (
-                                    <div className="package-badge" style={{ top: '0.8rem', right: '0.8rem', padding: '0.4rem 0.6rem', fontSize: '0.65rem' }}>
-                                        <Calendar size={12} /> {new Date(p.hide_at).toLocaleDateString('it-IT')}
+                                    <div className="package-badge" style={{ top: '-8px', right: '-8px', padding: '0.3rem 0.8rem', fontSize: '0.65rem' }}>
+                                        <Calendar size={12} /> Disponibile fino al {new Date(p.hide_at).toLocaleDateString('it-IT')}
                                     </div>
                                 )}
                                 <div style={{ width: '70px', height: '70px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
