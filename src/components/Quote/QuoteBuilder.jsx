@@ -179,8 +179,8 @@ const QuoteBuilder = () => {
                                 <div style={{ flex: 1 }}>
                                     <h4 style={{ fontSize: '0.95rem', marginBottom: '0.2rem' }}>{p.name}</h4>
                                     <div className="dietary-badges" style={{ marginBottom: '0.4rem', gap: '0.3rem' }}>
-                                        {p.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>GF</span>}
-                                        {p.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>LF</span>}
+                                        {p.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Glutine</span>}
+                                        {p.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Lattosio</span>}
                                     </div>
                                     <p style={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.85rem' }}>
                                         {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}

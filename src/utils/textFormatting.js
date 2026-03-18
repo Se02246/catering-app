@@ -14,12 +14,13 @@ export const formatCustomText = (text) => {
     if (!text) return '';
 
     // Escape HTML special characters to prevent XSS
+    // Note: We don't escape single quotes here as it causes issues with apostrophes in Italian
+    // and they are safe to use within the HTML tags we generate.
     let formattedText = text
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replace(/"/g, "&quot;");
 
     // Apply formatting rules
     // Note: We use non-greedy matching (.*?) to handle multiple occurrences correctly

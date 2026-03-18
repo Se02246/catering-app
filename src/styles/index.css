@@ -465,8 +465,31 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
 }
 
-.badge-elegant-gf { background: #FFF9F0; color: #D97706; border: 1px solid rgba(217, 119, 6, 0.1); }
-.badge-elegant-lf { background: #F0F9FF; color: #0284C7; border: 1px solid rgba(2, 132, 199, 0.1); }
+.badge-elegant-gf { background: rgba(255, 152, 0, 0.1); color: #FF9800; border: 1px solid rgba(255, 152, 0, 0.2); }
+.badge-elegant-lf { background: rgba(3, 169, 244, 0.1); color: #03A9F4; border: 1px solid rgba(3, 169, 244, 0.2); }
+
+/* Detailed Dietary Badges (Used in Modals) */
+.badge-dietary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 700;
+  gap: 0.5rem;
+}
+
+.badge-gf {
+  background: rgba(255, 152, 0, 0.1);
+  color: #FF9800;
+  border: 1px solid rgba(255, 152, 0, 0.2);
+}
+
+.badge-lf {
+  background: rgba(3, 169, 244, 0.1);
+  color: #03A9F4;
+  border: 1px solid rgba(3, 169, 244, 0.2);
+}
 
 /* Price Display */
 .price-container {
@@ -475,10 +498,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .price-main {
-  font-size: 2rem;
+  font-size: clamp(1.2rem, 5vw, 2rem);
   font-weight: 800;
   color: var(--color-primary-dark);
   line-height: 1;
+  white-space: nowrap;
 }
 
 .price-discount {
