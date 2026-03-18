@@ -303,7 +303,7 @@ const Home = () => {
                                 padding: '0', 
                                 overflow: 'hidden',
                                 transform: packageDragY > 0 ? `translateY(${packageDragY}px)` : '',
-                                transition: isPackageDragging ? 'none' : 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)'
+                                transition: isPackageDragging ? 'none' : 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease'
                             }}
                             onTouchStart={handlePackageTouchStart}
                             onTouchMove={handlePackageTouchMove}

@@ -101,7 +101,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                         padding: '0', 
                         overflow: 'hidden',
                         transform: dragY > 0 ? `translateY(${dragY}px)` : '',
-                        transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)'
+                        transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease'
                     }}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
