@@ -25,14 +25,19 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
             <div
                 className={`modal-content ${isClosing ? 'bounce-out' : 'bounce-in'}`}
                 onClick={e => e.stopPropagation()}
-                style={{ maxWidth: '600px', padding: '0', overflow: 'hidden' }}
+                style={{ 
+                    maxWidth: '600px', 
+                    padding: '0', 
+                    overflowY: 'auto', 
+                    maxHeight: '90vh' 
+                }}
             >
                 {/* Close Button */}
                 <button 
                     onClick={onClose}
                     style={{
                         position: 'absolute', top: '1rem', right: '1rem',
-                        background: 'rgba(255,255,255,0.8)', border: 'none',
+                        background: 'rgba(255,255,255,0.9)', border: 'none',
                         width: '36px', height: '36px', borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         cursor: 'pointer', zIndex: 100, backdropFilter: 'blur(4px)',
@@ -44,49 +49,76 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
 
                 {/* Image Section */}
                 {validImages.length > 0 && (
-                    <div style={{ position: 'relative', height: '300px' }}>
+                    <div style={{ 
+                        position: 'relative', 
+                        height: window.innerWidth > 768 ? '350px' : '250px', 
+                        background: '#1A1515', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                        flexShrink: 0
+                    }}>
                         {validImages.length > 1 ? (
                             <div style={{
                                 display: 'flex',
                                 overflowX: 'auto',
                                 scrollSnapType: 'x mandatory',
+                                width: '100%',
                                 height: '100%',
-                                scrollbarWidth: 'none'
+                                scrollbarWidth: 'none',
+                                WebkitOverflowScrolling: 'touch',
+                                alignItems: 'center'
                             }}>
                                 {validImages.map((img, idx) => (
-                                    <img
-                                        key={idx}
-                                        src={img}
-                                        alt={`${product.name} ${idx + 1}`}
-                                        style={{ width: '100%', flexShrink: 0, objectFit: 'cover', scrollSnapAlign: 'start' }}
-                                    />
+                                    <div key={idx} style={{ 
+                                        minWidth: '100%', 
+                                        height: '100%', 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center',
+                                        scrollSnapAlign: 'start'
+                                    }}>
+                                        <img
+                                            src={img}
+                                            alt={`${product.name} ${idx + 1}`}
+                                            style={{ 
+                                                maxWidth: '100%', 
+                                                maxHeight: '100%', 
+                                                objectFit: 'contain',
+                                                display: 'block'
+                                            }}
+                                        />
+                                    </div>
                                 ))}
                             </div>
                         ) : (
-                            <img
-                                src={validImages[0]}
-                                alt={product.name}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            />
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <img
+                                    src={validImages[0]}
+                                    alt={product.name}
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                />
+                            </div>
                         )}
                         
                         {product.hide_at && (
-                            <div className="package-badge" style={{ top: '1rem', left: '1rem', right: 'auto' }}>
+                            <div className="package-badge" style={{ top: '1rem', left: '1rem', right: 'auto', background: 'var(--color-primary-dark)', backdropFilter: 'blur(10px)' }}>
                                 <Calendar size={14} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} />
-                                Disponibile fino al {new Date(product.hide_at).toLocaleDateString('it-IT')}
+                                Fino al {new Date(product.hide_at).toLocaleDateString('it-IT')}
                             </div>
                         )}
                     </div>
                 )}
 
                 {/* Content Section */}
-                <div style={{ padding: '2rem' }}>
+                <div style={{ padding: window.innerWidth > 768 ? '2.5rem' : '1.5rem' }}>
                     <div style={{ marginBottom: '1.5rem' }}>
                         <div className="dietary-badges" style={{ marginBottom: '0.5rem' }}>
                             {product.is_gluten_free && <span className="badge-dietary badge-gf">Senza Glutine</span>}
                             {product.is_lactose_free && <span className="badge-dietary badge-lf">Senza Lattosio</span>}
                         </div>
-                        <h2 style={{ fontSize: '2rem', color: 'var(--color-primary-dark)', margin: 0 }}>{product.name}</h2>
+                        <h2 style={{ fontSize: window.innerWidth > 768 ? '2rem' : '1.6rem', color: 'var(--color-primary-dark)', margin: 0 }}>{product.name}</h2>
                     </div>
 
                     <div 

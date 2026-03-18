@@ -91,7 +91,6 @@ const Home = () => {
 
             <section id="packages">
                 <div className="section-header">
-                    <span className="subtitle">Esperienze Gastronomiche</span>
                     <h2>I Nostri Pacchetti</h2>
                     <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>
                         Selezioni curate per rendere ogni tuo evento indimenticabile.
@@ -193,39 +192,68 @@ const Home = () => {
                     <div
                         className={`modal-content ${isPackageClosing ? 'bounce-out' : 'bounce-in'}`}
                         onClick={e => e.stopPropagation()}
-                        style={{ maxWidth: '900px', padding: '0', overflow: 'hidden', background: 'var(--color-bg)' }}
+                        style={{ 
+                            maxWidth: '900px', 
+                            padding: '0', 
+                            overflowY: 'auto', 
+                            background: 'var(--color-bg)',
+                            maxHeight: '90vh' 
+                        }}
                     >
                         <div style={{ display: 'flex', flexDirection: window.innerWidth > 768 ? 'row' : 'column' }}>
                             {/* Left Side: Image Gallery */}
                             <div style={{ 
                                 width: window.innerWidth > 768 ? '45%' : '100%', 
                                 height: window.innerWidth > 768 ? 'auto' : '300px',
+                                minHeight: window.innerWidth > 768 ? '500px' : '300px',
                                 position: 'relative',
-                                background: '#000'
+                                background: '#1A1515', 
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                flexShrink: 0
                             }}>
                                 <div style={{
                                     display: 'flex',
                                     overflowX: 'auto',
                                     scrollSnapType: 'x mandatory',
+                                    width: '100%',
                                     height: '100%',
                                     scrollbarWidth: 'none',
-                                    WebkitOverflowScrolling: 'touch'
+                                    WebkitOverflowScrolling: 'touch',
+                                    alignItems: 'center'
                                 }}>
                                     {selectedPackage.images && selectedPackage.images.length > 0 ? (
                                         selectedPackage.images.map((img, idx) => (
-                                            <img
-                                                key={idx}
-                                                src={img}
-                                                alt={`${selectedPackage.name} ${idx + 1}`}
-                                                style={{ width: '100%', height: '100%', flexShrink: 0, objectFit: 'cover', scrollSnapAlign: 'start' }}
-                                            />
+                                            <div key={idx} style={{ 
+                                                minWidth: '100%', 
+                                                height: '100%', 
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                justifyContent: 'center',
+                                                scrollSnapAlign: 'start'
+                                            }}>
+                                                <img
+                                                    src={img}
+                                                    alt={`${selectedPackage.name} ${idx + 1}`}
+                                                    style={{ 
+                                                        maxWidth: '100%', 
+                                                        maxHeight: '100%', 
+                                                        objectFit: 'contain',
+                                                        display: 'block'
+                                                    }}
+                                                />
+                                            </div>
                                         ))
                                     ) : (
-                                        <img
-                                            src={selectedPackage.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
-                                            alt={selectedPackage.name}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <img
+                                                src={selectedPackage.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
+                                                alt={selectedPackage.name}
+                                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                            />
+                                        </div>
                                     )}
                                 </div>
                                 <button 
@@ -240,30 +268,20 @@ const Home = () => {
                                 >
                                     <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} />
                                 </button>
-                                {selectedPackage.images?.length > 1 && (
-                                    <div style={{ 
-                                        position: 'absolute', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
-                                        background: 'rgba(0,0,0,0.5)', padding: '0.4rem 0.8rem', borderRadius: '20px',
-                                        color: 'white', fontSize: '0.75rem', fontWeight: 'bold', backdropFilter: 'blur(4px)'
-                                    }}>
-                                        Scorri per altre foto
-                                    </div>
-                                )}
                             </div>
 
                             {/* Right Side: Content */}
                             <div style={{ 
                                 width: window.innerWidth > 768 ? '55%' : '100%', 
-                                padding: '3.5rem',
-                                maxHeight: window.innerWidth > 768 ? '90vh' : 'auto',
-                                overflowY: 'auto'
+                                padding: window.innerWidth > 768 ? '3.5rem' : '1.5rem',
+                                overflowY: 'visible'
                             }}>
                                 <div style={{ marginBottom: '2.5rem' }}>
                                     <div className="dietary-badges" style={{ marginBottom: '0.75rem' }}>
                                         {selectedPackage.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
                                         {selectedPackage.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
                                     </div>
-                                    <h2 style={{ fontSize: '2.8rem', color: 'var(--color-primary-dark)', marginBottom: '1.5rem', lineHeight: '1.1' }}>
+                                    <h2 style={{ fontSize: window.innerWidth > 768 ? '2.8rem' : '2rem', color: 'var(--color-primary-dark)', marginBottom: '1.5rem', lineHeight: '1.1' }}>
                                         {selectedPackage.name}
                                     </h2>
                                     <div 
@@ -296,8 +314,6 @@ const Home = () => {
                                                 e.stopPropagation();
                                                 openProduct(item);
                                             }}
-                                            onMouseOver={e => e.currentTarget.style.borderColor = 'var(--color-accent)'}
-                                            onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(155, 57, 61, 0.05)'}
                                         >
                                             <div style={{ width: '64px', height: '64px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
                                                 <img
@@ -318,10 +334,13 @@ const Home = () => {
                                 </div>
 
                                 <div style={{ 
-                                    position: 'sticky', bottom: '-3.5rem', margin: '0 -3.5rem', padding: '2.5rem 3.5rem',
-                                    background: 'rgba(252, 250, 247, 0.95)', backdropFilter: 'blur(10px)',
+                                    padding: '2.5rem 0 1rem',
                                     borderTop: '1px solid rgba(155, 57, 61, 0.1)',
-                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                                    display: 'flex', 
+                                    flexDirection: window.innerWidth > 768 ? 'row' : 'column',
+                                    justifyContent: 'space-between', 
+                                    alignItems: window.innerWidth > 768 ? 'center' : 'stretch',
+                                    gap: '1.5rem'
                                 }}>
                                     <div className="price-container">
                                         <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Totale Esperienza</span>

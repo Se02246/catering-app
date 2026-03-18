@@ -258,14 +258,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .install-btn {
-  background: var(--color-accent);
+  background: var(--color-primary);
   color: var(--color-white);
   margin-top: 1rem;
   width: 100%;
 }
 
 .install-btn:hover {
-  background: var(--color-accent);
+  background: var(--color-primary-dark);
   filter: brightness(1.1);
 }
 
