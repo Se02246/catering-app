@@ -204,8 +204,8 @@ const Home = () => {
                             {/* Left Side: Image Gallery */}
                             <div style={{ 
                                 width: window.innerWidth > 768 ? '45%' : '100%', 
-                                height: window.innerWidth > 768 ? 'auto' : '300px',
-                                minHeight: window.innerWidth > 768 ? '500px' : '300px',
+                                aspectRatio: '4/5',
+
                                 position: 'relative',
                                 background: '#1A1515', 
                                 display: 'flex',
@@ -240,8 +240,7 @@ const Home = () => {
                                                     style={{ 
                                                         maxWidth: '100%', 
                                                         maxHeight: '100%', 
-                                                        objectFit: 'contain',
-                                                        display: 'block'
+                                                        objectFit: 'contain'
                                                     }}
                                                 />
                                             </div>

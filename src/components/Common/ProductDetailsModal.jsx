@@ -51,7 +51,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                 {validImages.length > 0 && (
                     <div style={{ 
                         position: 'relative', 
-                        height: window.innerWidth > 768 ? '350px' : '250px', 
+                        aspectRatio: '4/5',
                         background: '#1A1515', 
                         display: 'flex', 
                         alignItems: 'center', 

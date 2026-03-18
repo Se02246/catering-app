@@ -142,7 +142,7 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .modal-content {
@@ -463,9 +463,13 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   /* Adjustments */
+  .modal-overlay {
+    padding: 0.25rem;
+  }
+
   .modal-overlay>div {
-    width: 90% !important;
-    padding: 1.5rem !important;
+    width: 98% !important;
+    padding: 0.5rem !important;
   }
 }
 
