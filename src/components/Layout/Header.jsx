@@ -73,41 +73,40 @@ const Header = () => {
                 dangerouslySetInnerHTML={{ __html: formatCustomText(headerText) }}
             />
 
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: showQuoteBuilder ? '1fr 1fr' : '1fr',
-                gap: '1.5rem',
-                maxWidth: '500px',
-                margin: '0 auto'
-            }}>
-                <button
-                    onClick={scrollToPackages}
-                    style={{
-                        padding: '1rem 0', // Removed horizontal padding, width handled by grid
-                        width: '100%',
-                        gridColumn: showQuoteBuilder ? 'auto' : '1 / -1',
-                        fontSize: '1.2rem',
-                        fontWeight: 'bold',
-                        color: isHome ? 'var(--color-primary-dark)' : 'white',
-                        backgroundColor: isHome ? 'white' : 'var(--color-primary)',
-                        border: '2px solid var(--color-primary)',
-                        borderRadius: 'var(--radius-md)',
-                        cursor: 'pointer',
-                        boxShadow: 'var(--shadow-sm)',
-                        transition: 'all 0.2s ease'
-                    }}
-                    onMouseOver={e => {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-                    }}
-                    onMouseOut={e => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-                    }}
-                >
-                    Pacchetti
-                </button>
-                {showQuoteBuilder && (
+            {showQuoteBuilder ? (
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '1.5rem',
+                    maxWidth: '500px',
+                    margin: '0 auto'
+                }}>
+                    <button
+                        onClick={scrollToPackages}
+                        style={{
+                            padding: '1rem 0',
+                            width: '100%',
+                            fontSize: '1.2rem',
+                            fontWeight: 'bold',
+                            color: isHome ? 'var(--color-primary-dark)' : 'white',
+                            backgroundColor: isHome ? 'white' : 'var(--color-primary)',
+                            border: '2px solid var(--color-primary)',
+                            borderRadius: 'var(--radius-md)',
+                            cursor: 'pointer',
+                            boxShadow: 'var(--shadow-sm)',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseOver={e => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                        }}
+                        onMouseOut={e => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                        }}
+                    >
+                        Pacchetti
+                    </button>
                     <button
                         onClick={() => navigate('/quote')}
                         style={{
@@ -134,44 +133,81 @@ const Header = () => {
                     >
                         Crea preventivo
                     </button>
-                )}
 
-                {/* PWA Install Button - Spans full width */}
-                {showPrompt && (
-                    <button
-                        onClick={handleInstallClick}
-                        style={{
-                            gridColumn: '1 / -1',
-                            padding: '1rem 0',
-                            width: '100%',
-                            fontSize: '1.2rem',
-                            fontWeight: 'bold',
-                            color: 'white',
-                            backgroundColor: 'var(--color-primary-dark)',
-                            border: '2px solid var(--color-primary-dark)',
-                            borderRadius: 'var(--radius-md)',
-                            cursor: 'pointer',
-                            boxShadow: 'var(--shadow-sm)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '0.8rem',
-                            transition: 'all 0.2s ease'
-                        }}
-                        onMouseOver={e => {
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-                        }}
-                        onMouseOut={e => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-                        }}
-                    >
-                        <Download size={20} />
-                        Installa App
-                    </button>
-                )}
-            </div>
+                    {/* PWA Install Button - Spans full width when quote builder is visible */}
+                    {showPrompt && (
+                        <button
+                            onClick={handleInstallClick}
+                            style={{
+                                gridColumn: '1 / -1',
+                                padding: '1rem 0',
+                                width: '100%',
+                                fontSize: '1.2rem',
+                                fontWeight: 'bold',
+                                color: 'white',
+                                backgroundColor: 'var(--color-primary-dark)',
+                                border: '2px solid var(--color-primary-dark)',
+                                borderRadius: 'var(--radius-md)',
+                                cursor: 'pointer',
+                                boxShadow: 'var(--shadow-sm)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.8rem',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseOver={e => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                            }}
+                            onMouseOut={e => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                            }}
+                        >
+                            <Download size={20} />
+                            Installa App
+                        </button>
+                    )}
+                </div>
+            ) : (
+                /* Show ONLY Install Button if quote builder is hidden */
+                showPrompt && (
+                    <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+                        <button
+                            onClick={handleInstallClick}
+                            style={{
+                                padding: '1rem 0',
+                                width: '100%',
+                                fontSize: '1.2rem',
+                                fontWeight: 'bold',
+                                color: 'white',
+                                backgroundColor: 'var(--color-primary-dark)',
+                                border: '2px solid var(--color-primary-dark)',
+                                borderRadius: 'var(--radius-md)',
+                                cursor: 'pointer',
+                                boxShadow: 'var(--shadow-sm)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.8rem',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseOver={e => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                            }}
+                            onMouseOut={e => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                            }}
+                        >
+                            <Download size={20} />
+                            Installa App
+                        </button>
+                    </div>
+                )
+            )}
         </header>
     );
 };
