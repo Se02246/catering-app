@@ -48,7 +48,9 @@ const Home = () => {
     const handlePackageTouchEnd = () => {
         if (!isPackageDragging) return;
         if (packageDragY > 150) {
-            closePackage();
+            // "Throw" it down
+            setPackageDragY(window.innerHeight);
+            setTimeout(closePackage, 300);
         } else {
             setPackageDragY(0);
         }

@@ -37,7 +37,9 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
     const handleTouchEnd = () => {
         if (!isDragging) return;
         if (dragY > 150) {
-            onClose();
+            // "Throw" it down
+            setDragY(window.innerHeight);
+            setTimeout(onClose, 300);
         } else {
             setDragY(0);
         }
