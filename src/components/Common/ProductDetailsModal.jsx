@@ -40,7 +40,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                 {product.hide_at && (
                     <div className="package-badge" style={{ 
                         top: '-12px', 
-                        right: '-12px',
+                        right: '-5px',
                         zIndex: 3010,
                         position: 'absolute'
                     }}>

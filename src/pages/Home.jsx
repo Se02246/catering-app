@@ -240,7 +240,7 @@ const Home = () => {
                         {selectedPackage.hide_at && (
                             <div className="package-badge" style={{ 
                                 top: '-12px', 
-                                right: '-12px',
+                                right: '-5px',
                                 zIndex: 3010,
                                 position: 'absolute'
                             }}>
