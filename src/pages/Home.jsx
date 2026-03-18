@@ -276,7 +276,10 @@ const Home = () => {
                             )
                         )}
 
-                        <p style={{ fontSize: '1.1rem', marginBottom: '2rem', lineHeight: '1.8', color: 'var(--color-text)', whiteSpace: 'pre-wrap' }}>{formatCustomText(selectedPackage.description)}</p>
+                        <p 
+                            style={{ fontSize: '1.1rem', marginBottom: '2rem', lineHeight: '1.8', color: 'var(--color-text)', whiteSpace: 'pre-wrap' }}
+                            dangerouslySetInnerHTML={{ __html: formatCustomText(selectedPackage.description) }}
+                        />
 
                         <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem', color: 'var(--color-primary)' }}>Cosa include</h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2.5rem' }}>

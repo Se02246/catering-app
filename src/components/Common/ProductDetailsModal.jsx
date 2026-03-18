@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatCustomText } from '../../utils/textFormatting';
 
 const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
     React.useEffect(() => {
@@ -109,9 +110,10 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                 })()}
 
                 <div style={{ marginBottom: '2rem' }}>
-                    <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--color-text)', marginBottom: '1rem' }}>
-                        {product.description || 'Nessuna descrizione disponibile.'}
-                    </p>
+                    <p 
+                        style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--color-text)', marginBottom: '1rem' }}
+                        dangerouslySetInnerHTML={{ __html: formatCustomText(product.description || 'Nessuna descrizione disponibile.') }}
+                    />
                     <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                         <div>
                             <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Prezzo</span>
