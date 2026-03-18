@@ -6,6 +6,16 @@ import { X, Calendar, Info, ShoppingCart } from 'lucide-react';
 const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
     const { setting: showQuoteSetting, isLoading: isSettingLoading } = useSetting('show_quote_builder');
     const showPrice = !isSettingLoading && showQuoteSetting?.value !== 'false';
+    const [activeImageIndex, setActiveImageIndex] = React.useState(0);
+
+    const handleGalleryScroll = (e) => {
+        const scrollPosition = e.target.scrollLeft;
+        const width = e.target.offsetWidth;
+        const newIndex = Math.round(scrollPosition / width);
+        if (newIndex !== activeImageIndex) {
+            setActiveImageIndex(newIndex);
+        }
+    };
 
     React.useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -57,35 +67,36 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                         alignItems: 'center', 
                         justifyContent: 'center',
                         overflow: 'hidden',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0'
                     }}>
                         {validImages.length > 1 ? (
-                            <div style={{
-                                display: 'flex',
-                                overflowX: 'auto',
-                                scrollSnapType: 'x mandatory',
-                                width: '100%',
-                                height: '100%',
-                                scrollbarWidth: 'none',
-                                WebkitOverflowScrolling: 'touch',
-                                alignItems: 'center'
-                            }}>
+                            <div 
+                                onScroll={handleGalleryScroll}
+                                style={{
+                                    display: 'flex',
+                                    overflowX: 'auto',
+                                    scrollSnapType: 'x mandatory',
+                                    width: '100%',
+                                    height: '100%',
+                                    scrollbarWidth: 'none',
+                                    WebkitOverflowScrolling: 'touch'
+                                }}
+                            >
                                 {validImages.map((img, idx) => (
                                     <div key={idx} style={{ 
                                         minWidth: '100%', 
                                         height: '100%', 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'center',
-                                        scrollSnapAlign: 'start'
+                                        scrollSnapAlign: 'start',
+                                        scrollSnapStop: 'always'
                                     }}>
                                         <img
                                             src={img}
                                             alt={`${product.name} ${idx + 1}`}
                                             style={{ 
-                                                maxWidth: '100%', 
-                                                maxHeight: '100%', 
-                                                objectFit: 'contain',
+                                                width: '100%', 
+                                                height: '100%', 
+                                                objectFit: 'cover',
                                                 display: 'block'
                                             }}
                                         />
@@ -93,12 +104,42 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                                 ))}
                             </div>
                         ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: '100%', height: '100%' }}>
                                 <img
                                     src={validImages[0]}
                                     alt={product.name}
-                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
+                            </div>
+                        )}
+
+                        {/* Instagram-style Pagination Dots */}
+                        {validImages.length > 1 && (
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '1rem',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                display: 'flex',
+                                gap: '6px',
+                                zIndex: 5,
+                                padding: '6px 10px',
+                                background: 'rgba(0,0,0,0.3)',
+                                borderRadius: '20px',
+                                backdropFilter: 'blur(4px)'
+                            }}>
+                                {validImages.map((_, idx) => (
+                                    <div
+                                        key={idx}
+                                        style={{
+                                            width: activeImageIndex === idx ? '8px' : '6px',
+                                            height: activeImageIndex === idx ? '8px' : '6px',
+                                            borderRadius: '50%',
+                                            background: activeImageIndex === idx ? 'white' : 'rgba(255,255,255,0.5)',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    />
+                                ))}
                             </div>
                         )}
                         

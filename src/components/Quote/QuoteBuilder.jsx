@@ -121,7 +121,7 @@ const QuoteBuilder = () => {
     return (
         <div className="grid-quote-builder">
             {/* Catalog Section */}
-            <div className="fade-in">
+            <div className="fade-in" style={{ paddingBottom: '4rem' }}>
                 <div style={{ position: 'relative', marginBottom: '2rem' }}>
                     <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-accent)' }} size={20} />
                     <input 
@@ -186,7 +186,7 @@ const QuoteBuilder = () => {
             </div>
 
             {/* Quote Summary Section */}
-            <div ref={quoteSummaryRef} className="premium-card fade-in" style={{ height: 'fit-content', position: 'sticky', top: '2rem' }}>
+            <div ref={quoteSummaryRef} id="quote-summary" className="premium-card fade-in" style={{ height: 'fit-content', position: 'sticky', top: '2rem' }}>
                 <div style={{ padding: '2rem', background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))', color: 'white' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h2 style={{ margin: 0, color: 'white', fontSize: '1.5rem' }}>Il Tuo Preventivo</h2>
@@ -206,7 +206,7 @@ const QuoteBuilder = () => {
                         </div>
                     ) : (
                         <>
-                            <div style={{ marginBottom: '2rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                            <div style={{ marginBottom: '3.5rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
                                 {cart.map(item => (
                                     <div key={item.instanceId} style={{ marginBottom: '1.2rem', paddingBottom: '1.2rem', borderBottom: '1px dashed rgba(155, 57, 61, 0.1)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>

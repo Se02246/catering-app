@@ -60,6 +60,22 @@ const Home = () => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, [selectedPackage, selectedProduct]);
 
+    const [activeImageIndex, setActiveImageIndex] = React.useState(0);
+
+    const handleGalleryScroll = (e) => {
+        const scrollPosition = e.target.scrollLeft;
+        const width = e.target.offsetWidth;
+        const newIndex = Math.round(scrollPosition / width);
+        if (newIndex !== activeImageIndex) {
+            setActiveImageIndex(newIndex);
+        }
+    };
+
+    // Reset index when opening/closing
+    React.useEffect(() => {
+        if (!selectedPackage) setActiveImageIndex(0);
+    }, [selectedPackage]);
+
     const openPackage = (pkg) => {
         window.history.pushState({ modal: 'package' }, '');
         setSelectedPackage(pkg);
@@ -205,56 +221,87 @@ const Home = () => {
                             <div style={{ 
                                 width: window.innerWidth > 768 ? '45%' : '100%', 
                                 aspectRatio: '4/5',
-
                                 position: 'relative',
                                 background: '#1A1515', 
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 overflow: 'hidden',
-                                flexShrink: 0
+                                flexShrink: 0,
+                                borderRadius: window.innerWidth > 768 ? 'var(--radius-xl) 0 0 var(--radius-xl)' : 'var(--radius-xl) var(--radius-xl) 0 0'
                             }}>
-                                <div style={{
-                                    display: 'flex',
-                                    overflowX: 'auto',
-                                    scrollSnapType: 'x mandatory',
-                                    width: '100%',
-                                    height: '100%',
-                                    scrollbarWidth: 'none',
-                                    WebkitOverflowScrolling: 'touch',
-                                    alignItems: 'center'
-                                }}>
+                                <div 
+                                    onScroll={handleGalleryScroll}
+                                    style={{
+                                        display: 'flex',
+                                        overflowX: 'auto',
+                                        scrollSnapType: 'x mandatory',
+                                        width: '100%',
+                                        height: '100%',
+                                        scrollbarWidth: 'none',
+                                        WebkitOverflowScrolling: 'touch'
+                                    }}
+                                >
                                     {selectedPackage.images && selectedPackage.images.length > 0 ? (
                                         selectedPackage.images.map((img, idx) => (
                                             <div key={idx} style={{ 
                                                 minWidth: '100%', 
                                                 height: '100%', 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
-                                                justifyContent: 'center',
-                                                scrollSnapAlign: 'start'
+                                                scrollSnapAlign: 'start',
+                                                scrollSnapStop: 'always'
                                             }}>
                                                 <img
                                                     src={img}
                                                     alt={`${selectedPackage.name} ${idx + 1}`}
                                                     style={{ 
-                                                        maxWidth: '100%', 
-                                                        maxHeight: '100%', 
-                                                        objectFit: 'contain'
+                                                        width: '100%', 
+                                                        height: '100%', 
+                                                        objectFit: 'cover',
+                                                        display: 'block'
                                                     }}
                                                 />
                                             </div>
                                         ))
                                     ) : (
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <div style={{ width: '100%', height: '100%' }}>
                                             <img
                                                 src={selectedPackage.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
                                                 alt={selectedPackage.name}
-                                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             />
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Instagram-style Pagination Dots */}
+                                {selectedPackage.images?.length > 1 && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '1rem',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        display: 'flex',
+                                        gap: '6px',
+                                        zIndex: 5,
+                                        padding: '6px 10px',
+                                        background: 'rgba(0,0,0,0.3)',
+                                        borderRadius: '20px',
+                                        backdropFilter: 'blur(4px)'
+                                    }}>
+                                        {selectedPackage.images.map((_, idx) => (
+                                            <div
+                                                key={idx}
+                                                style={{
+                                                    width: activeImageIndex === idx ? '8px' : '6px',
+                                                    height: activeImageIndex === idx ? '8px' : '6px',
+                                                    borderRadius: '50%',
+                                                    background: activeImageIndex === idx ? 'white' : 'rgba(255,255,255,0.5)',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                                 <button 
                                     onClick={closePackage}
                                     style={{
