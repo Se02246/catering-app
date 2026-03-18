@@ -156,7 +156,7 @@ const Home = () => {
                                             />
                                         </div>
                                     )}
-                                    <h3 style={{ marginBottom: '0.5rem', color: '#4A148C', fontSize: '1.8rem' }}>{pkg.name}</h3>
+                                    <h3 style={{ marginBottom: '0.5rem', color: 'var(--color-primary-dark)', fontSize: '1.8rem' }}>{pkg.name}</h3>
                                     <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                                         {pkg.is_gluten_free && (
                                             <span style={{ color: '#FF9800', fontSize: '0.8rem', fontWeight: 'bold' }}>
