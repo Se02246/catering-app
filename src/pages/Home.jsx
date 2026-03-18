@@ -4,7 +4,7 @@ import { useCaterings, useSetting } from '../hooks/useData';
 import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import { formatCustomText } from '../utils/textFormatting';
-import { ChevronRight, Calendar, Info, ArrowRight } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight } from 'lucide-react';
 
 const Home = () => {
     const navigate = useNavigate();
