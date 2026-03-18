@@ -12,7 +12,10 @@ const Header = () => {
     const isQuote = location.pathname === '/quote';
     const { showPrompt, handleInstallClick } = useInstallPromptContext();
     const { setting: headerSetting } = useSetting('header_text');
+    const { setting: showQuoteSetting } = useSetting('show_quote_builder');
+    
     const headerText = headerSetting?.value || " ";
+    const showQuoteBuilder = showQuoteSetting?.value !== 'false';
     const isLoggedIn = !!localStorage.getItem('token');
 
     const scrollToPackages = () => {
@@ -72,7 +75,7 @@ const Header = () => {
 
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
+                gridTemplateColumns: showQuoteBuilder ? '1fr 1fr' : '1fr',
                 gap: '1.5rem',
                 maxWidth: '500px',
                 margin: '0 auto'
@@ -82,6 +85,7 @@ const Header = () => {
                     style={{
                         padding: '1rem 0', // Removed horizontal padding, width handled by grid
                         width: '100%',
+                        gridColumn: showQuoteBuilder ? 'auto' : '1 / -1',
                         fontSize: '1.2rem',
                         fontWeight: 'bold',
                         color: isHome ? 'var(--color-primary-dark)' : 'white',
@@ -103,32 +107,34 @@ const Header = () => {
                 >
                     Pacchetti
                 </button>
-                <button
-                    onClick={() => navigate('/quote')}
-                    style={{
-                        padding: '1rem 0',
-                        width: '100%',
-                        fontSize: '1.2rem',
-                        fontWeight: 'bold',
-                        color: isQuote ? 'var(--color-primary-dark)' : 'white',
-                        backgroundColor: isQuote ? 'white' : 'var(--color-primary)',
-                        border: '2px solid var(--color-primary)',
-                        borderRadius: 'var(--radius-md)',
-                        cursor: 'pointer',
-                        boxShadow: 'var(--shadow-sm)',
-                        transition: 'all 0.2s ease'
-                    }}
-                    onMouseOver={e => {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-                    }}
-                    onMouseOut={e => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-                    }}
-                >
-                    Crea preventivo
-                </button>
+                {showQuoteBuilder && (
+                    <button
+                        onClick={() => navigate('/quote')}
+                        style={{
+                            padding: '1rem 0',
+                            width: '100%',
+                            fontSize: '1.2rem',
+                            fontWeight: 'bold',
+                            color: isQuote ? 'var(--color-primary-dark)' : 'white',
+                            backgroundColor: isQuote ? 'white' : 'var(--color-primary)',
+                            border: '2px solid var(--color-primary)',
+                            borderRadius: 'var(--radius-md)',
+                            cursor: 'pointer',
+                            boxShadow: 'var(--shadow-sm)',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseOver={e => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                        }}
+                        onMouseOut={e => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                        }}
+                    >
+                        Crea preventivo
+                    </button>
+                )}
 
                 {/* PWA Install Button - Spans full width */}
                 {showPrompt && (

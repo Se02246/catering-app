@@ -4,11 +4,13 @@ import { useSetting, useProducts, useCaterings } from '../../hooks/useData';
 import { api } from '../../services/api';
 
 const SettingsManager = () => {
-    const { setting, isLoading, mutate } = useSetting('header_text');
+    const { setting: headerSetting, isLoading: isHeaderLoading, mutate: mutateHeader } = useSetting('header_text');
+    const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading, mutate: mutateQuoteSetting } = useSetting('show_quote_builder');
     const { products, mutate: mutateProducts } = useProducts();
     const { caterings, mutate: mutateCaterings } = useCaterings();
     
     const [headerText, setHeaderText] = useState('');
+    const [showQuoteBuilder, setShowQuoteBuilder] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState(null);
 
@@ -20,17 +22,27 @@ const SettingsManager = () => {
     const [isRecalculating, setIsRecalculating] = useState(false);
 
     useEffect(() => {
-        if (setting) {
-            setHeaderText(setting.value);
+        if (headerSetting) {
+            setHeaderText(headerSetting.value);
         }
-    }, [setting]);
+    }, [headerSetting]);
+
+    useEffect(() => {
+        if (showQuoteSetting) {
+            setShowQuoteBuilder(showQuoteSetting.value !== 'false');
+        }
+    }, [showQuoteSetting]);
 
     const handleSave = async () => {
         setSaving(true);
         setMessage(null);
         try {
-            await api.updateSetting('header_text', headerText);
-            mutate();
+            await Promise.all([
+                api.updateSetting('header_text', headerText),
+                api.updateSetting('show_quote_builder', showQuoteBuilder.toString())
+            ]);
+            mutateHeader();
+            mutateQuoteSetting();
             setMessage({ type: 'success', text: 'Impostazioni salvate con successo' });
         } catch (error) {
             console.error('Error saving settings:', error);
@@ -118,7 +130,7 @@ const SettingsManager = () => {
         }
     };
 
-    if (isLoading) {
+    if (isHeaderLoading || isQuoteSettingLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
                 <Loader className="animate-spin" />
@@ -175,6 +187,37 @@ const SettingsManager = () => {
                     </div>
                 </div>
 
+                <div className="form-group" style={{ marginTop: '2rem', padding: '1.5rem', backgroundColor: 'rgba(175, 68, 72, 0.05)', borderRadius: '12px', border: '1px solid rgba(175, 68, 72, 0.2)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                                Visibilità Sezione "Crea Preventivo"
+                            </label>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                Se disattivato, gli utenti potranno vedere solo i pacchetti predefiniti nella Home.
+                            </p>
+                        </div>
+                        <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
+                            <input 
+                                type="checkbox" 
+                                checked={showQuoteBuilder}
+                                onChange={(e) => setShowQuoteBuilder(e.target.checked)}
+                                style={{ opacity: 0, width: 0, height: 0 }}
+                            />
+                            <span style={{
+                                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                                backgroundColor: showQuoteBuilder ? 'var(--color-primary)' : '#ccc',
+                                transition: '.4s', borderRadius: '24px'
+                            }}>
+                                <span style={{
+                                    position: 'absolute', content: '""', height: '18px', width: '18px', left: showQuoteBuilder ? '28px' : '4px', bottom: '3px',
+                                    backgroundColor: 'white', transition: '.4s', borderRadius: '50%'
+                                }}></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
                 <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                     <button
                         onClick={handleSave}
@@ -183,7 +226,7 @@ const SettingsManager = () => {
                         style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                     >
                         {saving ? <Loader className="animate-spin" size={20} /> : <Save size={20} />}
-                        Salva Testo
+                        Salva Impostazioni
                     </button>
                 </div>
             </div>
