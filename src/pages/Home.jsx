@@ -224,8 +224,23 @@ const Home = () => {
 
                         <div
                             className={`modal-content ${isPackageClosing ? 'bounce-out' : 'bounce-in'}`}
-                            style={{ width: '100%', maxWidth: '800px', padding: '0', overflow: 'visible' }}
+                            style={{ width: '100%', maxWidth: '800px', padding: '0', overflow: 'hidden' }}
                         >
+                            {/* Floating Back Button */}
+                            <button 
+                                onClick={closePackage}
+                                style={{
+                                    position: 'absolute', top: '1rem', left: '1rem',
+                                    background: 'rgba(255,255,255,0.9)', border: 'none',
+                                    width: '40px', height: '40px', borderRadius: '50%',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', zIndex: 100, boxShadow: 'var(--shadow-md)',
+                                    backdropFilter: 'blur(4px)'
+                                }}
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+
                             <div className="modal-scroll-area">
                                 {/* Left Side: Image Gallery */}
                                 <div className="package-modal-image-side" style={{ width: '100%', position: 'relative' }}>
@@ -301,19 +316,6 @@ const Home = () => {
                                             ))}
                                         </div>
                                     )}
-                                    <button 
-                                        onClick={closePackage}
-                                        style={{
-                                            position: 'absolute', top: '1rem', left: '1rem',
-                                            background: 'rgba(255,255,255,0.9)', border: 'none',
-                                            width: '40px', height: '40px', borderRadius: '50%',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            cursor: 'pointer', zIndex: 10, boxShadow: 'var(--shadow-md)',
-                                            backdropFilter: 'blur(4px)'
-                                        }}
-                                    >
-                                        <ChevronLeft size={24} />
-                                    </button>
                                 </div>
 
                                 {/* Right Side: Content */}

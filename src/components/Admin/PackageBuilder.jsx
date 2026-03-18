@@ -135,35 +135,24 @@ const PackageBuilder = () => {
     };
 
     const toggleVisibility = async (pkg) => {
-        const isCurrentlyHidden = pkg.is_visible === false || (pkg.hide_at && new Date(pkg.hide_at) < new Date());
-        
-        if (!isCurrentlyHidden) {
-            setPackageToHide(pkg);
-            setIsHideModalOpen(true);
-        } else {
-            try {
-                await api.updateCatering(pkg.id, { ...pkg, is_visible: true, hide_at: null });
-                mutateCaterings();
-            } catch (err) {
-                console.error('Failed to show package', err);
-                alert('Errore durante l\'aggiornamento della visibilità');
-            }
-        }
+        setPackageToHide(pkg);
+        setIsHideModalOpen(true);
     };
 
     const confirmHide = async (hideAt) => {
         if (!packageToHide) return;
         try {
+            const isUnhiding = hideAt === 'unhide';
             await api.updateCatering(packageToHide.id, { 
                 ...packageToHide, 
-                is_visible: hideAt ? true : false,
-                hide_at: hideAt 
+                is_visible: isUnhiding ? true : (hideAt ? true : false),
+                hide_at: isUnhiding ? null : hideAt 
             });
             setIsHideModalOpen(false);
             setPackageToHide(null);
             mutateCaterings();
         } catch (err) {
-            console.error('Failed to hide package', err);
+            console.error('Failed to update visibility', err);
             alert('Errore durante l\'aggiornamento della visibilità');
         }
     };
@@ -458,7 +447,7 @@ const PackageBuilder = () => {
                                                 ) : (
                                                     newPackage.items.map((item) => {
                                                         const product = products.find(p => p.id === item.product_id);
-                                                        const isPieces = product?.pieces_per_kg > 0 || product?.is_sold_by_piece;
+                                                        const isPieces = (product?.pieces_per_kg && parseFloat(product.pieces_per_kg) > 0) || product?.is_sold_by_piece;
                                                         const unit = isPieces ? 'pz' : 'kg';
                                                         const step = isPieces ? 1 : 0.1;
                                                         
@@ -611,6 +600,7 @@ const PackageBuilder = () => {
                 onClose={() => { setIsHideModalOpen(false); setPackageToHide(null); }}
                 onConfirm={confirmHide}
                 initialDate={packageToHide?.hide_at}
+                isVisible={packageToHide?.is_visible !== false && !(packageToHide?.hide_at && new Date(packageToHide.hide_at) < new Date())}
             />
         </div>
     );

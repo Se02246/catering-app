@@ -73,33 +73,24 @@ const ProductManager = () => {
     };
 
     const toggleVisibility = async (product) => {
-        if (product.is_visible !== false) {
-            setProductToHide(product);
-            setIsHideModalOpen(true);
-        } else {
-            try {
-                await api.updateProduct(product.id, { ...product, is_visible: true, hide_at: null });
-                mutate();
-            } catch (err) {
-                console.error('Failed to show product', err);
-                alert('Errore durante l\'aggiornamento della visibilità');
-            }
-        }
+        setProductToHide(product);
+        setIsHideModalOpen(true);
     };
 
     const confirmHide = async (hideAt) => {
         if (!productToHide) return;
         try {
+            const isUnhiding = hideAt === 'unhide';
             await api.updateProduct(productToHide.id, { 
                 ...productToHide, 
-                is_visible: hideAt ? true : false,
-                hide_at: hideAt 
+                is_visible: isUnhiding ? true : (hideAt ? true : false),
+                hide_at: isUnhiding ? null : hideAt 
             });
             setIsHideModalOpen(false);
             setProductToHide(null);
             mutate();
         } catch (err) {
-            console.error('Failed to hide product', err);
+            console.error('Failed to update visibility', err);
             alert('Errore durante l\'aggiornamento della visibilità');
         }
     };
@@ -426,6 +417,7 @@ const ProductManager = () => {
                 onClose={() => { setIsHideModalOpen(false); setProductToHide(null); }}
                 onConfirm={confirmHide}
                 initialDate={productToHide?.hide_at}
+                isVisible={productToHide?.is_visible !== false && !(productToHide?.hide_at && new Date(productToHide.hide_at) < new Date())}
             />
         </div>
     );

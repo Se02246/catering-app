@@ -240,7 +240,12 @@ const QuoteBuilder = () => {
                                                     {item.quantity <= (item.min_order_quantity || 1) ? <Trash2 size={16} /> : <Minus size={16} />}
                                                 </button>
                                                 
-                                                <span style={{ fontWeight: '800', minWidth: '1.5rem', textAlign: 'center' }}>{item.quantity}</span>
+                                                <span style={{ fontWeight: '800', minWidth: '1.5rem', textAlign: 'center' }}>
+                                                    {item.quantity}
+                                                    <span style={{ fontSize: '0.7rem', marginLeft: '2px', fontWeight: '400', color: 'var(--color-text-muted)' }}>
+                                                        {item.is_sold_by_piece ? 'pz' : 'kg'}
+                                                    </span>
+                                                </span>
                                                 
                                                 {/* Plus Button */}
                                                 <button 

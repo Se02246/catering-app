@@ -50,25 +50,25 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
 
                 <div
                     className={`modal-content ${isClosing ? 'bounce-out' : 'bounce-in'}`}
-                    style={{ width: '100%', maxWidth: '600px', padding: '0', overflow: 'visible' }}
+                    style={{ width: '100%', maxWidth: '600px', padding: '0', overflow: 'hidden' }}
                 >
+                    {/* Floating Back Button */}
+                    <button 
+                        onClick={onClose}
+                        style={{
+                            position: 'absolute', top: '1rem', left: '1rem',
+                            background: 'rgba(255,255,255,0.9)', border: 'none',
+                            width: '40px', height: '40px', borderRadius: '50%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', zIndex: 100, backdropFilter: 'blur(4px)',
+                            boxShadow: 'var(--shadow-md)'
+                        }}
+                    >
+                        <ChevronLeft size={24} />
+                    </button>
+
                     {/* Scrollable Area */}
                     <div className="modal-scroll-area">
-                        {/* Back Button */}
-                        <button 
-                            onClick={onClose}
-                            style={{
-                                position: 'absolute', top: '1rem', left: '1rem',
-                                background: 'rgba(255,255,255,0.9)', border: 'none',
-                                width: '36px', height: '36px', borderRadius: '50%',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer', zIndex: 100, backdropFilter: 'blur(4px)',
-                                boxShadow: 'var(--shadow-sm)'
-                            }}
-                        >
-                            <ChevronLeft size={24} />
-                        </button>
-
                         {/* Image Section */}
                         {validImages.length > 0 && (
                             <div style={{ 

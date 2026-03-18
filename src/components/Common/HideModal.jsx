@@ -1,38 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { X, EyeOff } from 'lucide-react';
+import { X, EyeOff, Eye } from 'lucide-react';
 
-const HideModal = ({ isOpen, onClose, onConfirm, initialDate }) => {
-    const [mode, setMode] = useState('now'); // 'now' or 'schedule'
+const HideModal = ({ isOpen, onClose, onConfirm, initialDate, isVisible = true }) => {
+    const [mode, setMode] = useState('now'); // 'now', 'schedule' or 'unhide'
     const [date, setDate] = useState('');
 
     useEffect(() => {
+        if (!isOpen) return;
+
         if (initialDate) {
             setMode('schedule');
-            // Format for datetime-local input (YYYY-MM-DDTHH:mm)
-            // Handle both Date objects and string formats
             const d = new Date(initialDate);
             if (!isNaN(d.getTime())) {
-                // Adjust to local time for input
                 const tzOffset = d.getTimezoneOffset() * 60000;
                 const localISOTime = new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
                 setDate(localISOTime);
             }
+        } else if (isVisible === false) {
+            setMode('now');
+            setDate('');
         } else {
             setMode('now');
             setDate('');
         }
-    }, [initialDate, isOpen]);
+    }, [initialDate, isOpen, isVisible]);
 
     if (!isOpen) return null;
 
     const isConfirmDisabled = mode === 'schedule' && !date;
+    const showUnhideOption = !isVisible || initialDate;
 
     return (
         <div className="modal-overlay" style={{ zIndex: 3000 }} onClick={onClose}>
             <div className="modal-content" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <EyeOff size={20} /> Nascondi elemento
+                        <EyeOff size={20} /> Visibilità elemento
                     </h3>
                     <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={onClose}>
                         <X size={20} />
@@ -40,10 +43,32 @@ const HideModal = ({ isOpen, onClose, onConfirm, initialDate }) => {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+                    {showUnhideOption && (
+                        <label style={{ 
+                            display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', 
+                            borderRadius: '8px', border: '1px solid var(--color-border)', cursor: 'pointer',
+                            backgroundColor: mode === 'unhide' ? 'rgba(34, 197, 94, 0.05)' : 'transparent',
+                            borderColor: mode === 'unhide' ? '#22c55e' : 'var(--color-border)'
+                        }}>
+                            <input 
+                                type="radio" 
+                                name="hideMode" 
+                                checked={mode === 'unhide'} 
+                                onChange={() => setMode('unhide')} 
+                            />
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <Eye size={16} color="#22c55e" /> Non nascondere
+                                </div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Rendi l'elemento sempre visibile</div>
+                            </div>
+                        </label>
+                    )}
+
                     <label style={{ 
                         display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', 
                         borderRadius: '8px', border: '1px solid var(--color-border)', cursor: 'pointer',
-                        backgroundColor: mode === 'now' ? 'rgba(175, 68, 72, 0.05)' : 'transparent',
+                        backgroundColor: mode === 'now' ? 'rgba(155, 57, 61, 0.05)' : 'transparent',
                         borderColor: mode === 'now' ? 'var(--color-primary)' : 'var(--color-border)'
                     }}>
                         <input 
@@ -61,7 +86,7 @@ const HideModal = ({ isOpen, onClose, onConfirm, initialDate }) => {
                     <label style={{ 
                         display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', 
                         borderRadius: '8px', border: '1px solid var(--color-border)', cursor: 'pointer',
-                        backgroundColor: mode === 'schedule' ? 'rgba(175, 68, 72, 0.05)' : 'transparent',
+                        backgroundColor: mode === 'schedule' ? 'rgba(155, 57, 61, 0.05)' : 'transparent',
                         borderColor: mode === 'schedule' ? 'var(--color-primary)' : 'var(--color-border)'
                     }}>
                         <input 
@@ -96,7 +121,10 @@ const HideModal = ({ isOpen, onClose, onConfirm, initialDate }) => {
                         className="btn btn-primary" 
                         style={{ flex: 1 }} 
                         disabled={isConfirmDisabled}
-                        onClick={() => onConfirm(mode === 'now' ? null : date)}
+                        onClick={() => {
+                            if (mode === 'unhide') onConfirm('unhide');
+                            else onConfirm(mode === 'now' ? null : date);
+                        }}
                     >
                         Conferma
                     </button>
