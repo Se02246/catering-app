@@ -14,12 +14,19 @@ const Home = () => {
     const [isPackageClosing, setIsPackageClosing] = React.useState(false);
     const [isProductClosing, setIsProductClosing] = React.useState(false);
 
-    // Pre-parse images for caterings if they aren't already
+    // Pre-parse images for caterings and filter by visibility/expiry
     const processedCaterings = React.useMemo(() => {
-        return caterings.map(pkg => ({
-            ...pkg,
-            images: pkg.images || (pkg.image_url ? [pkg.image_url] : [])
-        }));
+        const now = new Date();
+        return caterings
+            .filter(pkg => {
+                const isVisible = pkg.is_visible !== false;
+                const isNotExpired = !pkg.hide_at || new Date(pkg.hide_at) > now;
+                return isVisible && isNotExpired;
+            })
+            .map(pkg => ({
+                ...pkg,
+                images: pkg.images || (pkg.image_url ? [pkg.image_url] : [])
+            }));
     }, [caterings]);
 
     React.useEffect(() => {

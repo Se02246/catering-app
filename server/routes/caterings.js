@@ -83,7 +83,7 @@ router.put('/reorder', async (req, res) => {
 
 // Create a new catering package
 router.post('/', async (req, res) => {
-    const { name, description, total_price, image_url, items, discount_percentage, images, is_gluten_free, is_lactose_free } = req.body;
+    const { name, description, total_price, image_url, items, discount_percentage, images, is_gluten_free, is_lactose_free, is_visible, hide_at } = req.body;
     // items is an array of { product_id, quantity }
 
     const client = await pool.connect();
@@ -95,8 +95,8 @@ router.post('/', async (req, res) => {
         const mainImage = imagesArray.length > 0 ? imagesArray[0] : image_url;
 
         const cateringResult = await client.query(
-            'INSERT INTO caterings (name, description, total_price, image_url, discount_percentage, images, is_gluten_free, is_lactose_free) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, is_gluten_free || false, is_lactose_free || false]
+            'INSERT INTO caterings (name, description, total_price, image_url, discount_percentage, images, is_gluten_free, is_lactose_free, is_visible, hide_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, is_gluten_free || false, is_lactose_free || false, is_visible !== undefined ? is_visible : true, hide_at || null]
         );
         const cateringId = cateringResult.rows[0].id;
 
@@ -121,7 +121,7 @@ router.post('/', async (req, res) => {
 // Update a catering package
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, description, total_price, image_url, items, discount_percentage, images, is_gluten_free, is_lactose_free } = req.body;
+    const { name, description, total_price, image_url, items, discount_percentage, images, is_gluten_free, is_lactose_free, is_visible, hide_at } = req.body;
 
     const client = await pool.connect();
     try {
@@ -132,8 +132,8 @@ router.put('/:id', async (req, res) => {
 
         // Update catering details
         const cateringResult = await client.query(
-            'UPDATE caterings SET name = $1, description = $2, total_price = $3, image_url = $4, discount_percentage = $5, images = $6, is_gluten_free = $7, is_lactose_free = $8 WHERE id = $9 RETURNING *',
-            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, is_gluten_free || false, is_lactose_free || false, id]
+            'UPDATE caterings SET name = $1, description = $2, total_price = $3, image_url = $4, discount_percentage = $5, images = $6, is_gluten_free = $7, is_lactose_free = $8, is_visible = $9, hide_at = $10 WHERE id = $11 RETURNING *',
+            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, is_gluten_free || false, is_lactose_free || false, is_visible !== undefined ? is_visible : true, hide_at || null, id]
         );
 
         if (cateringResult.rows.length === 0) {

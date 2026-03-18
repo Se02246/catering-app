@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
 import { useProducts, useCaterings } from '../../hooks/useData';
-import { Trash2, Plus, Save, Pencil, Minus, ArrowUp, ArrowDown } from 'lucide-react';
+import { Trash2, Plus, Save, Pencil, Minus, ArrowUp, ArrowDown, Eye, EyeOff, Clock } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
+import HideModal from '../Common/HideModal';
 
 const PackageBuilder = () => {
     const { caterings: packages, mutate: mutateCaterings } = useCaterings();
@@ -11,6 +12,8 @@ const PackageBuilder = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [discountedPriceInput, setDiscountedPriceInput] = useState('');
+    const [isHideModalOpen, setIsHideModalOpen] = useState(false);
+    const [packageToHide, setPackageToHide] = useState(null);
 
     // New Package State
     const [newPackage, setNewPackage] = useState({
@@ -22,7 +25,9 @@ const PackageBuilder = () => {
         discount_percentage: 0,
         items: [], // { product_id, quantity, tempId }
         is_gluten_free: false,
-        is_lactose_free: false
+        is_lactose_free: false,
+        is_visible: true,
+        hide_at: null
     });
 
 
@@ -90,7 +95,7 @@ const PackageBuilder = () => {
             }
             setIsCreating(false);
             setEditingId(null);
-            setNewPackage({ name: '', description: '', image_url: '', images: [], total_price: 0, discount_percentage: 0, items: [] });
+            setNewPackage({ name: '', description: '', image_url: '', images: [], total_price: 0, discount_percentage: 0, items: [], is_visible: true, hide_at: null });
             setDiscountedPriceInput('');
             mutateCaterings();
         } catch {
@@ -112,7 +117,9 @@ const PackageBuilder = () => {
             discount_percentage: parseFloat(pkg.discount_percentage) || 0,
             items: pkg.items.map(i => ({ ...i, tempId: Date.now() + Math.random() })),
             is_gluten_free: pkg.is_gluten_free || false,
-            is_lactose_free: pkg.is_lactose_free || false
+            is_lactose_free: pkg.is_lactose_free || false,
+            is_visible: pkg.is_visible !== undefined ? pkg.is_visible : true,
+            hide_at: pkg.hide_at || null
         });
         setIsCreating(true);
     };
@@ -124,6 +131,42 @@ const PackageBuilder = () => {
             mutateCaterings();
         } catch {
             alert('Errore durante l\'eliminazione');
+        }
+    };
+
+    const toggleVisibility = async (pkg) => {
+        const isCurrentlyHidden = pkg.is_visible === false || (pkg.hide_at && new Date(pkg.hide_at) < new Date());
+        
+        if (!isCurrentlyHidden) {
+            // If visible, show modal to hide
+            setPackageToHide(pkg);
+            setIsHideModalOpen(true);
+        } else {
+            // If already hidden, show immediately
+            try {
+                await api.updateCatering(pkg.id, { ...pkg, is_visible: true, hide_at: null });
+                mutateCaterings();
+            } catch (err) {
+                console.error('Failed to show package', err);
+                alert('Errore durante l\'aggiornamento della visibilità');
+            }
+        }
+    };
+
+    const confirmHide = async (hideAt) => {
+        if (!packageToHide) return;
+        try {
+            await api.updateCatering(packageToHide.id, { 
+                ...packageToHide, 
+                is_visible: hideAt ? true : false, // Keep visible if scheduled, hide now if null
+                hide_at: hideAt 
+            });
+            setIsHideModalOpen(false);
+            setPackageToHide(null);
+            mutateCaterings();
+        } catch (err) {
+            console.error('Failed to hide package', err);
+            alert('Errore durante l\'aggiornamento della visibilità');
         }
     };
 
@@ -178,7 +221,7 @@ const PackageBuilder = () => {
                 <button className="btn btn-primary" onClick={() => {
                     setIsCreating(true);
                     setEditingId(null);
-                    setNewPackage({ name: '', description: '', image_url: '', images: [], total_price: 0, discount_percentage: 0, items: [] });
+                    setNewPackage({ name: '', description: '', image_url: '', images: [], total_price: 0, discount_percentage: 0, items: [], is_visible: true, hide_at: null });
                     setDiscountedPriceInput('');
                 }}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
@@ -199,7 +242,8 @@ const PackageBuilder = () => {
 
                         <form onSubmit={handleSave} className="grid-quote-builder">
 
-                            {/* Left Column: Product Selection (Grid of Cards) */}
+                            {/* Left Column: Product Selection (Grid of Cards) ... */}
+                            {/* ... (rest of form content) ... */}
                             <div style={{ overflowY: 'auto', maxHeight: '70vh', paddingRight: '0.5rem' }}>
                                 <h4 style={{ marginBottom: '1rem' }}>Seleziona Prodotti</h4>
                                 <input
@@ -275,7 +319,7 @@ const PackageBuilder = () => {
                                 </div>
                             </div>
 
-                            {/* Right Column: Package Summary (Cart Style) */}
+                            {/* Right Column: Package Summary ... */}
                             <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', height: 'fit-content' }}>
                                 <h4 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Dettagli Pacchetto</h4>
 
@@ -477,109 +521,122 @@ const PackageBuilder = () => {
             )}
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                {packages.map((pkg, index) => (
-                    <div key={pkg.id} style={{
-                        padding: '1.5rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-md)',
-                        display: 'flex', flexDirection: 'column', position: 'relative'
-                    }}>
-                        <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.25rem', zIndex: 10 }}>
-                            <button
-                                className="btn btn-outline"
-                                style={{
-                                    padding: '0.25rem',
-                                    borderColor: index === 0 ? '#ccc' : 'var(--color-border)',
-                                    color: index === 0 ? '#ccc' : 'var(--color-text)',
-                                    cursor: index === 0 ? 'default' : 'pointer'
-                                }}
-                                onClick={() => handleMoveUp(index)}
-                                disabled={index === 0}
-                            >
-                                <ArrowUp size={16} />
-                            </button>
-                            <button
-                                className="btn btn-outline"
-                                style={{
-                                    padding: '0.25rem',
-                                    borderColor: index === packages.length - 1 ? '#ccc' : 'var(--color-border)',
-                                    color: index === packages.length - 1 ? '#ccc' : 'var(--color-text)',
-                                    cursor: index === packages.length - 1 ? 'default' : 'pointer'
-                                }}
-                                onClick={() => handleMoveDown(index)}
-                                disabled={index === packages.length - 1}
-                            >
-                                <ArrowDown size={16} />
-                            </button>
-                        </div>
-                        {pkg.image_url && <img src={pkg.image_url} alt={pkg.name} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '1rem' }} />}
-                        <h3 style={{ marginBottom: '0.5rem' }}>{pkg.name}</h3>
-                        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                            {pkg.is_gluten_free && (
-                                <span style={{ color: '#FF9800', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                    Senza Glutine!
-                                </span>
-                            )}
-                            {pkg.is_lactose_free && (
-                                <span style={{ color: '#03A9F4', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                    Senza Lattosio!
-                                </span>
-                            )}
-                        </div>
-                        <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem', flex: 1 }}>{pkg.description}</p>
-                        <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-primary)' }}>
-                            {pkg.discount_percentage > 0 ? (
-                                <div>
-                                    <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1rem', marginRight: '0.5rem' }}>
-                                        € {pkg.total_price}
+                {packages.map((pkg, index) => {
+                    const isExpired = pkg.hide_at && new Date(pkg.hide_at) < new Date();
+                    const isHidden = pkg.is_visible === false || isExpired;
+
+                    return (
+                        <div key={pkg.id} style={{
+                            padding: '1.5rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-md)',
+                            display: 'flex', flexDirection: 'column', position: 'relative',
+                            opacity: isHidden ? 0.6 : 1
+                        }}>
+                            <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.25rem', zIndex: 10 }}>
+                                <button
+                                    className="btn btn-outline"
+                                    style={{
+                                        padding: '0.25rem',
+                                        borderColor: index === 0 ? '#ccc' : 'var(--color-border)',
+                                        color: index === 0 ? '#ccc' : 'var(--color-text)',
+                                        cursor: index === 0 ? 'default' : 'pointer'
+                                    }}
+                                    onClick={() => handleMoveUp(index)}
+                                    disabled={index === 0}
+                                >
+                                    <ArrowUp size={16} />
+                                </button>
+                                <button
+                                    className="btn btn-outline"
+                                    style={{
+                                        padding: '0.25rem',
+                                        borderColor: index === packages.length - 1 ? '#ccc' : 'var(--color-border)',
+                                        color: index === packages.length - 1 ? '#ccc' : 'var(--color-text)',
+                                        cursor: index === packages.length - 1 ? 'default' : 'pointer'
+                                    }}
+                                    onClick={() => handleMoveDown(index)}
+                                    disabled={index === packages.length - 1}
+                                >
+                                    <ArrowDown size={16} />
+                                </button>
+                            </div>
+                            {pkg.image_url && <img src={pkg.image_url} alt={pkg.name} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '1rem' }} />}
+                            <h3 style={{ marginBottom: '0.5rem' }}>
+                                {pkg.name}
+                                {isHidden && <span style={{ fontSize: '0.8rem', color: 'red', marginLeft: '0.5rem' }}>({isExpired ? 'Scaduto' : 'Nascosto'})</span>}
+                            </h3>
+                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                {pkg.is_gluten_free && (
+                                    <span style={{ color: '#FF9800', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                        Senza Glutine!
                                     </span>
-                                    <span>
-                                        € {(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
+                                )}
+                                {pkg.is_lactose_free && (
+                                    <span style={{ color: '#03A9F4', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                        Senza Lattosio!
                                     </span>
-                                </div>
-                            ) : (
-                                <span>€ {pkg.total_price}</span>
+                                )}
+                            </div>
+                            <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem', flex: 1, fontSize: '0.9rem' }}>{pkg.description}</p>
+                            {pkg.hide_at && !isExpired && (
+                                <p style={{ margin: '0 0 1rem 0', color: 'var(--color-primary)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Clock size={12} /> Nascondi il: {new Date(pkg.hide_at).toLocaleString()}
+                                </p>
                             )}
-                        </div>
-                        <div style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-                            <strong>Include:</strong>
-                            <ul style={{ paddingLeft: '1.2rem', marginTop: '0.5rem' }}>
-                                {pkg.items && pkg.items.map((item, idx) => (
-                                    <li key={idx}>
-                                        {item.is_sold_by_piece
-                                            ? `${parseFloat(item.quantity)} pz ${item.name}`
-                                            : (item.pieces_per_kg > 0
-                                                ? `${parseFloat(item.quantity)} pz ${item.name}`
-                                                : `${parseFloat(item.quantity)}kg ${item.name}`
-                                            )
-                                        }
-                                        <span style={{ marginLeft: '0.25rem' }}>
-                                            {item.is_gluten_free && !pkg.is_gluten_free && (
-                                                <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                                    (SG)
-                                                </span>
-                                            )}
-                                            {item.is_lactose_free && !pkg.is_lactose_free && (
-                                                <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                                    (SL)
-                                                </span>
-                                            )}
+                            <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--color-primary)' }}>
+                                {pkg.discount_percentage > 0 ? (
+                                    <div>
+                                        <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1rem', marginRight: '0.5rem' }}>
+                                            € {pkg.total_price}
                                         </span>
-                                    </li>
-                                ))}
-                            </ul>
+                                        <span>
+                                            € {(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <span>€ {pkg.total_price}</span>
+                                )}
+                            </div>
+                            <div style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
+                                <strong>Include:</strong>
+                                <ul style={{ paddingLeft: '1.2rem', marginTop: '0.5rem' }}>
+                                    {pkg.items && pkg.items.map((item, idx) => (
+                                        <li key={idx}>
+                                            {item.is_sold_by_piece
+                                                ? `${parseFloat(item.quantity)} pz ${item.name}`
+                                                : (item.pieces_per_kg > 0
+                                                    ? `${parseFloat(item.quantity)} pz ${item.name}`
+                                                    : `${parseFloat(item.quantity)}kg ${item.name}`
+                                                )
+                                            }
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+                                <button className="btn btn-outline" style={{ padding: '0.5rem' }} onClick={() => toggleVisibility(pkg)} title={!isHidden ? "Nascondi" : "Mostra"}>
+                                    {!isHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+                                </button>
+                                <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => handleEdit(pkg)}>
+                                    <Pencil size={16} style={{ marginRight: '4px' }} /> Modifica
+                                </button>
+                                <button className="btn btn-outline" style={{ flex: 1, color: 'red', borderColor: 'red' }} onClick={() => handleDelete(pkg.id)}>
+                                    <Trash2 size={16} style={{ marginRight: '4px' }} /> Elimina
+                                </button>
+                            </div>
                         </div>
-                        <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', gap: '0.5rem' }}>
-                            <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => handleEdit(pkg)}>
-                                <Pencil size={16} style={{ marginRight: '4px' }} /> Modifica
-                            </button>
-                            <button className="btn btn-outline" style={{ flex: 1, color: 'red', borderColor: 'red' }} onClick={() => handleDelete(pkg.id)}>
-                                <Trash2 size={16} style={{ marginRight: '4px' }} /> Elimina
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
+
+            <HideModal 
+                isOpen={isHideModalOpen}
+                onClose={() => { setIsHideModalOpen(false); setPackageToHide(null); }}
+                onConfirm={confirmHide}
+                initialDate={packageToHide?.hide_at}
+            />
         </div>
     );
 };
 
 export default PackageBuilder;
+

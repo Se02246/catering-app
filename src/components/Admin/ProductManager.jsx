@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Trash2, Edit, Plus, Eye, EyeOff } from 'lucide-react';
+import { Trash2, Edit, Plus, Eye, EyeOff, Clock } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
+import HideModal from '../Common/HideModal';
 
 const ProductManager = () => {
     const { products, isLoading, mutate } = useProducts();
     const [isEditing, setIsEditing] = useState(false);
-    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', images: [], is_visible: true, allow_multiple: false, order_increment: '', max_order_quantity: '', is_sold_by_piece: false, price_per_piece: '' });
+    const [isHideModalOpen, setIsHideModalOpen] = useState(false);
+    const [productToHide, setProductToHide] = useState(null);
+    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', images: [], is_visible: true, hide_at: null, allow_multiple: false, order_increment: '', max_order_quantity: '', is_sold_by_piece: false, price_per_piece: '' });
 
     const resetForm = () => {
         setCurrentProduct({
             name: '', description: '', price_per_kg: '', image_url: '', images: [],
             pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
-            show_servings: false, servings_per_unit: '', is_visible: true, allow_multiple: false,
+            show_servings: false, servings_per_unit: '', is_visible: true, hide_at: null, allow_multiple: false,
             is_gluten_free: false, is_lactose_free: false, is_sold_by_piece: false, price_per_piece: ''
         });
     };
@@ -30,6 +33,7 @@ const ProductManager = () => {
                 show_servings: currentProduct.show_servings || false,
                 servings_per_unit: currentProduct.servings_per_unit ? parseFloat(currentProduct.servings_per_unit) : null,
                 is_visible: currentProduct.is_visible !== undefined ? currentProduct.is_visible : true,
+                hide_at: currentProduct.hide_at || null,
                 allow_multiple: currentProduct.allow_multiple || false,
                 max_order_quantity: currentProduct.max_order_quantity ? parseFloat(currentProduct.max_order_quantity) : null,
                 is_gluten_free: currentProduct.is_gluten_free || false,
@@ -60,11 +64,35 @@ const ProductManager = () => {
     };
 
     const toggleVisibility = async (product) => {
+        if (product.is_visible !== false) {
+            // If visible, show modal to hide
+            setProductToHide(product);
+            setIsHideModalOpen(true);
+        } else {
+            // If already hidden, show immediately
+            try {
+                await api.updateProduct(product.id, { ...product, is_visible: true, hide_at: null });
+                mutate();
+            } catch (err) {
+                console.error('Failed to show product', err);
+                alert('Errore durante l\'aggiornamento della visibilità');
+            }
+        }
+    };
+
+    const confirmHide = async (hideAt) => {
+        if (!productToHide) return;
         try {
-            await api.updateProduct(product.id, { ...product, is_visible: !product.is_visible });
+            await api.updateProduct(productToHide.id, { 
+                ...productToHide, 
+                is_visible: hideAt ? true : false, // Keep visible if scheduled, hide now if null
+                hide_at: hideAt 
+            });
+            setIsHideModalOpen(false);
+            setProductToHide(null);
             mutate();
         } catch (err) {
-            console.error('Failed to toggle visibility', err);
+            console.error('Failed to hide product', err);
             alert('Errore durante l\'aggiornamento della visibilità');
         }
     };
@@ -85,10 +113,11 @@ const ProductManager = () => {
                 <div className="modal-overlay" style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                     backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
-                }}>
-                    <div className="modal-content">
+                }} onClick={() => { setIsEditing(false); resetForm(); }}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
                         <h3>{currentProduct.id ? 'Modifica Prodotto' : 'Nuovo Prodotto'}</h3>
                         <form onSubmit={handleSubmit}>
+                            {/* ... (rest of form remains similar but adds hide_at if needed in future) ... */}
                             <div style={{ marginBottom: '1rem' }}>
                                 <label>Nome</label>
                                 <input
@@ -273,60 +302,83 @@ const ProductManager = () => {
             )}
 
             <div className="grid-responsive" style={{ gap: '1rem' }}>
-                {products.map(p => (
-                    <div key={p.id} style={{
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-sm)',
-                        opacity: p.is_visible === false ? 0.6 : 1,
-                        flexWrap: 'wrap', gap: '1rem'
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '200px' }}>
-                            {p.image_url && (
-                                <img
-                                    src={p.image_url}
-                                    alt={p.name}
-                                    style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }}
-                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50?text=No+Img'; }}
-                                />
-                            )}
-                            <div style={{ minWidth: 0 }}>
-                                <h4 style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {p.name}
-                                    {p.is_visible === false && <span style={{ fontSize: '0.8rem', color: 'red', marginLeft: '0.5rem' }}>(Nascosto)</span>}
-                                </h4>
-                                <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                                    {p.is_gluten_free && (
-                                        <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                            Senza Glutine!
-                                        </span>
-                                    )}
-                                    {p.is_lactose_free && (
-                                        <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                            Senza Lattosio!
-                                        </span>
+                {products.map(p => {
+                    const isExpired = p.hide_at && new Date(p.hide_at) < new Date();
+                    const isHidden = p.is_visible === false || isExpired;
+                    
+                    return (
+                        <div key={p.id} style={{
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                            padding: '1rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-sm)',
+                            opacity: isHidden ? 0.6 : 1,
+                            flexWrap: 'wrap', gap: '1rem'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '200px' }}>
+                                {p.image_url && (
+                                    <img
+                                        src={p.image_url}
+                                        alt={p.name}
+                                        style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50?text=No+Img'; }}
+                                    />
+                                )}
+                                <div style={{ minWidth: 0 }}>
+                                    <h4 style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {p.name}
+                                        {isHidden && <span style={{ fontSize: '0.8rem', color: 'red', marginLeft: '0.5rem' }}>({isExpired ? 'Scaduto' : 'Nascosto'})</span>}
+                                    </h4>
+                                    <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                                        {p.is_gluten_free && (
+                                            <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                Senza Glutine!
+                                            </span>
+                                        )}
+                                        {p.is_lactose_free && (
+                                            <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                Senza Lattosio!
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p style={{ margin: 0, color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                                        {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                    </p>
+                                    {p.hide_at && !isExpired && (
+                                        <p style={{ margin: 0, color: 'var(--color-primary)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <Clock size={12} /> Nascondi il: {new Date(p.hide_at).toLocaleString()}
+                                        </p>
                                     )}
                                 </div>
-                                <p style={{ margin: 0, color: 'var(--color-text-muted)' }}>
-                                    {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
-                                </p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                                <button 
+                                    className="btn btn-outline" 
+                                    style={{ padding: '0.5rem', color: isHidden ? 'var(--color-text)' : 'var(--color-primary)' }} 
+                                    onClick={() => toggleVisibility(p)} 
+                                    title={!isHidden ? "Nascondi" : "Mostra"}
+                                >
+                                    {!isHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+                                </button>
+                                <button className="btn btn-outline" style={{ padding: '0.5rem' }} onClick={() => { setCurrentProduct(p); setIsEditing(true); }}>
+                                    <Edit size={16} />
+                                </button>
+                                <button className="btn btn-outline" style={{ padding: '0.5rem', color: 'red', borderColor: 'red' }} onClick={() => handleDelete(p.id)}>
+                                    <Trash2 size={16} />
+                                </button>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
-                            <button className="btn btn-outline" style={{ padding: '0.5rem' }} onClick={() => toggleVisibility(p)} title={p.is_visible !== false ? "Nascondi" : "Mostra"}>
-                                {p.is_visible !== false ? <Eye size={16} /> : <EyeOff size={16} />}
-                            </button>
-                            <button className="btn btn-outline" style={{ padding: '0.5rem' }} onClick={() => { setCurrentProduct(p); setIsEditing(true); }}>
-                                <Edit size={16} />
-                            </button>
-                            <button className="btn btn-outline" style={{ padding: '0.5rem', color: 'red', borderColor: 'red' }} onClick={() => handleDelete(p.id)}>
-                                <Trash2 size={16} />
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
+
+            <HideModal 
+                isOpen={isHideModalOpen}
+                onClose={() => { setIsHideModalOpen(false); setProductToHide(null); }}
+                onConfirm={confirmHide}
+                initialDate={productToHide?.hide_at}
+            />
         </div>
     );
 };
 
 export default ProductManager;
+

@@ -45,8 +45,13 @@ const QuoteBuilder = () => {
     }, [cart.length]); // Re-observe if cart changes as it might change the summary height
 
     const products = React.useMemo(() => {
+        const now = new Date();
         return rawProducts
-            .filter(p => p.is_visible !== false)
+            .filter(p => {
+                const isVisible = p.is_visible !== false;
+                const isNotExpired = !p.hide_at || new Date(p.hide_at) > now;
+                return isVisible && isNotExpired;
+            })
             .map(p => ({
                 ...p,
                 price_per_kg: parseFloat(p.price_per_kg),
