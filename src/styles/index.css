@@ -187,7 +187,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .modal-content.closing {
-  animation: modalSlideDown 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards !important;
+  animation: modalSlideDown 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
 }
 
 @keyframes modalSlideUp {

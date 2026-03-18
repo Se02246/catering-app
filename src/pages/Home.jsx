@@ -320,7 +320,7 @@ const Home = () => {
                         )}
 
                         <div
-                            className={`modal-content ${isPackageClosing ? 'closing' : ''}`}
+                            className={`modal-content ${isPackageClosing && !isPackageSwipingOut ? 'closing' : ''}`}
                             style={{ 
                                 width: '100%', 
                                 maxWidth: '800px', 
@@ -328,7 +328,8 @@ const Home = () => {
                                 overflow: 'hidden',
                                 transform: packageDragY > 0 ? `translate3d(0, ${packageDragY}px, 0)` : '',
                                 transition: isPackageDragging ? 'none' : 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease',
-                                animation: isPackageDragging || packageDragY > 0 ? 'none' : undefined
+                                animation: isPackageDragging || packageDragY > 0 || isPackageSwipingOut ? 'none' : undefined,
+                                opacity: isPackageSwipingOut ? 0 : 1
                             }}
                             onTouchStart={handlePackageTouchStart}
                             onTouchMove={handlePackageTouchMove}

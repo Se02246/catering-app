@@ -119,7 +119,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                 )}
 
                 <div
-                    className={`modal-content ${isClosing ? 'closing' : ''}`}
+                    className={`modal-content ${isClosing && !isSwipingOut ? 'closing' : ''}`}
                     style={{ 
                         width: '100%', 
                         maxWidth: '600px', 
@@ -127,7 +127,8 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                         overflow: 'hidden',
                         transform: dragY > 0 ? `translate3d(0, ${dragY}px, 0)` : '',
                         transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease',
-                        animation: isDragging || dragY > 0 ? 'none' : undefined // Disable animation while dragging
+                        animation: isDragging || dragY > 0 || isSwipingOut ? 'none' : undefined,
+                        opacity: isSwipingOut ? 0 : 1
                     }}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
