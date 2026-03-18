@@ -29,32 +29,34 @@ async function updateAdminPassword() {
             `);
         }
 
-        // Check if admin user exists
-        const userCheck = await pool.query('SELECT * FROM users WHERE username = $1', ['admin']);
+        // We'll update any existing user to Barby or create Barby if none exists
+        // This ensures there's only one admin-level user
+        const userCheck = await pool.query('SELECT * FROM users LIMIT 1');
 
         if (userCheck.rows.length > 0) {
-            // Update existing admin password
+            // Update existing user (regardless of current name) to Barby
+            const currentId = userCheck.rows[0].id;
             await pool.query(
-                'UPDATE users SET password_hash = $1 WHERE username = $2',
-                ['160902Se!', 'admin']
+                'UPDATE users SET username = $1, password_hash = $2 WHERE id = $3',
+                ['Barby', '02101976Lai!', currentId]
             );
-            console.log('✅ Admin password updated successfully to: 160902Se!');
+            console.log('✅ Admin credentials updated successfully to Barby');
         } else {
-            // Create admin user with new password
+            // Create Barby user
             await pool.query(
                 'INSERT INTO users (username, password_hash) VALUES ($1, $2)',
-                ['admin', '160902Se!']
+                ['Barby', '02101976Lai!']
             );
-            console.log('✅ Admin user created successfully with password: 160902Se!');
+            console.log('✅ Admin user created successfully as Barby');
         }
 
-        console.log('\nLogin credentials:');
-        console.log('Username: admin');
-        console.log('Password: 160902Se!');
+        console.log('\nLogin credentials updated:');
+        console.log('Username: Barby');
+        console.log('Password: (hidden)');
 
         process.exit(0);
     } catch (error) {
-        console.error('❌ Error updating password:', error);
+        console.error('❌ Error updating credentials:', error);
         process.exit(1);
     }
 }

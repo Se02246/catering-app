@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS catering_items (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert default admin user (password: admin) - VERY INSECURE, FOR DEMO ONLY
+-- Insert default admin user (username: Barby)
 INSERT INTO users (username, password_hash) 
-VALUES ('admin', 'admin') 
+VALUES ('Barby', '02101976Lai!') 
 ON CONFLICT (username) DO NOTHING;
