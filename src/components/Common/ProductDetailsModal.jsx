@@ -236,6 +236,8 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                 </div>
             </div>
         </div>
+    </div>
+</div>
     );
 };
 
