@@ -208,119 +208,121 @@ const Home = () => {
                         className={`modal-content ${isPackageClosing ? 'bounce-out' : 'bounce-in'}`}
                         onClick={e => e.stopPropagation()}
                         style={{ 
-                            maxWidth: '900px', 
+                            maxWidth: '1000px', 
                             padding: '0', 
-                            overflowY: 'auto', 
+                            overflow: 'hidden', /* Disable main scroll to use independent ones */
                             background: 'var(--color-bg)',
-                            maxHeight: '90vh' 
+                            maxHeight: '90vh',
+                            display: 'flex',
+                            flexDirection: window.innerWidth > 768 ? 'row' : 'column'
                         }}
                     >
-                        <div style={{ display: 'flex', flexDirection: window.innerWidth > 768 ? 'row' : 'column' }}>
-                            {/* Left Side: Image Gallery */}
-                            <div style={{ 
-                                width: window.innerWidth > 768 ? '45%' : '100%', 
-                                aspectRatio: '4/5',
-                                position: 'relative',
-                                background: '#1A1515', 
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                overflow: 'hidden',
-                                flexShrink: 0,
-                                borderRadius: 'var(--radius-xl)'
-                            }}>
-                                <div 
-                                    onScroll={handleGalleryScroll}
-                                    style={{
-                                        display: 'flex',
-                                        overflowX: 'auto',
-                                        scrollSnapType: 'x mandatory',
-                                        width: '100%',
-                                        height: '100%',
-                                        scrollbarWidth: 'none',
-                                        WebkitOverflowScrolling: 'touch'
-                                    }}
-                                >
-                                    {selectedPackage.images && selectedPackage.images.length > 0 ? (
-                                        selectedPackage.images.map((img, idx) => (
-                                            <div key={idx} style={{ 
-                                                minWidth: '100%', 
-                                                height: '100%', 
-                                                scrollSnapAlign: 'start',
-                                                scrollSnapStop: 'always'
-                                            }}>
-                                                <img
-                                                    src={img}
-                                                    alt={`${selectedPackage.name} ${idx + 1}`}
-                                                    style={{ 
-                                                        width: '100%', 
-                                                        height: '100%', 
-                                                        objectFit: 'cover',
-                                                        display: 'block'
-                                                    }}
-                                                />
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div style={{ width: '100%', height: '100%' }}>
+                        {/* Left Side: Image Gallery - FIXED on Desktop */}
+                        <div style={{ 
+                            width: window.innerWidth > 768 ? '45%' : '100%', 
+                            aspectRatio: '4/5',
+                            position: 'relative',
+                            background: '#1A1515', 
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            flexShrink: 0,
+                            borderRadius: window.innerWidth > 768 ? 'var(--radius-xl) 0 0 var(--radius-xl)' : 'var(--radius-xl) var(--radius-xl) 0 0'
+                        }}>
+                            <div 
+                                onScroll={handleGalleryScroll}
+                                style={{
+                                    display: 'flex',
+                                    overflowX: 'auto',
+                                    scrollSnapType: 'x mandatory',
+                                    width: '100%',
+                                    height: '100%',
+                                    scrollbarWidth: 'none',
+                                    WebkitOverflowScrolling: 'touch'
+                                }}
+                            >
+                                {selectedPackage.images && selectedPackage.images.length > 0 ? (
+                                    selectedPackage.images.map((img, idx) => (
+                                        <div key={idx} style={{ 
+                                            minWidth: '100%', 
+                                            height: '100%', 
+                                            scrollSnapAlign: 'start',
+                                            scrollSnapStop: 'always'
+                                        }}>
                                             <img
-                                                src={selectedPackage.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
-                                                alt={selectedPackage.name}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Instagram-style Pagination Dots */}
-                                {selectedPackage.images?.length > 1 && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        bottom: '1rem',
-                                        left: '50%',
-                                        transform: 'translateX(-50%)',
-                                        display: 'flex',
-                                        gap: '6px',
-                                        zIndex: 5,
-                                        padding: '6px 10px',
-                                        background: 'rgba(0,0,0,0.3)',
-                                        borderRadius: '20px',
-                                        backdropFilter: 'blur(4px)'
-                                    }}>
-                                        {selectedPackage.images.map((_, idx) => (
-                                            <div
-                                                key={idx}
-                                                style={{
-                                                    width: activeImageIndex === idx ? '8px' : '6px',
-                                                    height: activeImageIndex === idx ? '8px' : '6px',
-                                                    borderRadius: '50%',
-                                                    background: activeImageIndex === idx ? 'white' : 'rgba(255,255,255,0.5)',
-                                                    transition: 'all 0.2s ease'
+                                                src={img}
+                                                alt={`${selectedPackage.name} ${idx + 1}`}
+                                                style={{ 
+                                                    width: '100%', 
+                                                    height: '100%', 
+                                                    objectFit: 'cover',
+                                                    display: 'block'
                                                 }}
                                             />
-                                        ))}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div style={{ width: '100%', height: '100%' }}>
+                                        <img
+                                            src={selectedPackage.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
+                                            alt={selectedPackage.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
                                     </div>
                                 )}
-                                <button 
-                                    onClick={closePackage}
-                                    style={{
-                                        position: 'absolute', top: '1.5rem', left: '1.5rem',
-                                        background: 'rgba(255,255,255,0.9)', border: 'none',
-                                        width: '40px', height: '40px', borderRadius: '50%',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        cursor: 'pointer', zIndex: 10, boxShadow: 'var(--shadow-md)'
-                                    }}
-                                >
-                                    <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} />
-                                </button>
                             </div>
 
-                            {/* Right Side: Content */}
-                            <div style={{ 
-                                width: window.innerWidth > 768 ? '55%' : '100%', 
-                                padding: window.innerWidth > 768 ? '3.5rem' : '1.5rem',
-                                overflowY: 'visible'
-                            }}>
+                            {/* Instagram-style Pagination Dots */}
+                            {selectedPackage.images?.length > 1 && (
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '1rem',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    display: 'flex',
+                                    gap: '6px',
+                                    zIndex: 5,
+                                    padding: '6px 10px',
+                                    background: 'rgba(0,0,0,0.3)',
+                                    borderRadius: '20px',
+                                    backdropFilter: 'blur(4px)'
+                                }}>
+                                    {selectedPackage.images.map((_, idx) => (
+                                        <div
+                                            key={idx}
+                                            style={{
+                                                width: activeImageIndex === idx ? '8px' : '6px',
+                                                height: activeImageIndex === idx ? '8px' : '6px',
+                                                borderRadius: '50%',
+                                                background: activeImageIndex === idx ? 'white' : 'rgba(255,255,255,0.5)',
+                                                transition: 'all 0.2s ease'
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                            <button 
+                                onClick={closePackage}
+                                style={{
+                                    position: 'absolute', top: '1.5rem', left: '1.5rem',
+                                    background: 'rgba(255,255,255,0.9)', border: 'none',
+                                    width: '40px', height: '40px', borderRadius: '50%',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', zIndex: 10, boxShadow: 'var(--shadow-md)'
+                                }}
+                            >
+                                <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} />
+                            </button>
+                        </div>
+
+                        {/* Right Side: Content - SCROLLABLE on Desktop */}
+                        <div style={{ 
+                            width: window.innerWidth > 768 ? '55%' : '100%', 
+                            padding: window.innerWidth > 768 ? '3.5rem' : '1.5rem',
+                            overflowY: 'auto',
+                            maxHeight: window.innerWidth > 768 ? '90vh' : 'auto'
+                        }}>
                                 <div style={{ marginBottom: '2.5rem' }}>
                                     <div className="dietary-badges" style={{ marginBottom: '0.75rem' }}>
                                         {selectedPackage.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}

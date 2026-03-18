@@ -159,10 +159,15 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 650px;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: visible; /* Allow badge to protrude */
   box-shadow: var(--shadow-xl);
   position: relative;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-primary-light) transparent;
+  scrollbar-width: none; /* Hide scrollbars */
+  -ms-overflow-style: none;
+}
+
+.modal-content::-webkit-scrollbar {
+  display: none;
 }
 
 /* Sections */
@@ -293,7 +298,7 @@ h1, h2, h3, h4, h5, h6 {
 .premium-card {
   background: var(--color-white);
   border-radius: var(--radius-xl);
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to allow protruding badges */
   border: 1px solid rgba(155, 57, 61, 0.05);
   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   display: flex;

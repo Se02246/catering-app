@@ -19,6 +19,20 @@ const QuoteBuilder = () => {
     const quoteSummaryRef = useRef(null);
 
     useEffect(() => {
+        const handlePopState = (event) => {
+            if (selectedProduct) {
+                setIsProductClosing(true);
+                setTimeout(() => {
+                    setSelectedProduct(null);
+                    setIsProductClosing(false);
+                }, 500);
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [selectedProduct]);
+
+    useEffect(() => {
         localStorage.setItem('active_quote_cart', JSON.stringify(cart));
     }, [cart]);
 
