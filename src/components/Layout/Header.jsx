@@ -36,15 +36,19 @@ const Header = () => {
     };
 
     const scrollToQuote = () => {
-        if (isHome) {
-            const element = document.getElementById('quote-section');
+        if (location.pathname === '/quote') {
+            const element = document.getElementById('catalog-top');
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                navigate('/quote');
             }
         } else {
             navigate('/quote');
+            setTimeout(() => {
+                const element = document.getElementById('catalog-top');
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
         }
     };
 

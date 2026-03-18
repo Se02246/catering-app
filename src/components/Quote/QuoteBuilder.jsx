@@ -135,7 +135,7 @@ const QuoteBuilder = () => {
     return (
         <div className="grid-quote-builder">
             {/* Catalog Section */}
-            <div className="fade-in" style={{ paddingBottom: '4rem', position: 'relative' }}>
+            <div id="catalog-top" className="fade-in" style={{ paddingBottom: '4rem', position: 'relative' }}>
                 <div style={{ 
                     position: 'sticky', 
                     top: '1rem', 
