@@ -488,6 +488,12 @@ h1, h2, h3, h4, h5, h6 {
   pointer-events: none;
   white-space: nowrap;
   line-height: 1;
+  transition: opacity 0.2s ease;
+}
+
+.package-badge.closing {
+  opacity: 0 !important;
+  pointer-events: none;
 }
 
 .badge-elegant {

@@ -17,6 +17,43 @@ const Home = () => {
     const [selectedProduct, setSelectedProduct] = React.useState(null);
     const [isPackageClosing, setIsPackageClosing] = React.useState(false);
     const [isProductClosing, setIsProductClosing] = React.useState(false);
+    
+    // Swipe to close logic for Package Modal
+    const [packageDragY, setPackageDragY] = React.useState(0);
+    const [isPackageDragging, setIsPackageDragging] = React.useState(false);
+    const packageTouchStartY = React.useRef(0);
+    const packageScrollAreaRef = React.useRef(null);
+
+    const handlePackageTouchStart = (e) => {
+        if (packageScrollAreaRef.current && packageScrollAreaRef.current.scrollTop <= 0) {
+            packageTouchStartY.current = e.touches[0].clientY;
+            setIsPackageDragging(true);
+        }
+    };
+
+    const handlePackageTouchMove = (e) => {
+        if (!isPackageDragging) return;
+        const currentY = e.touches[0].clientY;
+        const deltaY = currentY - packageTouchStartY.current;
+        
+        if (deltaY > 0) {
+            setPackageDragY(deltaY);
+            if (e.cancelable) e.preventDefault();
+        } else {
+            setPackageDragY(0);
+            setIsPackageDragging(false);
+        }
+    };
+
+    const handlePackageTouchEnd = () => {
+        if (!isPackageDragging) return;
+        if (packageDragY > 150) {
+            closePackage();
+        } else {
+            setPackageDragY(0);
+        }
+        setIsPackageDragging(false);
+    };
 
     const processedCaterings = React.useMemo(() => {
         const now = new Date();
@@ -242,19 +279,33 @@ const Home = () => {
                     >
                         {/* Package Badge outside modal-content to prevent clipping */}
                         {selectedPackage.hide_at && (
-                            <div className="package-badge" style={{ 
-                                top: '-12px', 
-                                right: '-5px',
-                                zIndex: 3010,
-                                position: 'absolute'
-                            }}>
+                            <div 
+                                className={`package-badge ${isPackageClosing ? 'closing' : ''}`} 
+                                style={{ 
+                                    top: '-12px', 
+                                    right: '-5px',
+                                    zIndex: 3010,
+                                    position: 'absolute',
+                                    opacity: isPackageDragging ? 1 - (packageDragY / 200) : (isPackageClosing ? 0 : 1)
+                                }}
+                            >
                                 <Calendar size={14} /> Disponibile fino al {new Date(selectedPackage.hide_at).toLocaleDateString('it-IT')}
                             </div>
                         )}
 
                         <div
                             className={`modal-content ${isPackageClosing ? 'closing' : ''}`}
-                            style={{ width: '100%', maxWidth: '800px', padding: '0', overflow: 'hidden' }}
+                            style={{ 
+                                width: '100%', 
+                                maxWidth: '800px', 
+                                padding: '0', 
+                                overflow: 'hidden',
+                                transform: packageDragY > 0 ? `translateY(${packageDragY}px)` : '',
+                                transition: isPackageDragging ? 'none' : 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)'
+                            }}
+                            onTouchStart={handlePackageTouchStart}
+                            onTouchMove={handlePackageTouchMove}
+                            onTouchEnd={handlePackageTouchEnd}
                         >
                             {/* Floating Back Button */}
                             <button 
@@ -265,13 +316,17 @@ const Home = () => {
                                     width: '40px', height: '40px', borderRadius: '50%',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     cursor: 'pointer', zIndex: 100, boxShadow: 'var(--shadow-md)',
-                                    backdropFilter: 'blur(4px)'
+                                    backdropFilter: 'blur(4px)',
+                                    opacity: isPackageDragging ? 1 - (packageDragY / 200) : 1
                                 }}
                             >
                                 <ChevronLeft size={24} />
                             </button>
 
-                            <div className="modal-scroll-area">
+                            <div 
+                                ref={packageScrollAreaRef}
+                                className="modal-scroll-area"
+                            >
                                 {/* Left Side: Image Gallery */}
                                 <div className="package-modal-image-side" style={{ width: '100%', position: 'relative' }}>
                                     <div 

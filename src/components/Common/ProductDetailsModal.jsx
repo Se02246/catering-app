@@ -7,6 +7,42 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
     const { setting: showQuoteSetting, isLoading: isSettingLoading } = useSetting('show_quote_builder');
     const showPrice = !isSettingLoading && showQuoteSetting?.value !== 'false';
     const [activeImageIndex, setActiveImageIndex] = React.useState(0);
+    const scrollAreaRef = React.useRef(null);
+    const [dragY, setDragY] = React.useState(0);
+    const [isDragging, setIsDragging] = React.useState(false);
+    const touchStartY = React.useRef(0);
+
+    const handleTouchStart = (e) => {
+        if (scrollAreaRef.current && scrollAreaRef.current.scrollTop <= 0) {
+            touchStartY.current = e.touches[0].clientY;
+            setIsDragging(true);
+        }
+    };
+
+    const handleTouchMove = (e) => {
+        if (!isDragging) return;
+        const currentY = e.touches[0].clientY;
+        const deltaY = currentY - touchStartY.current;
+        
+        if (deltaY > 0) {
+            setDragY(deltaY);
+            // Prevent default scrolling when dragging down at top
+            if (e.cancelable) e.preventDefault();
+        } else {
+            setDragY(0);
+            setIsDragging(false);
+        }
+    };
+
+    const handleTouchEnd = () => {
+        if (!isDragging) return;
+        if (dragY > 150) {
+            onClose();
+        } else {
+            setDragY(0);
+        }
+        setIsDragging(false);
+    };
 
     const handleGalleryScroll = (e) => {
         const scrollPosition = e.target.scrollLeft;
@@ -42,19 +78,32 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
             >
                 {/* Package Badge outside modal-content to prevent clipping */}
                 {product.hide_at && (
-                    <div className="package-badge" style={{ 
-                        top: '-12px', 
-                        right: '-5px',
-                        zIndex: 3010,
-                        position: 'absolute'
-                    }}>
+                    <div 
+                        className={`package-badge ${isClosing ? 'closing' : ''}`} 
+                        style={{ 
+                            top: '-12px', 
+                            right: '-5px',
+                            zIndex: 3010,
+                            position: 'absolute',
+                            opacity: isDragging ? 1 - (dragY / 200) : (isClosing ? 0 : 1)
+                        }}>
                         <Calendar size={14} /> Disponibile fino al {new Date(product.hide_at).toLocaleDateString('it-IT')}
                     </div>
                 )}
 
                 <div
                     className={`modal-content ${isClosing ? 'closing' : ''}`}
-                    style={{ width: '100%', maxWidth: '600px', padding: '0', overflow: 'hidden' }}
+                    style={{ 
+                        width: '100%', 
+                        maxWidth: '600px', 
+                        padding: '0', 
+                        overflow: 'hidden',
+                        transform: dragY > 0 ? `translateY(${dragY}px)` : '',
+                        transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)'
+                    }}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                 >
                     {/* Floating Back Button */}
                     <button 
@@ -65,14 +114,18 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                             width: '40px', height: '40px', borderRadius: '50%',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             cursor: 'pointer', zIndex: 100, backdropFilter: 'blur(4px)',
-                            boxShadow: 'var(--shadow-md)'
+                            boxShadow: 'var(--shadow-md)',
+                            opacity: isDragging ? 1 - (dragY / 200) : 1
                         }}
                     >
                         <ChevronLeft size={24} />
                     </button>
 
                     {/* Scrollable Area */}
-                    <div className="modal-scroll-area">
+                    <div 
+                        ref={scrollAreaRef}
+                        className="modal-scroll-area"
+                    >
                         {/* Image Section */}
                         {validImages.length > 0 && (
                             <div style={{ 
