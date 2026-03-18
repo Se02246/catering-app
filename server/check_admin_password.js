@@ -9,14 +9,15 @@ const pool = new Pool({
 
 async function checkAdminPassword() {
     try {
-        const result = await pool.query('SELECT username, password_hash FROM users WHERE username = $1', ['admin']);
+        // Just get the first user to check what's currently in the DB
+        const result = await pool.query('SELECT username, password_hash FROM users LIMIT 1');
 
         if (result.rows.length > 0) {
             console.log('Current admin user in database:');
             console.log('Username:', result.rows[0].username);
             console.log('Password:', result.rows[0].password_hash);
         } else {
-            console.log('No admin user found in database');
+            console.log('No users found in database');
         }
 
         process.exit(0);

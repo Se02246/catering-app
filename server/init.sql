@@ -40,7 +40,5 @@ CREATE TABLE IF NOT EXISTS catering_items (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert default admin user (username: Barby)
-INSERT INTO users (username, password_hash) 
-VALUES ('Barby', '02101976Lai!') 
-ON CONFLICT (username) DO NOTHING;
+-- Initial Setup Complete
+-- To create an admin user, run the update script or insert manually via DB console.

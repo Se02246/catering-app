@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../services/api';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -13,13 +16,25 @@ const Login = () => {
         }
     }, [navigate]);
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        if (username === 'admin' && password === '160902Se!') {
-            localStorage.setItem('token', 'admin-token');
-            navigate('/admin');
-        } else {
-            alert('Credenziali non valide');
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const res = await api.login(username, password);
+            if (res.success) {
+                localStorage.setItem('token', res.token);
+                localStorage.setItem('username', res.user.username);
+                navigate('/admin');
+            } else {
+                setError('Credenziali non valide');
+            }
+        } catch (err) {
+            console.error(err);
+            setError(err.message || 'Errore durante il login');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -37,26 +52,52 @@ const Login = () => {
             </button>
             <div style={{ padding: '2rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-md)' }}>
                 <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>Admin Login</h1>
+                
+                {error && (
+                    <div style={{ 
+                        padding: '0.75rem', 
+                        backgroundColor: '#FEE2E2', 
+                        color: '#B91C1C', 
+                        borderRadius: '6px', 
+                        marginBottom: '1rem',
+                        fontSize: '0.9rem',
+                        textAlign: 'center'
+                    }}>
+                        {error}
+                    </div>
+                )}
+
                 <form onSubmit={handleLogin}>
                     <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Username</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Username</label>
                         <input
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            style={{ width: '100%', padding: '0.5rem' }}
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--color-border)' }}
+                            disabled={isLoading}
+                            required
                         />
                     </div>
                     <div style={{ marginBottom: '2rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Password</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Password</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            style={{ width: '100%', padding: '0.5rem' }}
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--color-border)' }}
+                            disabled={isLoading}
+                            required
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Accedi</button>
+                    <button 
+                        type="submit" 
+                        className="btn btn-primary" 
+                        style={{ width: '100%', padding: '0.75rem' }}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Accesso in corso...' : 'Accedi'}
+                    </button>
                 </form>
             </div>
         </div>

@@ -7,7 +7,21 @@ const pool = new Pool({
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
+/**
+ * Updates or creates an admin user based on environment variables.
+ * Usage: 
+ * 1. Set ADMIN_USERNAME and ADMIN_PASSWORD in your .env or server environment.
+ * 2. Run: node server/update_admin_password.js
+ */
 async function updateAdminPassword() {
+    const username = process.env.ADMIN_USERNAME;
+    const password = process.env.ADMIN_PASSWORD;
+
+    if (!username || !password) {
+        console.error('❌ Error: ADMIN_USERNAME and ADMIN_PASSWORD environment variables must be set.');
+        process.exit(1);
+    }
+
     try {
         // Check if users table exists
         const tableCheck = await pool.query(`
@@ -29,30 +43,23 @@ async function updateAdminPassword() {
             `);
         }
 
-        // We'll update any existing user to Barby or create Barby if none exists
-        // This ensures there's only one admin-level user
+        // We'll update the first user found or create a new one if the table is empty
         const userCheck = await pool.query('SELECT * FROM users LIMIT 1');
 
         if (userCheck.rows.length > 0) {
-            // Update existing user (regardless of current name) to Barby
             const currentId = userCheck.rows[0].id;
             await pool.query(
                 'UPDATE users SET username = $1, password_hash = $2 WHERE id = $3',
-                ['Barby', '02101976Lai!', currentId]
+                [username, password, currentId]
             );
-            console.log('✅ Admin credentials updated successfully to Barby');
+            console.log(`✅ Admin credentials updated successfully to: ${username}`);
         } else {
-            // Create Barby user
             await pool.query(
                 'INSERT INTO users (username, password_hash) VALUES ($1, $2)',
-                ['Barby', '02101976Lai!']
+                [username, password]
             );
-            console.log('✅ Admin user created successfully as Barby');
+            console.log(`✅ Admin user created successfully as: ${username}`);
         }
-
-        console.log('\nLogin credentials updated:');
-        console.log('Username: Barby');
-        console.log('Password: (hidden)');
 
         process.exit(0);
     } catch (error) {
