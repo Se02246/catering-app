@@ -164,7 +164,7 @@ const QuoteBuilder = () => {
                                 style={{
                                     animationDelay: `${index * 0.05}s`,
                                     padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem',
-                                    cursor: 'pointer', position: 'relative', overflow: 'hidden'
+                                    cursor: 'pointer', position: 'relative', overflow: 'visible'
                                 }}
                                 onClick={() => openProduct(p)}
                             >
