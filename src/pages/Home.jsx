@@ -21,20 +21,31 @@ const Home = () => {
     // Swipe to close logic for Package Modal
     const [packageDragY, setPackageDragY] = React.useState(0);
     const [isPackageDragging, setIsPackageDragging] = React.useState(false);
+    const [isPackageSwipingOut, setIsPackageSwipingOut] = React.useState(false);
     const packageTouchStartY = React.useRef(0);
+    const packageTouchStartX = React.useRef(0);
     const packageScrollAreaRef = React.useRef(null);
 
     const handlePackageTouchStart = (e) => {
         if (packageScrollAreaRef.current && packageScrollAreaRef.current.scrollTop <= 0) {
             packageTouchStartY.current = e.touches[0].clientY;
-            setIsPackageDragging(true);
+            packageTouchStartX.current = e.touches[0].clientX;
         }
     };
 
     const handlePackageTouchMove = (e) => {
-        if (!isPackageDragging) return;
         const currentY = e.touches[0].clientY;
+        const currentX = e.touches[0].clientX;
         const deltaY = currentY - packageTouchStartY.current;
+        const deltaX = Math.abs(currentX - packageTouchStartX.current);
+
+        if (!isPackageDragging) {
+            // Only start dragging if moving DOWN, at top, and movement is more VERTICAL than horizontal
+            if (deltaY > 10 && deltaY > deltaX && packageScrollAreaRef.current && packageScrollAreaRef.current.scrollTop <= 0) {
+                setIsPackageDragging(true);
+            }
+            return;
+        }
         
         if (deltaY > 0) {
             setPackageDragY(deltaY);
@@ -49,6 +60,7 @@ const Home = () => {
         if (!isPackageDragging) return;
         if (packageDragY > 150) {
             // "Throw" it down
+            setIsPackageSwipingOut(true);
             setPackageDragY(window.innerHeight);
             setTimeout(closePackage, 300);
         } else {
@@ -95,6 +107,7 @@ const Home = () => {
                 setTimeout(() => {
                     setSelectedPackage(null);
                     setIsPackageClosing(false);
+                    setIsPackageSwipingOut(false);
                 }, 500);
             }
         };
@@ -122,6 +135,7 @@ const Home = () => {
     const openPackage = (pkg) => {
         setPackageDragY(0);
         setIsPackageDragging(false);
+        setIsPackageSwipingOut(false);
         window.history.pushState({ modal: 'package' }, '');
         setSelectedPackage(pkg);
     };

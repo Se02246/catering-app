@@ -10,28 +10,33 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
     const scrollAreaRef = React.useRef(null);
     const [dragY, setDragY] = React.useState(0);
     const [isDragging, setIsDragging] = React.useState(false);
+    const [isSwipingOut, setIsSwipingOut] = React.useState(false);
     const touchStartY = React.useRef(0);
+    const touchStartX = React.useRef(0);
 
     // Reset drag state on mount
     React.useEffect(() => {
         setDragY(0);
         setIsDragging(false);
+        setIsSwipingOut(false);
     }, [product]);
 
     const handleTouchStart = (e) => {
         if (scrollAreaRef.current && scrollAreaRef.current.scrollTop <= 0) {
             touchStartY.current = e.touches[0].clientY;
-            // No setIsDragging(true) yet, wait for move to confirm direction
+            touchStartX.current = e.touches[0].clientX;
         }
     };
 
     const handleTouchMove = (e) => {
         const currentY = e.touches[0].clientY;
+        const currentX = e.touches[0].clientX;
         const deltaY = currentY - touchStartY.current;
+        const deltaX = Math.abs(currentX - touchStartX.current);
 
         if (!isDragging) {
-            // Only start dragging if we're moving DOWN and at the top
-            if (deltaY > 10 && scrollAreaRef.current && scrollAreaRef.current.scrollTop <= 0) {
+            // Only start dragging if moving DOWN, at the top, and movement is more VERTICAL than horizontal
+            if (deltaY > 10 && deltaY > deltaX && scrollAreaRef.current && scrollAreaRef.current.scrollTop <= 0) {
                 setIsDragging(true);
             }
             return;
@@ -50,6 +55,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
         if (!isDragging) return;
         if (dragY > 150) {
             // "Throw" it down
+            setIsSwipingOut(true);
             setDragY(window.innerHeight);
             setTimeout(onClose, 300);
         } else {
