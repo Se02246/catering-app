@@ -210,7 +210,7 @@ const Home = () => {
                         style={{ 
                             maxWidth: '1000px', 
                             padding: '0', 
-                            overflow: 'hidden', /* Disable main scroll to use independent ones */
+                            overflow: 'hidden',
                             background: 'var(--color-bg)',
                             maxHeight: '90vh',
                             display: 'flex',
@@ -323,90 +323,89 @@ const Home = () => {
                             overflowY: 'auto',
                             maxHeight: window.innerWidth > 768 ? '90vh' : 'auto'
                         }}>
-                                <div style={{ marginBottom: '2.5rem' }}>
-                                    <div className="dietary-badges" style={{ marginBottom: '0.75rem' }}>
-                                        {selectedPackage.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
-                                        {selectedPackage.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
-                                    </div>
-                                    <h2 style={{ fontSize: window.innerWidth > 768 ? '2.8rem' : '2rem', color: 'var(--color-primary-dark)', marginBottom: '1.5rem', lineHeight: '1.1' }}>
-                                        {selectedPackage.name}
-                                    </h2>
-                                    <div 
-                                        style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--color-text-muted)' }}
-                                        dangerouslySetInnerHTML={{ __html: formatCustomText(selectedPackage.description) }}
-                                    />
+                            <div style={{ marginBottom: '2.5rem' }}>
+                                <div className="dietary-badges" style={{ marginBottom: '0.75rem' }}>
+                                    {selectedPackage.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
+                                    {selectedPackage.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
                                 </div>
+                                <h2 style={{ fontSize: window.innerWidth > 768 ? '2.8rem' : '2rem', color: 'var(--color-primary-dark)', marginBottom: '1.5rem', lineHeight: '1.1' }}>
+                                    {selectedPackage.name}
+                                </h2>
+                                <div 
+                                    style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--color-text-muted)' }}
+                                    dangerouslySetInnerHTML={{ __html: formatCustomText(selectedPackage.description) }}
+                                />
+                            </div>
 
-                                <h3 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <div style={{ width: '30px', height: '2px', background: 'var(--color-accent)' }}></div>
-                                    Incluso nel pacchetto
-                                </h3>
-                                
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '3rem' }}>
-                                    {selectedPackage.items && selectedPackage.items.map((item, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="glass-panel"
-                                            style={{
-                                                padding: '1.2rem',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '1.2rem',
-                                                cursor: 'pointer',
-                                                borderRadius: 'var(--radius-md)',
-                                                border: '1px solid rgba(155, 57, 61, 0.05)',
-                                                transition: 'all 0.3s ease'
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                openProduct(item);
-                                            }}
-                                        >
-                                            <div style={{ width: '64px', height: '64px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
-                                                <img
-                                                    src={item.image_url || item.images?.[0] || 'https://placehold.co/100x100?text=Food'}
-                                                    alt={item.name}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                />
-                                            </div>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: '700', fontSize: '1.05rem', color: 'var(--color-text)' }}>{item.name}</div>
-                                                <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 800, marginTop: '0.2rem' }}>
-                                                    {item.is_sold_by_piece ? `${item.quantity} pezzi` : `${item.quantity} kg`}
-                                                </div>
-                                            </div>
-                                            <ChevronRight size={20} color="var(--color-accent-light)" />
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div style={{ 
-                                    padding: '2.5rem 0 1rem',
-                                    borderTop: '1px solid rgba(155, 57, 61, 0.1)',
-                                    display: 'flex', 
-                                    flexDirection: window.innerWidth > 768 ? 'row' : 'column',
-                                    justifyContent: 'space-between', 
-                                    alignItems: window.innerWidth > 768 ? 'center' : 'stretch',
-                                    gap: '1.5rem'
-                                }}>
-                                    <div className="price-container">
-                                        <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Totale Esperienza</span>
-                                        {selectedPackage.discount_percentage > 0 ? (
-                                            <span className="price-main price-discount" style={{ fontSize: '2.4rem' }}>
-                                                € {(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
-                                            </span>
-                                        ) : (
-                                            <span className="price-main" style={{ fontSize: '2.4rem' }}>€ {selectedPackage.total_price}</span>
-                                        )}
-                                    </div>
-                                    <button 
-                                        className="btn btn-primary" 
-                                        style={{ padding: '1.2rem 2.5rem', fontSize: '1.1rem' }} 
-                                        onClick={() => handleBookPackage(selectedPackage)}
+                            <h3 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <div style={{ width: '30px', height: '2px', background: 'var(--color-accent)' }}></div>
+                                Incluso nel pacchetto
+                            </h3>
+                            
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '3rem' }}>
+                                {selectedPackage.items && selectedPackage.items.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="glass-panel"
+                                        style={{
+                                            padding: '1.2rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '1.2rem',
+                                            cursor: 'pointer',
+                                            borderRadius: 'var(--radius-md)',
+                                            border: '1px solid rgba(155, 57, 61, 0.05)',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            openProduct(item);
+                                        }}
                                     >
-                                        Prenota Ora
-                                    </button>
+                                        <div style={{ width: '64px', height: '64px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                            <img
+                                                src={item.image_url || item.images?.[0] || 'https://placehold.co/100x100?text=Food'}
+                                                alt={item.name}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            />
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: '700', fontSize: '1.05rem', color: 'var(--color-text)' }}>{item.name}</div>
+                                            <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 800, marginTop: '0.2rem' }}>
+                                                {item.is_sold_by_piece ? `${item.quantity} pezzi` : `${item.quantity} kg`}
+                                            </div>
+                                        </div>
+                                        <ChevronRight size={20} color="var(--color-accent-light)" />
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div style={{ 
+                                padding: '2.5rem 0 1rem',
+                                borderTop: '1px solid rgba(155, 57, 61, 0.1)',
+                                display: 'flex', 
+                                flexDirection: window.innerWidth > 768 ? 'row' : 'column',
+                                justifyContent: 'space-between', 
+                                alignItems: window.innerWidth > 768 ? 'center' : 'stretch',
+                                gap: '1.5rem'
+                            }}>
+                                <div className="price-container">
+                                    <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Totale Esperienza</span>
+                                    {selectedPackage.discount_percentage > 0 ? (
+                                        <span className="price-main price-discount" style={{ fontSize: '2.4rem' }}>
+                                            € {(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
+                                        </span>
+                                    ) : (
+                                        <span className="price-main" style={{ fontSize: '2.4rem' }}>€ {selectedPackage.total_price}</span>
+                                    )}
                                 </div>
+                                <button 
+                                    className="btn btn-primary" 
+                                    style={{ padding: '1.2rem 2.5rem', fontSize: '1.1rem' }} 
+                                    onClick={() => handleBookPackage(selectedPackage)}
+                                >
+                                    Prenota Ora
+                                </button>
                             </div>
                         </div>
                     </div>
