@@ -1,7 +1,11 @@
 import React from 'react';
 import { formatCustomText } from '../../utils/textFormatting';
+import { useSetting } from '../../hooks/useData';
 
 const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
+    const { setting: showQuoteSetting, isLoading: isSettingLoading } = useSetting('show_quote_builder');
+    const showPrice = !isSettingLoading && showQuoteSetting?.value !== 'false';
+
     React.useEffect(() => {
         document.body.style.overflow = 'hidden';
         return () => {
@@ -115,20 +119,24 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                         dangerouslySetInnerHTML={{ __html: formatCustomText(product.description || 'Nessuna descrizione disponibile.') }}
                     />
                     <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-                        <div>
-                            <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Prezzo</span>
-                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
-                                {product.is_sold_by_piece
-                                    ? `€ ${product.price_per_piece} / pz`
-                                    : `€ ${product.price_per_kg} / kg`
-                                }
-                            </span>
-                        </div>
-                        {product.pieces_per_kg && !product.is_sold_by_piece && (
-                            <div>
-                                <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Pezzi per Kg</span>
-                                <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{product.pieces_per_kg}</span>
-                            </div>
+                        {showPrice && (
+                            <>
+                                <div>
+                                    <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Prezzo</span>
+                                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>
+                                        {product.is_sold_by_piece
+                                            ? `€ ${product.price_per_piece} / pz`
+                                            : `€ ${product.price_per_kg} / kg`
+                                        }
+                                    </span>
+                                </div>
+                                {product.pieces_per_kg && !product.is_sold_by_piece && (
+                                    <div>
+                                        <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Pezzi per Kg</span>
+                                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{product.pieces_per_kg}</span>
+                                    </div>
+                                )}
+                            </>
                         )}
                         {product.show_servings && product.servings_per_unit && (
                             <div>
