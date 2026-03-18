@@ -18,10 +18,12 @@ const Home = () => {
         const fetchPackages = async () => {
             try {
                 const data = await api.getCaterings();
-                const parsedData = data.map(pkg => ({
-                    ...pkg,
-                    images: pkg.images || (pkg.image_url ? [pkg.image_url] : [])
-                }));
+                const parsedData = data
+                    .filter(pkg => pkg.is_visible !== false)
+                    .map(pkg => ({
+                        ...pkg,
+                        images: pkg.images || (pkg.image_url ? [pkg.image_url] : [])
+                    }));
                 setPackages(parsedData);
             } catch (err) {
                 console.error('Error fetching packages:', err);

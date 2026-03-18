@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
-import { Trash2, Plus, Save, Pencil, Minus, ArrowUp, ArrowDown } from 'lucide-react';
+import { Trash2, Plus, Save, Pencil, Minus, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 
 const PackageBuilder = () => {
@@ -10,6 +10,7 @@ const PackageBuilder = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [discountedPriceInput, setDiscountedPriceInput] = useState('');
+    const [visibilityModal, setVisibilityModal] = useState({ isOpen: false, item: null, hideType: 'now', hideDate: '' });
 
     // New Package State
     const [newPackage, setNewPackage] = useState({
@@ -21,7 +22,9 @@ const PackageBuilder = () => {
         discount_percentage: 0,
         items: [], // { product_id, quantity, tempId }
         is_gluten_free: false,
-        is_lactose_free: false
+        is_lactose_free: false,
+        is_visible: true,
+        hide_at: null
     });
 
 
@@ -90,7 +93,7 @@ const PackageBuilder = () => {
             }
             setIsCreating(false);
             setEditingId(null);
-            setNewPackage({ name: '', description: '', image_url: '', total_price: 0, discount_percentage: 0, items: [] });
+            setNewPackage({ name: '', description: '', image_url: '', total_price: 0, discount_percentage: 0, items: [], is_visible: true, hide_at: null });
             setDiscountedPriceInput('');
             loadData();
         } catch {
@@ -112,9 +115,54 @@ const PackageBuilder = () => {
             discount_percentage: parseFloat(pkg.discount_percentage) || 0,
             items: pkg.items.map(i => ({ ...i, tempId: Date.now() + Math.random() })),
             is_gluten_free: pkg.is_gluten_free || false,
-            is_lactose_free: pkg.is_lactose_free || false
+            is_lactose_free: pkg.is_lactose_free || false,
+            is_visible: pkg.is_visible !== undefined ? pkg.is_visible : true,
+            hide_at: pkg.hide_at || null
         });
         setIsCreating(true);
+    };
+
+    const toggleVisibility = async (pkg) => {
+        if (pkg.is_visible !== false) {
+            setVisibilityModal({
+                isOpen: true,
+                item: pkg,
+                hideType: 'now',
+                hideDate: ''
+            });
+        } else {
+            try {
+                const itemsForApi = pkg.items.map(i => ({ product_id: i.product_id, quantity: i.quantity }));
+                await api.updateCatering(pkg.id, { ...pkg, is_visible: true, hide_at: null, items: itemsForApi });
+                loadData();
+            } catch (err) {
+                console.error('Failed to toggle visibility', err);
+                alert('Errore durante il cambio visibilità');
+            }
+        }
+    };
+
+    const handleConfirmVisibility = async () => {
+        const { item, hideType, hideDate } = visibilityModal;
+        try {
+            const itemsForApi = item.items.map(i => ({ product_id: i.product_id, quantity: i.quantity }));
+            const updateData = { ...item, items: itemsForApi };
+            
+            if (hideType === 'now') {
+                updateData.is_visible = false;
+                updateData.hide_at = null;
+            } else {
+                updateData.is_visible = true;
+                updateData.hide_at = new Date(hideDate).toISOString();
+            }
+
+            await api.updateCatering(item.id, updateData);
+            setVisibilityModal({ isOpen: false, item: null, hideType: 'now', hideDate: '' });
+            loadData();
+        } catch (err) {
+            console.error('Failed to update visibility', err);
+            alert('Errore durante il salvataggio');
+        }
     };
 
     const handleDelete = async (id) => {
@@ -352,7 +400,17 @@ const PackageBuilder = () => {
                                         placeholder="Breve descrizione..."
                                     />
 
-                                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <input
+                                                type="checkbox"
+                                                id="pkg_visible"
+                                                checked={newPackage.is_visible !== false}
+                                                onChange={e => setNewPackage({ ...newPackage, is_visible: e.target.checked })}
+                                                style={{ marginRight: '0.5rem' }}
+                                            />
+                                            <label htmlFor="pkg_visible" style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Visibile nella Home</label>
+                                        </div>
                                         <div style={{ display: 'flex', alignItems: 'center' }}>
                                             <input
                                                 type="checkbox"
@@ -478,9 +536,13 @@ const PackageBuilder = () => {
                 {packages.map((pkg, index) => (
                     <div key={pkg.id} style={{
                         padding: '1.5rem', backgroundColor: 'white', borderRadius: '8px', boxShadow: 'var(--shadow-md)',
-                        display: 'flex', flexDirection: 'column', position: 'relative'
+                        display: 'flex', flexDirection: 'column', position: 'relative',
+                        opacity: pkg.is_visible === false ? 0.6 : 1
                     }}>
                         <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '0.25rem', zIndex: 10 }}>
+                            <button className="btn btn-outline" style={{ padding: '0.25rem' }} onClick={() => toggleVisibility(pkg)} title={pkg.is_visible !== false ? "Nascondi" : "Mostra"}>
+                                {pkg.is_visible !== false ? <Eye size={16} /> : <EyeOff size={16} />}
+                            </button>
                             <button
                                 className="btn btn-outline"
                                 style={{
@@ -509,7 +571,10 @@ const PackageBuilder = () => {
                             </button>
                         </div>
                         {pkg.image_url && <img src={pkg.image_url} alt={pkg.name} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '4px', marginBottom: '1rem' }} />}
-                        <h3 style={{ marginBottom: '0.5rem' }}>{pkg.name}</h3>
+                        <h3 style={{ marginBottom: '0.5rem' }}>
+                            {pkg.name}
+                            {pkg.is_visible === false && <span style={{ fontSize: '0.8rem', color: 'red', marginLeft: '0.5rem' }}>(Nascosto)</span>}
+                        </h3>
                         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
                             {pkg.is_gluten_free && (
                                 <span style={{ color: '#FF9800', fontSize: '0.8rem', fontWeight: 'bold' }}>
@@ -564,6 +629,66 @@ const PackageBuilder = () => {
                     </div>
                 ))}
             </div>
+
+            {visibilityModal.isOpen && (
+                <div className="modal-overlay" style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2100
+                }}>
+                    <div className="modal-content" style={{ maxWidth: '400px', width: '90%' }}>
+                        <h3>Pianifica Visibilità</h3>
+                        <p style={{ marginBottom: '1.5rem' }}>Come vuoi nascondere <strong>{visibilityModal.item?.name}</strong>?</p>
+                        
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '0.5rem' }}>
+                                <input
+                                    type="radio"
+                                    name="hideTypePkg"
+                                    checked={visibilityModal.hideType === 'now'}
+                                    onChange={() => setVisibilityModal({ ...visibilityModal, hideType: 'now' })}
+                                    style={{ marginRight: '0.5rem' }}
+                                />
+                                Nascondi ora
+                            </label>
+                            
+                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="hideTypePkg"
+                                    checked={visibilityModal.hideType === 'date'}
+                                    onChange={() => setVisibilityModal({ ...visibilityModal, hideType: 'date' })}
+                                    style={{ marginRight: '0.5rem' }}
+                                />
+                                Nascondi il...
+                            </label>
+                        </div>
+
+                        {visibilityModal.hideType === 'date' && (
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <input
+                                    type="datetime-local"
+                                    className="form-control"
+                                    style={{ width: '100%', padding: '0.5rem' }}
+                                    value={visibilityModal.hideDate}
+                                    onChange={(e) => setVisibilityModal({ ...visibilityModal, hideDate: e.target.value })}
+                                    min={new Date().toISOString().slice(0, 16)}
+                                />
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                            <button className="btn btn-outline" onClick={() => setVisibilityModal({ isOpen: false, item: null, hideType: 'now', hideDate: '' })}>Annulla</button>
+                            <button 
+                                className="btn btn-primary" 
+                                onClick={handleConfirmVisibility}
+                                disabled={visibilityModal.hideType === 'date' && !visibilityModal.hideDate}
+                            >
+                                Conferma
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

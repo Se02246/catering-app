@@ -6,7 +6,8 @@ import ImageUpload from '../Common/ImageUpload';
 const ProductManager = () => {
     const [products, setProducts] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', images: [], is_visible: true, allow_multiple: false, order_increment: '', max_order_quantity: '', is_sold_by_piece: false, price_per_piece: '' });
+    const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', images: [], is_visible: true, allow_multiple: false, order_increment: '', max_order_quantity: '', is_sold_by_piece: false, price_per_piece: '', hide_at: null });
+    const [visibilityModal, setVisibilityModal] = useState({ isOpen: false, item: null, hideType: 'now', hideDate: '' });
 
     useEffect(() => {
         loadProducts();
@@ -26,7 +27,8 @@ const ProductManager = () => {
             name: '', description: '', price_per_kg: '', image_url: '', images: [],
             pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
             show_servings: false, servings_per_unit: '', is_visible: true, allow_multiple: false,
-            is_gluten_free: false, is_lactose_free: false, is_sold_by_piece: false, price_per_piece: ''
+            is_gluten_free: false, is_lactose_free: false, is_sold_by_piece: false, price_per_piece: '',
+            hide_at: null
         });
     };
 
@@ -47,7 +49,8 @@ const ProductManager = () => {
                 is_gluten_free: currentProduct.is_gluten_free || false,
                 is_lactose_free: currentProduct.is_lactose_free || false,
                 is_sold_by_piece: currentProduct.is_sold_by_piece || false,
-                price_per_piece: currentProduct.price_per_piece ? parseFloat(currentProduct.price_per_piece) : null
+                price_per_piece: currentProduct.price_per_piece ? parseFloat(currentProduct.price_per_piece) : null,
+                hide_at: currentProduct.hide_at
             };
 
             if (currentProduct.id) {
@@ -72,12 +75,44 @@ const ProductManager = () => {
     };
 
     const toggleVisibility = async (product) => {
+        if (product.is_visible !== false) {
+            // Opening hide options modal
+            setVisibilityModal({
+                isOpen: true,
+                item: product,
+                hideType: 'now',
+                hideDate: ''
+            });
+        } else {
+            // Show immediately if it was hidden
+            try {
+                await api.updateProduct(product.id, { ...product, is_visible: true, hide_at: null });
+                loadProducts();
+            } catch (err) {
+                console.error('Failed to toggle visibility', err);
+                alert('Errore durante l\'aggiornamento della visibilità');
+            }
+        }
+    };
+
+    const handleConfirmVisibility = async () => {
+        const { item, hideType, hideDate } = visibilityModal;
         try {
-            await api.updateProduct(product.id, { ...product, is_visible: !product.is_visible });
+            const updateData = { ...item };
+            if (hideType === 'now') {
+                updateData.is_visible = false;
+                updateData.hide_at = null;
+            } else {
+                updateData.is_visible = true; // Keep visible until date
+                updateData.hide_at = new Date(hideDate).toISOString();
+            }
+
+            await api.updateProduct(item.id, updateData);
+            setVisibilityModal({ isOpen: false, item: null, hideType: 'now', hideDate: '' });
             loadProducts();
         } catch (err) {
-            console.error('Failed to toggle visibility', err);
-            alert('Errore durante l\'aggiornamento della visibilità');
+            console.error('Failed to update visibility', err);
+            alert('Errore durante il salvataggio');
         }
     };
 
@@ -335,6 +370,66 @@ const ProductManager = () => {
                     </div>
                 ))}
             </div>
+
+            {visibilityModal.isOpen && (
+                <div className="modal-overlay" style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1100
+                }}>
+                    <div className="modal-content" style={{ maxWidth: '400px', width: '90%' }}>
+                        <h3>Pianifica Visibilità</h3>
+                        <p style={{ marginBottom: '1.5rem' }}>Come vuoi nascondere <strong>{visibilityModal.item?.name}</strong>?</p>
+                        
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '0.5rem' }}>
+                                <input
+                                    type="radio"
+                                    name="hideType"
+                                    checked={visibilityModal.hideType === 'now'}
+                                    onChange={() => setVisibilityModal({ ...visibilityModal, hideType: 'now' })}
+                                    style={{ marginRight: '0.5rem' }}
+                                />
+                                Nascondi ora
+                            </label>
+                            
+                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="hideType"
+                                    checked={visibilityModal.hideType === 'date'}
+                                    onChange={() => setVisibilityModal({ ...visibilityModal, hideType: 'date' })}
+                                    style={{ marginRight: '0.5rem' }}
+                                />
+                                Nascondi il...
+                            </label>
+                        </div>
+
+                        {visibilityModal.hideType === 'date' && (
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <input
+                                    type="datetime-local"
+                                    className="form-control"
+                                    style={{ width: '100%', padding: '0.5rem' }}
+                                    value={visibilityModal.hideDate}
+                                    onChange={(e) => setVisibilityModal({ ...visibilityModal, hideDate: e.target.value })}
+                                    min={new Date().toISOString().slice(0, 16)}
+                                />
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                            <button className="btn btn-outline" onClick={() => setVisibilityModal({ isOpen: false, item: null, hideType: 'now', hideDate: '' })}>Annulla</button>
+                            <button 
+                                className="btn btn-primary" 
+                                onClick={handleConfirmVisibility}
+                                disabled={visibilityModal.hideType === 'date' && !visibilityModal.hideDate}
+                            >
+                                Conferma
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
