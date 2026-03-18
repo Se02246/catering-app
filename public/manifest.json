@@ -1,6 +1,6 @@
 {
-    "name": "Catering App",
-    "short_name": "Catering",
+    "name": "Muse Catering",
+    "short_name": "Muse Catering",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#F9F7F2",
