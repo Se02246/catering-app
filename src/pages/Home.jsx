@@ -29,7 +29,7 @@ const Home = () => {
     }, [caterings]);
 
     React.useEffect(() => {
-        if (selectedPackage) {
+        if (selectedPackage || selectedProduct) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -37,7 +37,7 @@ const Home = () => {
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [selectedPackage]);
+    }, [selectedPackage, selectedProduct]);
 
     React.useEffect(() => {
         const handlePopState = (event) => {
@@ -145,11 +145,6 @@ const Home = () => {
                                     style={{ animationDelay: `${index * 0.1}s` }}
                                 >
                                     <div className="image-wrapper" onClick={() => openPackage(pkg)} style={{ cursor: 'pointer' }}>
-                                        {pkg.hide_at && (
-                                            <div className="package-badge" style={{ top: '-10px', right: '-10px' }}>
-                                                <Calendar size={14} /> Disponibile fino al {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
-                                            </div>
-                                        )}
                                         <img
                                             src={pkg.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
                                             alt={pkg.name}
@@ -157,6 +152,13 @@ const Home = () => {
                                             className="card-hover-img"
                                         />
                                     </div>
+                                    
+                                    {/* Badge outside image-wrapper to avoid overflow clipping */}
+                                    {pkg.hide_at && (
+                                        <div className="package-badge" style={{ top: '-10px', right: '-10px' }}>
+                                            <Calendar size={14} /> Disponibile fino al {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
+                                        </div>
+                                    )}
 
                                     <div className="card-body">
                                         <div className="dietary-badges" style={{ marginBottom: '1rem' }}>
@@ -203,226 +205,30 @@ const Home = () => {
             </section>
 
             {selectedPackage && (
-                <div className="modal-overlay" onClick={closePackage}>
-                    <div
-                        className={`modal-content ${isPackageClosing ? 'bounce-out' : 'bounce-in'}`}
+                <div className="modal-overlay" onClick={closePackage} style={{ zIndex: 3000 }}>
+                    <div 
+                        style={{ position: 'relative', width: '100%', maxWidth: '800px', margin: 'auto' }}
                         onClick={e => e.stopPropagation()}
-                        style={{ 
-                            maxWidth: window.innerWidth > 768 ? '1000px' : '650px', 
-                            padding: '0'
-                        }}
                     >
-                        {window.innerWidth > 768 ? (
-                            /* Desktop View: Side-by-Side with Fixed Image */
-                            <div style={{ display: 'flex', flexDirection: 'row', overflow: 'hidden', borderRadius: 'var(--radius-xl)' }}>
-                                {/* Left Side: Image Gallery - FIXED ASPECT */}
-                                <div style={{ 
-                                    width: '45%', 
-                                    aspectRatio: '4/5',
-                                    position: 'relative',
-                                    background: '#1A1515', 
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    overflow: 'visible', /* allow badge to protrude from this container */
-                                    flexShrink: 0
-                                }}>
-                                    <div 
-                                        onScroll={handleGalleryScroll}
-                                        style={{
-                                            display: 'flex',
-                                            overflowX: 'auto',
-                                            scrollSnapType: 'x mandatory',
-                                            width: '100%',
-                                            height: '100%',
-                                            scrollbarWidth: 'none',
-                                            WebkitOverflowScrolling: 'touch',
-                                            borderRadius: 'var(--radius-xl) 0 0 var(--radius-xl)'
-                                        }}
-                                    >
-                                        {selectedPackage.images && selectedPackage.images.length > 0 ? (
-                                            selectedPackage.images.map((img, idx) => (
-                                                <div key={idx} style={{ 
-                                                    minWidth: '100%', 
-                                                    height: '100%', 
-                                                    scrollSnapAlign: 'start',
-                                                    scrollSnapStop: 'always'
-                                                }}>
-                                                    <img
-                                                        src={img}
-                                                        alt={`${selectedPackage.name} ${idx + 1}`}
-                                                        style={{ 
-                                                            width: '100%', 
-                                                            height: '100%', 
-                                                            objectFit: 'cover',
-                                                            display: 'block'
-                                                        }}
-                                                    />
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div style={{ width: '100%', height: '100%' }}>
-                                                <img
-                                                    src={selectedPackage.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
-                                                    alt={selectedPackage.name}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Instagram-style Pagination Dots */}
-                                    {selectedPackage.images?.length > 1 && (
-                                        <div style={{
-                                            position: 'absolute',
-                                            bottom: '1rem',
-                                            left: '50%',
-                                            transform: 'translateX(-50%)',
-                                            display: 'flex',
-                                            gap: '6px',
-                                            zIndex: 5,
-                                            padding: '6px 10px',
-                                            background: 'rgba(0,0,0,0.3)',
-                                            borderRadius: '20px',
-                                            backdropFilter: 'blur(4px)'
-                                        }}>
-                                            {selectedPackage.images.map((_, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    style={{
-                                                        width: activeImageIndex === idx ? '8px' : '6px',
-                                                        height: activeImageIndex === idx ? '8px' : '6px',
-                                                        borderRadius: '50%',
-                                                        background: activeImageIndex === idx ? 'white' : 'rgba(255,255,255,0.5)',
-                                                        transition: 'all 0.2s ease'
-                                                    }}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-                                    
-                                    <button 
-                                        onClick={closePackage}
-                                        style={{
-                                            position: 'absolute', top: '1.5rem', left: '1.5rem',
-                                            background: 'rgba(255,255,255,0.9)', border: 'none',
-                                            width: '40px', height: '40px', borderRadius: '50%',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            cursor: 'pointer', zIndex: 10, boxShadow: 'var(--shadow-md)'
-                                        }}
-                                    >
-                                        <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} />
-                                    </button>
-
-                                    {selectedPackage.hide_at && (
-                                        <div className="package-badge" style={{ top: '-10px', right: '-10px' }}>
-                                            <Calendar size={14} /> Disponibile fino al {new Date(selectedPackage.hide_at).toLocaleDateString('it-IT')}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Right Side: Content - SCROLLABLE on Desktop */}
-                                <div className="modal-scroll-area" style={{ width: '55%', padding: '3.5rem', background: 'var(--color-bg)' }}>
-                                    <div style={{ marginBottom: '2.5rem' }}>
-                                        <div className="dietary-badges" style={{ marginBottom: '0.75rem' }}>
-                                            {selectedPackage.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
-                                            {selectedPackage.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
-                                        </div>
-                                        <h2 style={{ fontSize: '2.8rem', color: 'var(--color-primary-dark)', marginBottom: '1.5rem', lineHeight: '1.1' }}>
-                                            {selectedPackage.name}
-                                        </h2>
-                                        <div 
-                                            style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--color-text-muted)' }}
-                                            dangerouslySetInnerHTML={{ __html: formatCustomText(selectedPackage.description) }}
-                                        />
-                                    </div>
-
-                                    <h3 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <div style={{ width: '30px', height: '2px', background: 'var(--color-accent)' }}></div>
-                                        Incluso nel pacchetto
-                                    </h3>
-                                    
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '3rem' }}>
-                                        {selectedPackage.items && selectedPackage.items.map((item, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="glass-panel"
-                                                style={{
-                                                    padding: '1.2rem',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '1.2rem',
-                                                    cursor: 'pointer',
-                                                    borderRadius: 'var(--radius-md)',
-                                                    border: '1px solid rgba(155, 57, 61, 0.05)',
-                                                    transition: 'all 0.3s ease'
-                                                }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    openProduct(item);
-                                                }}
-                                            >
-                                                <div style={{ width: '64px', height: '64px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
-                                                    <img
-                                                        src={item.image_url || item.images?.[0] || 'https://placehold.co/100x100?text=Food'}
-                                                        alt={item.name}
-                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                    />
-                                                </div>
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontWeight: '700', fontSize: '1.05rem', color: 'var(--color-text)' }}>{item.name}</div>
-                                                    <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 800, marginTop: '0.2rem' }}>
-                                                        {item.is_sold_by_piece ? `${item.quantity} pezzi` : `${item.quantity} kg`}
-                                                    </div>
-                                                </div>
-                                                <ChevronRight size={20} color="var(--color-accent-light)" />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div style={{ 
-                                        padding: '2.5rem 0 1rem',
-                                        borderTop: '1px solid rgba(155, 57, 61, 0.1)',
-                                        display: 'flex', 
-                                        justifyContent: 'space-between', 
-                                        alignItems: 'center',
-                                        gap: '1.5rem'
-                                    }}>
-                                        <div className="price-container">
-                                            <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Totale Esperienza</span>
-                                            {selectedPackage.discount_percentage > 0 ? (
-                                                <span className="price-main price-discount" style={{ fontSize: '2.4rem' }}>
-                                                    € {(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
-                                                </span>
-                                            ) : (
-                                                <span className="price-main" style={{ fontSize: '2.4rem' }}>€ {selectedPackage.total_price}</span>
-                                            )}
-                                        </div>
-                                        <button 
-                                            className="btn btn-primary" 
-                                            style={{ padding: '1.2rem 2.5rem', fontSize: '1.1rem' }} 
-                                            onClick={() => handleBookPackage(selectedPackage)}
-                                        >
-                                            Prenota Ora
-                                        </button>
-                                    </div>
-                                </div>
+                        {/* Package Badge outside modal-content to prevent clipping */}
+                        {selectedPackage.hide_at && (
+                            <div className="package-badge" style={{ 
+                                top: '-12px', 
+                                right: '-12px',
+                                zIndex: 3010,
+                                position: 'absolute'
+                            }}>
+                                <Calendar size={14} /> Disponibile fino al {new Date(selectedPackage.hide_at).toLocaleDateString('it-IT')}
                             </div>
-                        ) : (
-                            /* Mobile View: Vertical Layout (like ProductDetailsModal) */
-                            <div className="modal-scroll-area" style={{ background: 'var(--color-bg)' }}>
-                                {/* Image Gallery Section */}
-                                <div style={{ 
-                                    position: 'relative', 
-                                    aspectRatio: '4/5',
-                                    background: '#1A1515', 
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    overflow: 'hidden',
-                                    flexShrink: 0,
-                                    borderRadius: 'var(--radius-xl)'
-                                }}>
+                        )}
+
+                        <div
+                            className={`modal-content ${isPackageClosing ? 'bounce-out' : 'bounce-in'}`}
+                            style={{ width: '100%', maxWidth: '800px', padding: '0', overflow: 'visible' }}
+                        >
+                            <div className="modal-scroll-area">
+                                {/* Left Side: Image Gallery */}
+                                <div className="package-modal-image-side" style={{ width: '100%', position: 'relative' }}>
                                     <div 
                                         onScroll={handleGalleryScroll}
                                         style={{
@@ -495,114 +301,113 @@ const Home = () => {
                                             ))}
                                         </div>
                                     )}
-
                                     <button 
                                         onClick={closePackage}
                                         style={{
                                             position: 'absolute', top: '1rem', left: '1rem',
                                             background: 'rgba(255,255,255,0.9)', border: 'none',
-                                            width: '36px', height: '36px', borderRadius: '50%',
+                                            width: '40px', height: '40px', borderRadius: '50%',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            cursor: 'pointer', zIndex: 100, backdropFilter: 'blur(4px)',
-                                            boxShadow: 'var(--shadow-sm)'
+                                            cursor: 'pointer', zIndex: 10, boxShadow: 'var(--shadow-md)',
+                                            backdropFilter: 'blur(4px)'
                                         }}
                                     >
-                                        <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} />
+                                        <ChevronLeft size={24} />
                                     </button>
-
-                                    {selectedPackage.hide_at && (
-                                        <div className="package-badge" style={{ top: '-10px', right: '-10px' }}>
-                                            <Calendar size={14} /> Disponibile fino al {new Date(selectedPackage.hide_at).toLocaleDateString('it-IT')}
-                                        </div>
-                                    )}
                                 </div>
 
-                                {/* Content Section */}
-                                <div style={{ padding: '1.5rem' }}>
-                                    <div style={{ marginBottom: '1.5rem' }}>
-                                        <div className="dietary-badges" style={{ marginBottom: '0.75rem' }}>
-                                            {selectedPackage.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
-                                            {selectedPackage.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
-                                        </div>
-                                        <h2 style={{ fontSize: '2rem', color: 'var(--color-primary-dark)', marginBottom: '1rem', lineHeight: '1.1' }}>
-                                            {selectedPackage.name}
-                                        </h2>
-                                        <div 
-                                            style={{ fontSize: '1rem', lineHeight: '1.7', color: 'var(--color-text-muted)' }}
-                                            dangerouslySetInnerHTML={{ __html: formatCustomText(selectedPackage.description) }}
-                                        />
-                                    </div>
-
-                                    <h3 style={{ fontSize: '1.3rem', marginBottom: '1.2rem', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <div style={{ width: '25px', height: '2px', background: 'var(--color-accent)' }}></div>
-                                        Incluso nel pacchetto
-                                    </h3>
-                                    
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.8rem', marginBottom: '2.5rem' }}>
-                                        {selectedPackage.items && selectedPackage.items.map((item, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="glass-panel"
-                                                style={{
-                                                    padding: '1rem',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '1rem',
-                                                    cursor: 'pointer',
-                                                    borderRadius: 'var(--radius-md)',
-                                                    border: '1px solid rgba(155, 57, 61, 0.05)'
-                                                }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    openProduct(item);
-                                                }}
-                                            >
-                                                <div style={{ width: '56px', height: '56px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0 }}>
-                                                    <img
-                                                        src={item.image_url || item.images?.[0] || 'https://placehold.co/100x100?text=Food'}
-                                                        alt={item.name}
-                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                    />
-                                                </div>
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>{item.name}</div>
-                                                    <div style={{ fontSize: '0.85rem', color: 'var(--color-accent)', fontWeight: 800 }}>
-                                                        {item.is_sold_by_piece ? `${item.quantity} pezzi` : `${item.quantity} kg`}
-                                                    </div>
-                                                </div>
-                                                <ChevronRight size={18} color="var(--color-accent-light)" />
+                                {/* Right Side: Content */}
+                                <div className="package-modal-content-side" style={{ width: '100%', background: 'var(--color-bg)' }}>
+                                    <div style={{ padding: window.innerWidth > 768 ? '2.5rem' : '1.5rem' }}>
+                                        <div style={{ marginBottom: '2rem' }}>
+                                            <div className="dietary-badges" style={{ marginBottom: '0.75rem' }}>
+                                                {selectedPackage.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
+                                                {selectedPackage.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
                                             </div>
-                                        ))}
-                                    </div>
-
-                                    <div style={{ 
-                                        padding: '2rem 0 0.5rem',
-                                        borderTop: '1px solid rgba(155, 57, 61, 0.1)',
-                                        display: 'flex', 
-                                        flexDirection: 'column',
-                                        gap: '1.2rem'
-                                    }}>
-                                        <div className="price-container" style={{ textAlign: 'center' }}>
-                                            <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Totale Esperienza</span>
-                                            {selectedPackage.discount_percentage > 0 ? (
-                                                <span className="price-main price-discount" style={{ fontSize: '2.2rem' }}>
-                                                    € {(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
-                                                </span>
-                                            ) : (
-                                                <span className="price-main" style={{ fontSize: '2.2rem' }}>€ {selectedPackage.total_price}</span>
-                                            )}
+                                            <h2 style={{ fontSize: window.innerWidth > 768 ? '2.2rem' : '1.8rem', color: 'var(--color-primary-dark)', marginBottom: '1.2rem', lineHeight: '1.1' }}>
+                                                {selectedPackage.name}
+                                            </h2>
+                                            <div 
+                                                style={{ fontSize: '1.05rem', lineHeight: '1.7', color: 'var(--color-text-muted)' }}
+                                                dangerouslySetInnerHTML={{ __html: formatCustomText(selectedPackage.description) }}
+                                            />
                                         </div>
-                                        <button 
-                                            className="btn btn-primary" 
-                                            style={{ width: '100%', padding: '1.1rem', fontSize: '1.1rem' }} 
-                                            onClick={() => handleBookPackage(selectedPackage)}
-                                        >
-                                            Prenota Ora
-                                        </button>
+
+                                        <h3 style={{ fontSize: '1.3rem', marginBottom: '1.2rem', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <div style={{ width: '25px', height: '2px', background: 'var(--color-accent)' }}></div>
+                                            Incluso nel pacchetto
+                                        </h3>
+                                        
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '2.5rem' }}>
+                                            {selectedPackage.items && selectedPackage.items.map((item, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="glass-panel"
+                                                    style={{
+                                                        padding: '1.2rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '1.2rem',
+                                                        cursor: 'pointer',
+                                                        borderRadius: 'var(--radius-md)',
+                                                        border: '1px solid rgba(155, 57, 61, 0.05)',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        openProduct(item);
+                                                    }}
+                                                >
+                                                    <div style={{ width: '64px', height: '64px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                                        <img
+                                                            src={item.image_url || item.images?.[0] || 'https://placehold.co/100x100?text=Food'}
+                                                            alt={item.name}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        />
+                                                    </div>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: '700', fontSize: '1.05rem', color: 'var(--color-text)' }}>{item.name}</div>
+                                                        <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 800, marginTop: '0.2rem' }}>
+                                                            {item.is_sold_by_piece ? `${item.quantity} pezzi` : `${item.quantity} kg`}
+                                                        </div>
+                                                    </div>
+                                                    <ChevronRight size={20} color="var(--color-accent-light)" />
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div style={{ 
+                                            padding: '2rem 0 0.5rem',
+                                            borderTop: '1px solid rgba(155, 57, 61, 0.1)',
+                                            display: 'flex', 
+                                            flexDirection: 'column',
+                                            gap: '1.2rem'
+                                        }}>
+                                            <div className="price-container" style={{ textAlign: 'center' }}>
+                                                <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Totale Esperienza</span>
+                                                {selectedPackage.discount_percentage > 0 ? (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1.2rem' }}>€ {selectedPackage.total_price}</span>
+                                                        <span className="price-main price-discount" style={{ fontSize: '2.4rem' }}>
+                                                            € {(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="price-main" style={{ fontSize: '2.4rem' }}>€ {selectedPackage.total_price}</span>
+                                                )}
+                                            </div>
+                                            <button 
+                                                className="btn btn-primary" 
+                                                style={{ padding: '1.2rem', fontSize: '1.1rem' }} 
+                                                onClick={() => handleBookPackage(selectedPackage)}
+                                            >
+                                                Prenota Ora
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             )}

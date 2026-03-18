@@ -32,13 +32,28 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
 
     return (
         <div className="modal-overlay" onClick={onClose} style={{ zIndex: 3000 }}>
-            <div
-                className={`modal-content ${isClosing ? 'bounce-out' : 'bounce-in'}`}
+            <div 
+                style={{ position: 'relative', width: '100%', maxWidth: '600px', margin: 'auto' }}
                 onClick={e => e.stopPropagation()}
-                style={{ maxWidth: '600px', padding: '0' }}
             >
-                {/* Scrollable Area */}
-                <div className="modal-scroll-area">
+                {/* Package Badge outside modal-content to prevent clipping */}
+                {product.hide_at && (
+                    <div className="package-badge" style={{ 
+                        top: '-12px', 
+                        right: '-12px',
+                        zIndex: 3010,
+                        position: 'absolute'
+                    }}>
+                        <Calendar size={14} /> Disponibile fino al {new Date(product.hide_at).toLocaleDateString('it-IT')}
+                    </div>
+                )}
+
+                <div
+                    className={`modal-content ${isClosing ? 'bounce-out' : 'bounce-in'}`}
+                    style={{ width: '100%', maxWidth: '600px', padding: '0', overflow: 'visible' }}
+                >
+                    {/* Scrollable Area */}
+                    <div className="modal-scroll-area">
                     {/* Back Button */}
                     <button 
                         onClick={onClose}
@@ -137,12 +152,6 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                                             }}
                                         />
                                     ))}
-                                </div>
-                            )}
-                            
-                            {product.hide_at && (
-                                <div className="package-badge" style={{ top: '-10px', right: '-10px' }}>
-                                    <Calendar size={14} /> Disponibile fino al {new Date(product.hide_at).toLocaleDateString('it-IT')}
                                 </div>
                             )}
                         </div>
