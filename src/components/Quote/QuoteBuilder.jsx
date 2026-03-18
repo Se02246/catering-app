@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Info, Search } from 'lucide-react';
+import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Info, Search, Calendar } from 'lucide-react';
 import ProductDetailsModal from '../Common/ProductDetailsModal';
 import { formatCustomText } from '../../utils/textFormatting';
 
