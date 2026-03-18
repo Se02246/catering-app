@@ -276,7 +276,13 @@ const Home = () => {
                     style={{ zIndex: 3000 }}
                 >
                     <div 
-                        style={{ position: 'relative', width: '100%', maxWidth: '800px', margin: 'auto' }}
+                        style={{ 
+                            position: 'relative', 
+                            width: '100%', 
+                            maxWidth: '800px', 
+                            margin: 'auto',
+                            touchAction: 'none'
+                        }}
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Package Badge outside modal-content to prevent clipping */}
@@ -288,7 +294,8 @@ const Home = () => {
                                     right: '-5px',
                                     zIndex: 3010,
                                     position: 'absolute',
-                                    opacity: isPackageDragging ? 1 - (packageDragY / 200) : (isPackageClosing ? 0 : 1)
+                                    opacity: isPackageDragging ? 1 - (packageDragY / 200) : (isPackageClosing ? 0 : 1),
+                                    transform: packageDragY > 0 ? `translate3d(0, ${packageDragY}px, 0)` : 'none'
                                 }}
                             >
                                 <Calendar size={14} /> Disponibile fino al {new Date(selectedPackage.hide_at).toLocaleDateString('it-IT')}
@@ -302,8 +309,9 @@ const Home = () => {
                                 maxWidth: '800px', 
                                 padding: '0', 
                                 overflow: 'hidden',
-                                transform: packageDragY > 0 ? `translateY(${packageDragY}px)` : '',
-                                transition: isPackageDragging ? 'none' : 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease'
+                                transform: packageDragY > 0 ? `translate3d(0, ${packageDragY}px, 0)` : '',
+                                transition: isPackageDragging ? 'none' : 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease',
+                                animation: isPackageDragging || packageDragY > 0 ? 'none' : undefined
                             }}
                             onTouchStart={handlePackageTouchStart}
                             onTouchMove={handlePackageTouchMove}

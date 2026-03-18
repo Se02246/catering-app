@@ -180,21 +180,22 @@ h1, h2, h3, h4, h5, h6 {
   position: relative;
   display: flex;
   flex-direction: column;
-  transform: translateY(20px);
   opacity: 0;
-  animation: modalFadeUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  transform: translateY(100vh); /* Start from bottom */
+  animation: modalSlideUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+  will-change: transform, opacity;
 }
 
 .modal-content.closing {
-  animation: modalFadeDown 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards !important;
+  animation: modalSlideDown 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards !important;
 }
 
-@keyframes modalFadeUp {
+@keyframes modalSlideUp {
   from { transform: translateY(100vh); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
-@keyframes modalFadeDown {
+@keyframes modalSlideDown {
   from { transform: translateY(0); opacity: 1; }
   to { transform: translateY(100vh); opacity: 0; }
 }

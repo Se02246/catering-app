@@ -75,7 +75,13 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
             style={{ zIndex: 3000 }}
         >
             <div 
-                style={{ position: 'relative', width: '100%', maxWidth: '600px', margin: 'auto' }}
+                style={{ 
+                    position: 'relative', 
+                    width: '100%', 
+                    maxWidth: '600px', 
+                    margin: 'auto',
+                    touchAction: 'none' // Prevents browser scroll interference while dragging
+                }}
                 onClick={e => e.stopPropagation()}
             >
                 {/* Package Badge outside modal-content to prevent clipping */}
@@ -87,7 +93,8 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                             right: '-5px',
                             zIndex: 3010,
                             position: 'absolute',
-                            opacity: isDragging ? 1 - (dragY / 200) : (isClosing ? 0 : 1)
+                            opacity: isDragging ? 1 - (dragY / 200) : (isClosing ? 0 : 1),
+                            transform: dragY > 0 ? `translate3d(0, ${dragY}px, 0)` : 'none'
                         }}>
                         <Calendar size={14} /> Disponibile fino al {new Date(product.hide_at).toLocaleDateString('it-IT')}
                     </div>
@@ -100,8 +107,9 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                         maxWidth: '600px', 
                         padding: '0', 
                         overflow: 'hidden',
-                        transform: dragY > 0 ? `translateY(${dragY}px)` : '',
-                        transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease'
+                        transform: dragY > 0 ? `translate3d(0, ${dragY}px, 0)` : '',
+                        transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease',
+                        animation: isDragging || dragY > 0 ? 'none' : undefined // Disable animation while dragging
                     }}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
