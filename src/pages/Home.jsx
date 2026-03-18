@@ -368,7 +368,21 @@ const Home = () => {
                                                         />
                                                     </div>
                                                     <div style={{ flex: 1 }}>
-                                                        <div style={{ fontWeight: '700', fontSize: '1.05rem', color: 'var(--color-text)' }}>{item.name}</div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                            <div style={{ fontWeight: '700', fontSize: '1.05rem', color: 'var(--color-text)' }}>{item.name}</div>
+                                                            <div style={{ display: 'flex', gap: '0.3rem' }}>
+                                                                {item.is_gluten_free && !selectedPackage.is_gluten_free && (
+                                                                    <span style={{ color: '#FF9800', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                                                        Senza Glutine
+                                                                    </span>
+                                                                )}
+                                                                {item.is_lactose_free && !selectedPackage.is_lactose_free && (
+                                                                    <span style={{ color: '#03A9F4', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                                                        Senza Lattosio
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                         <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 800, marginTop: '0.2rem' }}>
                                                             {(item.is_sold_by_piece || (item.pieces_per_kg && parseFloat(item.pieces_per_kg) > 0)) 
                                                                 ? `${item.quantity} pz` 

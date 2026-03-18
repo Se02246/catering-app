@@ -454,7 +454,17 @@ const PackageBuilder = () => {
                                                         return (
                                                             <div key={item.tempId} className="glass-panel" style={{ padding: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                                 <div style={{ minWidth: 0, flex: 1 }}>
-                                                                    <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{product?.name}</div>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                                                        <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{product?.name}</div>
+                                                                        <div style={{ display: 'flex', gap: '0.2rem' }}>
+                                                                            {product?.is_gluten_free && (
+                                                                                <span style={{ color: '#FF9800', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>GF</span>
+                                                                            )}
+                                                                            {product?.is_lactose_free && (
+                                                                                <span style={{ color: '#03A9F4', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>LF</span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
                                                                     <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
                                                                         {product?.is_sold_by_piece ? `€${product.price_per_piece}/pz` : `€${product?.price_per_kg}/kg`}
                                                                     </div>

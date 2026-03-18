@@ -139,14 +139,14 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                             <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Modifica Preventivo</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                                 <h3 style={{ margin: 0 }}>ID: {currentQuote.id.substring(0, 8)}...</h3>
-                                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                <div style={{ display: 'flex', gap: '0.25rem' }}>
                                     {isQuoteGlutenFree && (
-                                        <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                        <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
                                             Senza Glutine
                                         </span>
                                     )}
                                     {isQuoteLactoseFree && (
-                                        <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                        <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
                                             Senza Lattosio
                                         </span>
                                     )}
@@ -166,18 +166,18 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                     <div style={{ flex: 1 }}>
                                         <p style={{ fontWeight: 'bold', margin: 0 }}>
                                             {item.name}
-                                            <span style={{ marginLeft: '0.5rem', display: 'inline-flex', gap: '0.25rem' }}>
-                                                {item.is_gluten_free && !isQuoteGlutenFree && (
+                                            <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                                {item.is_gluten_free && (
                                                     <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                        SG
+                                                        Senza Glutine
                                                     </span>
                                                 )}
-                                                {item.is_lactose_free && !isQuoteLactoseFree && (
+                                                {item.is_lactose_free && (
                                                     <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                        SL
+                                                        Senza Lattosio
                                                     </span>
                                                 )}
-                                            </span>
+                                            </div>
                                         </p>
                                         <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
                                             Prezzo unitario applicato: € {((item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)}

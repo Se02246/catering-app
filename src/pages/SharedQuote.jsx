@@ -121,12 +121,12 @@ const SharedQuote = () => {
                                         <p style={{ fontWeight: 'bold', margin: 0 }}>
                                             {item.name}
                                             <span style={{ marginLeft: '0.5rem', display: 'inline-flex', gap: '0.25rem' }}>
-                                                {item.is_gluten_free && !isQuoteGlutenFree && (
+                                                {item.is_gluten_free && (
                                                     <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
                                                         Senza Glutine
                                                     </span>
                                                 )}
-                                                {item.is_lactose_free && !isQuoteLactoseFree && (
+                                                {item.is_lactose_free && (
                                                     <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
                                                         Senza Lattosio
                                                     </span>
