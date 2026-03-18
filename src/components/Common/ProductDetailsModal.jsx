@@ -31,7 +31,11 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
         : (product.image_url && product.image_url.trim() !== '' ? [product.image_url] : []);
 
     return (
-        <div className="modal-overlay" onClick={onClose} style={{ zIndex: 3000 }}>
+        <div 
+            className={`modal-overlay ${isClosing ? 'closing' : ''}`} 
+            onClick={onClose} 
+            style={{ zIndex: 3000 }}
+        >
             <div 
                 style={{ position: 'relative', width: '100%', maxWidth: '600px', margin: 'auto' }}
                 onClick={e => e.stopPropagation()}
@@ -49,7 +53,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                 )}
 
                 <div
-                    className={`modal-content ${isClosing ? 'bounce-out' : 'bounce-in'}`}
+                    className={`modal-content ${isClosing ? 'closing' : ''}`}
                     style={{ width: '100%', maxWidth: '600px', padding: '0', overflow: 'hidden' }}
                 >
                     {/* Floating Back Button */}

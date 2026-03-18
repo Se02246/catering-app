@@ -231,7 +231,11 @@ const Home = () => {
             )}
 
             {selectedPackage && (
-                <div className="modal-overlay" onClick={closePackage} style={{ zIndex: 3000 }}>
+                <div 
+                    className={`modal-overlay ${isPackageClosing ? 'closing' : ''}`} 
+                    onClick={closePackage} 
+                    style={{ zIndex: 3000 }}
+                >
                     <div 
                         style={{ position: 'relative', width: '100%', maxWidth: '800px', margin: 'auto' }}
                         onClick={e => e.stopPropagation()}
@@ -249,7 +253,7 @@ const Home = () => {
                         )}
 
                         <div
-                            className={`modal-content ${isPackageClosing ? 'bounce-out' : 'bounce-in'}`}
+                            className={`modal-content ${isPackageClosing ? 'closing' : ''}`}
                             style={{ width: '100%', maxWidth: '800px', padding: '0', overflow: 'hidden' }}
                         >
                             {/* Floating Back Button */}

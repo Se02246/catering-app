@@ -143,13 +143,30 @@ h1, h2, h3, h4, h5, h6 {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(45, 36, 36, 0.6);
+  background-color: rgba(45, 36, 36, 0.4);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  padding: 2.5rem; /* Space for protruding badges */
+  z-index: 3000;
+  padding: 2.5rem;
+  transition: all 0.3s ease;
+  opacity: 0;
+  animation: fadeInOverlay 0.3s ease forwards;
+}
+
+.modal-overlay.closing {
+  backdrop-filter: blur(0px) !important;
+  -webkit-backdrop-filter: blur(0px) !important;
+  background-color: rgba(45, 36, 36, 0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(8px); }
 }
 
 .modal-content {
@@ -158,11 +175,28 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
   max-width: 650px;
   max-height: 90vh;
-  overflow: visible !important; /* CRITICAL: allow badges to protrude */
+  overflow: visible !important;
   box-shadow: var(--shadow-xl);
   position: relative;
   display: flex;
   flex-direction: column;
+  transform: translateY(20px);
+  opacity: 0;
+  animation: modalFadeUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+.modal-content.closing {
+  animation: modalFadeDown 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+@keyframes modalFadeUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes modalFadeDown {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(20px); opacity: 0; }
 }
 
 /* Package Modal Specific (Desktop vs Mobile) */
