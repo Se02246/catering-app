@@ -12,21 +12,33 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
     const [isDragging, setIsDragging] = React.useState(false);
     const touchStartY = React.useRef(0);
 
+    // Reset drag state on mount
+    React.useEffect(() => {
+        setDragY(0);
+        setIsDragging(false);
+    }, [product]);
+
     const handleTouchStart = (e) => {
         if (scrollAreaRef.current && scrollAreaRef.current.scrollTop <= 0) {
             touchStartY.current = e.touches[0].clientY;
-            setIsDragging(true);
+            // No setIsDragging(true) yet, wait for move to confirm direction
         }
     };
 
     const handleTouchMove = (e) => {
-        if (!isDragging) return;
         const currentY = e.touches[0].clientY;
         const deltaY = currentY - touchStartY.current;
+
+        if (!isDragging) {
+            // Only start dragging if we're moving DOWN and at the top
+            if (deltaY > 10 && scrollAreaRef.current && scrollAreaRef.current.scrollTop <= 0) {
+                setIsDragging(true);
+            }
+            return;
+        }
         
         if (deltaY > 0) {
             setDragY(deltaY);
-            // Prevent default scrolling when dragging down at top
             if (e.cancelable) e.preventDefault();
         } else {
             setDragY(0);

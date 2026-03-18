@@ -120,6 +120,8 @@ const Home = () => {
     }, [selectedPackage]);
 
     const openPackage = (pkg) => {
+        setPackageDragY(0);
+        setIsPackageDragging(false);
         window.history.pushState({ modal: 'package' }, '');
         setSelectedPackage(pkg);
     };
@@ -129,6 +131,7 @@ const Home = () => {
     };
 
     const openProduct = (prod) => {
+        setPackageDragY(0); // Reset also here just in case
         window.history.pushState({ modal: 'product' }, '');
         setSelectedProduct(prod);
     };
