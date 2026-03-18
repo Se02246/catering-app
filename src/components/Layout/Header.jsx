@@ -107,11 +107,10 @@ const Header = () => {
             <div style={{ maxWidth: '400px', margin: '1.5rem auto 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <button
                     onClick={contactWhatsApp}
-                    className="btn btn-outline"
-                    style={{ borderColor: '#25D366', color: '#128C7E', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                    className="btn install-btn"
                 >
-                    <MessageCircle size={20} />
-                    Contatta Barbara
+                    <MessageCircle size={20} style={{ marginRight: '0.5rem' }} />
+                    Contatta
                 </button>
 
                 {showPrompt && (
