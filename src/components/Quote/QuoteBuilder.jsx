@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Plus, Minus, Trash2, Send, Check, ShoppingCart } from 'lucide-react';
+import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Info, Search } from 'lucide-react';
 import ProductDetailsModal from '../Common/ProductDetailsModal';
+import { formatCustomText } from '../../utils/textFormatting';
 
 const QuoteBuilder = () => {
     const { products: rawProducts, isLoading } = useProducts();
     const [cart, setCart] = useState(() => {
-        // Load initial cart from localStorage
         const savedCart = localStorage.getItem('active_quote_cart');
         return savedCart ? JSON.parse(savedCart) : [];
     });
@@ -15,34 +15,21 @@ const QuoteBuilder = () => {
     const [isQuoteVisible, setIsQuoteVisible] = useState(false);
     const [isProductClosing, setIsProductClosing] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const quoteSummaryRef = useRef(null);
 
-    // Save cart to localStorage whenever it changes
     useEffect(() => {
         localStorage.setItem('active_quote_cart', JSON.stringify(cart));
     }, [cart]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsQuoteVisible(entry.isIntersecting);
-            },
-            {
-                threshold: 0.1, // Trigger when 10% of the element is visible
-                rootMargin: '0px'
-            }
+            ([entry]) => setIsQuoteVisible(entry.isIntersecting),
+            { threshold: 0.1 }
         );
-
-        if (quoteSummaryRef.current) {
-            observer.observe(quoteSummaryRef.current);
-        }
-
-        return () => {
-            if (quoteSummaryRef.current) {
-                observer.unobserve(quoteSummaryRef.current);
-            }
-        };
-    }, [cart.length]); // Re-observe if cart changes as it might change the summary height
+        if (quoteSummaryRef.current) observer.observe(quoteSummaryRef.current);
+        return () => { if (quoteSummaryRef.current) observer.unobserve(quoteSummaryRef.current); };
+    }, [cart.length]);
 
     const products = React.useMemo(() => {
         const now = new Date();
@@ -50,113 +37,58 @@ const QuoteBuilder = () => {
             .filter(p => {
                 const isVisible = p.is_visible !== false;
                 const isNotExpired = !p.hide_at || new Date(p.hide_at) > now;
-                return isVisible && isNotExpired;
+                const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+                return isVisible && isNotExpired && matchesSearch;
             })
             .map(p => ({
                 ...p,
                 price_per_kg: parseFloat(p.price_per_kg),
-                pieces_per_kg: p.pieces_per_kg ? parseFloat(p.pieces_per_kg) : null,
                 min_order_quantity: p.min_order_quantity ? parseFloat(p.min_order_quantity) : 1,
                 order_increment: p.order_increment !== undefined ? parseFloat(p.order_increment) : 1,
-                show_servings: Boolean(p.show_servings),
-                servings_per_unit: p.servings_per_unit ? parseFloat(p.servings_per_unit) : null,
-                allow_multiple: Boolean(p.allow_multiple),
-                max_order_quantity: p.max_order_quantity ? parseFloat(p.max_order_quantity) : null,
                 images: p.images || (p.image_url ? [p.image_url] : []),
                 is_sold_by_piece: Boolean(p.is_sold_by_piece),
-                price_per_piece: p.price_per_piece ? parseFloat(p.price_per_piece) : null,
-                hide_at: p.hide_at
+                price_per_piece: p.price_per_piece ? parseFloat(p.price_per_piece) : null
             }));
-    }, [rawProducts]);
+    }, [rawProducts, searchTerm]);
 
     const addToCart = (product) => {
         if (product.allow_multiple) {
-            // Always add a new instance
-            const newItem = {
-                ...product,
-                quantity: product.min_order_quantity || 1,
-                instanceId: Date.now() + Math.random() // Unique ID for this instance
-            };
-
-            // Check max quantity for this specific instance
-            if (product.max_order_quantity && newItem.quantity > product.max_order_quantity) {
-                alert(`Hai raggiunto il limite massimo di ${product.max_order_quantity} per questo prodotto.`);
-                return;
-            }
-
+            const newItem = { ...product, quantity: product.min_order_quantity || 1, instanceId: Date.now() + Math.random() };
+            if (product.max_order_quantity && newItem.quantity > product.max_order_quantity) return;
             setCart([...cart, newItem]);
         } else {
             const existing = cart.find(item => item.id === product.id);
-            if (existing) {
-                // Toggle off
-                setCart(cart.filter(item => item.id !== product.id));
-            } else {
-                // Add new
-                const newItem = {
-                    ...product,
-                    quantity: product.min_order_quantity || 1,
-                    instanceId: Date.now() + Math.random()
-                };
-
-                if (product.max_order_quantity && newItem.quantity > product.max_order_quantity) {
-                    alert(`Hai raggiunto il limite massimo di ${product.max_order_quantity} per questo prodotto.`);
-                    return;
-                }
-
+            if (existing) setCart(cart.filter(item => item.id !== product.id));
+            else {
+                const newItem = { ...product, quantity: product.min_order_quantity || 1, instanceId: Date.now() + Math.random() };
                 setCart([...cart, newItem]);
             }
         }
     };
 
-    const removeFromCart = (instanceId) => {
-        setCart(cart.filter(item => item.instanceId !== instanceId));
-    };
+    const removeFromCart = (instanceId) => setCart(cart.filter(item => item.instanceId !== instanceId));
 
     const updateQuantity = (instanceId, delta) => {
         setCart(cart.map(item => {
             if (item.instanceId === instanceId) {
-                const increment = item.order_increment !== undefined ? item.order_increment : 1;
-                if (increment === 0) return item; // No changes allowed if increment is 0
-                const minQty = item.min_order_quantity || 1;
-                // delta is 1 or -1, multiply by increment
-                const change = delta * increment;
-                const newQty = item.quantity + change;
-
-                // If going below minQty, remove item
-                if (newQty < minQty) return null;
-
-                // Check max quantity PER INSTANCE
-                if (item.max_order_quantity && newQty > item.max_order_quantity) {
-                    // Don't update if exceeds max
-                    return item;
-                }
-
+                const increment = item.order_increment || 1;
+                const newQty = item.quantity + (delta * increment);
+                if (newQty < (item.min_order_quantity || 1)) return null;
+                if (item.max_order_quantity && newQty > item.max_order_quantity) return item;
                 return { ...item, quantity: newQty };
             }
             return item;
-        }).filter(Boolean)); // Filter out nulls
+        }).filter(Boolean));
     };
 
     const calculateItemPrice = (item) => {
-        if (item.is_sold_by_piece) {
-            return item.price_per_piece * item.quantity;
-        }
-        if (item.pieces_per_kg) {
-            // Legacy logic or specific use case where pieces_per_kg is set but not sold_by_piece (maybe sold by kg but tracked by piece?)
-            // For now, if is_sold_by_piece is true, we use that.
-            // If not, we assume standard weight based logic.
-            // But wait, if pieces_per_kg is set, the quantity might be in pieces?
-            // Let's stick to the new flag for the new behavior.
-            return (item.price_per_kg / item.pieces_per_kg) * item.quantity;
-        }
+        if (item.is_sold_by_piece) return item.price_per_piece * item.quantity;
+        if (item.pieces_per_kg) return (item.price_per_kg / item.pieces_per_kg) * item.quantity;
         return item.price_per_kg * item.quantity;
     };
 
-    const calculateTotal = () => {
-        return cart.reduce((sum, item) => sum + calculateItemPrice(item), 0);
-    };
+    const calculateTotal = () => cart.reduce((sum, item) => sum + calculateItemPrice(item), 0);
 
-    const [shareUrl, setShareUrl] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
 
     const handleShareQuote = async () => {
@@ -164,424 +96,185 @@ const QuoteBuilder = () => {
         try {
             const result = await api.saveQuote(cart, calculateTotal());
             const url = `${window.location.origin}/quote/${result.id}`;
-            setShareUrl(url);
-            
-            // Optionally auto-open WhatsApp with the link
-            const phoneNumber = "393495416637";
             const message = `Ciao Barbara, ho creato un preventivo sul tuo sito. Puoi visualizzarlo qui:\n\n${url}`;
-            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+            window.open(`https://wa.me/393495416637?text=${encodeURIComponent(message)}`, '_blank');
         } catch (err) {
-            console.error('Error saving quote:', err);
-            alert('Errore durante il salvataggio del preventivo.');
+            alert('Errore durante il salvataggio.');
         } finally {
             setIsSaving(false);
         }
     };
-
-    // Handle browser back button for modals
-    useEffect(() => {
-        const handlePopState = (event) => {
-            if (selectedProduct) {
-                // Trigger close animation
-                setIsProductClosing(true);
-                setTimeout(() => {
-                    setSelectedProduct(null);
-                    setIsProductClosing(false);
-                }, 400); // Match animation duration
-            }
-        };
-
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, [selectedProduct]);
 
     const openProduct = (prod) => {
         window.history.pushState({ modal: 'product' }, '');
         setSelectedProduct(prod);
     };
 
-    const closeProduct = () => {
-        window.history.back();
-    };
+    const closeProduct = () => window.history.back();
 
-    const clearCart = () => {
-        setShowClearConfirm(true);
-    };
-
-    const confirmClearCart = () => {
-        setCart([]);
-        setShowClearConfirm(false);
-    };
-
-    if (isLoading) return <p>Caricamento prodotti...</p>;
+    if (isLoading) return (
+        <div style={{ textAlign: 'center', padding: '4rem' }}>
+            <div className="animate-float" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>Caricamento del catalogo...</div>
+        </div>
+    );
 
     return (
         <div className="grid-quote-builder">
-            {/* ... Product List and Cart UI ... */}
-            {/* Product List */}
-            <div>
-                <h2 style={{ marginBottom: '1rem' }}>Seleziona Prodotti</h2>
-                <div className="grid-responsive" style={{ gap: '1rem' }}>
-                    {products.map((p, index) => (
-                        <div key={p.id}
-                            className="bounce-in"
-                            style={{
-                                animationDelay: `${index * 0.1}s`,
-                                padding: '0.75rem', border: '1px solid rgba(175, 68, 72, 0.1)', borderRadius: '8px',
-                                backgroundColor: 'rgba(255, 255, 255, 0.6)', // Off-white / Glass effect
-                                display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem',
-                                cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                                position: 'relative'
-                            }}
-                            onClick={() => openProduct(p)}
-                            onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
-                            onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                        >
-                            {p.hide_at && (
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '-8px',
-                                    left: '10px',
-                                    backgroundColor: 'var(--color-primary-dark)',
-                                    color: 'white',
-                                    padding: '0.2rem 0.6rem',
-                                    borderRadius: '12px',
-                                    fontSize: '0.65rem',
-                                    fontWeight: 'bold',
-                                    zIndex: 10,
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                                    pointerEvents: 'none'
-                                }}>
-                                    Fino al {new Date(p.hide_at).toLocaleDateString('it-IT')}
-                                </div>
-                            )}
-                            {p.image_url && (
-                                <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
-                                    <img
-                                        src={p.image_url}
-                                        alt={p.name}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x300?text=No+Img'; }}
-                                    />
-                                </div>
-                            )}
-                            <div style={{ flex: 1 }}>
-                                <h4 style={{ marginBottom: '0.25rem', fontSize: '1rem' }}>{p.name}</h4>
-                                <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.25rem', flexWrap: 'wrap' }}>
-                                    {p.is_gluten_free && (
-                                        <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                            Senza Glutine!
-                                        </span>
-                                    )}
-                                    {p.is_lactose_free && (
-                                        <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                            Senza Lattosio!
-                                        </span>
-                                    )}
-                                </div>
-                                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
-                                    {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
-                                </p>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                {p.allow_multiple && cart.filter(item => item.id === p.id).length > 0 && (
-                                    <div style={{
-                                        backgroundColor: 'var(--color-primary)', color: 'white',
-                                        borderRadius: '50%', width: '24px', height: '24px',
-                                        display: 'flex', justifyContent: 'center', alignItems: 'center',
-                                        fontWeight: 'bold', fontSize: '0.8rem'
-                                    }}>
-                                        {cart.filter(item => item.id === p.id).length}
+            {/* Catalog Section */}
+            <div className="fade-in">
+                <div style={{ position: 'relative', marginBottom: '2rem' }}>
+                    <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-accent)' }} size={20} />
+                    <input 
+                        type="text" 
+                        placeholder="Cerca un prodotto nel catalogo..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                            width: '100%', padding: '1.2rem 1.2rem 1.2rem 3rem', borderRadius: 'var(--radius-lg)',
+                            border: '1px solid rgba(155, 57, 61, 0.1)', background: 'var(--color-white)',
+                            fontSize: '1rem', outline: 'none', boxShadow: 'var(--shadow-sm)',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onFocus={e => { e.target.style.borderColor = 'var(--color-primary)'; e.target.style.boxShadow = 'var(--shadow-md)'; }}
+                        onBlur={e => { e.target.style.borderColor = 'rgba(155, 57, 61, 0.1)'; e.target.style.boxShadow = 'var(--shadow-sm)'; }}
+                    />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                    {products.map((p, index) => {
+                        const isInCart = cart.some(item => item.id === p.id);
+                        const cartCount = cart.filter(item => item.id === p.id).length;
+                        return (
+                            <div key={p.id}
+                                className="glass-panel fade-in"
+                                style={{
+                                    animationDelay: `${index * 0.05}s`,
+                                    padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem',
+                                    cursor: 'pointer', position: 'relative', overflow: 'hidden'
+                                }}
+                                onClick={() => openProduct(p)}
+                            >
+                                {p.hide_at && (
+                                    <div className="package-badge" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem', top: '0.5rem', right: '0.5rem' }}>
+                                        Fino al {new Date(p.hide_at).toLocaleDateString('it-IT')}
                                     </div>
                                 )}
+                                <div style={{ width: '70px', height: '70px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                    <img src={p.image_url || 'https://placehold.co/100x100?text=Food'} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <h4 style={{ fontSize: '0.95rem', marginBottom: '0.2rem' }}>{p.name}</h4>
+                                    <div className="dietary-badges" style={{ marginBottom: '0.4rem', gap: '0.3rem' }}>
+                                        {p.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>GF</span>}
+                                        {p.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>LF</span>}
+                                    </div>
+                                    <p style={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.85rem' }}>
+                                        {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                    </p>
+                                </div>
                                 <button
-                                    className={`btn ${!p.allow_multiple && cart.find(item => item.id === p.id) ? 'btn-primary' : 'btn-outline'}`}
-                                    style={{
-                                        width: '40px', height: '40px', padding: 0,
-                                        borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center',
-                                        flexShrink: 0
-                                    }}
+                                    className={`btn ${isInCart && !p.allow_multiple ? 'btn-primary' : 'btn-outline'}`}
+                                    style={{ width: '36px', height: '36px', padding: 0, borderRadius: '50%', flexShrink: 0 }}
                                     onClick={(e) => { e.stopPropagation(); addToCart(p); }}
                                 >
-                                    {!p.allow_multiple && cart.find(item => item.id === p.id) ? <Check size={20} /> : <Plus size={20} />}
+                                    {isInCart && !p.allow_multiple ? <Check size={18} /> : (p.allow_multiple && cartCount > 0 ? <span style={{fontSize:'0.8rem'}}>{cartCount}</span> : <Plus size={18} />)}
                                 </button>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* Cart / Quote Summary */}
-            <div 
-                ref={quoteSummaryRef}
-                id="quote-summary" 
-                style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '8px', boxShadow: 'var(--shadow-md)', height: 'fit-content' }}
-            >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>
-                    <h2 style={{ margin: 0 }}>Il Tuo Preventivo</h2>
-                    {cart.length > 0 && (
-                        <button 
-                            onClick={clearCart}
-                            style={{ 
-                                background: 'none', 
-                                border: 'none', 
-                                color: '#e63946', 
-                                cursor: 'pointer', 
-                                fontSize: '0.85rem', 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '0.25rem',
-                                fontWeight: '600'
-                            }}
-                        >
-                            <Trash2 size={16} />
-                            Svuota carrello
-                        </button>
-                    )}
+            {/* Quote Summary Section */}
+            <div ref={quoteSummaryRef} className="premium-card fade-in" style={{ height: 'fit-content', position: 'sticky', top: '2rem' }}>
+                <div style={{ padding: '2rem', background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))', color: 'white' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h2 style={{ margin: 0, color: 'white', fontSize: '1.5rem' }}>Il Tuo Preventivo</h2>
+                        {cart.length > 0 && (
+                            <button onClick={() => setShowClearConfirm(true)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.8)', cursor: 'pointer' }}>
+                                <Trash2 size={20} />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
-                {cart.length === 0 ? (
-                    <p style={{ color: 'var(--color-text-muted)' }}>Nessun prodotto selezionato.</p>
-                ) : (
-                    <>
-                        <div style={{ marginBottom: '1rem' }}>
-                            {cart.map(item => (
-                                <div key={item.instanceId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: '600' }}>
-                                            {item.name}
-                                            <div style={{ display: 'inline-flex', gap: '0.25rem', marginLeft: '0.5rem', flexWrap: 'wrap' }}>
-                                                {item.is_gluten_free && (
-                                                    <span style={{ color: '#FF9800', fontSize: '0.6rem', fontWeight: 'bold' }}>
-                                                        Senza Glutine!
-                                                    </span>
-                                                )}
-                                                {item.is_lactose_free && (
-                                                    <span style={{ color: '#03A9F4', fontSize: '0.6rem', fontWeight: 'bold' }}>
-                                                        Senza Lattosio!
-                                                    </span>
-                                                )}
+                <div className="card-body" style={{ padding: '2rem' }}>
+                    {cart.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '2rem' }}>
+                            <ShoppingCart size={40} style={{ color: 'rgba(155, 57, 61, 0.1)', marginBottom: '1rem' }} />
+                            <p style={{ color: 'var(--color-text-muted)' }}>Il tuo preventivo è ancora vuoto.</p>
+                        </div>
+                    ) : (
+                        <>
+                            <div style={{ marginBottom: '2rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                                {cart.map(item => (
+                                    <div key={item.instanceId} style={{ marginBottom: '1.2rem', paddingBottom: '1.2rem', borderBottom: '1px dashed rgba(155, 57, 61, 0.1)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+                                            <div style={{ fontWeight: '700', fontSize: '1rem', color: 'var(--color-primary-dark)' }}>{item.name}</div>
+                                            <div style={{ fontWeight: '800', color: 'var(--color-text)' }}>€ {calculateItemPrice(item).toFixed(2)}</div>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                                {item.is_sold_by_piece ? `${item.price_per_piece.toFixed(2)}€/pz` : `${item.price_per_kg.toFixed(2)}€/kg`}
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', background: 'var(--color-bg)', padding: '0.3rem 0.6rem', borderRadius: 'var(--radius-md)' }}>
+                                                <button onClick={() => updateQuantity(item.instanceId, -1)} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', display:'flex' }}><Minus size={16} /></button>
+                                                <span style={{ fontWeight: '800', minWidth: '1.5rem', textAlign: 'center' }}>{item.quantity}</span>
+                                                <button onClick={() => updateQuantity(item.instanceId, 1)} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', display:'flex' }}><Plus size={16} /></button>
                                             </div>
                                         </div>
-                                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                                            {item.is_sold_by_piece
-                                                ? `€ ${item.price_per_piece.toFixed(2)} / pz`
-                                                : (item.pieces_per_kg
-                                                    ? `€ ${(item.price_per_kg / item.pieces_per_kg).toFixed(2)} / pz`
-                                                    : `€ ${item.price_per_kg} / kg`
-                                                )
-                                            }
-                                            {' x '} {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}
-                                            {item.show_servings && item.servings_per_unit && (
-                                                <span style={{ color: 'var(--color-primary)', marginLeft: '0.5rem', fontWeight: 'bold' }}>
-                                                    / per {(item.servings_per_unit * item.quantity).toFixed(0)} persone
-                                                </span>
-                                            )}
-                                        </div>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        {item.order_increment !== 0 && (
-                                            <button
-                                                className="btn btn-outline"
-                                                style={{ 
-                                                    padding: '0.25rem',
-                                                    opacity: item.quantity <= (item.min_order_quantity || 1) ? 0.4 : 1,
-                                                    cursor: item.quantity <= (item.min_order_quantity || 1) ? 'default' : 'pointer',
-                                                    borderColor: item.quantity <= (item.min_order_quantity || 1) ? '#ccc' : 'var(--color-primary)',
-                                                    color: item.quantity <= (item.min_order_quantity || 1) ? '#999' : 'var(--color-primary)'
-                                                }}
-                                                onClick={() => {
-                                                    if (item.quantity > (item.min_order_quantity || 1)) {
-                                                        updateQuantity(item.instanceId, -1);
-                                                    }
-                                                }}
-                                                disabled={item.quantity <= (item.min_order_quantity || 1)}
-                                            >
-                                                <Minus size={14} />
-                                            </button>
-                                        )}
-                                        <span style={{ minWidth: '2rem', textAlign: 'center', fontWeight: 'bold' }}>{item.quantity}</span>
-                                        {item.order_increment !== 0 && (
-                                            <button
-                                                className="btn btn-outline"
-                                                style={{ 
-                                                    padding: '0.25rem',
-                                                    opacity: item.max_order_quantity && item.quantity >= item.max_order_quantity ? 0.4 : 1,
-                                                    cursor: item.max_order_quantity && item.quantity >= item.max_order_quantity ? 'default' : 'pointer',
-                                                    borderColor: item.max_order_quantity && item.quantity >= item.max_order_quantity ? '#ccc' : 'var(--color-primary)',
-                                                    color: item.max_order_quantity && item.quantity >= item.max_order_quantity ? '#999' : 'var(--color-primary)'
-                                                }}
-                                                onClick={() => updateQuantity(item.instanceId, 1)}
-                                                disabled={item.max_order_quantity && item.quantity >= item.max_order_quantity}
-                                            >
-                                                <Plus size={14} />
-                                            </button>
-                                        )}
-                                        <button className="btn btn-outline" style={{ padding: '0.25rem', color: 'red', borderColor: 'red' }} onClick={() => removeFromCart(item.instanceId)}>
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginTop: '1rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <span>Totale:</span>
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontStyle: 'italic', fontWeight: 'normal' }}>(prezzo indicativo)</span>
-                                </div>
-                                <span>€ {calculateTotal().toFixed(2)}</span>
+                                ))}
                             </div>
-                            <button
-                                className="btn btn-primary"
-                                style={{ width: '100%', marginBottom: shareUrl ? '1rem' : 0 }}
-                                onClick={handleShareQuote}
-                                disabled={isSaving}
-                            >
-                                <Send size={18} style={{ marginRight: '8px' }} />
-                                {isSaving ? 'Salvataggio...' : 'Crea Link e Invia WhatsApp'}
-                            </button>
 
-                            {shareUrl && (
-                                <div style={{ 
-                                    padding: '1rem', 
-                                    backgroundColor: 'rgba(175, 68, 72, 0.05)', 
-                                    borderRadius: '8px', 
-                                    border: '1px dashed var(--color-primary)',
-                                    fontSize: '0.85rem'
-                                }}>
-                                    <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Link Preventivo:</p>
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        <input 
-                                            readOnly 
-                                            value={shareUrl} 
-                                            style={{ flex: 1, padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)', fontSize: '0.8rem' }} 
-                                        />
-                                        <button 
-                                            className="btn btn-outline" 
-                                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(shareUrl);
-                                                alert('Link copiato!');
-                                            }}
-                                        >
-                                            Copia
-                                        </button>
-                                    </div>
+                            <div style={{ borderTop: '2px solid var(--color-bg)', paddingTop: '1.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                    <span style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--color-text-muted)' }}>Totale Indicativo</span>
+                                    <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {calculateTotal().toFixed(2)}</span>
                                 </div>
-                            )}
-                        </div>
-                    </>
-                )}
+                                <button className="btn btn-primary" style={{ width: '100%', padding: '1.2rem' }} onClick={handleShareQuote} disabled={isSaving}>
+                                    <Send size={18} style={{ marginRight: '0.8rem' }} /> {isSaving ? 'Invio in corso...' : 'Invia su WhatsApp'}
+                                </button>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: '1rem', fontStyle: 'italic' }}>
+                                    Riceverai un link condivisibile del tuo preventivo.
+                                </p>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
 
-            {/* Floating Cart Button */}
+            {/* Floating Action for Mobile */}
             {cart.length > 0 && (
                 <button
-                    onClick={() => {
-                        const element = document.getElementById('quote-summary');
-                        if (element) {
-                            element.scrollIntoView({ behavior: 'smooth' });
-                        }
-                    }}
+                    className="animate-float"
+                    onClick={() => document.getElementById('quote-summary').scrollIntoView({ behavior: 'smooth' })}
                     style={{
-                        position: 'fixed',
-                        bottom: '2rem',
-                        right: '2rem',
-                        backgroundColor: 'var(--color-primary)',
-                        color: 'white',
-                        width: '60px',
-                        height: '60px',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                        border: 'none',
-                        cursor: 'pointer',
-                        zIndex: 1000,
-                        transition: 'all 0.3s ease-in-out',
-                        opacity: isQuoteVisible ? 0 : 1,
-                        transform: isQuoteVisible ? 'scale(0.8)' : 'scale(1)',
-                        pointerEvents: isQuoteVisible ? 'none' : 'auto'
+                        position: 'fixed', bottom: '2rem', right: '2rem', width: '64px', height: '64px',
+                        borderRadius: '50%', background: 'var(--color-primary)', color: 'white',
+                        display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: 'var(--shadow-lg)',
+                        border: 'none', zIndex: 1000, opacity: isQuoteVisible ? 0 : 1, transition: 'all 0.4s'
                     }}
-                    onMouseOver={e => { if (!isQuoteVisible) e.currentTarget.style.transform = 'scale(1.1)'; }}
-                    onMouseOut={e => { if (!isQuoteVisible) e.currentTarget.style.transform = 'scale(1)'; }}
                 >
                     <ShoppingCart size={28} />
-                    <div style={{
-                        position: 'absolute',
-                        top: '-5px',
-                        right: '-5px',
-                        backgroundColor: 'white',
-                        color: 'var(--color-primary)',
-                        borderRadius: '50%',
-                        width: '24px',
-                        height: '24px',
-                        fontSize: '0.8rem',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        border: '2px solid var(--color-primary)'
-                    }}>
-                        {cart.length}
-                    </div>
+                    <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: 'var(--color-white)', color: 'var(--color-primary)', width: '24px', height: '24px', borderRadius: '50%', fontSize: '0.8rem', fontWeight: '800', border: '2px solid var(--color-primary)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>{cart.length}</span>
                 </button>
             )}
 
-            {/* Product Details Modal */}
-            {selectedProduct && (
-                <ProductDetailsModal
-                    product={selectedProduct}
-                    onClose={closeProduct}
-                    onAddToCart={addToCart}
-                    isClosing={isProductClosing}
-                />
-            )}
-            {/* Clear Cart Confirmation Modal */}
+            {selectedProduct && <ProductDetailsModal product={selectedProduct} onClose={closeProduct} onAddToCart={addToCart} isClosing={isProductClosing} />}
+            
+            {/* Elegant Confirmation Dialog */}
             {showClearConfirm && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.4)',
-                    backdropFilter: 'blur(4px)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 3000,
-                    padding: '1rem'
-                }}>
-                    <div className="glass-panel bounce-in" style={{
-                        padding: '2rem',
-                        maxWidth: '400px',
-                        width: '100%',
-                        textAlign: 'center',
-                        backgroundColor: 'white',
-                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
-                    }}>
-                        <Trash2 size={48} color="#e63946" style={{ marginBottom: '1rem' }} />
-                        <h3 style={{ marginBottom: '1rem' }}>Svuota carrello</h3>
-                        <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>Vuoi davvero svuotare il carrello?</p>
+                <div className="modal-overlay" onClick={() => setShowClearConfirm(false)}>
+                    <div className="glass-panel bounce-in" style={{ padding: '2.5rem', maxWidth: '400px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ background: 'rgba(225, 29, 72, 0.05)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                            <Trash2 size={32} color="#E11D48" />
+                        </div>
+                        <h3 style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>Svuota Carrello</h3>
+                        <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>Sei sicuro di voler eliminare tutti i prodotti selezionati? L'azione non è reversibile.</p>
                         <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button 
-                                className="btn btn-outline" 
-                                style={{ flex: 1 }} 
-                                onClick={() => setShowClearConfirm(false)}
-                            >
-                                No
-                            </button>
-                            <button 
-                                className="btn btn-primary" 
-                                style={{ flex: 1, backgroundColor: '#e63946', borderColor: '#e63946' }} 
-                                onClick={confirmClearCart}
-                            >
-                                Sì
-                            </button>
+                            <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowClearConfirm(false)}>Annulla</button>
+                            <button className="btn btn-primary" style={{ flex: 1, background: '#E11D48' }} onClick={() => { setCart([]); setShowClearConfirm(false); }}>Sì, Svuota</button>
                         </div>
                     </div>
                 </div>

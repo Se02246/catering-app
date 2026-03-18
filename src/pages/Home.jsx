@@ -4,17 +4,16 @@ import { useCaterings, useSetting } from '../hooks/useData';
 import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import { formatCustomText } from '../utils/textFormatting';
+import { ChevronRight, Calendar, Info, ArrowRight } from 'lucide-react';
 
 const Home = () => {
     const navigate = useNavigate();
     const { caterings, isLoading, isError } = useCaterings();
-    const { setting: headerSetting } = useSetting('header_text');
     const [selectedPackage, setSelectedPackage] = React.useState(null);
     const [selectedProduct, setSelectedProduct] = React.useState(null);
     const [isPackageClosing, setIsPackageClosing] = React.useState(false);
     const [isProductClosing, setIsProductClosing] = React.useState(false);
 
-    // Pre-parse images for caterings and filter by visibility/expiry
     const processedCaterings = React.useMemo(() => {
         const now = new Date();
         return caterings
@@ -40,23 +39,20 @@ const Home = () => {
         };
     }, [selectedPackage]);
 
-    // Handle browser back button for modals
     React.useEffect(() => {
         const handlePopState = (event) => {
             if (selectedProduct) {
-                // Trigger close animation for product
                 setIsProductClosing(true);
                 setTimeout(() => {
                     setSelectedProduct(null);
                     setIsProductClosing(false);
-                }, 500); // Match animation duration
+                }, 500);
             } else if (selectedPackage) {
-                // Trigger close animation for package
                 setIsPackageClosing(true);
                 setTimeout(() => {
                     setSelectedPackage(null);
                     setIsPackageClosing(false);
-                }, 500); // Match animation duration
+                }, 500);
             }
         };
 
@@ -82,8 +78,6 @@ const Home = () => {
         window.history.back();
     };
 
-    const [isSaving, setIsSaving] = React.useState(false);
-
     const handleBookPackage = async (pkg) => {
         const url = `${window.location.origin}/package/${pkg.id}`;
         const phoneNumber = "393495416637";
@@ -92,103 +86,100 @@ const Home = () => {
     };
 
     return (
-        <div className="container">
+        <div className="container fade-in" style={{ paddingBottom: '5rem' }}>
             <Header />
 
             <section id="packages">
-                {!isLoading && (
-                    <h2 style={{ marginBottom: '2rem', display: 'inline-block', paddingBottom: '0.5rem', borderBottom: '2px solid var(--color-primary)' }}>
-                        Pacchetti
-                    </h2>
+                <div className="section-header">
+                    <span className="subtitle">Esperienze Gastronomiche</span>
+                    <h2>I Nostri Pacchetti</h2>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>
+                        Selezioni curate per rendere ogni tuo evento indimenticabile.
+                    </p>
+                </div>
+
+                {isLoading && (
+                    <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+                        <div className="animate-float" style={{ fontSize: '1.1rem', color: 'var(--color-accent)', fontWeight: 600 }}>
+                            Curando i dettagli per te...
+                        </div>
+                    </div>
                 )}
 
-                {isLoading && <p style={{ color: 'var(--color-text)' }}>Caricamento pacchetti...</p>}
-                {isError && <p style={{ color: '#ffcccb' }}>Impossibile caricare i pacchetti. Riprova più tardi.</p>}
+                {isError && (
+                    <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', margin: '2rem auto', maxWidth: '500px' }}>
+                        <Info size={40} color="var(--color-primary)" style={{ marginBottom: '1rem' }} />
+                        <p style={{ color: 'var(--color-text)', fontWeight: 600 }}>Non siamo riusciti a caricare le proposte.</p>
+                        <button className="btn btn-primary" style={{ marginTop: '1.5rem' }} onClick={() => window.location.reload()}>Riprova</button>
+                    </div>
+                )}
 
                 {!isLoading && !isError && (
                     <div className="grid-responsive">
                         {processedCaterings.length === 0 ? (
-                            <p style={{ color: 'var(--color-text)' }}>Nessun pacchetto disponibile al momento.</p>
+                            <div style={{ textAlign: 'center', gridColumn: '1/-1', padding: '4rem' }}>
+                                <p style={{ color: 'var(--color-text-muted)', fontSize: '1.2rem' }}>
+                                    Al momento non ci sono pacchetti disponibili. Torna a trovarci presto!
+                                </p>
+                            </div>
                         ) : (
                             processedCaterings.map((pkg, index) => (
                                 <div
                                     key={pkg.id}
-                                    className="glass-panel bounce-in"
-                                    style={{
-                                        padding: '2rem',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        transition: 'transform 0.3s ease',
-                                        animationDelay: `${index * 0.1}s`, // Staggered animation
-                                        position: 'relative',
-                                        overflow: 'hidden'
-                                    }}
+                                    className="premium-card fade-in"
+                                    style={{ animationDelay: `${index * 0.1}s` }}
                                 >
-                                    {pkg.hide_at && (
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '1rem',
-                                            left: '1rem',
-                                            backgroundColor: 'var(--color-primary-dark)',
-                                            color: 'white',
-                                            padding: '0.4rem 0.8rem',
-                                            borderRadius: '20px',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 'bold',
-                                            zIndex: 10,
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                                            pointerEvents: 'none'
-                                        }}>
-                                            Disponibile fino al {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
-                                        </div>
-                                    )}
-                                    {pkg.image_url && (
-                                        <div
-                                            style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '1.5rem', boxShadow: '0 8px 16px rgba(0,0,0,0.1)', cursor: 'pointer' }}
-                                            onClick={() => openPackage(pkg)}
-                                        >
-                                            <img
-                                                src={pkg.image_url}
-                                                alt={pkg.name}
-                                                style={{ width: '100%', height: '220px', objectFit: 'cover', display: 'block', transition: 'transform 0.5s ease' }}
-                                                onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                                                onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                                            />
-                                        </div>
-                                    )}
-                                    <h3 style={{ marginBottom: '0.5rem', color: 'var(--color-primary-dark)', fontSize: '1.8rem' }}>{pkg.name}</h3>
-                                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                                        {pkg.is_gluten_free && (
-                                            <span style={{ color: '#FF9800', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                                Senza Glutine!
-                                            </span>
+                                    <div className="image-wrapper" onClick={() => openPackage(pkg)} style={{ cursor: 'pointer' }}>
+                                        {pkg.hide_at && (
+                                            <div className="package-badge" style={{ background: 'var(--color-primary-dark)', backdropFilter: 'blur(10px)' }}>
+                                                <Calendar size={14} style={{ marginRight: '0.4rem' }} />
+                                                Disponibile fino al {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
+                                            </div>
                                         )}
-                                        {pkg.is_lactose_free && (
-                                            <span style={{ color: '#03A9F4', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                                Senza Lattosio!
-                                            </span>
-                                        )}
+                                        <img
+                                            src={pkg.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
+                                            alt={pkg.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1)' }}
+                                            className="card-hover-img"
+                                        />
                                     </div>
-                                    <p 
-                                        style={{ marginBottom: '1.5rem', color: 'var(--color-text-muted)', flexGrow: 1, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}
-                                        dangerouslySetInnerHTML={{ __html: formatCustomText(pkg.description) }}
-                                    />
-                                    <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                            {pkg.discount_percentage > 0 ? (
-                                                <>
-                                                    <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
-                                                        €&nbsp;{pkg.total_price}
-                                                    </span>
-                                                    <span style={{ fontWeight: '800', fontSize: '1.5rem', color: '#e63946' }}>
-                                                        €&nbsp;{(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
-                                                    </span>
-                                                </>
-                                            ) : (
-                                                <p style={{ fontWeight: '800', fontSize: '1.5rem', color: 'var(--color-primary-dark)', margin: 0 }}>€&nbsp;{pkg.total_price}</p>
-                                            )}
+
+                                    <div className="card-body">
+                                        <div className="dietary-badges" style={{ marginBottom: '1rem' }}>
+                                            {pkg.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
+                                            {pkg.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
                                         </div>
-                                        <button className="btn btn-primary" onClick={() => openPackage(pkg)}>Dettagli</button>
+
+                                        <h3 className="card-title">{pkg.name}</h3>
+                                        
+                                        <div 
+                                            className="card-text"
+                                            style={{ 
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: 3,
+                                                WebkitBoxOrient: 'vertical',
+                                                overflow: 'hidden'
+                                            }}
+                                            dangerouslySetInnerHTML={{ __html: formatCustomText(pkg.description) }}
+                                        />
+
+                                        <div className="card-footer">
+                                            <div className="price-container">
+                                                {pkg.discount_percentage > 0 ? (
+                                                    <>
+                                                        <span className="price-old">€ {pkg.total_price}</span>
+                                                        <span className="price-main price-discount">
+                                                            € {(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span className="price-main">€ {pkg.total_price}</span>
+                                                )}
+                                            </div>
+                                            <button className="btn btn-primary" onClick={() => openPackage(pkg)}>
+                                                Scopri di più <ArrowRight size={18} style={{ marginLeft: '0.5rem' }} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))
@@ -202,186 +193,165 @@ const Home = () => {
                     <div
                         className={`modal-content ${isPackageClosing ? 'bounce-out' : 'bounce-in'}`}
                         onClick={e => e.stopPropagation()}
+                        style={{ maxWidth: '900px', padding: '0', overflow: 'hidden', background: 'var(--color-bg)' }}
                     >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>{selectedPackage.name}</h2>
-                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                    {selectedPackage.is_gluten_free && (
-                                        <span style={{ color: '#FF9800', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                                            Senza Glutine!
-                                        </span>
-                                    )}
-                                    {selectedPackage.is_lactose_free && (
-                                        <span style={{ color: '#03A9F4', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                                            Senza Lattosio!
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                            <button className="btn btn-outline" style={{ borderColor: 'var(--color-text-muted)', color: 'var(--color-text-muted)', padding: '0.5rem 1rem' }} onClick={closePackage}>Chiudi</button>
-                        </div>
-
-                        {selectedPackage.images && selectedPackage.images.length > 0 ? (
-                            <div style={{ position: 'relative', marginBottom: '2rem' }}>
+                        <div style={{ display: 'flex', flexDirection: window.innerWidth > 768 ? 'row' : 'column' }}>
+                            {/* Left Side: Image Gallery */}
+                            <div style={{ 
+                                width: window.innerWidth > 768 ? '45%' : '100%', 
+                                height: window.innerWidth > 768 ? 'auto' : '300px',
+                                position: 'relative',
+                                background: '#000'
+                            }}>
                                 <div style={{
                                     display: 'flex',
                                     overflowX: 'auto',
                                     scrollSnapType: 'x mandatory',
-                                    scrollSnapStop: 'always',
-                                    gap: '1rem',
-                                    paddingBottom: '1rem',
-                                    WebkitOverflowScrolling: 'touch',
-                                    scrollBehavior: 'smooth',
-                                    touchAction: 'pan-x'
+                                    height: '100%',
+                                    scrollbarWidth: 'none',
+                                    WebkitOverflowScrolling: 'touch'
                                 }}>
-                                    {selectedPackage.images.map((img, idx) => (
-                                        <div
-                                            key={idx}
-                                            style={{
-                                                minWidth: '100%',
-                                                scrollSnapAlign: 'center',
-                                                scrollSnapStop: 'always' // Added to child as well just in case, though usually on container
-                                            }}
-                                        >
+                                    {selectedPackage.images && selectedPackage.images.length > 0 ? (
+                                        selectedPackage.images.map((img, idx) => (
                                             <img
+                                                key={idx}
                                                 src={img}
                                                 alt={`${selectedPackage.name} ${idx + 1}`}
-                                                style={{
-                                                    width: '100%',
-                                                    aspectRatio: '4/5',
-                                                    objectFit: 'cover',
-                                                    borderRadius: '16px',
-                                                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                                                    display: 'block'
-                                                }}
-                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400?text=No+Img'; }}
+                                                style={{ width: '100%', height: '100%', flexShrink: 0, objectFit: 'cover', scrollSnapAlign: 'start' }}
                                             />
+                                        ))
+                                    ) : (
+                                        <img
+                                            src={selectedPackage.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
+                                            alt={selectedPackage.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    )}
+                                </div>
+                                <button 
+                                    onClick={closePackage}
+                                    style={{
+                                        position: 'absolute', top: '1.5rem', left: '1.5rem',
+                                        background: 'rgba(255,255,255,0.9)', border: 'none',
+                                        width: '40px', height: '40px', borderRadius: '50%',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        cursor: 'pointer', zIndex: 10, boxShadow: 'var(--shadow-md)'
+                                    }}
+                                >
+                                    <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} />
+                                </button>
+                                {selectedPackage.images?.length > 1 && (
+                                    <div style={{ 
+                                        position: 'absolute', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
+                                        background: 'rgba(0,0,0,0.5)', padding: '0.4rem 0.8rem', borderRadius: '20px',
+                                        color: 'white', fontSize: '0.75rem', fontWeight: 'bold', backdropFilter: 'blur(4px)'
+                                    }}>
+                                        Scorri per altre foto
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Right Side: Content */}
+                            <div style={{ 
+                                width: window.innerWidth > 768 ? '55%' : '100%', 
+                                padding: '3.5rem',
+                                maxHeight: window.innerWidth > 768 ? '90vh' : 'auto',
+                                overflowY: 'auto'
+                            }}>
+                                <div style={{ marginBottom: '2.5rem' }}>
+                                    <div className="dietary-badges" style={{ marginBottom: '0.75rem' }}>
+                                        {selectedPackage.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
+                                        {selectedPackage.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
+                                    </div>
+                                    <h2 style={{ fontSize: '2.8rem', color: 'var(--color-primary-dark)', marginBottom: '1.5rem', lineHeight: '1.1' }}>
+                                        {selectedPackage.name}
+                                    </h2>
+                                    <div 
+                                        style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--color-text-muted)' }}
+                                        dangerouslySetInnerHTML={{ __html: formatCustomText(selectedPackage.description) }}
+                                    />
+                                </div>
+
+                                <h3 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <div style={{ width: '30px', height: '2px', background: 'var(--color-accent)' }}></div>
+                                    Incluso nel pacchetto
+                                </h3>
+                                
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '3rem' }}>
+                                    {selectedPackage.items && selectedPackage.items.map((item, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="glass-panel"
+                                            style={{
+                                                padding: '1.2rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '1.2rem',
+                                                cursor: 'pointer',
+                                                borderRadius: 'var(--radius-md)',
+                                                border: '1px solid rgba(155, 57, 61, 0.05)',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                openProduct(item);
+                                            }}
+                                            onMouseOver={e => e.currentTarget.style.borderColor = 'var(--color-accent)'}
+                                            onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(155, 57, 61, 0.05)'}
+                                        >
+                                            <div style={{ width: '64px', height: '64px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                                <img
+                                                    src={item.image_url || item.images?.[0] || 'https://placehold.co/100x100?text=Food'}
+                                                    alt={item.name}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                />
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: '700', fontSize: '1.05rem', color: 'var(--color-text)' }}>{item.name}</div>
+                                                <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 800, marginTop: '0.2rem' }}>
+                                                    {item.is_sold_by_piece ? `${item.quantity} pezzi` : `${item.quantity} kg`}
+                                                </div>
+                                            </div>
+                                            <ChevronRight size={20} color="var(--color-accent-light)" />
                                         </div>
                                     ))}
                                 </div>
-                                {selectedPackage.images.length > 1 && (
-                                    <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
-                                        Scorri per vedere altre foto
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            selectedPackage.image_url && (
-                                <img
-                                    src={selectedPackage.image_url}
-                                    alt={selectedPackage.name}
-                                    style={{ width: '100%', aspectRatio: '4/5', objectFit: 'cover', borderRadius: '16px', marginBottom: '2rem', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
-                                />
-                            )
-                        )}
 
-                        <p 
-                            style={{ fontSize: '1.1rem', marginBottom: '2rem', lineHeight: '1.8', color: 'var(--color-text)', whiteSpace: 'pre-wrap' }}
-                            dangerouslySetInnerHTML={{ __html: formatCustomText(selectedPackage.description) }}
-                        />
-
-                        <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem', color: 'var(--color-primary)' }}>Cosa include</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2.5rem' }}>
-                            {selectedPackage.items && selectedPackage.items.map((item, idx) => {
-                                const hasImage = item.image_url || (item.images && item.images.length > 0 && item.images[0]);
-                                return (
-                                    <div
-                                        key={idx}
-                                        style={{
-                                            padding: '0.75rem',
-                                            border: '1px solid rgba(175, 68, 72, 0.1)',
-                                            borderRadius: '8px',
-                                            backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                                            cursor: 'pointer',
-                                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            alignItems: 'center',
-                                            gap: '1rem'
-                                        }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            openProduct(item);
-                                        }}
-                                        onMouseOver={e => { e.currentTarget.style.transform = 'translateX(4px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
-                                        onMouseOut={e => { e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                                    >
-                                        {hasImage && (
-                                            <div style={{ width: '60px', height: '60px', borderRadius: '4px', overflow: 'hidden', flexShrink: 0 }}>
-                                                <img
-                                                    src={item.image_url || item.images[0]}
-                                                    alt={item.name}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                    onError={(e) => { e.target.style.display = 'none'; }}
-                                                />
-                                            </div>
+                                <div style={{ 
+                                    position: 'sticky', bottom: '-3.5rem', margin: '0 -3.5rem', padding: '2.5rem 3.5rem',
+                                    background: 'rgba(252, 250, 247, 0.95)', backdropFilter: 'blur(10px)',
+                                    borderTop: '1px solid rgba(155, 57, 61, 0.1)',
+                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                                }}>
+                                    <div className="price-container">
+                                        <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Totale Esperienza</span>
+                                        {selectedPackage.discount_percentage > 0 ? (
+                                            <span className="price-main price-discount" style={{ fontSize: '2.4rem' }}>
+                                                € {(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
+                                            </span>
+                                        ) : (
+                                            <span className="price-main" style={{ fontSize: '2.4rem' }}>€ {selectedPackage.total_price}</span>
                                         )}
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: '600', fontSize: '1rem', color: 'var(--color-text)', marginBottom: '0.1rem' }}>
-                                                {item.name}
-                                                <div style={{ display: 'inline-flex', gap: '0.25rem', marginLeft: '0.5rem', flexWrap: 'wrap' }}>
-                                                    {item.is_gluten_free && !selectedPackage.is_gluten_free && (
-                                                        <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                                            Senza Glutine!
-                                                        </span>
-                                                    )}
-                                                    {item.is_lactose_free && !selectedPackage.is_lactose_free && (
-                                                        <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                                            Senza Lattosio!
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div style={{ fontSize: '0.9rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>
-                                                {item.is_sold_by_piece
-                                                    ? `${parseFloat(item.quantity)} pz`
-                                                    : (item.pieces_per_kg > 0
-                                                        ? `${parseFloat(item.quantity)} pz`
-                                                        : `${parseFloat(item.quantity)} kg`
-                                                    )
-                                                }
-                                            </div>
-                                        </div>
                                     </div>
-                                );
-                            })}
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                {selectedPackage.discount_percentage > 0 ? (
-                                    <>
-                                        <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '0.2rem' }}>
-                                            €&nbsp;{selectedPackage.total_price}
-                                        </span>
-                                        <span style={{ fontSize: '2rem', fontWeight: '800', color: '#e63946' }}>
-                                            €&nbsp;{(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
-                                        </span>
-                                    </>
-                                ) : (
-                                    <span style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€&nbsp;{selectedPackage.total_price}</span>
-                                )}
+                                    <button 
+                                        className="btn btn-primary" 
+                                        style={{ padding: '1.2rem 2.5rem', fontSize: '1.1rem' }} 
+                                        onClick={() => handleBookPackage(selectedPackage)}
+                                    >
+                                        Prenota Ora
+                                    </button>
+                                </div>
                             </div>
-                            <button 
-                                className="btn btn-primary" 
-                                style={{ padding: '1rem 2rem', fontSize: '1.1rem' }} 
-                                disabled={isSaving}
-                                onClick={() => handleBookPackage(selectedPackage)}
-                            >
-                                {isSaving ? 'Salvataggio...' : 'Prenota su WhatsApp'}
-                            </button>
                         </div>
                     </div>
                 </div>
             )}
-            {/* Product Details Modal (on top of Package Modal) */}
+            
             {selectedProduct && (
                 <ProductDetailsModal
                     product={selectedProduct}
                     onClose={closeProduct}
                     isClosing={isProductClosing}
-                // No onAddToCart here as we are in Home, not QuoteBuilder
                 />
             )}
         </div>

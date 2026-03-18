@@ -4,12 +4,16 @@ import Header from '../components/Layout/Header';
 
 const CreateQuote = () => {
     return (
-        <div className="container">
+        <div className="container fade-in" style={{ paddingBottom: '5rem' }}>
             <Header />
-            <h2 style={{ marginBottom: '2rem', marginTop: '2rem', display: 'inline-block', paddingBottom: '0.5rem', borderBottom: '2px solid var(--color-primary)' }}>Crea il tuo Preventivo</h2>
-            <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>
-                Scegli i prodotti dal catalogo e componi il tuo menu.
-            </p>
+            <div className="section-header">
+                <span className="subtitle">Il tuo menu su misura</span>
+                <h2>Crea il tuo Preventivo</h2>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>
+                    Scegli i prodotti dal catalogo e componi il tuo menu ideale. 
+                    Ti invieremo un link pronto da condividere.
+                </p>
+            </div>
             <QuoteBuilder />
         </div>
     );
