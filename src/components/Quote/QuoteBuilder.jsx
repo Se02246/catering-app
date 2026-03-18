@@ -155,8 +155,8 @@ const QuoteBuilder = () => {
                                 onClick={() => openProduct(p)}
                             >
                                 {p.hide_at && (
-                                    <div className="package-badge" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem', top: '0.5rem', right: '0.5rem' }}>
-                                        Fino al {new Date(p.hide_at).toLocaleDateString('it-IT')}
+                                    <div className="package-badge" style={{ top: '0.8rem', right: '0.8rem', padding: '0.4rem 0.6rem', fontSize: '0.65rem' }}>
+                                        <Calendar size={12} /> {new Date(p.hide_at).toLocaleDateString('it-IT')}
                                     </div>
                                 )}
                                 <div style={{ width: '70px', height: '70px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
@@ -218,9 +218,32 @@ const QuoteBuilder = () => {
                                                 {item.is_sold_by_piece ? `${item.price_per_piece.toFixed(2)}€/pz` : `${item.price_per_kg.toFixed(2)}€/kg`}
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', background: 'var(--color-bg)', padding: '0.3rem 0.6rem', borderRadius: 'var(--radius-md)' }}>
-                                                <button onClick={() => updateQuantity(item.instanceId, -1)} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', display:'flex' }}><Minus size={16} /></button>
+                                                {/* Minus / Remove Button */}
+                                                <button 
+                                                    onClick={() => updateQuantity(item.instanceId, -1)} 
+                                                    style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', display:'flex' }}
+                                                >
+                                                    {item.quantity <= (item.min_order_quantity || 1) ? <Trash2 size={16} /> : <Minus size={16} />}
+                                                </button>
+                                                
                                                 <span style={{ fontWeight: '800', minWidth: '1.5rem', textAlign: 'center' }}>{item.quantity}</span>
-                                                <button onClick={() => updateQuantity(item.instanceId, 1)} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', display:'flex' }}><Plus size={16} /></button>
+                                                
+                                                {/* Plus Button */}
+                                                <button 
+                                                    onClick={() => {
+                                                        const isAtMax = item.max_order_quantity && item.quantity >= item.max_order_quantity;
+                                                        if (!isAtMax) updateQuantity(item.instanceId, 1);
+                                                    }} 
+                                                    style={{ 
+                                                        background: 'none', 
+                                                        border: 'none', 
+                                                        color: (item.max_order_quantity && item.quantity >= item.max_order_quantity) ? '#ccc' : 'var(--color-primary)', 
+                                                        cursor: (item.max_order_quantity && item.quantity >= item.max_order_quantity) ? 'not-allowed' : 'pointer', 
+                                                        display:'flex' 
+                                                    }}
+                                                >
+                                                    <Plus size={16} />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>

@@ -146,9 +146,9 @@ const Home = () => {
                                 >
                                     <div className="image-wrapper" onClick={() => openPackage(pkg)} style={{ cursor: 'pointer' }}>
                                         {pkg.hide_at && (
-                                            <div className="package-badge" style={{ background: 'var(--color-primary-dark)', backdropFilter: 'blur(10px)' }}>
-                                                <Calendar size={14} style={{ marginRight: '0.4rem' }} />
-                                                Disponibile fino al {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
+                                            <div className="package-badge">
+                                                <Calendar size={14} />
+                                                {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
                                             </div>
                                         )}
                                         <img
@@ -228,7 +228,7 @@ const Home = () => {
                                 justifyContent: 'center',
                                 overflow: 'hidden',
                                 flexShrink: 0,
-                                borderRadius: window.innerWidth > 768 ? 'var(--radius-xl) 0 0 var(--radius-xl)' : 'var(--radius-xl) var(--radius-xl) 0 0'
+                                borderRadius: 'var(--radius-xl)'
                             }}>
                                 <div 
                                     onScroll={handleGalleryScroll}

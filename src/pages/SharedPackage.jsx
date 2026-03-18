@@ -77,7 +77,7 @@ const SharedPackage = () => {
 
             <div className="glass-panel" style={{ padding: '0', overflow: 'hidden', position: 'relative' }}>
                 {pkg.image_url && (
-                    <div style={{ width: '100%', height: '300px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '300px', overflow: 'hidden', borderRadius: 'var(--radius-xl)' }}>
                         <img src={pkg.image_url} alt={pkg.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                 )}

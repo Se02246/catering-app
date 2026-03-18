@@ -1,7 +1,7 @@
 import React from 'react';
 import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
-import { X, Calendar, Info, ShoppingCart } from 'lucide-react';
+import { ChevronLeft, Calendar, Info, ShoppingCart } from 'lucide-react';
 
 const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
     const { setting: showQuoteSetting, isLoading: isSettingLoading } = useSetting('show_quote_builder');
@@ -42,11 +42,11 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                     maxHeight: '90vh' 
                 }}
             >
-                {/* Close Button */}
+                {/* Back Button */}
                 <button 
                     onClick={onClose}
                     style={{
-                        position: 'absolute', top: '1rem', right: '1rem',
+                        position: 'absolute', top: '1rem', left: '1rem',
                         background: 'rgba(255,255,255,0.9)', border: 'none',
                         width: '36px', height: '36px', borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -54,7 +54,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                         boxShadow: 'var(--shadow-sm)'
                     }}
                 >
-                    <X size={20} />
+                    <ChevronLeft size={24} />
                 </button>
 
                 {/* Image Section */}
@@ -68,7 +68,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                         justifyContent: 'center',
                         overflow: 'hidden',
                         flexShrink: 0,
-                        borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0'
+                        borderRadius: 'var(--radius-xl)'
                     }}>
                         {validImages.length > 1 ? (
                             <div 
@@ -144,9 +144,9 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                         )}
                         
                         {product.hide_at && (
-                            <div className="package-badge" style={{ top: '1rem', left: '1rem', right: 'auto', background: 'var(--color-primary-dark)', backdropFilter: 'blur(10px)' }}>
-                                <Calendar size={14} style={{ marginRight: '0.4rem', verticalAlign: 'middle' }} />
-                                Fino al {new Date(product.hide_at).toLocaleDateString('it-IT')}
+                            <div className="package-badge" style={{ top: '1rem', right: '1rem' }}>
+                                <Calendar size={14} />
+                                {new Date(product.hide_at).toLocaleDateString('it-IT')}
                             </div>
                         )}
                     </div>
