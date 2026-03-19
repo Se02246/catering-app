@@ -72,6 +72,22 @@ const ProductManager = () => {
         }
     };
 
+    const calculatePricePerPiece = () => {
+        const pricePerKg = parseFloat(currentProduct.price_per_kg);
+        const piecesPerKg = parseFloat(currentProduct.pieces_per_kg);
+
+        if (!currentProduct.price_per_kg || !currentProduct.pieces_per_kg || isNaN(pricePerKg) || isNaN(piecesPerKg) || piecesPerKg <= 0) {
+            alert('Per favore, compila correttamente i campi "Prezzo al Kg" e "Pezzi per Kg". Assicurati che "Pezzi per Kg" sia maggiore di zero.');
+            return;
+        }
+
+        const pricePerPiece = pricePerKg / piecesPerKg;
+        setCurrentProduct({
+            ...currentProduct,
+            price_per_piece: pricePerPiece.toFixed(2)
+        });
+    };
+
     const toggleVisibility = async (product) => {
         setProductToHide(product);
         setIsHideModalOpen(true);
@@ -184,11 +200,10 @@ const ProductManager = () => {
                                             <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.4rem' }}>Prezzo al Kg (€)</label>
                                             <input
                                                 type="number" step="0.01"
-                                                style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', backgroundColor: currentProduct.is_sold_by_piece ? '#eee' : 'white' }}
+                                                style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', backgroundColor: 'white' }}
                                                 value={currentProduct.price_per_kg}
                                                 onChange={e => setCurrentProduct({ ...currentProduct, price_per_kg: e.target.value })}
                                                 required={!currentProduct.is_sold_by_piece}
-                                                disabled={currentProduct.is_sold_by_piece}
                                             />
                                         </div>
                                         <div>
@@ -203,6 +218,22 @@ const ProductManager = () => {
                                             />
                                         </div>
                                     </div>
+
+                                    {currentProduct.is_sold_by_piece && (
+                                        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed rgba(155, 57, 61, 0.1)' }}>
+                                            <button 
+                                                type="button" 
+                                                className="btn btn-outline" 
+                                                onClick={calculatePricePerPiece}
+                                                style={{ width: '100%', marginBottom: '0.5rem', borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}
+                                            >
+                                                Calcola
+                                            </button>
+                                            <p style={{ fontSize: '0.8rem', color: '#666', margin: 0, textAlign: 'center' }}>
+                                                Assicurati di aver compilato correttamente il campo "prezzo al kg" e "pezzi al kg".
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div style={{ marginBottom: '1.5rem' }}>
