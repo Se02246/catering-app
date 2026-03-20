@@ -89,26 +89,24 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
     return (
         <div 
             className={`modal-overlay ${isClosing ? 'closing' : ''}`} 
-            onClick={onClose} 
-            style={{ zIndex: 3000 }}
+            onClick={onClose}
         >
             <div 
                 style={{ 
                     position: 'relative', 
                     width: '100%', 
-                    maxWidth: '600px', 
-                    margin: 'auto',
+                    maxWidth: '600px',
                     touchAction: 'none' // Prevents browser scroll interference while dragging
                 }}
                 onClick={e => e.stopPropagation()}
             >
-                {/* Package Badge outside modal-content to prevent clipping */}
+                {/* Package Badge positioned correctly for bottom-sheet */}
                 {product.hide_at && (
                     <div 
                         className={`package-badge ${isClosing ? 'closing' : ''}`} 
                         style={{ 
-                            top: '-12px', 
-                            right: '-5px',
+                            top: '-15px', 
+                            right: '15px',
                             zIndex: 3010,
                             position: 'absolute',
                             opacity: isDragging ? 1 - (dragY / 200) : (isClosing ? 0 : 1),
@@ -125,6 +123,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                         maxWidth: '600px', 
                         padding: '0', 
                         overflow: 'hidden',
+                        borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0',
                         transform: dragY > 0 ? `translate3d(0, ${dragY}px, 0)` : '',
                         transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease',
                         animation: isDragging || dragY > 0 || isSwipingOut ? 'none' : undefined,

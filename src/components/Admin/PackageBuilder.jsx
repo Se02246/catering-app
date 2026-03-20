@@ -205,20 +205,10 @@ const PackageBuilder = () => {
             </div>
 
             {isCreating && (
-                <div className="modal-overlay" style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-                    display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000
-                }} onClick={() => setIsCreating(false)}>
-                    <div className="modal-content bounce-in" style={{ 
-                        width: '95vw', 
+                <div className="modal-overlay" onClick={() => setIsCreating(false)}>
+                    <div className="modal-content" style={{ 
                         maxWidth: '1200px', 
-                        maxHeight: '90vh', 
-                        padding: '0', 
                         backgroundColor: 'var(--color-bg)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        overflow: 'hidden'
                     }} onClick={e => e.stopPropagation()}>
                         
                         {/* Fixed Header */}

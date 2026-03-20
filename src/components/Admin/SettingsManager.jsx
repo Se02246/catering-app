@@ -297,29 +297,11 @@ const SettingsManager = () => {
 
             {/* Preview Modal */}
             {previewType && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    backdropFilter: 'blur(4px)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 2000,
-                    padding: '2rem'
-                }}>
-                    <div className="glass-panel" style={{
+                <div className="modal-overlay" onClick={() => setPreviewType(null)}>
+                    <div className="modal-content" style={{
                         maxWidth: '800px',
-                        width: '100%',
-                        maxHeight: '80vh',
-                        display: 'flex',
-                        flexDirection: 'column',
                         backgroundColor: 'white',
-                        overflow: 'hidden'
-                    }}>
+                    }} onClick={e => e.stopPropagation()}>
                         <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <h3 style={{ margin: 0 }}>Anteprima Ricalcolo {previewType === 'products' ? 'Prodotti' : 'Pacchetti'} ({previewType === 'products' ? productInflation : packageInflation}%)</h3>
                             <button onClick={() => setPreviewType(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X /></button>
