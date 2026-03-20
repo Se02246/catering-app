@@ -60,9 +60,22 @@ const SettingsManager = () => {
         
         if (type === 'products') {
             const preview = products.map(p => {
-                // Round up to nearest 10 cents: Math.ceil(value * 10) / 10
-                const newPriceKg = Math.ceil((p.price_per_kg * factor) * 10) / 10;
-                const newPricePiece = p.price_per_piece ? Math.ceil((p.price_per_piece * factor) * 10) / 10 : null;
+                let newPriceKg = p.price_per_kg;
+                let newPricePiece = p.price_per_piece;
+
+                if (p.is_sold_by_piece && p.price_per_piece) {
+                    // Update price per piece and then calculate kg
+                    newPricePiece = Math.ceil((p.price_per_piece * factor) * 10) / 10;
+                    if (p.pieces_per_kg) {
+                        newPriceKg = (newPricePiece * p.pieces_per_kg).toFixed(2);
+                    }
+                } else {
+                    // Update price per kg and then calculate piece
+                    newPriceKg = Math.ceil((p.price_per_kg * factor) * 10) / 10;
+                    if (p.pieces_per_kg) {
+                        newPricePiece = (newPriceKg / p.pieces_per_kg).toFixed(2);
+                    }
+                }
                 
                 return {
                     id: p.id,
@@ -71,7 +84,8 @@ const SettingsManager = () => {
                     newPriceKg: newPriceKg,
                     oldPricePiece: p.price_per_piece,
                     newPricePiece: newPricePiece,
-                    isSoldByPiece: p.is_sold_by_piece
+                    isSoldByPiece: p.is_sold_by_piece,
+                    piecesPerKg: p.pieces_per_kg
                 };
             });
             setPreviewData(preview);
@@ -94,9 +108,23 @@ const SettingsManager = () => {
     };
 
     const handlePreviewPriceChange = (id, field, value) => {
-        setPreviewData(prev => prev.map(item => 
-            item.id === id ? { ...item, [field]: parseFloat(value) || 0 } : item
-        ));
+        setPreviewData(prev => prev.map(item => {
+            if (item.id !== id) return item;
+
+            const val = parseFloat(value) || 0;
+            const newItem = { ...item, [field]: val };
+
+            // Automatic recalculation between kg and piece prices
+            if (item.piecesPerKg && item.piecesPerKg > 0) {
+                if (field === 'newPriceKg') {
+                    newItem.newPricePiece = (val / item.piecesPerKg).toFixed(2);
+                } else if (field === 'newPricePiece') {
+                    newItem.newPriceKg = (val * item.piecesPerKg).toFixed(2);
+                }
+            }
+
+            return newItem;
+        }));
     };
 
     const confirmRecalculation = async () => {
@@ -319,38 +347,45 @@ const SettingsManager = () => {
                                 <tbody>
                                     {previewData.map(item => (
                                         <tr key={item.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                                            <td style={{ padding: '0.75rem 0.5rem' }}>{item.name}</td>
-                                            <td style={{ padding: '0.75rem 0.5rem', color: 'var(--color-text-muted)' }}>
+                                            <td style={{ padding: '0.75rem 0.5rem' }}>
+                                                <div style={{ fontWeight: 'bold' }}>{item.name}</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                                                    {item.isSoldByPiece ? 'Vendita al pezzo' : 'Vendita al kg'}
+                                                    {item.piecesPerKg ? ` (${item.piecesPerKg} pz/kg)` : ''}
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '0.75rem 0.5rem', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
                                                 {previewType === 'products' ? (
-                                                    item.isSoldByPiece 
-                                                        ? `€ ${parseFloat(item.oldPricePiece).toFixed(2)} / pz`
-                                                        : `€ ${parseFloat(item.oldPriceKg).toFixed(2)} / kg`
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                                        <div>Kg: € {parseFloat(item.oldPriceKg).toFixed(2)}</div>
+                                                        {item.oldPricePiece && <div>Pz: € {parseFloat(item.oldPricePiece).toFixed(2)}</div>}
+                                                    </div>
                                                 ) : (
                                                     `€ ${parseFloat(item.oldPrice).toFixed(2)}`
                                                 )}
                                             </td>
-                                            <td style={{ padding: '0.75rem 0.5rem', fontWeight: 'bold' }}>
+                                            <td style={{ padding: '0.75rem 0.5rem' }}>
                                                 {previewType === 'products' ? (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                            <span style={{ fontSize: '0.8rem' }}>{item.isSoldByPiece ? '€ / pz:' : '€ / kg:'}</span>
+                                                            <span style={{ fontSize: '0.75rem', minWidth: '25px' }}>Kg:</span>
                                                             <input 
                                                                 type="number"
-                                                                step="0.1"
-                                                                value={item.isSoldByPiece ? item.newPricePiece : item.newPriceKg}
-                                                                onChange={(e) => handlePreviewPriceChange(item.id, item.isSoldByPiece ? 'newPricePiece' : 'newPriceKg', e.target.value)}
-                                                                style={{ width: '80px', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                                                                step="0.01"
+                                                                value={item.newPriceKg}
+                                                                onChange={(e) => handlePreviewPriceChange(item.id, 'newPriceKg', e.target.value)}
+                                                                style={{ width: '80px', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)', fontWeight: !item.isSoldByPiece ? 'bold' : 'normal' }}
                                                             />
                                                         </div>
-                                                        {!item.isSoldByPiece && item.oldPricePiece && (
+                                                        {(item.newPricePiece || item.piecesPerKg) && (
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                                <span style={{ fontSize: '0.8rem' }}>€ / pz:</span>
+                                                                <span style={{ fontSize: '0.75rem', minWidth: '25px' }}>Pz:</span>
                                                                 <input 
                                                                     type="number"
-                                                                    step="0.1"
+                                                                    step="0.01"
                                                                     value={item.newPricePiece}
                                                                     onChange={(e) => handlePreviewPriceChange(item.id, 'newPricePiece', e.target.value)}
-                                                                    style={{ width: '80px', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                                                                    style={{ width: '80px', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)', fontWeight: item.isSoldByPiece ? 'bold' : 'normal' }}
                                                                 />
                                                             </div>
                                                         )}
@@ -363,7 +398,7 @@ const SettingsManager = () => {
                                                             step="1"
                                                             value={item.newPrice}
                                                             onChange={(e) => handlePreviewPriceChange(item.id, 'newPrice', e.target.value)}
-                                                            style={{ width: '100px', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                                                            style={{ width: '100px', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)', fontWeight: 'bold' }}
                                                         />
                                                     </div>
                                                 )}

@@ -12,9 +12,12 @@ const ProductManager = () => {
     const [productToHide, setProductToHide] = useState(null);
     const [currentProduct, setCurrentProduct] = useState({ name: '', description: '', price_per_kg: '', image_url: '', images: [], is_visible: true, hide_at: null, allow_multiple: false, order_increment: '', max_order_quantity: '', is_sold_by_piece: false, price_per_piece: '' });
 
+    const [calcError, setCalcError] = useState('');
+
     useEffect(() => {
         if (isEditing) {
             document.body.classList.add('modal-open');
+            setCalcError('');
         } else {
             document.body.classList.remove('modal-open');
         }
@@ -27,6 +30,69 @@ const ProductManager = () => {
             pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
             show_servings: false, servings_per_unit: '', is_visible: true, hide_at: null, allow_multiple: false,
             is_gluten_free: false, is_lactose_free: false, is_sold_by_piece: false, price_per_piece: ''
+        });
+        setCalcError('');
+    };
+
+    const handlePricePerKgChange = (val) => {
+        const pricePerKg = parseFloat(val);
+        const piecesPerKg = parseFloat(currentProduct.pieces_per_kg);
+        
+        let newPricePerPiece = currentProduct.price_per_piece;
+        if (!isNaN(pricePerKg) && !isNaN(piecesPerKg) && piecesPerKg > 0) {
+            newPricePerPiece = (pricePerKg / piecesPerKg).toFixed(2);
+            setCalcError('');
+        } else if (val && (!piecesPerKg || piecesPerKg <= 0)) {
+            setCalcError('Inserisci "Pezzi per Kg" per calcolare il prezzo al pezzo');
+        } else {
+            setCalcError('');
+        }
+
+        setCurrentProduct({
+            ...currentProduct,
+            price_per_kg: val,
+            price_per_piece: newPricePerPiece
+        });
+    };
+
+    const handlePricePerPieceChange = (val) => {
+        const pricePerPiece = parseFloat(val);
+        const piecesPerKg = parseFloat(currentProduct.pieces_per_kg);
+        
+        let newPricePerKg = currentProduct.price_per_kg;
+        if (!isNaN(pricePerPiece) && !isNaN(piecesPerKg) && piecesPerKg > 0) {
+            newPricePerKg = (pricePerPiece * piecesPerKg).toFixed(2);
+            setCalcError('');
+        } else if (val && (!piecesPerKg || piecesPerKg <= 0)) {
+            setCalcError('Inserisci "Pezzi per Kg" per calcolare il prezzo al Kg');
+        } else {
+            setCalcError('');
+        }
+
+        setCurrentProduct({
+            ...currentProduct,
+            price_per_piece: val,
+            price_per_kg: newPricePerKg
+        });
+    };
+
+    const handlePiecesPerKgChange = (val) => {
+        const piecesPerKg = parseFloat(val);
+        const pricePerKg = parseFloat(currentProduct.price_per_kg);
+        
+        let newPricePerPiece = currentProduct.price_per_piece;
+
+        if (!isNaN(piecesPerKg) && piecesPerKg > 0) {
+            setCalcError('');
+            if (!isNaN(pricePerKg)) {
+                newPricePerPiece = (pricePerKg / piecesPerKg).toFixed(2);
+            }
+        }
+
+        setCurrentProduct({
+            ...currentProduct,
+            pieces_per_kg: val,
+            price_per_piece: newPricePerPiece
         });
     };
 
@@ -70,22 +136,6 @@ const ProductManager = () => {
             await api.deleteProduct(id);
             mutate();
         }
-    };
-
-    const calculatePricePerPiece = () => {
-        const pricePerKg = parseFloat(currentProduct.price_per_kg);
-        const piecesPerKg = parseFloat(currentProduct.pieces_per_kg);
-
-        if (!currentProduct.price_per_kg || !currentProduct.pieces_per_kg || isNaN(pricePerKg) || isNaN(piecesPerKg) || piecesPerKg <= 0) {
-            alert('Per favore, compila correttamente i campi "Prezzo al Kg" e "Pezzi per Kg". Assicurati che "Pezzi per Kg" sia maggiore di zero.');
-            return;
-        }
-
-        const pricePerPiece = pricePerKg / piecesPerKg;
-        setCurrentProduct({
-            ...currentProduct,
-            price_per_piece: pricePerPiece.toFixed(2)
-        });
     };
 
     const toggleVisibility = async (product) => {
@@ -174,6 +224,17 @@ const ProductManager = () => {
                                 </div>
 
                                 <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.05)' }}>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>Pezzi per Kg</label>
+                                        <input
+                                            type="number" step="0.1"
+                                            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', backgroundColor: 'white' }}
+                                            value={currentProduct.pieces_per_kg || ''}
+                                            onChange={e => handlePiecesPerKgChange(e.target.value)}
+                                            placeholder="Es. 20"
+                                        />
+                                    </div>
+
                                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
                                         <input
                                             type="checkbox"
@@ -192,7 +253,7 @@ const ProductManager = () => {
                                                 type="number" step="0.01"
                                                 style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', backgroundColor: 'white' }}
                                                 value={currentProduct.price_per_kg}
-                                                onChange={e => setCurrentProduct({ ...currentProduct, price_per_kg: e.target.value })}
+                                                onChange={e => handlePricePerKgChange(e.target.value)}
                                                 required={!currentProduct.is_sold_by_piece}
                                             />
                                         </div>
@@ -202,27 +263,17 @@ const ProductManager = () => {
                                                 type="number" step="0.01"
                                                 style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', backgroundColor: !currentProduct.is_sold_by_piece ? '#eee' : 'white' }}
                                                 value={currentProduct.price_per_piece || ''}
-                                                onChange={e => setCurrentProduct({ ...currentProduct, price_per_piece: e.target.value })}
+                                                onChange={e => handlePricePerPieceChange(e.target.value)}
                                                 required={currentProduct.is_sold_by_piece}
                                                 disabled={!currentProduct.is_sold_by_piece}
                                             />
                                         </div>
                                     </div>
 
-                                    {currentProduct.is_sold_by_piece && (
-                                        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed rgba(155, 57, 61, 0.1)' }}>
-                                            <button 
-                                                type="button" 
-                                                className="btn btn-outline" 
-                                                onClick={calculatePricePerPiece}
-                                                style={{ width: '100%', marginBottom: '0.5rem', borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}
-                                            >
-                                                Calcola
-                                            </button>
-                                            <p style={{ fontSize: '0.8rem', color: '#666', margin: 0, textAlign: 'center' }}>
-                                                Assicurati di aver compilato correttamente il campo "prezzo al kg" e "pezzi al kg".
-                                            </p>
-                                        </div>
+                                    {calcError && (
+                                        <p style={{ fontSize: '0.8rem', color: '#f44336', marginTop: '0.5rem', marginBottom: 0, textAlign: 'center', fontWeight: 'bold' }}>
+                                            {calcError}
+                                        </p>
                                     )}
                                 </div>
 
@@ -239,16 +290,6 @@ const ProductManager = () => {
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.4rem' }}>Pezzi per Kg</label>
-                                        <input
-                                            type="number" step="0.1"
-                                            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
-                                            value={currentProduct.pieces_per_kg || ''}
-                                            onChange={e => setCurrentProduct({ ...currentProduct, pieces_per_kg: e.target.value })}
-                                            placeholder="Opzionale"
-                                        />
-                                    </div>
                                     <div>
                                         <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.4rem' }}>Minimo Ordine</label>
                                         <input
