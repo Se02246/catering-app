@@ -120,8 +120,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                 style={{ 
                     position: 'relative', 
                     width: '100%', 
-                    maxWidth: '900px', 
-                    margin: 'auto',
+                    maxWidth: '900px', // Larger on desktop for horizontal view
                     touchAction: 'none'
                 }}
                 onClick={e => e.stopPropagation()}
@@ -158,27 +157,11 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                 >
-                    {/* Floating Back Button */}
-                    <button 
-                        onClick={onClose}
-                        style={{
-                            position: 'absolute', top: '1rem', left: '1rem',
-                            background: 'rgba(255,255,255,0.9)', border: 'none',
-                            width: '40px', height: '40px', borderRadius: '50%',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: 'pointer', zIndex: 100, backdropFilter: 'blur(4px)',
-                            boxShadow: 'var(--shadow-md)',
-                            opacity: isDragging ? 1 - (dragY / 200) : 1
-                        }}
-                    >
-                        <ChevronLeft size={24} />
-                    </button>
-
-                    <div ref={scrollAreaRef} className="modal-scroll-area">
-                        {/* Image Side */}
-                        <div className="package-modal-image-side" style={{ width: '100%', position: 'relative' }}>
+                    <div className="modal-split-container">
+                        {/* Image Column (Left on Desktop) */}
+                        <div className="modal-image-column">
                             {validImages.length > 0 ? (
-                                <div className="aspect-ratio-box" style={{ width: '100%', aspectRatio: '4/5', position: 'relative', overflow: 'hidden' }}>
+                                <div className="aspect-ratio-box">
                                     <div 
                                         ref={galleryRef}
                                         onScroll={handleGalleryScroll}
@@ -208,6 +191,26 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                                         ))}
                                     </div>
 
+                                    {/* Gallery Arrows (Hover on Desktop) */}
+                                    {validImages.length > 1 && (
+                                        <>
+                                            <button 
+                                                className="gallery-arrow prev" 
+                                                onClick={handlePrevImage}
+                                                style={{ display: activeImageIndex === 0 ? 'none' : 'flex' }}
+                                            >
+                                                <ChevronLeft size={24} />
+                                            </button>
+                                            <button 
+                                                className="gallery-arrow next" 
+                                                onClick={handleNextImage}
+                                                style={{ display: activeImageIndex === validImages.length - 1 ? 'none' : 'flex' }}
+                                            >
+                                                <ChevronRight size={24} />
+                                            </button>
+                                        </>
+                                    )}
+
                                     {/* Pagination Dots */}
                                     {validImages.length > 1 && (
                                         <div style={{
@@ -226,15 +229,31 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                                     )}
                                 </div>
                             ) : (
-                                <div style={{ width: '100%', aspectRatio: '4/5', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1A1515', color: 'white' }}>
+                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
                                     Nessuna immagine
                                 </div>
                             )}
+
+                            {/* Floating Back Button (Mobile only logic or general) */}
+                            <button 
+                                onClick={onClose}
+                                style={{
+                                    position: 'absolute', top: '1rem', left: '1rem',
+                                    background: 'rgba(255,255,255,0.9)', border: 'none',
+                                    width: '40px', height: '40px', borderRadius: '50%',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', zIndex: 100, backdropFilter: 'blur(4px)',
+                                    boxShadow: 'var(--shadow-md)',
+                                    opacity: isDragging ? 1 - (dragY / 200) : 1
+                                }}
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
                         </div>
 
-                        {/* Content Side */}
-                        <div className="package-modal-content-side" style={{ width: '100%', background: 'var(--color-bg)' }}>
-                            <div style={{ padding: window.innerWidth > 768 ? '2.5rem' : '1.5rem' }}>
+                        {/* Content Column (Right on Desktop) */}
+                        <div className="modal-content-column" ref={scrollAreaRef}>
+                            <div style={{ padding: '2rem', flex: 1 }}>
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <div className="dietary-badges" style={{ marginBottom: '0.5rem' }}>
                                         {product.is_gluten_free && <span className="badge-dietary badge-gf">Senza Glutine</span>}

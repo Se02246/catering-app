@@ -255,7 +255,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
   max-width: 650px;
   max-height: 90vh;
-  overflow: hidden;
+  overflow: visible !important;
   box-shadow: var(--shadow-xl);
   position: relative;
   display: flex;
@@ -273,7 +273,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Responsive Modal Behavior */
 @media (max-width: 768px) {
   .modal-overlay {
-    align-items: center; /* Mobile: centered */
+    align-items: flex-end; /* Mobile: bottom aligned */
     padding: 1.5rem;
   }
 
