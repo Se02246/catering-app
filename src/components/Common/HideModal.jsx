@@ -31,8 +31,8 @@ const HideModal = ({ isOpen, onClose, onConfirm, initialDate, isVisible = true }
     const showUnhideOption = !isVisible || initialDate;
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" style={{ maxWidth: '400px', padding: '1.5rem' }} onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay" style={{ zIndex: 3000 }} onClick={onClose}>
+            <div className="modal-content" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <EyeOff size={20} /> Visibilità elemento

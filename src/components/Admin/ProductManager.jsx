@@ -174,9 +174,19 @@ const ProductManager = () => {
             </div>
 
             {isEditing && (
-                <div className="modal-overlay" onClick={() => { setIsEditing(false); resetForm(); }}>
-                    <div className="modal-content" style={{ 
+                <div className="modal-overlay" style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+                    display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000
+                }} onClick={() => { setIsEditing(false); resetForm(); }}>
+                    <div className="modal-content bounce-in" style={{ 
+                        width: '95vw', 
                         maxWidth: '600px', 
+                        maxHeight: '90vh', 
+                        padding: '0',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column'
                     }} onClick={e => e.stopPropagation()}>
                         
                         {/* Fixed Header */}
