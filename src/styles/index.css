@@ -139,99 +139,7 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(-2px);
 }
 
-/* Modal Split Layout for Desktop */
-.modal-split-container {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  height: 100%;
-  min-height: 500px;
-  max-height: 85vh;
-  overflow: hidden;
-  background-color: var(--color-white);
-}
-
-.modal-image-column {
-  width: 45%;
-  position: relative;
-  background: #1A1515;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.modal-image-column .aspect-ratio-box {
-  width: 100%;
-  aspect-ratio: 4/5;
-  position: relative;
-  overflow: hidden;
-}
-
-.modal-content-column {
-  width: 55%;
-  display: flex;
-  flex-direction: column;
-  background: var(--color-bg);
-  overflow-y: auto;
-  position: relative;
-}
-
-/* Gallery Arrows Hover Effect */
-.gallery-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.8);
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  opacity: 0;
-  transition: opacity 0.3s ease, background 0.2s ease;
-  box-shadow: var(--shadow-md);
-  color: var(--color-primary);
-}
-
-.modal-image-column:hover .gallery-arrow {
-  opacity: 1;
-}
-
-.gallery-arrow:hover {
-  background: white;
-  transform: translateY(-50%) scale(1.1);
-}
-
-.gallery-arrow.prev { left: 1rem; }
-.gallery-arrow.next { right: 1rem; }
-
-@media (max-width: 768px) {
-  .modal-split-container {
-    flex-direction: column;
-    min-height: auto;
-    max-height: 92vh;
-    overflow-y: auto;
-  }
-
-  .modal-image-column, .modal-content-column {
-    width: 100%;
-  }
-  
-  .modal-image-column {
-    aspect-ratio: 4/5;
-  }
-
-  .gallery-arrow {
-    opacity: 1; /* Always visible on mobile if needed, or hidden */
-  }
-}
-
-/* Modal Overlay & Content basic updates */
+/* Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -240,60 +148,12 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
-  align-items: center; /* Desktop default: centered */
+  align-items: flex-end;
   z-index: 3000;
-  padding: 2rem;
+  padding: 1.5rem;
   transition: all 0.3s ease;
   opacity: 0;
   animation: fadeInOverlay 0.3s ease forwards;
-}
-
-.modal-content {
-  background: var(--color-white);
-  border-radius: var(--radius-xl);
-  width: 100%;
-  max-width: 650px;
-  max-height: 90vh;
-  overflow: visible !important;
-  box-shadow: var(--shadow-xl);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  opacity: 1;
-  animation: modalFadeIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-  will-change: transform, opacity;
-}
-
-@keyframes modalFadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-/* Responsive Modal Behavior */
-@media (max-width: 768px) {
-  .modal-overlay {
-    align-items: flex-end; /* Mobile: bottom aligned */
-    padding: 1.5rem;
-  }
-
-  .modal-content {
-    max-height: 92vh;
-    animation: modalSlideUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
-  }
-
-  @keyframes modalSlideUp {
-    from { transform: translateY(100vh); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  .modal-content.closing {
-    animation: modalSlideDown 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
-  }
-
-  @keyframes modalSlideDown {
-    from { transform: translateY(0); opacity: 1; }
-    to { transform: translateY(100vh); opacity: 0; }
-  }
 }
 
 .modal-overlay.closing {
@@ -302,6 +162,42 @@ h1, h2, h3, h4, h5, h6 {
   background-color: rgba(45, 36, 36, 0);
   opacity: 0;
   pointer-events: none;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(8px); }
+}
+
+.modal-content {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 650px;
+  max-height: 92vh;
+  overflow: visible !important;
+  box-shadow: var(--shadow-xl);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  opacity: 1; /* Base state is visible */
+  transform: translateY(0);
+  animation: modalSlideUp 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  will-change: transform, opacity;
+}
+
+.modal-content.closing {
+  animation: modalSlideDown 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+@keyframes modalSlideUp {
+  from { transform: translateY(100vh); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes modalSlideDown {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(100vh); opacity: 0; }
 }
 
 /* Package Modal Specific (Desktop vs Mobile) */
