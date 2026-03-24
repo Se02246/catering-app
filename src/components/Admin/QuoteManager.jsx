@@ -46,8 +46,13 @@ const QuoteManager = ({ initialSearchId = '' }) => {
 
     const calculateSuggestedTotal = (items) => {
         return items.reduce((sum, item) => {
-            const price = item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg);
-            return sum + (price * item.quantity);
+            const pKg = Number(item.price_per_kg) || 0;
+            const pPc = Number(item.price_per_piece) || 0;
+            const pcsKg = Number(item.pieces_per_kg) || 0;
+            const qty = Number(item.quantity) || 0;
+
+            const price = item.is_sold_by_piece ? pPc : (pcsKg > 0 ? (pKg / pcsKg) : pKg);
+            return sum + (price * qty);
         }, 0);
     };
 
@@ -189,7 +194,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                             </div>
                                         </p>
                                         <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
-                                            Prezzo unitario applicato: € {((item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)}
+                                            Prezzo unitario applicato: € {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)}
                                         </p>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -202,8 +207,11 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                     const val = parseFloat(e.target.value) || 0;
                                                     const updatedItems = currentQuote.items.map(it => it.instanceId === item.instanceId ? { ...it, quantity: val } : it);
                                                     const newTotal = updatedItems.reduce((sum, it) => {
-                                                        const price = it.is_sold_by_piece ? it.price_per_piece : (it.pieces_per_kg ? (it.price_per_kg / it.pieces_per_kg) : it.price_per_kg);
-                                                        return sum + (price * it.quantity);
+                                                        const pKg = Number(it.price_per_kg) || 0;
+                                                        const pPc = Number(it.price_per_piece) || 0;
+                                                        const pcsKg = Number(it.pieces_per_kg) || 0;
+                                                        const price = it.is_sold_by_piece ? pPc : (pcsKg > 0 ? (pKg / pcsKg) : pKg);
+                                                        return sum + (price * (Number(it.quantity) || 0));
                                                     }, 0);
                                                     setCurrentQuote({ ...currentQuote, items: updatedItems, total_price: newTotal });
                                                 }}
@@ -236,7 +244,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                     {p.name} 
                                     {p.is_gluten_free && ' [SG]'}
                                     {p.is_lactose_free && ' [SL]'}
-                                    {` (€ ${p.is_sold_by_piece ? p.price_per_piece : p.price_per_kg})`}
+                                    {` (€ ${(Number(p.is_sold_by_piece ? p.price_per_piece : p.price_per_kg) || 0).toFixed(2)})`}
                                 </option>
                             ))}
                         </select>
@@ -245,7 +253,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                     <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                             <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Totale ricalcolato: </span>
-                            <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {parseFloat(currentQuote.total_price).toFixed(2)}</span>
+                            <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {(Number(currentQuote.total_price) || 0).toFixed(2)}</span>
                             <div style={{ marginTop: '0.5rem' }}>
                                 <label style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Sovrascrivi prezzo totale manualmente:</label>
                                 <input 
