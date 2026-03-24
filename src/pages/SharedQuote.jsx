@@ -177,24 +177,24 @@ const SharedQuote = () => {
                                                 <>
                                                     {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}
                                                     <span style={{ marginLeft: '0.5rem' }}>
-                                                        (€ {(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'})
+                                                        (€ {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'})
                                                     </span>
                                                 </>
                                             ) : (
                                                 <span>
-                                                    € {(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}
+                                                    € {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}
                                                 </span>
                                             )}
                                             {item.show_servings && item.servings_per_unit && (
                                                 <span style={{ color: 'var(--color-primary)', marginLeft: '0.5rem' }}>
-                                                    ({(item.servings_per_unit * item.quantity).toFixed(0)} persone)
+                                                    ({(Number(item.servings_per_unit) * Number(item.quantity)).toFixed(0)} persone)
                                                 </span>
                                             )}
                                         </p>
                                     </div>
                                 </div>
                                 <p style={{ fontWeight: 'bold', color: 'var(--color-primary-dark)' }}>
-                                    € {((item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) * item.quantity).toFixed(2)}
+                                    € {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) * (Number(item.quantity) || 0)).toFixed(2)}
                                 </p>
                             </div>
                         ))}
