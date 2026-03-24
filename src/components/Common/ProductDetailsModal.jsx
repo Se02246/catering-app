@@ -268,7 +268,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
                                 borderRadius: 'var(--radius-md)',
                                 marginBottom: '2rem'
                             }}>
-                                {showPrice && (
+                                {showPrice && !product.hide_unit_price && (
                                     <div>
                                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: '0.2rem', textTransform: 'uppercase', fontWeight: 700 }}>
                                             Prezzo

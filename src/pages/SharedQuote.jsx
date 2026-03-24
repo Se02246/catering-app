@@ -180,7 +180,11 @@ const SharedQuote = () => {
                                             )}
                                             <span>
                                                 {item.hide_quantity ? '' : '('}
-                                                € {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}
+                                                {!item.hide_unit_price ? (
+                                                    <>€ {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}</>
+                                                ) : (
+                                                    <span style={{ fontStyle: 'italic' }}>prezzo riservato</span>
+                                                )}
                                                 {item.hide_quantity ? '' : ')'}
                                             </span>
                                             {item.show_servings && item.servings_per_unit && !item.hide_quantity && (

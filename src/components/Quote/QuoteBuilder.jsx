@@ -197,7 +197,11 @@ const QuoteBuilder = () => {
                                         {p.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Lattosio</span>}
                                     </div>
                                     <p style={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.85rem' }}>
-                                        {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                        {!p.hide_unit_price ? (
+                                            p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`
+                                        ) : (
+                                            <span style={{ fontStyle: 'italic', fontWeight: 'normal', color: 'var(--color-text-muted)' }}>prezzo riservato</span>
+                                        )}
                                     </p>
                                 </div>
                                 <button
@@ -243,7 +247,11 @@ const QuoteBuilder = () => {
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
-                                                {item.is_sold_by_piece ? `${item.price_per_piece.toFixed(2)}€/pz` : `${item.price_per_kg.toFixed(2)}€/kg`}
+                                                {!item.hide_unit_price ? (
+                                                    item.is_sold_by_piece ? `${item.price_per_piece.toFixed(2)}€/pz` : `${item.price_per_kg.toFixed(2)}€/kg`
+                                                ) : (
+                                                    <span style={{ fontStyle: 'italic' }}>prezzo riservato</span>
+                                                )}
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', background: 'var(--color-bg)', padding: '0.3rem 0.6rem', borderRadius: 'var(--radius-md)' }}>
                                                 {/* Minus / Remove Button */}

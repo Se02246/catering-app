@@ -31,7 +31,9 @@ router.get('/', async (req, res) => {
                             'is_gluten_free', p.is_gluten_free,
                             'is_lactose_free', p.is_lactose_free,
                             'is_sold_by_piece', p.is_sold_by_piece,
-                            'price_per_piece', p.price_per_piece
+                            'price_per_piece', p.price_per_piece,
+                            'hide_quantity', p.hide_quantity,
+                            'hide_unit_price', p.hide_unit_price
                         ) ORDER BY p.name
                     ) FILTER (WHERE ci.id IS NOT NULL),
                     '[]'::json
