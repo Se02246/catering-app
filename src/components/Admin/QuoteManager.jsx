@@ -33,7 +33,12 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         setMessage(null);
         try {
             const data = await api.getQuote(idToSearch);
-            setCurrentQuote(data);
+            // Ensure every item has a unique instanceId for local UI state management
+            const itemsWithIds = (data.items || []).map(item => ({
+                ...item,
+                instanceId: item.instanceId || `${Date.now()}-${Math.random()}`
+            }));
+            setCurrentQuote({ ...data, items: itemsWithIds });
             setSearchId(data.id); // Update input field with the full UUID
         } catch (err) {
             console.error(err);
