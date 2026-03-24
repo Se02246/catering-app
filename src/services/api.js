@@ -151,6 +151,10 @@ export const api = {
     },
 
     // Quotes
+    createQuote: async (quote) => {
+        return api.saveQuote(quote.items, quote.total_price);
+    },
+
     saveQuote: async (items, total_price) => {
         const res = await fetch(`${API_URL}/quotes`, {
             method: 'POST',
