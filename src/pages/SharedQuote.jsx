@@ -74,8 +74,8 @@ const SharedQuote = () => {
                 <ArrowLeft size={20} /> Torna al sito
             </button>
 
-            <div className="glass-panel" style={{ padding: '2.5rem', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '5px', background: 'var(--color-primary)' }}></div>
+            <div className="glass-panel" style={{ padding: '2.5rem', position: 'relative', overflow: 'hidden', borderRadius: '24px' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '5px', background: 'var(--color-primary)', borderTopLeftRadius: '24px', borderTopRightRadius: '24px' }}></div>
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <div>
