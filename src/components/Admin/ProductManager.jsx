@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save } from 'lucide-react';
+import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText, Minus, Search, Send } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 import HideModal from '../Common/HideModal';
+import { useNavigate } from 'react-router-dom';
 
 const ProductManager = () => {
     const { products, isLoading, mutate } = useProducts();
+    const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [isHideModalOpen, setIsHideModalOpen] = useState(false);
     const [productToHide, setProductToHide] = useState(null);
@@ -14,15 +16,101 @@ const ProductManager = () => {
 
     const [calcError, setCalcError] = useState('');
 
+    const [isCreatingQuote, setIsCreatingQuote] = useState(false);
+    const [searchTermQuote, setSearchTermQuote] = useState('');
+    const [newQuote, setNewQuote] = useState({
+        items: [], // { product_id, quantity, tempId }
+        total_price: 0
+    });
+
     useEffect(() => {
-        if (isEditing) {
+        if (isEditing || isCreatingQuote) {
             document.body.classList.add('modal-open');
             setCalcError('');
         } else {
             document.body.classList.remove('modal-open');
         }
         return () => document.body.classList.remove('modal-open');
-    }, [isEditing]);
+    }, [isEditing, isCreatingQuote]);
+
+    const updateQuoteItem = (tempId, field, value) => {
+        setNewQuote({
+            ...newQuote,
+            items: newQuote.items.map(item =>
+                item.tempId === tempId ? { ...item, [field]: value } : item
+            )
+        });
+    };
+
+    const removeQuoteItem = (tempId) => {
+        setNewQuote({
+            ...newQuote,
+            items: newQuote.items.filter(item => item.tempId !== tempId)
+        });
+    };
+
+    const calculateQuoteTotal = () => {
+        return newQuote.items.reduce((sum, item) => {
+            const prod = products.find(p => p.id == item.product_id);
+            if (!prod) return sum;
+
+            if (prod.is_sold_by_piece) {
+                return sum + (prod.price_per_piece * item.quantity);
+            } else if (prod.pieces_per_kg > 0) {
+                return sum + ((item.quantity / prod.pieces_per_kg) * prod.price_per_kg);
+            } else {
+                return sum + (prod.price_per_kg * item.quantity);
+            }
+        }, 0);
+    };
+
+    const handleSaveQuoteToWhatsApp = async () => {
+        if (newQuote.items.length === 0) {
+            alert('Aggiungi almeno un prodotto al preventivo');
+            return;
+        }
+
+        try {
+            const total = calculateQuoteTotal();
+            const quoteToSave = {
+                items: newQuote.items.map(item => {
+                    const p = products.find(prod => prod.id === item.product_id);
+                    return {
+                        ...p,
+                        quantity: item.quantity
+                    };
+                }),
+                total_price: total.toFixed(2)
+            };
+
+            const savedQuote = await api.createQuote(quoteToSave);
+            const quoteId = savedQuote.id;
+            const shareUrl = `${window.location.origin}/quote/${quoteId}`;
+
+            const phoneNumber = "393495416637"; // Barbara
+            let message = `Preventivo da ${total.toFixed(2)} euro\n`;
+            
+            newQuote.items.forEach(item => {
+                const p = products.find(prod => prod.id === item.product_id);
+                const isPieces = (p?.pieces_per_kg && parseFloat(p.pieces_per_kg) > 0) || p?.is_sold_by_piece;
+                const unit = isPieces ? 'pz' : 'kg';
+                const itemPrice = p.is_sold_by_piece 
+                    ? (p.price_per_piece * item.quantity) 
+                    : (p.pieces_per_kg > 0 ? (item.quantity / p.pieces_per_kg) * p.price_per_kg : p.price_per_kg * item.quantity);
+                
+                message += `${item.quantity}${unit} ${p.name} [${itemPrice.toFixed(2)}€]\n`;
+            });
+
+            message += `\n${shareUrl}`;
+
+            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+            setIsCreatingQuote(false);
+            setNewQuote({ items: [], total_price: 0 });
+        } catch (err) {
+            console.error(err);
+            alert('Errore durante la creazione del preventivo');
+        }
+    };
 
     const resetForm = () => {
         setCurrentProduct({
@@ -165,13 +253,247 @@ const ProductManager = () => {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <h2>Gestione Prodotti</h2>
-                <button className="btn btn-primary" onClick={() => { resetForm(); setIsEditing(true); }}>
-                    <Plus size={18} style={{ marginRight: '8px' }} />
-                    Nuovo Prodotto
-                </button>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button 
+                        className="btn btn-outline" 
+                        onClick={() => setIsCreatingQuote(true)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                        <FileText size={18} />
+                        Crea Preventivo
+                    </button>
+                    <button className="btn btn-primary" onClick={() => { resetForm(); setIsEditing(true); }}>
+                        <Plus size={18} style={{ marginRight: '8px' }} />
+                        Nuovo Prodotto
+                    </button>
+                </div>
             </div>
+
+            {isCreatingQuote && (
+                <div className="modal-overlay" style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+                    display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000
+                }} onClick={() => setIsCreatingQuote(false)}>
+                    <div className="modal-content bounce-in" style={{ 
+                        width: '95vw', 
+                        maxWidth: '1200px', 
+                        maxHeight: '90vh', 
+                        padding: '0', 
+                        backgroundColor: 'var(--color-bg)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden'
+                    }} onClick={e => e.stopPropagation()}>
+                        
+                        {/* Fixed Header */}
+                        <div style={{ 
+                            padding: '1.5rem', 
+                            borderBottom: '1px solid var(--color-border)', 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            backgroundColor: 'white',
+                            zIndex: 10
+                        }}>
+                            <h3 style={{ margin: 0 }}>Nuovo Preventivo Condivisibile</h3>
+                            <button 
+                                className="btn btn-outline" 
+                                style={{ padding: '0.5rem', borderRadius: '50%', width: '40px', height: '40px' }}
+                                onClick={() => setIsCreatingQuote(false)}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Scrollable Main Area */}
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+                            <div style={{ 
+                                display: 'grid', 
+                                gridTemplateColumns: window.innerWidth > 992 ? '1.2fr 1fr' : '1fr', 
+                                gap: '2rem' 
+                            }}>
+                                
+                                {/* Section 1: Product Picker */}
+                                <div style={{ minWidth: 0 }}>
+                                    <div style={{ 
+                                        position: 'sticky', 
+                                        top: '0', 
+                                        backgroundColor: 'var(--color-bg)', 
+                                        paddingBottom: '1rem',
+                                        zIndex: 5
+                                    }}>
+                                        <h4 style={{ marginBottom: '1rem' }}>1. Seleziona Prodotti</h4>
+                                        <div style={{ position: 'relative' }}>
+                                            <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                                            <input
+                                                type="text"
+                                                placeholder="Cerca prodotto nel catalogo..."
+                                                style={{ width: '100%', padding: '0.75rem 0.75rem 0.75rem 2.5rem', borderRadius: 'var(--radius-full)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}
+                                                onChange={(e) => setSearchTermQuote(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{ 
+                                        display: 'grid', 
+                                        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                                        gap: '1rem',
+                                        maxHeight: window.innerWidth > 992 ? 'none' : '400px',
+                                        overflowY: 'auto',
+                                        padding: '0.5rem'
+                                    }}>
+                                        {products.filter(p => p.name.toLowerCase().includes((searchTermQuote || '').toLowerCase())).map(p => {
+                                            const existing = newQuote.items.find(i => i.product_id === p.id);
+                                            const isAdded = !!existing;
+                                            return (
+                                                <div key={p.id} className="glass-panel" style={{
+                                                    padding: '1rem', border: isAdded ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                                                    display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease'
+                                                }}>
+                                                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem' }}>
+                                                        <img
+                                                            src={p.image_url || 'https://placehold.co/100x100?text=No+Img'}
+                                                            alt={p.name}
+                                                            style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '8px' }}
+                                                        />
+                                                        <div style={{ minWidth: 0 }}>
+                                                            <h5 style={{ margin: 0, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</h5>
+                                                            <p style={{ margin: 0, color: 'var(--color-primary)', fontSize: '0.8rem', fontWeight: '700' }}>
+                                                                {p.is_sold_by_piece ? `€${p.price_per_piece}/pz` : `€${p.price_per_kg}/kg`}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        className={isAdded ? "btn btn-primary" : "btn btn-outline"}
+                                                        style={{ width: '100%', padding: '0.5rem', fontSize: '0.8rem' }}
+                                                        onClick={() => {
+                                                            if (p.allow_multiple) {
+                                                                setNewQuote({
+                                                                    ...newQuote,
+                                                                    items: [...newQuote.items, { product_id: p.id, quantity: 1, tempId: Date.now() + Math.random() }]
+                                                                });
+                                                            } else {
+                                                                if (existing) {
+                                                                    updateQuoteItem(existing.tempId, 'quantity', parseFloat(existing.quantity) + 1);
+                                                                } else {
+                                                                    setNewQuote({
+                                                                        ...newQuote,
+                                                                        items: [...newQuote.items, { product_id: p.id, quantity: 1, tempId: Date.now() }]
+                                                                    });
+                                                                }
+                                                            }
+                                                        }}
+                                                    >
+                                                        {isAdded ? '+ Aggiungi un altro' : 'Aggiungi'}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Section 2: Quote Summary */}
+                                <div>
+                                    <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', border: '1px solid var(--color-border)' }}>
+                                        <h4 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>2. Riepilogo Preventivo</h4>
+
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                            {newQuote.items.length === 0 ? (
+                                                <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', fontSize: '0.9rem', textAlign: 'center', padding: '1rem' }}>Seleziona i prodotti dalla lista a sinistra.</p>
+                                            ) : (
+                                                newQuote.items.map((item) => {
+                                                    const product = products.find(p => p.id === item.product_id);
+                                                    const isPieces = (product?.pieces_per_kg && parseFloat(product.pieces_per_kg) > 0) || product?.is_sold_by_piece;
+                                                    const unit = isPieces ? 'pz' : 'kg';
+                                                    const step = isPieces ? 1 : 0.1;
+                                                    
+                                                    const itemPrice = product.is_sold_by_piece 
+                                                        ? (product.price_per_piece * item.quantity) 
+                                                        : (product.pieces_per_kg > 0 ? (item.quantity / product.pieces_per_kg) * product.price_per_kg : product.price_per_kg * item.quantity);
+
+                                                    return (
+                                                        <div key={item.tempId} className="glass-panel" style={{ padding: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <div style={{ minWidth: 0, flex: 1 }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                                                    <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{product?.name}</div>
+                                                                    <div style={{ display: 'flex', gap: '0.2rem' }}>
+                                                                        {product?.is_gluten_free && (
+                                                                            <span style={{ color: '#FF9800', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>GF</span>
+                                                                        )}
+                                                                        {product?.is_lactose_free && (
+                                                                            <span style={{ color: '#03A9F4', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>LF</span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                <div style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 'bold' }}>
+                                                                    € {itemPrice.toFixed(2)}
+                                                                </div>
+                                                            </div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                <button type="button" className="btn btn-outline" style={{ padding: '0.25rem', borderRadius: '4px' }} onClick={() => updateQuoteItem(item.tempId, 'quantity', Math.max(step, (parseFloat(item.quantity) || 0) - step).toFixed(isPieces ? 0 : 1))}>
+                                                                    <Minus size={14} />
+                                                                </button>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                                                    <input
+                                                                        type="number" step={step}
+                                                                        style={{ width: '50px', textAlign: 'center', border: 'none', background: 'transparent', fontWeight: 'bold' }}
+                                                                        value={item.quantity}
+                                                                        onChange={(e) => updateQuoteItem(item.tempId, 'quantity', e.target.value)}
+                                                                    />
+                                                                    <span style={{ fontSize: '0.8rem' }}>{unit}</span>
+                                                                </div>
+                                                                <button type="button" className="btn btn-outline" style={{ padding: '0.25rem', borderRadius: '4px' }} onClick={() => updateQuoteItem(item.tempId, 'quantity', ((parseFloat(item.quantity) || 0) + step).toFixed(isPieces ? 0 : 1))}>
+                                                                    <Plus size={14} />
+                                                                </button>
+                                                                <button type="button" style={{ background: 'none', border: 'none', color: '#E11D48', marginLeft: '0.5rem', cursor: 'pointer' }} onClick={() => removeQuoteItem(item.tempId)}>
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+
+                                        {newQuote.items.length > 0 && (
+                                            <div style={{ marginTop: '2rem', borderTop: '2px solid var(--color-border)', paddingTop: '1.5rem', textAlign: 'right' }}>
+                                                <span style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)', marginRight: '1rem' }}>Totale stimato:</span>
+                                                <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>
+                                                    € {calculateQuoteTotal().toFixed(2)}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Fixed Footer */}
+                        <div style={{ 
+                            padding: '1.5rem', 
+                            borderTop: '1px solid var(--color-border)', 
+                            backgroundColor: 'white',
+                            display: 'flex',
+                            gap: '1rem',
+                            zIndex: 10
+                        }}>
+                            <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setIsCreatingQuote(false)}>Annulla</button>
+                            <button 
+                                className="btn btn-primary" 
+                                style={{ flex: 1, backgroundColor: '#25D366', borderColor: '#25D366' }}
+                                onClick={handleSaveQuoteToWhatsApp}
+                            >
+                                <Send size={18} style={{ marginRight: '8px' }} />
+                                Salva e Invia su WhatsApp
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {isEditing && (
                 <div className="modal-overlay" style={{
