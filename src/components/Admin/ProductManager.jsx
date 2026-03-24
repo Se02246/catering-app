@@ -26,7 +26,9 @@ const ProductManager = () => {
     const [searchTermQuote, setSearchTermQuote] = useState('');
     const [newQuote, setNewQuote] = useState({
         items: [], // { product_id, quantity, tempId }
-        total_price: 0
+        total_price: 0,
+        is_gluten_free: false,
+        is_lactose_free: false
     });
 
     useEffect(() => {
@@ -90,7 +92,9 @@ const ProductManager = () => {
                         hide_unit_price: p?.hide_unit_price || false
                     };
                 }),
-                total_price: finalTotal.toFixed(2)
+                total_price: finalTotal.toFixed(2),
+                is_gluten_free: newQuote.is_gluten_free,
+                is_lactose_free: newQuote.is_lactose_free
             };
 
             const savedQuote = await api.createQuote(quoteToSave);
@@ -477,6 +481,31 @@ const ProductManager = () => {
 
                                         {newQuote.items.length > 0 && (
                                             <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '1.5rem' }}>
+                                                
+                                                <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#fdf2f2', borderRadius: '8px', border: '1px solid #fee2e2' }}>
+                                                    <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', fontWeight: 'bold' }}>Opzioni Dietetiche Globali:</p>
+                                                    <div style={{ display: 'flex', gap: '2rem' }}>
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                                                            <input 
+                                                                type="checkbox" 
+                                                                checked={newQuote.is_gluten_free} 
+                                                                onChange={e => setNewQuote({ ...newQuote, is_gluten_free: e.target.checked })}
+                                                                style={{ width: '18px', height: '18px' }}
+                                                            />
+                                                            Tutto Senza Glutine
+                                                        </label>
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#03A9F4', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                                                            <input 
+                                                                type="checkbox" 
+                                                                checked={newQuote.is_lactose_free} 
+                                                                onChange={e => setNewQuote({ ...newQuote, is_lactose_free: e.target.checked })}
+                                                                style={{ width: '18px', height: '18px' }}
+                                                            />
+                                                            Tutto Senza Lattosio
+                                                        </label>
+                                                    </div>
+                                                </div>
+
                                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                                                     <div>
                                                         <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '0.4rem' }}>Prezzo Finale da mostrare (€)</label>

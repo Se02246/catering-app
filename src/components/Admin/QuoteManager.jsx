@@ -107,7 +107,12 @@ const QuoteManager = ({ initialSearchId = '' }) => {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await api.updateQuote(currentQuote.id, currentQuote.items, currentQuote.total_price);
+            await api.updateQuote(currentQuote.id, {
+                items: currentQuote.items,
+                total_price: currentQuote.total_price,
+                is_gluten_free: currentQuote.is_gluten_free,
+                is_lactose_free: currentQuote.is_lactose_free
+            });
             setMessage({ type: 'success', text: 'Preventivo aggiornato con successo!' });
         } catch (err) {
             console.error(err);
@@ -117,8 +122,8 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         }
     };
 
-    const isQuoteGlutenFree = currentQuote && currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_gluten_free);
-    const isQuoteLactoseFree = currentQuote && currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_lactose_free);
+    const isQuoteGlutenFree = currentQuote && (currentQuote.is_gluten_free || (currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_gluten_free)));
+    const isQuoteLactoseFree = currentQuote && (currentQuote.is_lactose_free || (currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_lactose_free)));
 
     return (
         <div className="admin-card">
@@ -175,6 +180,30 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                         <a href={`/quote/${currentQuote.id}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 'bold' }}>
                             Vedi Pagina Pubblica <ExternalLink size={16} />
                         </a>
+                    </div>
+
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h4 style={{ marginBottom: '1rem' }}>Opzioni Dietetiche Globali</h4>
+                        <div style={{ display: 'flex', gap: '2rem', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontWeight: 'bold' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={currentQuote.is_gluten_free || false} 
+                                    onChange={e => setCurrentQuote({ ...currentQuote, is_gluten_free: e.target.checked })}
+                                    style={{ width: '18px', height: '18px' }}
+                                />
+                                Tutto Senza Glutine
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#03A9F4', fontWeight: 'bold' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={currentQuote.is_lactose_free || false} 
+                                    onChange={e => setCurrentQuote({ ...currentQuote, is_lactose_free: e.target.checked })}
+                                    style={{ width: '18px', height: '18px' }}
+                                />
+                                Tutto Senza Lattosio
+                            </label>
+                        </div>
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>

@@ -152,7 +152,13 @@ export const api = {
 
     // Quotes
     createQuote: async (quote) => {
-        return api.saveQuote(quote.items, quote.total_price);
+        const res = await fetch(`${API_URL}/quotes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(quote)
+        });
+        if (!res.ok) throw new Error('Failed to save quote');
+        return res.json();
     },
 
     saveQuote: async (items, total_price) => {
@@ -171,11 +177,16 @@ export const api = {
         return res.json();
     },
 
-    updateQuote: async (id, items, total_price) => {
+    updateQuote: async (id, quoteData, total_price) => {
+        // Support both old (id, items, total_price) and new (id, quoteData object) signature
+        const body = (quoteData && typeof quoteData === 'object' && !Array.isArray(quoteData)) 
+            ? quoteData 
+            : { items: quoteData, total_price };
+
         const res = await fetch(`${API_URL}/quotes/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items, total_price })
+            body: JSON.stringify(body)
         });
         if (!res.ok) throw new Error('Failed to update quote');
         return res.json();
