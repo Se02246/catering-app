@@ -54,17 +54,12 @@ const ProductManager = () => {
             const prod = products.find(p => p.id == item.product_id);
             if (!prod) return sum;
 
-            const qty = Number(item.quantity) || 0;
-            const pKg = Number(prod.price_per_kg) || 0;
-            const pPc = Number(prod.price_per_piece) || 0;
-            const pcsKg = Number(prod.pieces_per_kg) || 0;
-
             if (prod.is_sold_by_piece) {
-                return sum + (pPc * qty);
-            } else if (pcsKg > 0) {
-                return sum + ((qty / pcsKg) * pKg);
+                return sum + (prod.price_per_piece * item.quantity);
+            } else if (prod.pieces_per_kg > 0) {
+                return sum + ((item.quantity / prod.pieces_per_kg) * prod.price_per_kg);
             } else {
-                return sum + (pKg * qty);
+                return sum + (prod.price_per_kg * item.quantity);
             }
         }, 0);
     };
