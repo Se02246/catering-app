@@ -412,20 +412,13 @@ const ProductManager = () => {
                                             ) : (
                                                 newQuote.items.map((item) => {
                                                     const product = products.find(p => p.id === item.product_id);
-                                                    if (!product) return null;
-
                                                     const isPieces = (product?.pieces_per_kg && parseFloat(product.pieces_per_kg) > 0) || product?.is_sold_by_piece;
                                                     const unit = isPieces ? 'pz' : 'kg';
                                                     const step = isPieces ? 1 : 0.1;
                                                     
-                                                    const quantity = parseFloat(item.quantity) || 0;
-                                                    const pricePerPiece = parseFloat(product.price_per_piece) || 0;
-                                                    const pricePerKg = parseFloat(product.price_per_kg) || 0;
-                                                    const piecesPerKg = parseFloat(product.pieces_per_kg) || 0;
-
                                                     const itemPrice = product.is_sold_by_piece 
-                                                        ? (pricePerPiece * quantity) 
-                                                        : (piecesPerKg > 0 ? (quantity / piecesPerKg) * pricePerKg : pricePerKg * quantity);
+                                                        ? (product.price_per_piece * item.quantity) 
+                                                        : (product.pieces_per_kg > 0 ? (item.quantity / product.pieces_per_kg) * product.price_per_kg : product.price_per_kg * item.quantity);
 
                                                     return (
                                                         <div key={item.tempId} className="glass-panel" style={{ padding: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
