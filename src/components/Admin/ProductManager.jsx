@@ -132,10 +132,66 @@ const ProductManager = () => {
     };
 
     const handlePricePerKgChange = (val) => {
-        // ... rest of the code ...
+        const pricePerKg = parseFloat(val);
+        const piecesPerKg = parseFloat(currentProduct.pieces_per_kg);
+        
+        let newPricePerPiece = currentProduct.price_per_piece;
+        if (!isNaN(pricePerKg) && !isNaN(piecesPerKg) && piecesPerKg > 0) {
+            newPricePerPiece = (pricePerKg / piecesPerKg).toFixed(2);
+            setCalcError('');
+        } else if (val && (!piecesPerKg || piecesPerKg <= 0)) {
+            setCalcError('Inserisci "Pezzi per Kg" per calcolare il prezzo al pezzo');
+        } else {
+            setCalcError('');
+        }
+
+        setCurrentProduct({
+            ...currentProduct,
+            price_per_kg: val,
+            price_per_piece: newPricePerPiece
+        });
     };
 
-    // ... handlePricePerPieceChange and handlePiecesPerKgChange ...
+    const handlePricePerPieceChange = (val) => {
+        const pricePerPiece = parseFloat(val);
+        const piecesPerKg = parseFloat(currentProduct.pieces_per_kg);
+        
+        let newPricePerKg = currentProduct.price_per_kg;
+        if (!isNaN(pricePerPiece) && !isNaN(piecesPerKg) && piecesPerKg > 0) {
+            newPricePerKg = (pricePerPiece * piecesPerKg).toFixed(2);
+            setCalcError('');
+        } else if (val && (!piecesPerKg || piecesPerKg <= 0)) {
+            setCalcError('Inserisci "Pezzi per Kg" per calcolare il prezzo al Kg');
+        } else {
+            setCalcError('');
+        }
+
+        setCurrentProduct({
+            ...currentProduct,
+            price_per_piece: val,
+            price_per_kg: newPricePerKg
+        });
+    };
+
+    const handlePiecesPerKgChange = (val) => {
+        const piecesPerKg = parseFloat(val);
+        const pricePerKg = parseFloat(currentProduct.price_per_kg);
+        
+        let newPricePerPiece = currentProduct.price_per_piece;
+
+        if (!isNaN(piecesPerKg) && piecesPerKg > 0) {
+            setCalcError('');
+            if (!isNaN(pricePerKg)) {
+                newPricePerPiece = (pricePerKg / piecesPerKg).toFixed(2);
+            }
+        }
+
+        setCurrentProduct({
+            ...currentProduct,
+            pieces_per_kg: val,
+            price_per_piece: newPricePerPiece
+        });
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
