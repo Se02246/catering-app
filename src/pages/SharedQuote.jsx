@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { ShoppingBag, Calendar, ArrowLeft, Send } from 'lucide-react';
-import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 
 const SharedQuote = () => {
     const { id } = useParams();
@@ -10,23 +9,6 @@ const SharedQuote = () => {
     const [quote, setQuote] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedProduct, setSelectedProduct] = useState(null);
-    const [isProductClosing, setIsProductClosing] = useState(false);
-
-    useEffect(() => {
-        const handlePopState = (event) => {
-            if (selectedProduct) {
-                setIsProductClosing(true);
-                setTimeout(() => {
-                    setSelectedProduct(null);
-                    setIsProductClosing(false);
-                }, 500);
-            }
-        };
-
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, [selectedProduct]);
 
     useEffect(() => {
         const fetchQuote = async (isFirstLoad = false) => {
@@ -47,15 +29,6 @@ const SharedQuote = () => {
         const interval = setInterval(() => fetchQuote(false), 5000);
         return () => clearInterval(interval);
     }, [id]);
-
-    const openProduct = (prod) => {
-        window.history.pushState({ modal: 'product' }, '');
-        setSelectedProduct(prod);
-    };
-
-    const closeProduct = () => {
-        window.history.back();
-    };
 
     if (loading) return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '1rem' }}>
@@ -139,34 +112,10 @@ const SharedQuote = () => {
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {quote.items.map((item, idx) => (
-                            <div 
-                                key={idx} 
-                                style={{ 
-                                    display: 'flex', 
-                                    justifyContent: 'space-between', 
-                                    alignItems: 'center', 
-                                    padding: '1rem', 
-                                    backgroundColor: 'rgba(255,255,255,0.5)', 
-                                    borderRadius: '12px', 
-                                    border: '1px solid rgba(0,0,0,0.05)',
-                                    cursor: 'pointer',
-                                    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                                }}
-                                onClick={() => openProduct(item)}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(-2px)';
-                                    e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = 'none';
-                                }}
-                            >
+                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
                                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                     {item.image_url && (
-                                        <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
-                                            <img src={item.image_url} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                        </div>
+                                        <img src={item.image_url} alt={item.name} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
                                     )}
                                     <div>
                                         <p style={{ fontWeight: 'bold', margin: 0 }}>
@@ -227,14 +176,6 @@ const SharedQuote = () => {
                     </p>
                 </div>
             </div>
-
-            {selectedProduct && (
-                <ProductDetailsModal
-                    product={selectedProduct}
-                    onClose={closeProduct}
-                    isClosing={isProductClosing}
-                />
-            )}
         </div>
     );
 };

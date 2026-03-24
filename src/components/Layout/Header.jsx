@@ -89,7 +89,7 @@ const Header = () => {
             />
 
             <div className="nav-container">
-                {(showQuoteBuilder || isLoggedIn) && (
+                {showQuoteBuilder && (
                     <>
                         <button
                             onClick={scrollToPackages}
