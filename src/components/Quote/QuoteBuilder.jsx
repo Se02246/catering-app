@@ -216,8 +216,8 @@ const QuoteBuilder = () => {
             </div>
 
             {/* Quote Summary Section */}
-            <div ref={quoteSummaryRef} id="quote-summary" className="premium-card fade-in" style={{ height: 'fit-content', position: 'sticky', top: '2rem' }}>
-                <div style={{ padding: '2rem', background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))', color: 'white' }}>
+            <div ref={quoteSummaryRef} id="quote-summary" className="premium-card fade-in" style={{ height: 'fit-content', position: 'sticky', top: '2rem', borderRadius: '24px', overflow: 'hidden' }}>
+                <div style={{ padding: '2rem', background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))', color: 'white', borderTopLeftRadius: '24px', borderTopRightRadius: '24px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h2 style={{ margin: 0, color: 'white', fontSize: '1.5rem' }}>Il Tuo Preventivo</h2>
                         {cart.length > 0 && (
