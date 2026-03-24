@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { ShoppingBag, Calendar, ArrowLeft, Send } from 'lucide-react';
+import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 
 const SharedQuote = () => {
     const { id } = useParams();
@@ -9,6 +10,8 @@ const SharedQuote = () => {
     const [quote, setQuote] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [isClosing, setIsClosing] = useState(false);
 
     useEffect(() => {
         const fetchQuote = async (isFirstLoad = false) => {
@@ -119,7 +122,36 @@ const SharedQuote = () => {
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {quote.items.map((item, idx) => (
-                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                            <div 
+                                key={idx} 
+                                onClick={() => setSelectedProduct(item)}
+                                style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between', 
+                                    alignItems: 'center', 
+                                    padding: '1rem', 
+                                    backgroundColor: 'rgba(255,255,255,0.5)', 
+                                    borderRadius: '12px', 
+                                    border: '1px solid rgba(0,0,0,0.05)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    ':hover': {
+                                        backgroundColor: 'rgba(255,255,255,0.8)',
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+                                    }
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.8)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.5)';
+                                    e.currentTarget.style.transform = 'none';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
                                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                     {item.image_url && (
                                         <img src={item.image_url} alt={item.name} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
@@ -159,6 +191,7 @@ const SharedQuote = () => {
                 </div>
 
                 <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '1.5rem', marginTop: '1rem' }}>
+                    {/* ... rest of the content ... */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Totale Preventivo</span>
@@ -198,6 +231,20 @@ const SharedQuote = () => {
                     </p>
                 </div>
             </div>
+
+            {selectedProduct && (
+                <ProductDetailsModal 
+                    product={selectedProduct} 
+                    onClose={() => {
+                        setIsClosing(true);
+                        setTimeout(() => {
+                            setSelectedProduct(null);
+                            setIsClosing(false);
+                        }, 300);
+                    }}
+                    isClosing={isClosing}
+                />
+            )}
         </div>
     );
 };

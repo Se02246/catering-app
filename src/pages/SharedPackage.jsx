@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { ShoppingBag, ArrowLeft, Send, CheckCircle } from 'lucide-react';
 import { formatCustomText } from '../utils/textFormatting';
+import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 
 const SharedPackage = () => {
     const { id } = useParams();
@@ -10,6 +11,8 @@ const SharedPackage = () => {
     const [pkg, setPkg] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [isClosing, setIsClosing] = useState(false);
 
     useEffect(() => {
         const fetchPackage = async (isFirstLoad = false) => {
@@ -112,7 +115,31 @@ const SharedPackage = () => {
                         
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="grid-responsive">
                             {pkg.items.map((item, idx) => (
-                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                                <div 
+                                    key={idx} 
+                                    onClick={() => setSelectedProduct(item)}
+                                    style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '0.75rem', 
+                                        padding: '0.75rem', 
+                                        backgroundColor: 'rgba(255,255,255,0.5)', 
+                                        borderRadius: '12px', 
+                                        border: '1px solid rgba(0,0,0,0.05)',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.8)';
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.5)';
+                                        e.currentTarget.style.transform = 'none';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                    }}
+                                >
                                     <CheckCircle size={18} color="var(--color-primary)" />
                                     <div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -139,6 +166,7 @@ const SharedPackage = () => {
                         </div>
                     </div>
 
+                    {/* ... rest of the content ... */}
                     <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                             <div>
@@ -166,6 +194,20 @@ const SharedPackage = () => {
                     </div>
                 </div>
             </div>
+
+            {selectedProduct && (
+                <ProductDetailsModal 
+                    product={selectedProduct} 
+                    onClose={() => {
+                        setIsClosing(true);
+                        setTimeout(() => {
+                            setSelectedProduct(null);
+                            setIsClosing(false);
+                        }, 300);
+                    }}
+                    isClosing={isClosing}
+                />
+            )}
         </div>
     );
 };
