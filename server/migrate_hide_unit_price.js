@@ -1,0 +1,20 @@
+import { pool } from './db.js';
+
+async function migrate() {
+    console.log('Starting migration: Adding hide_unit_price to products table...');
+    const client = await pool.connect();
+    try {
+        await client.query(`
+            ALTER TABLE products 
+            ADD COLUMN IF NOT EXISTS hide_unit_price BOOLEAN DEFAULT FALSE
+        `);
+        console.log('Migration completed: hide_unit_price column added.');
+    } catch (err) {
+        console.error('Migration failed:', err);
+    } finally {
+        client.release();
+        process.exit();
+    }
+}
+
+migrate();
