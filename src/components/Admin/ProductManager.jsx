@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save } from 'lucide-react';
+import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 import HideModal from '../Common/HideModal';
+import { useNavigate } from 'react-router-dom';
 
 const ProductManager = () => {
     const { products, isLoading, mutate } = useProducts();
+    const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [isHideModalOpen, setIsHideModalOpen] = useState(false);
     const [productToHide, setProductToHide] = useState(null);
@@ -165,12 +167,22 @@ const ProductManager = () => {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <h2>Gestione Prodotti</h2>
-                <button className="btn btn-primary" onClick={() => { resetForm(); setIsEditing(true); }}>
-                    <Plus size={18} style={{ marginRight: '8px' }} />
-                    Nuovo Prodotto
-                </button>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button 
+                        className="btn btn-outline" 
+                        onClick={() => navigate('/quote')}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                        <FileText size={18} />
+                        Crea Preventivo
+                    </button>
+                    <button className="btn btn-primary" onClick={() => { resetForm(); setIsEditing(true); }}>
+                        <Plus size={18} style={{ marginRight: '8px' }} />
+                        Nuovo Prodotto
+                    </button>
+                </div>
             </div>
 
             {isEditing && (

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { ShoppingBag, ArrowLeft, Send, CheckCircle } from 'lucide-react';
 import { formatCustomText } from '../utils/textFormatting';
+import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 
 const SharedPackage = () => {
     const { id } = useParams();
@@ -10,6 +11,23 @@ const SharedPackage = () => {
     const [pkg, setPkg] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [isProductClosing, setIsProductClosing] = useState(false);
+
+    useEffect(() => {
+        const handlePopState = (event) => {
+            if (selectedProduct) {
+                setIsProductClosing(true);
+                setTimeout(() => {
+                    setSelectedProduct(null);
+                    setIsProductClosing(false);
+                }, 500);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [selectedProduct]);
 
     useEffect(() => {
         const fetchPackage = async (isFirstLoad = false) => {
@@ -35,6 +53,15 @@ const SharedPackage = () => {
         const interval = setInterval(() => fetchPackage(false), 5000);
         return () => clearInterval(interval);
     }, [id]);
+
+    const openProduct = (prod) => {
+        window.history.pushState({ modal: 'product' }, '');
+        setSelectedProduct(prod);
+    };
+
+    const closeProduct = () => {
+        window.history.back();
+    };
 
     if (loading) return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '1rem' }}>
@@ -99,8 +126,8 @@ const SharedPackage = () => {
                                 )}
                             </span>
                         </h1>
-                        <p 
-                            style={{ fontSize: '1.2rem', lineHeight: '1.6', color: 'var(--color-text)', whiteSpace: 'pre-wrap' }}
+                        <div 
+                            style={{ fontSize: '1.2rem', lineHeight: '1.6', color: 'var(--color-text)' }}
                             dangerouslySetInnerHTML={{ __html: formatCustomText(pkg.description) }}
                         />
                     </div>
@@ -112,7 +139,29 @@ const SharedPackage = () => {
                         
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="grid-responsive">
                             {pkg.items.map((item, idx) => (
-                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+                                <div 
+                                    key={idx} 
+                                    style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '0.75rem', 
+                                        padding: '0.75rem', 
+                                        backgroundColor: 'rgba(255,255,255,0.5)', 
+                                        borderRadius: '12px', 
+                                        border: '1px solid rgba(0,0,0,0.05)',
+                                        cursor: 'pointer',
+                                        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                                    }}
+                                    onClick={() => openProduct(item)}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                        e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                    }}
+                                >
                                     <CheckCircle size={18} color="var(--color-primary)" />
                                     <div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -166,6 +215,14 @@ const SharedPackage = () => {
                     </div>
                 </div>
             </div>
+
+            {selectedProduct && (
+                <ProductDetailsModal
+                    product={selectedProduct}
+                    onClose={closeProduct}
+                    isClosing={isProductClosing}
+                />
+            )}
         </div>
     );
 };
