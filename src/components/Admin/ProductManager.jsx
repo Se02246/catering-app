@@ -399,8 +399,34 @@ const ProductManager = () => {
                                 {/* Section 2: Quote Summary */}
                                 <div>
                                     <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', border: '1px solid var(--color-border)' }}>
-                                        <h4 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>2. Riepilogo Preventivo</h4>
+                                        <h4 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>2. Configura Preventivo</h4>
 
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+                                            <div>
+                                                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '0.4rem' }}>Prezzo Totale (€)</label>
+                                                <input
+                                                    type="number" step="0.01"
+                                                    style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
+                                                    value={newQuote.total_price}
+                                                    onChange={e => setNewQuote({ ...newQuote, total_price: e.target.value })}
+                                                    required
+                                                />
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline"
+                                                    style={{ padding: '0.75rem', fontSize: '0.75rem' }}
+                                                    onClick={() => setNewQuote({ ...newQuote, total_price: calculateQuoteTotal().toFixed(2) })}
+                                                >
+                                                    Usa Suggerito: €{calculateQuoteTotal().toFixed(2)}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <h5 style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
+                                            Prodotti Selezionati <span>({newQuote.items.length})</span>
+                                        </h5>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                             {newQuote.items.length === 0 ? (
                                                 <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', fontSize: '0.9rem', textAlign: 'center', padding: '1rem' }}>Seleziona i prodotti dalla lista a sinistra.</p>
