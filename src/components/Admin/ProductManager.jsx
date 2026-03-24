@@ -71,7 +71,9 @@ const ProductManager = () => {
         }
 
         try {
-            const total = calculateQuoteTotal();
+            const suggestedTotal = calculateQuoteTotal();
+            const finalTotal = parseFloat(newQuote.total_price) || suggestedTotal;
+            
             const quoteToSave = {
                 items: newQuote.items.map(item => {
                     const p = products.find(prod => prod.id === item.product_id);
@@ -80,7 +82,7 @@ const ProductManager = () => {
                         quantity: item.quantity
                     };
                 }),
-                total_price: total.toFixed(2)
+                total_price: finalTotal.toFixed(2)
             };
 
             const savedQuote = await api.createQuote(quoteToSave);
@@ -88,7 +90,7 @@ const ProductManager = () => {
             const shareUrl = `${window.location.origin}/quote/${quoteId}`;
 
             const phoneNumber = "393495416637"; // Barbara
-            let message = `Preventivo da ${total.toFixed(2)} euro\n`;
+            let message = `Preventivo da ${finalTotal.toFixed(2)} euro\n`;
             
             newQuote.items.forEach(item => {
                 const p = products.find(prod => prod.id === item.product_id);

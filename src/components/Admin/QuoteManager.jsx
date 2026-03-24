@@ -44,6 +44,13 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         }
     };
 
+    const calculateSuggestedTotal = (items) => {
+        return items.reduce((sum, item) => {
+            const price = item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg);
+            return sum + (price * item.quantity);
+        }, 0);
+    };
+
     const updateQuantity = (instanceId, delta) => {
         const updatedItems = currentQuote.items.map(item => {
             if (item.instanceId === instanceId) {
@@ -54,21 +61,22 @@ const QuoteManager = ({ initialSearchId = '' }) => {
             return item;
         }).filter(Boolean);
 
-        const newTotal = updatedItems.reduce((sum, item) => {
-            const price = item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg);
-            return sum + (price * item.quantity);
-        }, 0);
-
-        setCurrentQuote({ ...currentQuote, items: updatedItems, total_price: newTotal });
+        const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
+        setCurrentQuote({ 
+            ...currentQuote, 
+            items: updatedItems, 
+            total_price: newSuggestedTotal
+        });
     };
 
     const removeItem = (instanceId) => {
         const updatedItems = currentQuote.items.filter(item => item.instanceId !== instanceId);
-        const newTotal = updatedItems.reduce((sum, item) => {
-            const price = item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg);
-            return sum + (price * item.quantity);
-        }, 0);
-        setCurrentQuote({ ...currentQuote, items: updatedItems, total_price: newTotal });
+        const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
+        setCurrentQuote({ 
+            ...currentQuote, 
+            items: updatedItems, 
+            total_price: newSuggestedTotal
+        });
     };
 
     const addProductToQuote = (prod) => {
@@ -78,11 +86,12 @@ const QuoteManager = ({ initialSearchId = '' }) => {
             instanceId: Date.now() + Math.random()
         };
         const updatedItems = [...currentQuote.items, newItem];
-        const newTotal = updatedItems.reduce((sum, item) => {
-            const price = item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg);
-            return sum + (price * item.quantity);
-        }, 0);
-        setCurrentQuote({ ...currentQuote, items: updatedItems, total_price: newTotal });
+        const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
+        setCurrentQuote({ 
+            ...currentQuote, 
+            items: updatedItems, 
+            total_price: newSuggestedTotal
+        });
     };
 
     const handleSave = async () => {

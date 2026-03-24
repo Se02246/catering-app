@@ -55,6 +55,13 @@ const SharedQuote = () => {
     const isQuoteGlutenFree = quote.items.length > 0 && quote.items.every(item => item.is_gluten_free);
     const isQuoteLactoseFree = quote.items.length > 0 && quote.items.every(item => item.is_lactose_free);
 
+    const suggestedTotal = quote.items.reduce((sum, item) => {
+        const price = item.is_sold_by_piece 
+            ? item.price_per_piece 
+            : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg);
+        return sum + (price * item.quantity);
+    }, 0);
+
     return (
         <div className="container" style={{ maxWidth: '800px', padding: '2rem 1rem' }}>
             <button 
@@ -157,7 +164,22 @@ const SharedQuote = () => {
                             <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Totale Preventivo</span>
                             <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>(prezzo indicativo)</span>
                         </div>
-                        <span style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {parseFloat(quote.total_price).toFixed(2)}</span>
+                        <div style={{ textAlign: 'right' }}>
+                            {suggestedTotal > parseFloat(quote.total_price) && (
+                                <span style={{ 
+                                    fontSize: '1.2rem', 
+                                    color: 'var(--color-text-muted)', 
+                                    textDecoration: 'line-through',
+                                    marginRight: '0.75rem',
+                                    fontWeight: '500'
+                                }}>
+                                    € {suggestedTotal.toFixed(2)}
+                                </span>
+                            )}
+                            <span style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>
+                                € {parseFloat(quote.total_price).toFixed(2)}
+                            </span>
+                        </div>
                     </div>
 
                     <div style={{ backgroundColor: 'rgba(175, 68, 72, 0.05)', padding: '1.5rem', borderRadius: '16px', border: '1px dashed var(--color-primary)', marginBottom: '2rem', textAlign: 'center' }}>

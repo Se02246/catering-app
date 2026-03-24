@@ -23,7 +23,7 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
     try {
         // Try exact match first if it's a valid UUID
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (uuidRegex.test(id)) {
             const result = await pool.query('SELECT * FROM quotes WHERE id = $1', [id]);
             if (result.rows.length > 0) {
