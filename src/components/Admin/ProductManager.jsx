@@ -85,7 +85,8 @@ const ProductManager = () => {
                     const p = products.find(prod => prod.id === item.product_id);
                     return {
                         ...p,
-                        quantity: item.quantity
+                        quantity: item.quantity,
+                        hide_quantity: p?.hide_quantity || false
                     };
                 }),
                 total_price: finalTotal.toFixed(2)
