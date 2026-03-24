@@ -158,18 +158,16 @@ const SharedPackage = () => {
                                             </div>
                                         </div>
                                         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', margin: 0 }}>
-                                            {!item.hide_quantity ? (
-                                                <>
+                                            {!item.hide_quantity && (
+                                                <span style={{ marginRight: '0.4rem' }}>
                                                     {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}
-                                                    <span style={{ marginLeft: '0.4rem' }}>
-                                                        (€ {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'})
-                                                    </span>
-                                                </>
-                                            ) : (
-                                                <span>
-                                                    € {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}
                                                 </span>
                                             )}
+                                            <span>
+                                                {item.hide_quantity ? '' : '('}
+                                                € {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}
+                                                {item.hide_quantity ? '' : ')'}
+                                            </span>
                                         </p>
                                     </div>
                                 </div>
