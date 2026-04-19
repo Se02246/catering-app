@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw } from 'lucide-react';
 
 const QuoteManager = ({ initialSearchId = '' }) => {
     const { products } = useProducts();
@@ -102,6 +102,31 @@ const QuoteManager = ({ initialSearchId = '' }) => {
             items: updatedItems, 
             total_price: newSuggestedTotal
         });
+    };
+
+    const refreshProductsFromCatalog = () => {
+        const updatedItems = currentQuote.items.map(item => {
+            let liveProduct = products.find(p => p.id === item.id);
+            if (!liveProduct) {
+                liveProduct = products.find(p => p.name.trim().toLowerCase() === item.name.trim().toLowerCase());
+            }
+            if (!liveProduct) return item;
+            
+            return {
+                ...liveProduct,
+                quantity: item.quantity,
+                instanceId: item.instanceId
+            };
+        });
+
+        const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
+        setCurrentQuote({ 
+            ...currentQuote, 
+            items: updatedItems, 
+            total_price: newSuggestedTotal 
+        });
+        setMessage({ type: 'success', text: 'Prodotti sincronizzati col catalogo! (Clicca Salva Modifiche per applicare permanentemente)' });
+        setTimeout(() => setMessage(null), 5000);
     };
 
     const handleSave = async () => {
@@ -207,7 +232,17 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>
-                        <h4 style={{ marginBottom: '1rem' }}>Prodotti nel preventivo</h4>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                            <h4 style={{ margin: 0 }}>Prodotti nel preventivo</h4>
+                            <button 
+                                className="btn btn-outline" 
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }} 
+                                onClick={refreshProductsFromCatalog}
+                                title="Aggiorna le versioni dei prodotti (immagini, prezzi, descrizioni) con la versione attuale caricata nel catalogo"
+                            >
+                                <RefreshCw size={16} /> Aggiorna prodotti dal catalogo
+                            </button>
+                        </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             {currentQuote.items.map((item) => (
                                 <div key={item.instanceId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
