@@ -91,13 +91,37 @@ const SharedQuote = () => {
         let yPos = 20;
 
         doc.setFontSize(22);
-        doc.setFont('helvetica', 'normal');
+        doc.setFont('helvetica', 'bold');
         doc.text("Menù", 105, yPos, { align: 'center' });
         
-        doc.setFontSize(14);
-        doc.setFont('times', 'italic');
-        doc.setTextColor(155, 57, 61);
-        doc.text("Muse Catering", 195, yPos, { align: 'right' });
+        let logoDataUrl = null;
+        let pdfW = 0;
+        let pdfH = 0;
+        
+        try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const fontSize = 80;
+            ctx.font = `400 ${fontSize}px "Brittany Signature", "Outfit", sans-serif`;
+            const textWidth = Math.ceil(ctx.measureText("Muse Catering").width);
+            const width = textWidth + 20;
+            const height = fontSize * 1.5;
+
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.font = `400 ${fontSize}px "Brittany Signature", "Outfit", sans-serif`;
+            ctx.fillStyle = "rgb(155, 57, 61)";
+            ctx.textBaseline = "top";
+            ctx.fillText("Muse Catering", 10, 10);
+
+            logoDataUrl = canvas.toDataURL('image/png');
+            pdfW = width * (16 / fontSize); 
+            pdfH = height * (16 / fontSize);
+        } catch(e) {
+            console.error("Error drawing logo canvas", e);
+        }
+        
         doc.setTextColor(0);
         doc.setFont('helvetica', 'normal');
 
@@ -216,6 +240,21 @@ const SharedQuote = () => {
             
             yPos = Math.max(textY, currentY + imageHeight + 10);
             doc.setTextColor(0);
+        }
+
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            const pageHeight = doc.internal.pageSize.getHeight();
+            if (logoDataUrl) {
+                doc.addImage(logoDataUrl, 'PNG', 195 - pdfW, pageHeight - pdfH - 10, pdfW, pdfH);
+            } else {
+                doc.setFontSize(16);
+                doc.setFont('times', 'italic');
+                doc.setTextColor(155, 57, 61);
+                doc.text("Muse Catering", 195, pageHeight - 15, { align: 'right' });
+                doc.setTextColor(0);
+            }
         }
 
         doc.save(`Menu_Preventivo.pdf`);
