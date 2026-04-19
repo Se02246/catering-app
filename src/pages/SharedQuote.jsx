@@ -104,20 +104,20 @@ const SharedQuote = () => {
             const fontSize = 80;
             ctx.font = `400 ${fontSize}px "Brittany Signature", "Outfit", sans-serif`;
             const textWidth = Math.ceil(ctx.measureText("Muse Catering").width);
-            const width = textWidth + 20;
-            const height = fontSize * 1.5;
+            const width = textWidth + 80;
+            const height = fontSize * 3;
 
             canvas.width = width;
             canvas.height = height;
 
             ctx.font = `400 ${fontSize}px "Brittany Signature", "Outfit", sans-serif`;
             ctx.fillStyle = "rgb(155, 57, 61)";
-            ctx.textBaseline = "top";
-            ctx.fillText("Muse Catering", 10, 10);
+            ctx.textBaseline = "middle";
+            ctx.fillText("Muse Catering", 40, height / 2);
 
             logoDataUrl = canvas.toDataURL('image/png');
-            pdfW = width * (8 / fontSize); 
-            pdfH = height * (8 / fontSize);
+            pdfW = width * (6.8 / fontSize); 
+            pdfH = height * (6.8 / fontSize);
         } catch(e) {
             console.error("Error drawing logo canvas", e);
         }
