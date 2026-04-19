@@ -14,6 +14,7 @@ const SharedPackage = () => {
     const [error, setError] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isClosing, setIsClosing] = useState(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
     useEffect(() => {
         const fetchPackage = async (isFirstLoad = false) => {
@@ -71,8 +72,10 @@ const SharedPackage = () => {
         : parseFloat(pkg.total_price).toFixed(2);
 
     const generatePDF = async () => {
-        const doc = new jsPDF();
-        let yPos = 20;
+        setIsGeneratingPdf(true);
+        try {
+            const doc = new jsPDF();
+            let yPos = 20;
 
         doc.setFontSize(22);
         doc.setFont('helvetica', 'bold');
@@ -245,6 +248,11 @@ const SharedPackage = () => {
         }
 
         doc.save(`Menu_Pacchetto.pdf`);
+        } catch (error) {
+            console.error("Generazione PDF fallita", error);
+        } finally {
+            setIsGeneratingPdf(false);
+        }
     };
 
     return (
@@ -361,8 +369,18 @@ const SharedPackage = () => {
                         className="btn btn-outline" 
                         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '1rem', marginBottom: '1.5rem', fontSize: '1.1rem' }}
                         onClick={generatePDF}
+                        disabled={isGeneratingPdf}
                     >
-                        <Download size={20} /> Scarica il menù
+                        {isGeneratingPdf ? (
+                            <>
+                                <div className="animate-spin" style={{ width: '20px', height: '20px', border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%' }}></div>
+                                Generazione in corso...
+                            </>
+                        ) : (
+                            <>
+                                <Download size={20} /> Scarica il menù
+                            </>
+                        )}
                     </button>
 
                     <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '2rem' }}>
