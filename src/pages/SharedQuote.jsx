@@ -93,6 +93,14 @@ const SharedQuote = () => {
         doc.setFontSize(22);
         doc.setFont('helvetica', 'normal');
         doc.text("Menù", 105, yPos, { align: 'center' });
+        
+        doc.setFontSize(14);
+        doc.setFont('times', 'italic');
+        doc.setTextColor(155, 57, 61);
+        doc.text("Muse Catering", 195, yPos, { align: 'right' });
+        doc.setTextColor(0);
+        doc.setFont('helvetica', 'normal');
+
         yPos += 10;
 
         let globalSubtitle = "";
@@ -136,14 +144,33 @@ const SharedQuote = () => {
                     });
                     
                     if (img.width > 0 && img.height > 0) {
+                        const size = Math.min(img.width, img.height);
+                        const sx = (img.width - size) / 2;
+                        const sy = (img.height - size) / 2;
+
                         const canvas = document.createElement('canvas');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
+                        canvas.width = size;
+                        canvas.height = size;
                         const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
-                        const dataUrl = canvas.toDataURL('image/jpeg');
                         
-                        doc.addImage(dataUrl, 'JPEG', 15, currentY, 40, 40);
+                        const radius = size * 0.15; // 15% corner radius for smooth rounded corners
+                        ctx.beginPath();
+                        ctx.moveTo(radius, 0);
+                        ctx.lineTo(size - radius, 0);
+                        ctx.quadraticCurveTo(size, 0, size, radius);
+                        ctx.lineTo(size, size - radius);
+                        ctx.quadraticCurveTo(size, size, size - radius, size);
+                        ctx.lineTo(radius, size);
+                        ctx.quadraticCurveTo(0, size, 0, size - radius);
+                        ctx.lineTo(0, radius);
+                        ctx.quadraticCurveTo(0, 0, radius, 0);
+                        ctx.closePath();
+                        ctx.clip();
+
+                        ctx.drawImage(img, sx, sy, size, size, 0, 0, size, size);
+                        const dataUrl = canvas.toDataURL('image/png');
+                        
+                        doc.addImage(dataUrl, 'PNG', 15, currentY, 40, 40);
                     }
                 } catch (e) {
                     console.error("Error drawing image in PDF", e);
@@ -156,8 +183,8 @@ const SharedQuote = () => {
             doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(0);
-            const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}` : "";
-            const nameQty = `${item.name}${qty ? ` (${qty})` : ''}`;
+            
+            const nameQty = item.name || '';
             doc.text(nameQty, xText, textY);
             textY += 6;
 
