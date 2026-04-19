@@ -116,8 +116,8 @@ const SharedQuote = () => {
             ctx.fillText("Muse Catering", 10, 10);
 
             logoDataUrl = canvas.toDataURL('image/png');
-            pdfW = width * (16 / fontSize); 
-            pdfH = height * (16 / fontSize);
+            pdfW = width * (8 / fontSize); 
+            pdfH = height * (8 / fontSize);
         } catch(e) {
             console.error("Error drawing logo canvas", e);
         }
@@ -249,7 +249,7 @@ const SharedQuote = () => {
             if (logoDataUrl) {
                 doc.addImage(logoDataUrl, 'PNG', 195 - pdfW, pageHeight - pdfH - 10, pdfW, pdfH);
             } else {
-                doc.setFontSize(16);
+                doc.setFontSize(9);
                 doc.setFont('times', 'italic');
                 doc.setTextColor(155, 57, 61);
                 doc.text("Muse Catering", 195, pageHeight - 15, { align: 'right' });
