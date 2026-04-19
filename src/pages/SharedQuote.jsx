@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check, Download, Eye } from 'lucide-react';
+import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check, Download, Eye, QrCode } from 'lucide-react';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import { jsPDF } from 'jspdf';
+import QRCode from 'qrcode';
 
 const SharedQuote = ({ isMenuMode = false }) => {
     const { id, menuId } = useParams();
@@ -15,6 +16,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
     const [isClosing, setIsClosing] = useState(false);
     const [copied, setCopied] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [isGeneratingQr, setIsGeneratingQr] = useState(false);
 
     const handleCopyToClipboard = () => {
         let text = `Riepilogo preventivo\n`;
@@ -268,6 +270,46 @@ const SharedQuote = ({ isMenuMode = false }) => {
         }
     };
 
+    const generateQRCodePDF = async () => {
+        setIsGeneratingQr(true);
+        try {
+            const menuUrl = `${window.location.origin}/menu/${quote.menu_id}`;
+            const qrDataUrl = await QRCode.toDataURL(menuUrl, { width: 800, margin: 2, color: { dark: '#111111', light: '#ffffff' } });
+            
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            doc.setFillColor(252, 250, 245);
+            doc.rect(0, 0, 210, 297, 'F');
+            
+            doc.setFont('times', 'bold');
+            doc.setFontSize(28);
+            doc.setTextColor(155, 57, 61); // var(--color-primary) approssimato
+            doc.text('MUSE CATERING', 105, 50, { align: 'center' });
+            
+            doc.setFont('times', 'italic');
+            doc.setFontSize(16);
+            doc.setTextColor(80, 80, 80);
+            doc.text('Scansiona il codice per visualizzare il menù digitale', 105, 65, { align: 'center' });
+            
+            doc.addImage(qrDataUrl, 'PNG', 55, 90, 100, 100);
+            
+            doc.setFont('times', 'normal');
+            doc.setFontSize(12);
+            doc.setTextColor(130, 130, 130);
+            doc.text(`ID Evento: ${id.substring(0, 8).toUpperCase()}`, 105, 210, { align: 'center' });
+
+            doc.save(`QR_Menu_${id.substring(0,8).toUpperCase()}.pdf`);
+        } catch (err) {
+            console.error('Error generating QR Code PDF', err);
+        } finally {
+            setIsGeneratingQr(false);
+        }
+    };
+
     return (
         <div className="container" style={{ maxWidth: '800px', padding: '2rem 1rem', position: 'relative' }}>
             <h1 className="brand-logo" style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', fontSize: '1.4rem', margin: 0, zIndex: 10 }}>Muse Catering</h1>
@@ -467,6 +509,26 @@ const SharedQuote = ({ isMenuMode = false }) => {
                             onClick={() => window.open(`/menu/${quote.menu_id}`, '_blank')}
                         >
                             <Eye size={20} /> Visualizza menù digitale
+                        </button>
+                    )}
+
+                    {!isMenuMode && (
+                        <button 
+                            className="btn btn-outline" 
+                            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '1rem', marginBottom: '1rem', fontSize: '1.1rem', backgroundColor: 'white', color: 'var(--color-primary-dark)', borderColor: 'var(--color-primary-dark)' }}
+                            onClick={generateQRCodePDF}
+                            disabled={isGeneratingQr}
+                        >
+                            {isGeneratingQr ? (
+                                <>
+                                    <div className="animate-spin" style={{ width: '20px', height: '20px', border: '2px solid currentColor', borderTopColor: 'transparent', borderRadius: '50%' }}></div>
+                                    Generazione in corso...
+                                </>
+                            ) : (
+                                <>
+                                    <QrCode size={20} /> QR Code Menù
+                                </>
+                            )}
                         </button>
                     )}
 
