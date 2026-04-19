@@ -248,7 +248,8 @@ const SharedPackage = () => {
     };
 
     return (
-        <div className="container" style={{ maxWidth: '800px', padding: '2rem 1rem' }}>
+        <div className="container" style={{ maxWidth: '800px', padding: '2rem 1rem', position: 'relative' }}>
+            <h1 className="brand-logo" style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', fontSize: '1.4rem', margin: 0, zIndex: 10 }}>Muse Catering</h1>
             <button 
                 onClick={() => navigate('/')}
                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', marginBottom: '2rem', fontSize: '1rem', fontWeight: 'bold' }}
