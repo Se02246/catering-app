@@ -285,22 +285,49 @@ const SharedQuote = ({ isMenuMode = false }) => {
             doc.setFillColor(252, 250, 245);
             doc.rect(0, 0, 210, 297, 'F');
             
-            doc.setFont('times', 'bold');
-            doc.setFontSize(28);
-            doc.setTextColor(155, 57, 61); // var(--color-primary) approssimato
-            doc.text('MUSE CATERING', 105, 50, { align: 'center' });
+            let logoDataUrl = null;
+            let pdfW = 0;
+            let pdfH = 0;
+            try {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const fontSize = 100;
+                ctx.font = `400 ${fontSize}px "Brittany Signature", "Outfit", sans-serif`;
+                const textWidth = Math.ceil(ctx.measureText("Muse Catering").width);
+                const width = textWidth + 80;
+                const height = fontSize * 3;
+
+                canvas.width = width;
+                canvas.height = height;
+
+                ctx.font = `400 ${fontSize}px "Brittany Signature", "Outfit", sans-serif`;
+                ctx.fillStyle = "rgb(155, 57, 61)";
+                ctx.textBaseline = "middle";
+                ctx.fillText("Muse Catering", 40, height / 2);
+
+                logoDataUrl = canvas.toDataURL('image/png');
+                pdfW = width * (14 / fontSize); 
+                pdfH = height * (14 / fontSize);
+            } catch(e) {
+                console.error("Error drawing logo canvas", e);
+            }
+
+            if (logoDataUrl) {
+                doc.addImage(logoDataUrl, 'PNG', 105 - (pdfW / 2), 25, pdfW, pdfH);
+            } else {
+                doc.setFont('times', 'bold');
+                doc.setFontSize(28);
+                doc.setTextColor(155, 57, 61);
+                doc.text('MUSE CATERING', 105, 50, { align: 'center' });
+            }
             
             doc.setFont('times', 'italic');
             doc.setFontSize(16);
             doc.setTextColor(80, 80, 80);
-            doc.text('Scansiona il codice per visualizzare il menù digitale', 105, 65, { align: 'center' });
+            doc.text('Scansiona il codice per visualizzare il menù digitale', 105, 85, { align: 'center' });
+            doc.text('e avere maggiori dettagli sui prodotti', 105, 95, { align: 'center' });
             
-            doc.addImage(qrDataUrl, 'PNG', 55, 90, 100, 100);
-            
-            doc.setFont('times', 'normal');
-            doc.setFontSize(12);
-            doc.setTextColor(130, 130, 130);
-            doc.text(`ID Evento: ${id.substring(0, 8).toUpperCase()}`, 105, 210, { align: 'center' });
+            doc.addImage(qrDataUrl, 'PNG', 55, 115, 100, 100);
 
             doc.save(`QR_Menu_${id.substring(0,8).toUpperCase()}.pdf`);
         } catch (err) {
