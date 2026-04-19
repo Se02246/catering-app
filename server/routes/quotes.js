@@ -18,6 +18,26 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Get a quote by menu_id (Public Digital Menu)
+router.get('/menu/:menuId', async (req, res) => {
+    const { menuId } = req.params;
+    try {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(menuId)) {
+            return res.status(400).json({ error: 'Invalid menu ID format' });
+        }
+        
+        const result = await pool.query('SELECT * FROM quotes WHERE menu_id = $1', [menuId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Menu not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error fetching quote by menu_id:', err);
+        res.status(500).json({ error: 'Server error fetching menu' });
+    }
+});
+
 // Get a quote by ID (Public)
 router.get('/:id', async (req, res) => {
     const { id } = req.params;

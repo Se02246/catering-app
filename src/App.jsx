@@ -43,6 +43,7 @@ function AppContent() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/quote" element={<CreateQuote />} />
           <Route path="/quote/:id" element={<SharedQuote />} />
+          <Route path="/menu/:menuId" element={<SharedQuote isMenuMode={true} />} />
           <Route path="/package/:id" element={<SharedPackage />} />
           <Route path="/login" element={<Login />} />
         </Routes>

@@ -177,6 +177,12 @@ export const api = {
         return res.json();
     },
 
+    getQuoteByMenuId: async (menuId) => {
+        const res = await fetch(`${API_URL}/quotes/menu/${menuId}`);
+        if (!res.ok) throw new Error('Menu not found');
+        return res.json();
+    },
+
     updateQuote: async (id, quoteData, total_price) => {
         // Support both old (id, items, total_price) and new (id, quoteData object) signature
         const body = (quoteData && typeof quoteData === 'object' && !Array.isArray(quoteData)) 
