@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { ShoppingBag, Calendar, ArrowLeft, Send } from 'lucide-react';
+import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check } from 'lucide-react';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 
 const SharedQuote = () => {
@@ -12,6 +12,26 @@ const SharedQuote = () => {
     const [error, setError] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isClosing, setIsClosing] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const handleCopyToClipboard = () => {
+        let text = `Riepilogo preventivo\n`;
+        text += `ID preventivo: ${id}\n`;
+        text += `Creato il ${new Date(quote?.created_at).toLocaleDateString('it-IT')}\n\n`;
+        text += `Prodotti:\n`;
+        if (quote && quote.items) {
+            quote.items.forEach(item => {
+                const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}` : "";
+                text += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
+            });
+        }
+        text += `\nLink della pagina share: ${window.location.href}`;
+
+        navigator.clipboard.writeText(text).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }).catch(err => console.error('Errore durante la copia:', err));
+    };
 
     useEffect(() => {
         const fetchQuote = async (isFirstLoad = false) => {
@@ -98,20 +118,41 @@ const SharedQuote = () => {
                             <Calendar size={16} /> Creato il {new Date(quote.created_at).toLocaleDateString('it-IT')}
                         </p>
                     </div>
-                    <div 
-                        style={{ textAlign: 'right', cursor: 'pointer' }} 
-                        onClick={() => {
-                            const token = localStorage.getItem('token');
-                            if (token) {
-                                navigate(`/admin?tab=quotes&searchId=${id}`);
-                            } else {
-                                navigate(`/login?redirect=/admin?tab=quotes&searchId=${id}`);
-                            }
-                        }}
-                        title="Gestisci questo preventivo (Amministratore)"
-                    >
-                        <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>ID Preventivo</p>
-                        <p style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--color-primary)', textDecoration: 'underline' }}>{id.substring(0, 8).toUpperCase()}</p>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem' }}>
+                        <div 
+                            style={{ textAlign: 'right', cursor: 'pointer' }} 
+                            onClick={() => {
+                                const token = localStorage.getItem('token');
+                                if (token) {
+                                    navigate(`/admin?tab=quotes&searchId=${id}`);
+                                } else {
+                                    navigate(`/login?redirect=/admin?tab=quotes&searchId=${id}`);
+                                }
+                            }}
+                            title="Gestisci questo preventivo (Amministratore)"
+                        >
+                            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>ID Preventivo</p>
+                            <p style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--color-primary)', textDecoration: 'underline' }}>{id.substring(0, 8).toUpperCase()}</p>
+                        </div>
+                        <button
+                            onClick={handleCopyToClipboard}
+                            title="Copia preventivo come testo"
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: copied ? '#4CAF50' : 'var(--color-primary)',
+                                cursor: 'pointer',
+                                padding: '0.5rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'all 0.2s ease',
+                                borderRadius: '8px',
+                                backgroundColor: copied ? 'rgba(76, 175, 80, 0.1)' : 'rgba(175, 68, 72, 0.05)'
+                            }}
+                        >
+                            {copied ? <Check size={20} /> : <Copy size={20} />}
+                        </button>
                     </div>
                 </div>
 
