@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check } from 'lucide-react';
+import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check, Download } from 'lucide-react';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
+import { jsPDF } from 'jspdf';
 
 const SharedQuote = () => {
     const { id } = useParams();
@@ -85,8 +86,117 @@ const SharedQuote = () => {
         return sum + (price * item.quantity);
     }, 0);
 
+    const generatePDF = async () => {
+        const doc = new jsPDF();
+        let yPos = 20;
+
+        doc.setFontSize(22);
+        doc.setFont('helvetica', 'normal');
+        doc.text("Menù", 105, yPos, { align: 'center' });
+        yPos += 10;
+
+        let globalSubtitle = "";
+        if (isQuoteGlutenFree && isQuoteLactoseFree) {
+            globalSubtitle = "Menù gluten free e senza lattosio";
+        } else if (isQuoteGlutenFree) {
+            globalSubtitle = "Menù gluten free";
+        } else if (isQuoteLactoseFree) {
+            globalSubtitle = "Menù senza lattosio";
+        }
+
+        if (globalSubtitle) {
+            doc.setFontSize(14);
+            doc.setTextColor(100);
+            doc.text(globalSubtitle, 105, yPos, { align: 'center' });
+            yPos += 15;
+            doc.setTextColor(0);
+        } else {
+            yPos += 10;
+        }
+
+        for (let i = 0; i < quote.items.length; i++) {
+            const item = quote.items[i];
+            
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            let imageHeight = 40;
+            let currentY = yPos;
+
+            if (item.image_url) {
+                try {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.src = item.image_url;
+                    await new Promise((resolve) => {
+                        img.onload = resolve;
+                        img.onerror = resolve; 
+                    });
+                    
+                    if (img.width > 0 && img.height > 0) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        const dataUrl = canvas.toDataURL('image/jpeg');
+                        
+                        doc.addImage(dataUrl, 'JPEG', 15, currentY, 40, 40);
+                    }
+                } catch (e) {
+                    console.error("Error drawing image in PDF", e);
+                }
+            }
+
+            let xText = item.image_url ? 60 : 15;
+            let textY = currentY + 5;
+
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0);
+            const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}` : "";
+            const nameQty = `${item.name}${qty ? ` (${qty})` : ''}`;
+            doc.text(nameQty, xText, textY);
+            textY += 6;
+
+            let labels = [];
+            if (item.is_gluten_free && !isQuoteGlutenFree) labels.push("Gluten Free");
+            if (item.is_lactose_free && !isQuoteLactoseFree) labels.push("Senza Lattosio");
+            
+            if (labels.length > 0) {
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'italic');
+                doc.setTextColor(255, 152, 0); // using an orange tone for labels or general dark text
+                doc.text(labels.join(" - "), xText, textY);
+                textY += 6;
+            }
+
+            if (item.description) {
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(80);
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = item.description;
+                let textDesc = tempDiv.textContent || tempDiv.innerText || "";
+                
+                const lines = doc.splitTextToSize(textDesc, 200 - xText - 15);
+                doc.text(lines, xText, textY);
+                textY += (lines.length * 5) + 5;
+            }
+            
+            yPos = Math.max(textY, currentY + imageHeight + 10);
+            doc.setTextColor(0);
+        }
+
+        doc.save(`Menu_Preventivo.pdf`);
+    };
+
     return (
-        <div className="container" style={{ maxWidth: '800px', padding: '2rem 1rem' }}>
+        <div className="container" style={{ maxWidth: '800px', padding: '2rem 1rem', position: 'relative' }}>
+            <h1 className="brand-logo" style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', fontSize: '1.4rem', margin: 0, zIndex: 10 }}>Muse Catering</h1>
             <button 
                 onClick={() => navigate('/')}
                 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', marginBottom: '2rem', fontSize: '1rem', fontWeight: 'bold' }}
@@ -277,6 +387,14 @@ const SharedQuote = () => {
                             <Send size={20} /> Richiedi Informazioni su WhatsApp
                         </button>
                     </div>
+
+                    <button 
+                        className="btn btn-outline" 
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '1rem', marginBottom: '2rem', fontSize: '1.1rem' }}
+                        onClick={generatePDF}
+                    >
+                        <Download size={20} /> Scarica il menù
+                    </button>
 
                     <p style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
                         Muse Catering - Qualità e Passione per i tuoi eventi
