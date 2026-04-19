@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { ShoppingBag, ArrowLeft, Send, CheckCircle } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Send, CheckCircle, Download } from 'lucide-react';
 import { formatCustomText } from '../utils/textFormatting';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
+import { jsPDF } from 'jspdf';
 
 const SharedPackage = () => {
     const { id } = useParams();
@@ -68,6 +69,183 @@ const SharedPackage = () => {
     const finalPrice = pkg.discount_percentage > 0 
         ? (pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)
         : parseFloat(pkg.total_price).toFixed(2);
+
+    const generatePDF = async () => {
+        const doc = new jsPDF();
+        let yPos = 20;
+
+        doc.setFontSize(22);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Menù", 105, yPos, { align: 'center' });
+        
+        let logoDataUrl = null;
+        let pdfW = 0;
+        let pdfH = 0;
+        
+        try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const fontSize = 80;
+            ctx.font = `400 ${fontSize}px "Brittany Signature", "Outfit", sans-serif`;
+            const textWidth = Math.ceil(ctx.measureText("Muse Catering").width);
+            const width = textWidth + 80;
+            const height = fontSize * 3;
+
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.font = `400 ${fontSize}px "Brittany Signature", "Outfit", sans-serif`;
+            ctx.fillStyle = "rgb(155, 57, 61)";
+            ctx.textBaseline = "middle";
+            ctx.fillText("Muse Catering", 40, height / 2);
+
+            logoDataUrl = canvas.toDataURL('image/png');
+            pdfW = width * (6.8 / fontSize); 
+            pdfH = height * (6.8 / fontSize);
+        } catch(e) {
+            console.error("Error drawing logo canvas", e);
+        }
+        
+        doc.setTextColor(0);
+        doc.setFont('helvetica', 'normal');
+
+        yPos += 10;
+
+        let globalSubtitle = "";
+        const isPkgGlutenFree = pkg.is_gluten_free || (pkg.items.length > 0 && pkg.items.every(item => item.is_gluten_free));
+        const isPkgLactoseFree = pkg.is_lactose_free || (pkg.items.length > 0 && pkg.items.every(item => item.is_lactose_free));
+
+        if (isPkgGlutenFree && isPkgLactoseFree) {
+            globalSubtitle = "Menù gluten free e senza lattosio";
+        } else if (isPkgGlutenFree) {
+            globalSubtitle = "Menù gluten free";
+        } else if (isPkgLactoseFree) {
+            globalSubtitle = "Menù senza lattosio";
+        }
+
+        if (globalSubtitle) {
+            doc.setFontSize(14);
+            doc.setTextColor(100);
+            doc.text(globalSubtitle, 105, yPos, { align: 'center' });
+            yPos += 15;
+            doc.setTextColor(0);
+        } else {
+            yPos += 10;
+        }
+
+        for (let i = 0; i < pkg.items.length; i++) {
+            const item = pkg.items[i];
+            
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            let imageHeight = 40;
+            let currentY = yPos;
+
+            if (item.image_url) {
+                try {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.src = item.image_url;
+                    await new Promise((resolve) => {
+                        img.onload = resolve;
+                        img.onerror = resolve; 
+                    });
+                    
+                    if (img.width > 0 && img.height > 0) {
+                        const size = Math.min(img.width, img.height);
+                        const sx = (img.width - size) / 2;
+                        const sy = (img.height - size) / 2;
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = size;
+                        canvas.height = size;
+                        const ctx = canvas.getContext('2d');
+                        
+                        const radius = size * 0.15;
+                        ctx.beginPath();
+                        ctx.moveTo(radius, 0);
+                        ctx.lineTo(size - radius, 0);
+                        ctx.quadraticCurveTo(size, 0, size, radius);
+                        ctx.lineTo(size, size - radius);
+                        ctx.quadraticCurveTo(size, size, size - radius, size);
+                        ctx.lineTo(radius, size);
+                        ctx.quadraticCurveTo(0, size, 0, size - radius);
+                        ctx.lineTo(0, radius);
+                        ctx.quadraticCurveTo(0, 0, radius, 0);
+                        ctx.closePath();
+                        ctx.clip();
+
+                        ctx.drawImage(img, sx, sy, size, size, 0, 0, size, size);
+                        const dataUrl = canvas.toDataURL('image/png');
+                        
+                        doc.addImage(dataUrl, 'PNG', 15, currentY, 40, 40);
+                    }
+                } catch (e) {
+                    console.error("Error drawing image in PDF", e);
+                }
+            }
+
+            let xText = item.image_url ? 60 : 15;
+            let textY = currentY + 5;
+
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0);
+            
+            const nameQty = item.name || '';
+            doc.text(nameQty, xText, textY);
+            textY += 6;
+
+            let labels = [];
+            if (item.is_gluten_free && !isPkgGlutenFree) labels.push("Gluten Free");
+            if (item.is_lactose_free && !isPkgLactoseFree) labels.push("Senza Lattosio");
+            
+            if (labels.length > 0) {
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'italic');
+                doc.setTextColor(255, 152, 0);
+                doc.text(labels.join(" - "), xText, textY);
+                textY += 6;
+            }
+
+            if (item.description) {
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(80);
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = item.description;
+                let textDesc = tempDiv.textContent || tempDiv.innerText || "";
+                
+                const lines = doc.splitTextToSize(textDesc, 200 - xText - 15);
+                doc.text(lines, xText, textY);
+                textY += (lines.length * 5) + 5;
+            }
+            
+            yPos = Math.max(textY, currentY + imageHeight + 10);
+            doc.setTextColor(0);
+        }
+
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            const pageHeight = doc.internal.pageSize.getHeight();
+            if (logoDataUrl) {
+                doc.addImage(logoDataUrl, 'PNG', 195 - pdfW, pageHeight - pdfH - 10, pdfW, pdfH);
+            } else {
+                doc.setFontSize(9);
+                doc.setFont('times', 'italic');
+                doc.setTextColor(155, 57, 61);
+                doc.text("Muse Catering", 195, pageHeight - 15, { align: 'right' });
+                doc.setTextColor(0);
+            }
+        }
+
+        doc.save(`Menu_Pacchetto.pdf`);
+    };
 
     return (
         <div className="container" style={{ maxWidth: '800px', padding: '2rem 1rem' }}>
@@ -178,6 +356,14 @@ const SharedPackage = () => {
                     </div>
 
                     {/* ... rest of the content ... */}
+                    <button 
+                        className="btn btn-outline" 
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '1rem', marginBottom: '1.5rem', fontSize: '1.1rem' }}
+                        onClick={generatePDF}
+                    >
+                        <Download size={20} /> Scarica il menù
+                    </button>
+
                     <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                             <div>

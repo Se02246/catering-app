@@ -443,6 +443,14 @@ const SharedQuote = () => {
                         </div>
                     </div>
 
+                    <button 
+                        className="btn btn-outline" 
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '1rem', marginBottom: '1.5rem', fontSize: '1.1rem' }}
+                        onClick={generatePDF}
+                    >
+                        <Download size={20} /> Scarica il menù
+                    </button>
+
                     <div style={{ backgroundColor: 'rgba(175, 68, 72, 0.05)', padding: '1.5rem', borderRadius: '16px', border: '1px dashed var(--color-primary)', marginBottom: '2rem', textAlign: 'center' }}>
                         <p style={{ marginBottom: '1rem', fontWeight: '500' }}>Ti piace questo preventivo? Contattaci per confermare la disponibilità!</p>
                         <button 
@@ -453,14 +461,6 @@ const SharedQuote = () => {
                             <Send size={20} /> Richiedi Informazioni su WhatsApp
                         </button>
                     </div>
-
-                    <button 
-                        className="btn btn-outline" 
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '1rem', marginBottom: '2rem', fontSize: '1.1rem' }}
-                        onClick={generatePDF}
-                    >
-                        <Download size={20} /> Scarica il menù
-                    </button>
 
                     <p style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
                         Muse Catering - Qualità e Passione per i tuoi eventi
