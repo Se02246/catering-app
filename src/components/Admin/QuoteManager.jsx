@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X } from 'lucide-react';
 
 const QuoteManager = ({ initialSearchId = '' }) => {
     const { products } = useProducts();
@@ -10,6 +10,8 @@ const QuoteManager = ({ initialSearchId = '' }) => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [editingItemId, setEditingItemId] = useState(null);
+    const [editingItemData, setEditingItemData] = useState(null);
 
     // Auto-search if initialSearchId is provided
     React.useEffect(() => {
@@ -244,7 +246,48 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                             </button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {currentQuote.items.map((item) => (
+                            {currentQuote.items.map((item) => {
+                                if (editingItemId === item.instanceId) {
+                                    return (
+                                        <div key={item.instanceId} style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid var(--color-primary)' }}>
+                                            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Nome Prodotto</label>
+                                                    <input type="text" value={editingItemData.name || ''} onChange={e => setEditingItemData({...editingItemData, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                                                </div>
+                                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>URL Immagine</label>
+                                                    <input type="text" value={editingItemData.image_url || ''} onChange={e => setEditingItemData({...editingItemData, image_url: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                                                </div>
+                                            </div>
+                                            <div style={{ marginBottom: '1rem' }}>
+                                                <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione</label>
+                                                <textarea value={editingItemData.description || ''} onChange={e => setEditingItemData({...editingItemData, description: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} />
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem' }}>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input type="checkbox" checked={editingItemData.is_gluten_free || false} onChange={e => setEditingItemData({...editingItemData, is_gluten_free: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    Senza Glutine
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#03A9F4', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input type="checkbox" checked={editingItemData.is_lactose_free || false} onChange={e => setEditingItemData({...editingItemData, is_lactose_free: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    Senza Lattosio
+                                                </label>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                                <button className="btn btn-outline" style={{ padding: '0.4rem 1rem' }} onClick={() => { setEditingItemId(null); setEditingItemData(null); }}>Annulla</button>
+                                                <button className="btn btn-primary" style={{ padding: '0.4rem 1rem' }} onClick={() => {
+                                                    const updatedItems = currentQuote.items.map(it => it.instanceId === editingItemId ? editingItemData : it);
+                                                    setCurrentQuote({ ...currentQuote, items: updatedItems });
+                                                    setEditingItemId(null);
+                                                    setEditingItemData(null);
+                                                }}>Salva Dettagli</button>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                return (
                                 <div key={item.instanceId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
                                     <div style={{ flex: 1 }}>
                                         <p style={{ fontWeight: 'bold', margin: 0 }}>
@@ -288,12 +331,16 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                             />
                                             <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, 1)}><Plus size={14} /></button>
                                         </div>
-                                        <button style={{ color: '#e63946', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => removeItem(item.instanceId)}>
+                                        <button className="btn btn-outline" style={{ padding: '0.4rem', border: 'none', color: 'var(--color-primary)' }} onClick={() => { setEditingItemId(item.instanceId); setEditingItemData({ ...item }); }}>
+                                            <Edit size={18} />
+                                        </button>
+                                        <button style={{ color: '#e63946', background: 'none', border: 'none', cursor: 'pointer', padding: '0.4rem' }} onClick={() => removeItem(item.instanceId)}>
                                             <Trash2 size={18} />
                                         </button>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 
