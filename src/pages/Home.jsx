@@ -491,7 +491,7 @@ const Home = () => {
                                                             </div>
                                                         </div>
                                                         <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 800, marginTop: '0.2rem' }}>
-                                                            {(item.is_sold_by_piece || (item.pieces_per_kg && parseFloat(item.pieces_per_kg) > 0)) 
+                                                            {item.is_sold_by_piece
                                                                 ? `${item.quantity} pz` 
                                                                 : `${item.quantity} kg`
                                                             }

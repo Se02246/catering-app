@@ -25,7 +25,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
         text += `Prodotti:\n`;
         if (quote && quote.items) {
             quote.items.forEach(item => {
-                const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}` : "";
+                const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : 'kg'}` : "";
                 text += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
             });
         }
@@ -85,7 +85,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
     const suggestedTotal = quote.items.reduce((sum, item) => {
         const price = item.is_sold_by_piece 
             ? item.price_per_piece 
-            : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg);
+            : item.price_per_kg;
         return sum + (price * item.quantity);
     }, 0);
 
@@ -474,13 +474,13 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
                                                 {!item.hide_quantity && (
                                                     <span style={{ marginRight: '0.4rem' }}>
-                                                        {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : (item.pieces_per_kg ? 'pz' : 'kg')}
+                                                        {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : 'kg'}
                                                     </span>
                                                 )}
                                                 <span>
                                                     {item.hide_quantity ? '' : '('}
                                                     {!item.hide_unit_price ? (
-                                                        <>€ {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}</>
+                                                        <>€ {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}</>
                                                     ) : null}
                                                     {item.hide_quantity ? '' : ')'}
                                                 </span>
@@ -495,7 +495,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                 </div>
                                 {!isMenuMode && (
                                     <p style={{ fontWeight: 'bold', color: 'var(--color-primary-dark)' }}>
-                                        € {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) * (Number(item.quantity) || 0)).toFixed(2)}
+                                        € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) * (Number(item.quantity) || 0)).toFixed(2)}
                                     </p>
                                 )}
                             </div>

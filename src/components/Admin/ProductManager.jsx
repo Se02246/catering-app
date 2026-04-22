@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText, Minus, Search, Send } from 'lucide-react';
+import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText, Minus, Search, Send, Scale, Hash } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 import HideModal from '../Common/HideModal';
 import { useNavigate } from 'react-router-dom';
@@ -62,10 +62,9 @@ const ProductManager = () => {
             const prod = products.find(p => p.id == item.product_id);
             if (!prod) return sum;
 
-            if (prod.is_sold_by_piece) {
+            const isPieces = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : prod.is_sold_by_piece;
+            if (isPieces) {
                 return sum + (prod.price_per_piece * item.quantity);
-            } else if (prod.pieces_per_kg > 0) {
-                return sum + ((item.quantity / prod.pieces_per_kg) * prod.price_per_kg);
             } else {
                 return sum + (prod.price_per_kg * item.quantity);
             }
@@ -85,9 +84,11 @@ const ProductManager = () => {
             const quoteToSave = {
                 items: newQuote.items.map(item => {
                     const p = products.find(prod => prod.id === item.product_id);
+                    const isPieces = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : p?.is_sold_by_piece;
                     return {
                         ...p,
                         quantity: item.quantity,
+                        is_sold_by_piece: isPieces,
                         hide_quantity: p?.hide_quantity || false,
                         hide_unit_price: p?.hide_unit_price || false
                     };
@@ -106,11 +107,11 @@ const ProductManager = () => {
             
             newQuote.items.forEach(item => {
                 const p = products.find(prod => prod.id === item.product_id);
-                const isPieces = (p?.pieces_per_kg && parseFloat(p.pieces_per_kg) > 0) || p?.is_sold_by_piece;
+                const isPieces = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : p?.is_sold_by_piece;
                 const unit = isPieces ? 'pz' : 'kg';
-                const itemPrice = p.is_sold_by_piece 
+                const itemPrice = isPieces 
                     ? (p.price_per_piece * item.quantity) 
-                    : (p.pieces_per_kg > 0 ? (item.quantity / p.pieces_per_kg) * p.price_per_kg : p.price_per_kg * item.quantity);
+                    : (p.price_per_kg * item.quantity);
                 
                 message += `${item.quantity}${unit} ${p.name} [${itemPrice.toFixed(2)}€]\n`;
             });
@@ -427,13 +428,15 @@ const ProductManager = () => {
                                             ) : (
                                                 newQuote.items.map((item) => {
                                                     const product = products.find(p => p.id === item.product_id);
-                                                    const isPieces = (product?.pieces_per_kg && parseFloat(product.pieces_per_kg) > 0) || product?.is_sold_by_piece;
+                                                    const isPieces = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : product?.is_sold_by_piece;
                                                     const unit = isPieces ? 'pz' : 'kg';
                                                     const step = isPieces ? 1 : 0.1;
                                                     
-                                                    const itemPrice = product.is_sold_by_piece 
+                                                    const canToggleUnit = Number(product?.price_per_kg) > 0 && Number(product?.price_per_piece) > 0;
+
+                                                    const itemPrice = isPieces 
                                                         ? (product.price_per_piece * item.quantity) 
-                                                        : (product.pieces_per_kg > 0 ? (item.quantity / product.pieces_per_kg) * product.price_per_kg : product.price_per_kg * item.quantity);
+                                                        : (product.price_per_kg * item.quantity);
 
                                                     return (
                                                         <div key={item.tempId} className="glass-panel" style={{ padding: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -468,6 +471,27 @@ const ProductManager = () => {
                                                                 </div>
                                                                 <button type="button" className="btn btn-outline" style={{ padding: '0.25rem', borderRadius: '4px' }} onClick={() => updateQuoteItem(item.tempId, 'quantity', ((parseFloat(item.quantity) || 0) + step).toFixed(isPieces ? 0 : 1))}>
                                                                     <Plus size={14} />
+                                                                </button>
+                                                                <button 
+                                                                    type="button" 
+                                                                    className="btn btn-outline"
+                                                                    style={{ 
+                                                                        padding: '0.25rem', 
+                                                                        borderRadius: '4px',
+                                                                        marginLeft: '0.25rem',
+                                                                        opacity: canToggleUnit ? 1 : 0.4,
+                                                                        cursor: canToggleUnit ? 'pointer' : 'not-allowed',
+                                                                        color: 'var(--color-primary)'
+                                                                    }} 
+                                                                    onClick={() => {
+                                                                        if (canToggleUnit) {
+                                                                            updateQuoteItem(item.tempId, 'is_sold_by_piece', !isPieces);
+                                                                            updateQuoteItem(item.tempId, 'quantity', !isPieces ? Math.ceil(item.quantity) : item.quantity);
+                                                                        }
+                                                                    }}
+                                                                    title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
+                                                                >
+                                                                    {isPieces ? <Hash size={14} /> : <Scale size={14} />}
                                                                 </button>
                                                                 <button type="button" style={{ background: 'none', border: 'none', color: '#E11D48', marginLeft: '0.5rem', cursor: 'pointer' }} onClick={() => removeQuoteItem(item.tempId)}>
                                                                     <Trash2 size={16} />

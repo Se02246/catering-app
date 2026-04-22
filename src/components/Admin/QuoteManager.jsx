@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash } from 'lucide-react';
 
 const QuoteManager = ({ initialSearchId = '' }) => {
     const { products } = useProducts();
@@ -55,10 +55,9 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         return items.reduce((sum, item) => {
             const pKg = Number(item.price_per_kg) || 0;
             const pPc = Number(item.price_per_piece) || 0;
-            const pcsKg = Number(item.pieces_per_kg) || 0;
             const qty = Number(item.quantity) || 0;
 
-            const price = item.is_sold_by_piece ? pPc : (pcsKg > 0 ? (pKg / pcsKg) : pKg);
+            const price = item.is_sold_by_piece ? pPc : pKg;
             return sum + (price * qty);
         }, 0);
     };
@@ -247,6 +246,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             {currentQuote.items.map((item) => {
+                                const canToggleUnit = Number(item.price_per_kg) > 0 && Number(item.price_per_piece) > 0;
                                 if (editingItemId === item.instanceId) {
                                     return (
                                         <div key={item.instanceId} style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid var(--color-primary)' }}>
@@ -306,7 +306,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                             </div>
                                         </p>
                                         <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
-                                            Prezzo unitario applicato: € {(Number(item.is_sold_by_piece ? item.price_per_piece : (item.pieces_per_kg ? (item.price_per_kg / item.pieces_per_kg) : item.price_per_kg)) || 0).toFixed(2)}
+                                            Prezzo unitario applicato: € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)}
                                         </p>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -321,8 +321,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                     const newTotal = updatedItems.reduce((sum, it) => {
                                                         const pKg = Number(it.price_per_kg) || 0;
                                                         const pPc = Number(it.price_per_piece) || 0;
-                                                        const pcsKg = Number(it.pieces_per_kg) || 0;
-                                                        const price = it.is_sold_by_piece ? pPc : (pcsKg > 0 ? (pKg / pcsKg) : pKg);
+                                                        const price = it.is_sold_by_piece ? pPc : pKg;
                                                         return sum + (price * (Number(it.quantity) || 0));
                                                     }, 0);
                                                     setCurrentQuote({ ...currentQuote, items: updatedItems, total_price: newTotal });
@@ -330,6 +329,43 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                 style={{ width: '60px', textAlign: 'center', padding: '0.3rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
                                             />
                                             <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, 1)}><Plus size={14} /></button>
+                                            <button 
+                                                type="button" 
+                                                className="btn btn-outline"
+                                                style={{ 
+                                                    padding: '0.2rem', 
+                                                    borderRadius: '4px',
+                                                    marginLeft: '0.25rem',
+                                                    opacity: canToggleUnit ? 1 : 0.4,
+                                                    cursor: canToggleUnit ? 'pointer' : 'not-allowed',
+                                                    color: 'var(--color-primary)'
+                                                }} 
+                                                onClick={() => {
+                                                    if (canToggleUnit) {
+                                                        const updatedItems = currentQuote.items.map(it => {
+                                                            if (it.instanceId === item.instanceId) {
+                                                                const newIsPieces = !it.is_sold_by_piece;
+                                                                return { 
+                                                                    ...it, 
+                                                                    is_sold_by_piece: newIsPieces,
+                                                                    quantity: !newIsPieces ? Math.ceil(it.quantity) : it.quantity
+                                                                };
+                                                            }
+                                                            return it;
+                                                        });
+                                                        const newTotal = updatedItems.reduce((sum, it) => {
+                                                            const pKg = Number(it.price_per_kg) || 0;
+                                                            const pPc = Number(it.price_per_piece) || 0;
+                                                            const price = it.is_sold_by_piece ? pPc : pKg;
+                                                            return sum + (price * (Number(it.quantity) || 0));
+                                                        }, 0);
+                                                        setCurrentQuote({ ...currentQuote, items: updatedItems, total_price: newTotal });
+                                                    }
+                                                }}
+                                                title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
+                                            >
+                                                {item.is_sold_by_piece ? <Hash size={14} /> : <Scale size={14} />}
+                                            </button>
                                         </div>
                                         <button className="btn btn-outline" style={{ padding: '0.4rem', border: 'none', color: 'var(--color-primary)' }} onClick={() => { setEditingItemId(item.instanceId); setEditingItemData({ ...item }); }}>
                                             <Edit size={18} />

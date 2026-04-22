@@ -97,7 +97,6 @@ const QuoteBuilder = () => {
 
     const calculateItemPrice = (item) => {
         if (item.is_sold_by_piece) return item.price_per_piece * item.quantity;
-        if (item.pieces_per_kg) return (item.price_per_kg / item.pieces_per_kg) * item.quantity;
         return item.price_per_kg * item.quantity;
     };
 

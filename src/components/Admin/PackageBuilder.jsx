@@ -62,8 +62,6 @@ const PackageBuilder = () => {
 
             if (prod.is_sold_by_piece) {
                 return sum + (prod.price_per_piece * item.quantity);
-            } else if (prod.pieces_per_kg > 0) {
-                return sum + ((item.quantity / prod.pieces_per_kg) * prod.price_per_kg);
             } else {
                 return sum + (prod.price_per_kg * item.quantity);
             }
@@ -447,7 +445,7 @@ const PackageBuilder = () => {
                                                 ) : (
                                                     newPackage.items.map((item) => {
                                                         const product = products.find(p => p.id === item.product_id);
-                                                        const isPieces = (product?.pieces_per_kg && parseFloat(product.pieces_per_kg) > 0) || product?.is_sold_by_piece;
+                                                        const isPieces = product?.is_sold_by_piece;
                                                         const unit = isPieces ? 'pz' : 'kg';
                                                         const step = isPieces ? 1 : 0.1;
                                                         
