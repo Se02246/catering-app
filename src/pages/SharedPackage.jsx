@@ -103,8 +103,8 @@ const SharedPackage = () => {
             ctx.fillText("Muse Catering", 40, height / 2);
 
             logoDataUrl = canvas.toDataURL('image/png');
-            pdfW = width * (6.8 / fontSize); 
-            pdfH = height * (6.8 / fontSize);
+            pdfW = width * (4.5 / fontSize); 
+            pdfH = height * (4.5 / fontSize);
         } catch(e) {
             console.error("Error drawing logo canvas", e);
         }
@@ -237,12 +237,12 @@ const SharedPackage = () => {
             doc.setPage(i);
             const pageHeight = doc.internal.pageSize.getHeight();
             if (logoDataUrl) {
-                doc.addImage(logoDataUrl, 'PNG', 195 - pdfW, pageHeight - pdfH - 10, pdfW, pdfH);
+                doc.addImage(logoDataUrl, 'PNG', 195 - pdfW, 10, pdfW, pdfH);
             } else {
                 doc.setFontSize(9);
                 doc.setFont('times', 'italic');
                 doc.setTextColor(155, 57, 61);
-                doc.text("Muse Catering", 195, pageHeight - 15, { align: 'right' });
+                doc.text("Muse Catering", 195, 15, { align: 'right' });
                 doc.setTextColor(0);
             }
         }
