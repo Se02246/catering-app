@@ -485,8 +485,14 @@ const ProductManager = () => {
                                                                     }} 
                                                                     onClick={() => {
                                                                         if (canToggleUnit) {
-                                                                            updateQuoteItem(item.tempId, 'is_sold_by_piece', !isPieces);
-                                                                            updateQuoteItem(item.tempId, 'quantity', !isPieces ? Math.ceil(item.quantity) : item.quantity);
+                                                                            setNewQuote({
+                                                                                ...newQuote,
+                                                                                items: newQuote.items.map(it => 
+                                                                                    it.tempId === item.tempId 
+                                                                                        ? { ...it, is_sold_by_piece: !isPieces, quantity: !isPieces ? Math.ceil(it.quantity) : it.quantity } 
+                                                                                        : it
+                                                                                )
+                                                                            });
                                                                         }
                                                                     }}
                                                                     title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
