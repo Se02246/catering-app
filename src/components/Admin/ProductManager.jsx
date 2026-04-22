@@ -5,8 +5,7 @@ import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText, Minus, Searc
 import ImageUpload from '../Common/ImageUpload';
 import HideModal from '../Common/HideModal';
 import { useNavigate } from 'react-router-dom';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+
 
 const ProductManager = () => {
     const { products, isLoading, mutate } = useProducts();
@@ -649,23 +648,21 @@ const ProductManager = () => {
                                 </div>
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>Descrizione</label>
-                                    <ReactQuill
-                                        theme="snow"
-                                        value={currentProduct.description || ''}
-                                        onChange={(content) => setCurrentProduct({ ...currentProduct, description: content })}
+                                    <textarea
+                                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', height: '100px' }}
+                                        value={currentProduct.description}
+                                        onChange={e => setCurrentProduct({ ...currentProduct, description: e.target.value })}
                                         placeholder="Descrizione del prodotto..."
-                                        style={{ backgroundColor: 'white' }}
                                     />
                                 </div>
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>Descrizione sul Menù (Opzionale)</label>
-                                    <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginTop: '-0.3rem', marginBottom: '0.5rem' }}>Verrà visualizzata solo nel formato menù, sostituendo la principale, e supporta elenchi puntati.</p>
-                                    <ReactQuill
-                                        theme="snow"
+                                    <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginTop: '-0.3rem', marginBottom: '0.5rem' }}>Verrà visualizzata solo nel formato menù, sostituendo la principale.</p>
+                                    <textarea
+                                        style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', height: '100px' }}
                                         value={currentProduct.menu_description || ''}
-                                        onChange={(content) => setCurrentProduct({ ...currentProduct, menu_description: content })}
+                                        onChange={e => setCurrentProduct({ ...currentProduct, menu_description: e.target.value })}
                                         placeholder="Descrizione personalizzata per il menù..."
-                                        style={{ backgroundColor: 'white' }}
                                     />
                                 </div>
 

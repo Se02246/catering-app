@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
 import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash } from 'lucide-react';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+
 
 const QuoteManager = ({ initialSearchId = '' }) => {
     const { products } = useProducts();
@@ -289,13 +288,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                             <div style={{ marginBottom: '1rem' }}>
                                                 <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione sul Menù (Opzionale)</label>
                                                 <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0.4rem' }}>Verrà visualizzata solo nel menù digitale, sostituendo la descrizione principale.</p>
-                                                <ReactQuill
-                                                    theme="snow"
-                                                    value={editingItemData.menu_description || ''}
-                                                    onChange={(content) => setEditingItemData({...editingItemData, menu_description: content})}
-                                                    placeholder="Descrizione personalizzata per il menù..."
-                                                    style={{ backgroundColor: 'white' }}
-                                                />
+                                                <textarea value={editingItemData.menu_description || ''} onChange={e => setEditingItemData({...editingItemData, menu_description: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} placeholder="Descrizione personalizzata per il menù..." />
                                             </div>
                                             <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem' }}>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontSize: '0.9rem', fontWeight: 'bold' }}>
