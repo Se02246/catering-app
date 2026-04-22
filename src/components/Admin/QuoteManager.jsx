@@ -148,6 +148,22 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         }
     };
 
+    const handleCreateNewQuote = async () => {
+        setLoading(true);
+        setMessage(null);
+        try {
+            const newQuote = await api.createQuote({ items: [], total_price: 0 });
+            setSearchId(newQuote.id);
+            setCurrentQuote({ ...newQuote, items: [] });
+            setMessage({ type: 'success', text: 'Nuovo preventivo creato! Ora puoi aggiungere i prodotti.' });
+        } catch (err) {
+            console.error(err);
+            setMessage({ type: 'error', text: 'Errore durante la creazione del preventivo.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const isQuoteGlutenFree = currentQuote && (currentQuote.is_gluten_free || (currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_gluten_free)));
     const isQuoteLactoseFree = currentQuote && (currentQuote.is_lactose_free || (currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_lactose_free)));
 
@@ -166,6 +182,10 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                 <button type="submit" className="btn btn-primary" disabled={loading}>
                     <Search size={20} style={{ marginRight: '8px' }} />
                     {loading ? 'Ricerca...' : 'Cerca'}
+                </button>
+                <button type="button" className="btn btn-outline" disabled={loading} onClick={handleCreateNewQuote}>
+                    <Plus size={20} style={{ marginRight: '8px' }} />
+                    Nuovo Preventivo
                 </button>
             </form>
 
