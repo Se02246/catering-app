@@ -255,7 +255,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
 
                             <div 
                                 style={{ fontSize: '1rem', lineHeight: '1.7', color: 'var(--color-text-muted)', marginBottom: '2rem' }}
-                                dangerouslySetInnerHTML={{ __html: formatCustomText(product.description || 'Nessuna descrizione disponibile.') }}
+                                dangerouslySetInnerHTML={{ __html: formatCustomText(product.menu_description || product.description || 'Nessuna descrizione disponibile.') }}
                             />
 
                             {/* Product Specs */}

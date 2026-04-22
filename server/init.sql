@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS products (
     show_servings BOOLEAN DEFAULT FALSE,
     servings_per_unit DECIMAL(10, 2),
     image_url TEXT,
+    menu_description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

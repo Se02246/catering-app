@@ -214,13 +214,13 @@ const SharedPackage = () => {
                 textY += 6;
             }
 
-            if (item.description) {
+            if (item.menu_description || item.description) {
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(80);
                 
                 const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = item.description;
+                tempDiv.innerHTML = item.menu_description || item.description;
                 let textDesc = tempDiv.textContent || tempDiv.innerText || "";
                 
                 const lines = doc.splitTextToSize(textDesc, 200 - xText - 15);
