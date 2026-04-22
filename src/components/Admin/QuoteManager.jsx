@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
 import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash } from 'lucide-react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 const QuoteManager = ({ initialSearchId = '' }) => {
     const { products } = useProducts();

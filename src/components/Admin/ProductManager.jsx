@@ -5,8 +5,8 @@ import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText, Minus, Searc
 import ImageUpload from '../Common/ImageUpload';
 import HideModal from '../Common/HideModal';
 import { useNavigate } from 'react-router-dom';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 const ProductManager = () => {
     const { products, isLoading, mutate } = useProducts();
