@@ -17,7 +17,7 @@ const ProductManager = () => {
         name: '', description: '', menu_description: '', price_per_kg: '', image_url: '', images: [], 
         is_visible: true, hide_at: null, allow_multiple: false, order_increment: '', 
         max_order_quantity: '', is_sold_by_piece: false, price_per_piece: '',
-        hide_quantity: false, hide_unit_price: false
+        hide_quantity: false, hide_unit_price: false, hide_in_menu: false
     });
 
 
@@ -134,7 +134,7 @@ const ProductManager = () => {
             pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
             show_servings: false, servings_per_unit: '', is_visible: true, hide_at: null, allow_multiple: false,
             is_gluten_free: false, is_lactose_free: false, is_sold_by_piece: false, price_per_piece: '',
-            hide_quantity: false, hide_unit_price: false
+            hide_quantity: false, hide_unit_price: false, hide_in_menu: false
         });
         setCalcError('');
     };
@@ -221,7 +221,8 @@ const ProductManager = () => {
                 is_sold_by_piece: currentProduct.is_sold_by_piece || false,
                 price_per_piece: currentProduct.price_per_piece ? parseFloat(currentProduct.price_per_piece) : null,
                 hide_quantity: currentProduct.hide_quantity || false,
-                hide_unit_price: currentProduct.hide_unit_price || false
+                hide_unit_price: currentProduct.hide_unit_price || false,
+                hide_in_menu: currentProduct.hide_in_menu || false
             };
 
             if (currentProduct.id) {
@@ -828,6 +829,18 @@ const ProductManager = () => {
                                         <label htmlFor="hide_unit_price" style={{ fontWeight: 'bold', cursor: 'pointer' }}>Nascondi prezzo unitario</label>
                                     </div>
                                     <small style={{ color: '#666' }}>Nasconde il prezzo al Kg o al Pezzo nelle pagine pubbliche.</small>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', marginTop: '1rem', marginBottom: '0.5rem' }}>
+                                        <input
+                                            type="checkbox"
+                                            id="hide_in_menu"
+                                            checked={currentProduct.hide_in_menu || false}
+                                            onChange={e => setCurrentProduct({ ...currentProduct, hide_in_menu: e.target.checked })}
+                                            style={{ marginRight: '0.75rem', width: '18px', height: '18px' }}
+                                        />
+                                        <label htmlFor="hide_in_menu" style={{ fontWeight: 'bold', cursor: 'pointer' }}>Nascondi nel menù</label>
+                                    </div>
+                                    <small style={{ color: '#666' }}>Nasconde questo prodotto dal menù digitale e dal PDF del menù.</small>
                                 </div>
 
                                 <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.05)' }}>

@@ -151,8 +151,9 @@ const SharedQuote = ({ isMenuMode = false }) => {
             yPos += 10;
         }
 
-        for (let i = 0; i < quote.items.length; i++) {
-            const item = quote.items[i];
+        const menuItems = quote.items.filter(item => !item.hide_in_menu);
+        for (let i = 0; i < menuItems.length; i++) {
+            const item = menuItems[i];
             
             if (yPos > 250) {
                 doc.addPage();
@@ -419,7 +420,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
                     </h3>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {quote.items.map((item, idx) => (
+                        {quote.items.filter(item => !isMenuMode || !item.hide_in_menu).map((item, idx) => (
                             <div 
                                 key={idx} 
                                 onClick={() => setSelectedProduct(item)}

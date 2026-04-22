@@ -290,7 +290,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                 <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0.4rem' }}>Verrà visualizzata solo nel menù digitale, sostituendo la descrizione principale.</p>
                                                 <textarea value={editingItemData.menu_description || ''} onChange={e => setEditingItemData({...editingItemData, menu_description: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} placeholder="Descrizione personalizzata per il menù..." />
                                             </div>
-                                            <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem' }}>
+                                            <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontSize: '0.9rem', fontWeight: 'bold' }}>
                                                     <input type="checkbox" checked={editingItemData.is_gluten_free || false} onChange={e => setEditingItemData({...editingItemData, is_gluten_free: e.target.checked})} style={{ width: '16px', height: '16px' }} />
                                                     Senza Glutine
@@ -298,6 +298,10 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#03A9F4', fontSize: '0.9rem', fontWeight: 'bold' }}>
                                                     <input type="checkbox" checked={editingItemData.is_lactose_free || false} onChange={e => setEditingItemData({...editingItemData, is_lactose_free: e.target.checked})} style={{ width: '16px', height: '16px' }} />
                                                     Senza Lattosio
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#666', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input type="checkbox" checked={editingItemData.hide_in_menu || false} onChange={e => setEditingItemData({...editingItemData, hide_in_menu: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    Nascondi nel menù
                                                 </label>
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>

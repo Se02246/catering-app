@@ -136,8 +136,9 @@ const SharedPackage = () => {
             yPos += 10;
         }
 
-        for (let i = 0; i < pkg.items.length; i++) {
-            const item = pkg.items[i];
+        const menuItems = pkg.items.filter(item => !item.hide_in_menu);
+        for (let i = 0; i < menuItems.length; i++) {
+            const item = menuItems[i];
             
             if (yPos > 250) {
                 doc.addPage();
@@ -301,7 +302,7 @@ const SharedPackage = () => {
                         </h3>
                         
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }} className="grid-responsive">
-                            {pkg.items.map((item, idx) => (
+                            {pkg.items.filter(item => !item.hide_in_menu).map((item, idx) => (
                                 <div 
                                     key={idx} 
                                     onClick={() => setSelectedProduct(item)}
