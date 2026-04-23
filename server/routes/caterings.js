@@ -16,10 +16,10 @@ router.get('/', async (req, res) => {
                         json_build_object(
                             'product_id', ci.product_id,
                             'quantity', ci.quantity,
-                            'name', p.name,
-                            'description', p.description,
-                            'price_per_kg', p.price_per_kg,
-                            'image_url', p.image_url,
+                            'name', COALESCE(ci.name, p.name),
+                            'description', COALESCE(ci.description, p.description),
+                            'price_per_kg', COALESCE(ci.price_per_kg, p.price_per_kg),
+                            'image_url', COALESCE(ci.image_url, p.image_url),
                             'images', p.images,
                             'pieces_per_kg', p.pieces_per_kg,
                             'min_order_quantity', p.min_order_quantity,
@@ -28,13 +28,14 @@ router.get('/', async (req, res) => {
                             'servings_per_unit', p.servings_per_unit,
                             'allow_multiple', p.allow_multiple,
                             'max_order_quantity', p.max_order_quantity,
-                            'is_gluten_free', p.is_gluten_free,
-                            'is_lactose_free', p.is_lactose_free,
-                            'is_sold_by_piece', p.is_sold_by_piece,
-                            'price_per_piece', p.price_per_piece,
+                            'is_gluten_free', COALESCE(ci.is_gluten_free, p.is_gluten_free),
+                            'is_lactose_free', COALESCE(ci.is_lactose_free, p.is_lactose_free),
+                            'is_sold_by_piece', COALESCE(ci.is_sold_by_piece, p.is_sold_by_piece),
+                            'price_per_piece', COALESCE(ci.price_per_piece, p.price_per_piece),
                             'hide_quantity', p.hide_quantity,
-                            'hide_unit_price', p.hide_unit_price
-                        ) ORDER BY p.name
+                            'hide_unit_price', p.hide_unit_price,
+                            'sort_order', ci.sort_order
+                        ) ORDER BY ci.sort_order ASC, ci.id ASC
                     ) FILTER (WHERE ci.id IS NOT NULL),
                     '[]'::json
                 ) as items
@@ -102,10 +103,21 @@ router.post('/', async (req, res) => {
         );
         const cateringId = cateringResult.rows[0].id;
 
-        for (let item of items) {
+        for (let [idx, item] of items.entries()) {
             await client.query(
-                'INSERT INTO catering_items (catering_id, product_id, quantity) VALUES ($1, $2, $3)',
-                [cateringId, item.product_id, item.quantity]
+                `INSERT INTO catering_items (
+                    catering_id, product_id, quantity, name, description, image_url, 
+                    is_sold_by_piece, price_per_kg, price_per_piece, 
+                    is_gluten_free, is_lactose_free, sort_order
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+                [
+                    cateringId, item.product_id, item.quantity, item.name || null, item.description || null, item.image_url || null,
+                    item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : null,
+                    item.price_per_kg || null, item.price_per_piece || null,
+                    item.is_gluten_free !== undefined ? item.is_gluten_free : null,
+                    item.is_lactose_free !== undefined ? item.is_lactose_free : null,
+                    idx
+                ]
             );
         }
 
@@ -147,10 +159,21 @@ router.put('/:id', async (req, res) => {
         await client.query('DELETE FROM catering_items WHERE catering_id = $1', [id]);
 
         // Insert new items
-        for (let item of items) {
+        for (let [idx, item] of items.entries()) {
             await client.query(
-                'INSERT INTO catering_items (catering_id, product_id, quantity) VALUES ($1, $2, $3)',
-                [id, item.product_id, item.quantity]
+                `INSERT INTO catering_items (
+                    catering_id, product_id, quantity, name, description, image_url, 
+                    is_sold_by_piece, price_per_kg, price_per_piece, 
+                    is_gluten_free, is_lactose_free, sort_order
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+                [
+                    id, item.product_id, item.quantity, item.name || null, item.description || null, item.image_url || null,
+                    item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : null,
+                    item.price_per_kg || null, item.price_per_piece || null,
+                    item.is_gluten_free !== undefined ? item.is_gluten_free : null,
+                    item.is_lactose_free !== undefined ? item.is_lactose_free : null,
+                    idx
+                ]
             );
         }
 

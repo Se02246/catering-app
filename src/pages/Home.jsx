@@ -492,8 +492,8 @@ const Home = () => {
                                                         </div>
                                                         <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 800, marginTop: '0.2rem' }}>
                                                             {item.is_sold_by_piece
-                                                                ? `${item.quantity} pz` 
-                                                                : `${item.quantity} kg`
+                                                                ? `${parseFloat(item.quantity)} pz` 
+                                                                : `${parseFloat(item.quantity)} kg`
                                                             }
                                                         </div>
                                                     </div>
