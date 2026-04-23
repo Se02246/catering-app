@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts, useCaterings } from '../../hooks/useData';
-import { Trash2, Plus, Save, Pencil, Minus, ArrowUp, ArrowDown, Eye, EyeOff, Clock, X, Search } from 'lucide-react';
+import { Trash2, Plus, Save, Pencil, Minus, Eye, EyeOff, Clock, X, Search, Edit, ChevronUp, ChevronDown } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 import HideModal from '../Common/HideModal';
 
@@ -14,6 +14,9 @@ const PackageBuilder = () => {
     const [discountedPriceInput, setDiscountedPriceInput] = useState('');
     const [isHideModalOpen, setIsHideModalOpen] = useState(false);
     const [packageToHide, setPackageToHide] = useState(null);
+    
+    const [editingItemId, setEditingItemId] = useState(null);
+    const [editingItemData, setEditingItemData] = useState(null);
 
     // New Package State
     const [newPackage, setNewPackage] = useState({
@@ -23,7 +26,7 @@ const PackageBuilder = () => {
         images: [],
         total_price: 0,
         discount_percentage: 0,
-        items: [], // { product_id, quantity, tempId }
+        items: [], // { product_id, quantity, tempId, is_sold_by_piece, ...overrides }
         is_gluten_free: false,
         is_lactose_free: false,
         is_visible: true,
@@ -55,16 +58,26 @@ const PackageBuilder = () => {
         });
     };
 
+    const moveItem = (index, direction) => {
+        const newItems = [...newPackage.items];
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= newItems.length) return;
+        
+        const temp = newItems[index];
+        newItems[index] = newItems[targetIndex];
+        newItems[targetIndex] = temp;
+        
+        setNewPackage({ ...newPackage, items: newItems });
+    };
+
     const calculateSuggestedPrice = () => {
         return newPackage.items.reduce((sum, item) => {
             const prod = products.find(p => p.id == item.product_id);
             if (!prod) return sum;
 
-            if (prod.is_sold_by_piece) {
-                return sum + (prod.price_per_piece * item.quantity);
-            } else {
-                return sum + (prod.price_per_kg * item.quantity);
-            }
+            const isPieces = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : prod.is_sold_by_piece;
+            const price = isPieces ? (Number(item.price_per_piece) || Number(prod.price_per_piece) || 0) : (Number(item.price_per_kg) || Number(prod.price_per_kg) || 0);
+            return sum + (price * item.quantity);
         }, 0);
     };
 
@@ -75,7 +88,10 @@ const PackageBuilder = () => {
 
             if (!packageToSave.images || packageToSave.images.length === 0) {
                 const productImages = newPackage.items
-                    .map(item => products.find(p => p.id === item.product_id)?.image_url)
+                    .map(item => {
+                        if (item.image_url) return item.image_url;
+                        return products.find(p => p.id === item.product_id)?.image_url;
+                    })
                     .filter(url => url && url.trim() !== '');
                 
                 const uniqueProductImages = [...new Set(productImages)];
@@ -113,7 +129,12 @@ const PackageBuilder = () => {
             images: pkg.images || (pkg.image_url ? [pkg.image_url] : []),
             total_price: pkg.total_price,
             discount_percentage: parseFloat(pkg.discount_percentage) || 0,
-            items: pkg.items.map(i => ({ ...i, tempId: Date.now() + Math.random() })),
+            items: pkg.items.map(i => ({ 
+                ...i, 
+                tempId: i.tempId || (Date.now() + Math.random()),
+                // Ensure catalog values are used as baseline if not present in item
+                is_sold_by_piece: i.is_sold_by_piece !== undefined ? i.is_sold_by_piece : products.find(p => p.id === i.product_id)?.is_sold_by_piece
+            })),
             is_gluten_free: pkg.is_gluten_free || false,
             is_lactose_free: pkg.is_lactose_free || false,
             is_visible: pkg.is_visible !== undefined ? pkg.is_visible : true,
@@ -155,7 +176,7 @@ const PackageBuilder = () => {
         }
     };
 
-    const handleMoveUp = async (index) => {
+    const handleMovePackageUp = async (index) => {
         if (index === 0) return;
         const newPackages = [...packages];
         const temp = newPackages[index];
@@ -171,7 +192,7 @@ const PackageBuilder = () => {
         }
     };
 
-    const handleMoveDown = async (index) => {
+    const handleMovePackageDown = async (index) => {
         if (index === packages.length - 1) return;
         const newPackages = [...packages];
         const temp = newPackages[index];
@@ -305,7 +326,7 @@ const PackageBuilder = () => {
                                                             if (p.allow_multiple) {
                                                                 setNewPackage({
                                                                     ...newPackage,
-                                                                    items: [...newPackage.items, { product_id: p.id, quantity: 1, tempId: Date.now() + Math.random() }]
+                                                                    items: [...newPackage.items, { ...p, product_id: p.id, quantity: 1, tempId: Date.now() + Math.random() }]
                                                                 });
                                                             } else {
                                                                 if (existing) {
@@ -313,7 +334,7 @@ const PackageBuilder = () => {
                                                                 } else {
                                                                     setNewPackage({
                                                                         ...newPackage,
-                                                                        items: [...newPackage.items, { product_id: p.id, quantity: 1, tempId: Date.now() }]
+                                                                        items: [...newPackage.items, { ...p, product_id: p.id, quantity: 1, tempId: Date.now() }]
                                                                     });
                                                                 }
                                                             }
@@ -439,53 +460,155 @@ const PackageBuilder = () => {
                                             <h5 style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
                                                 Prodotti nel Pacchetto <span>({newPackage.items.length})</span>
                                             </h5>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                                 {newPackage.items.length === 0 ? (
                                                     <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', fontSize: '0.9rem', textAlign: 'center', padding: '1rem' }}>Seleziona i prodotti dalla lista a sinistra.</p>
                                                 ) : (
-                                                    newPackage.items.map((item) => {
+                                                    newPackage.items.map((item, index) => {
                                                         const product = products.find(p => p.id === item.product_id);
-                                                        const isPieces = product?.is_sold_by_piece;
+                                                        const isPieces = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : product?.is_sold_by_piece;
                                                         const unit = isPieces ? 'pz' : 'kg';
                                                         const step = isPieces ? 1 : 0.1;
                                                         
-                                                        return (
-                                                            <div key={item.tempId} className="glass-panel" style={{ padding: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                <div style={{ minWidth: 0, flex: 1 }}>
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                                                        <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{product?.name}</div>
-                                                                        <div style={{ display: 'flex', gap: '0.2rem' }}>
-                                                                            {product?.is_gluten_free && (
-                                                                                <span style={{ color: '#FF9800', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>GF</span>
-                                                                            )}
-                                                                            {product?.is_lactose_free && (
-                                                                                <span style={{ color: '#03A9F4', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>LF</span>
-                                                                            )}
+                                                        const canToggleUnit = Number(product?.price_per_kg) > 0 && Number(product?.price_per_piece) > 0;
+
+                                                        if (editingItemId === item.tempId) {
+                                                            return (
+                                                                <div key={item.tempId} style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid var(--color-primary)' }}>
+                                                                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                                                                        <div style={{ flex: 1, minWidth: '150px' }}>
+                                                                            <label style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>Nome Prodotto</label>
+                                                                            <input type="text" value={editingItemData.name || ''} onChange={e => setEditingItemData({...editingItemData, name: e.target.value})} style={{ width: '100%', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)', fontSize: '0.85rem' }} />
+                                                                        </div>
+                                                                        <div style={{ flex: 1, minWidth: '150px' }}>
+                                                                            <label style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>URL Immagine</label>
+                                                                            <input type="text" value={editingItemData.image_url || ''} onChange={e => setEditingItemData({...editingItemData, image_url: e.target.value})} style={{ width: '100%', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)', fontSize: '0.85rem' }} />
                                                                         </div>
                                                                     </div>
-                                                                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-                                                                        {product?.is_sold_by_piece ? `€${product.price_per_piece}/pz` : `€${product?.price_per_kg}/kg`}
+                                                                    <div style={{ marginBottom: '1rem' }}>
+                                                                        <label style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>Descrizione</label>
+                                                                        <textarea value={editingItemData.description || ''} onChange={e => setEditingItemData({...editingItemData, description: e.target.value})} style={{ width: '100%', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '50px', fontSize: '0.85rem' }} />
+                                                                    </div>
+                                                                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                                                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: '#FF9800', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                                            <input type="checkbox" checked={editingItemData.is_gluten_free || false} onChange={e => setEditingItemData({...editingItemData, is_gluten_free: e.target.checked})} style={{ width: '14px', height: '14px' }} />
+                                                                            Senza Glutine
+                                                                        </label>
+                                                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: '#03A9F4', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                                            <input type="checkbox" checked={editingItemData.is_lactose_free || false} onChange={e => setEditingItemData({...editingItemData, is_lactose_free: e.target.checked})} style={{ width: '14px', height: '14px' }} />
+                                                                            Senza Lattosio
+                                                                        </label>
+                                                                    </div>
+                                                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                                                        <button type="button" className="btn btn-outline" style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }} onClick={() => { setEditingItemId(null); setEditingItemData(null); }}>Annulla</button>
+                                                                        <button type="button" className="btn btn-primary" style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }} onClick={() => {
+                                                                            const updatedItems = newPackage.items.map(it => it.tempId === editingItemId ? editingItemData : it);
+                                                                            setNewPackage({ ...newPackage, items: updatedItems });
+                                                                            setEditingItemId(null);
+                                                                            setEditingItemData(null);
+                                                                        }}>Salva Dettagli</button>
                                                                     </div>
                                                                 </div>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                                    <button type="button" className="btn btn-outline" style={{ padding: '0.25rem', borderRadius: '4px' }} onClick={() => updateItem(item.tempId, 'quantity', Math.max(step, (parseFloat(item.quantity) || 0) - step).toFixed(isPieces ? 0 : 1))}>
-                                                                        <Minus size={14} />
-                                                                    </button>
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                                                        <input
-                                                                            type="number" step={step}
-                                                                            style={{ width: '50px', textAlign: 'center', border: 'none', background: 'transparent', fontWeight: 'bold' }}
-                                                                            value={item.quantity}
-                                                                            onChange={(e) => updateItem(item.tempId, 'quantity', e.target.value)}
-                                                                        />
-                                                                        <span style={{ fontSize: '0.8rem' }}>{unit}</span>
+                                                            );
+                                                        }
+
+                                                        return (
+                                                            <div key={item.tempId} className="glass-panel" style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', border: '1px solid var(--color-border)' }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                                    <div style={{ minWidth: 0, flex: 1 }}>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                                                            <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{item.name || product?.name}</div>
+                                                                            <div style={{ display: 'flex', gap: '0.2rem' }}>
+                                                                                {(item.is_gluten_free ?? product?.is_gluten_free) && (
+                                                                                    <span style={{ color: '#FF9800', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>GF</span>
+                                                                                )}
+                                                                                {(item.is_lactose_free ?? product?.is_lactose_free) && (
+                                                                                    <span style={{ color: '#03A9F4', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>LF</span>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
+                                                                            {isPieces ? `€${Number(item.price_per_piece || product?.price_per_piece || 0).toFixed(2)}/pz` : `€${Number(item.price_per_kg || product?.price_per_kg || 0).toFixed(2)}/kg`}
+                                                                        </div>
                                                                     </div>
-                                                                    <button type="button" className="btn btn-outline" style={{ padding: '0.25rem', borderRadius: '4px' }} onClick={() => updateItem(item.tempId, 'quantity', ((parseFloat(item.quantity) || 0) + step).toFixed(isPieces ? 0 : 1))}>
-                                                                        <Plus size={14} />
-                                                                    </button>
-                                                                    <button type="button" style={{ background: 'none', border: 'none', color: '#E11D48', marginLeft: '0.5rem', cursor: 'pointer' }} onClick={() => removeItem(item.tempId)}>
-                                                                        <Trash2 size={16} />
-                                                                    </button>
+                                                                    <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                                                        <button type="button" className="btn btn-outline" style={{ padding: '0.3rem', border: 'none', color: 'var(--color-primary)' }} onClick={() => { setEditingItemId(item.tempId); setEditingItemData({ ...item, name: item.name || product?.name, description: item.description || product?.description, image_url: item.image_url || product?.image_url, is_gluten_free: item.is_gluten_free ?? product?.is_gluten_free, is_lactose_free: item.is_lactose_free ?? product?.is_lactose_free }); }}>
+                                                                            <Edit size={16} />
+                                                                        </button>
+                                                                        <button type="button" style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', padding: '0.3rem' }} onClick={() => removeItem(item.tempId)}>
+                                                                            <Trash2 size={16} />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '0.4rem 0.6rem', borderRadius: '6px' }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                                        <div style={{ display: 'flex', flexDirection: 'row', gap: '0.2rem', marginRight: '0.3rem' }}>
+                                                                            <button 
+                                                                                type="button" 
+                                                                                className="btn btn-outline" 
+                                                                                style={{ padding: '0.1rem', visibility: index === 0 ? 'hidden' : 'visible' }} 
+                                                                                onClick={() => moveItem(index, -1)}
+                                                                            >
+                                                                                <ChevronUp size={14} />
+                                                                            </button>
+                                                                            <button 
+                                                                                type="button" 
+                                                                                className="btn btn-outline" 
+                                                                                style={{ padding: '0.1rem', visibility: index === newPackage.items.length - 1 ? 'hidden' : 'visible' }} 
+                                                                                onClick={() => moveItem(index, 1)}
+                                                                            >
+                                                                                <ChevronDown size={14} />
+                                                                            </button>
+                                                                        </div>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                                                            <button type="button" className="btn btn-outline" style={{ padding: '0.2rem', borderRadius: '4px' }} onClick={() => updateItem(item.tempId, 'quantity', Math.max(step, (parseFloat(item.quantity) || 0) - step).toFixed(isPieces ? 0 : 1))}>
+                                                                                <Minus size={12} />
+                                                                            </button>
+                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                                                                <input
+                                                                                    type="number" step={step}
+                                                                                    style={{ width: '40px', textAlign: 'center', border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '0.85rem' }}
+                                                                                    value={item.quantity}
+                                                                                    onChange={(e) => updateItem(item.tempId, 'quantity', e.target.value)}
+                                                                                />
+                                                                                <span style={{ fontSize: '0.75rem' }}>{unit}</span>
+                                                                            </div>
+                                                                            <button type="button" className="btn btn-outline" style={{ padding: '0.2rem', borderRadius: '4px' }} onClick={() => updateItem(item.tempId, 'quantity', ((parseFloat(item.quantity) || 0) + step).toFixed(isPieces ? 0 : 1))}>
+                                                                                <Plus size={12} />
+                                                                            </button>
+                                                                            <button 
+                                                                                type="button" 
+                                                                                className="btn btn-outline"
+                                                                                style={{ 
+                                                                                    padding: '0.2rem 0.4rem', 
+                                                                                    borderRadius: '4px',
+                                                                                    marginLeft: '0.2rem',
+                                                                                    opacity: canToggleUnit ? 1 : 0.4,
+                                                                                    cursor: canToggleUnit ? 'pointer' : 'not-allowed',
+                                                                                    color: 'var(--color-primary)',
+                                                                                    fontSize: '0.7rem',
+                                                                                    fontWeight: 'bold',
+                                                                                    minWidth: '30px'
+                                                                                }} 
+                                                                                onClick={() => {
+                                                                                    if (canToggleUnit) {
+                                                                                        setNewPackage({
+                                                                                            ...newPackage,
+                                                                                            items: newPackage.items.map(it => 
+                                                                                                it.tempId === item.tempId 
+                                                                                                    ? { ...it, is_sold_by_piece: !isPieces, quantity: !isPieces ? Math.ceil(it.quantity) : it.quantity } 
+                                                                                                    : it
+                                                                                            )
+                                                                                        });
+                                                                                    }
+                                                                                }}
+                                                                                title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
+                                                                            >
+                                                                                {isPieces ? 'pz' : 'kg'}
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         );
@@ -534,10 +657,10 @@ const PackageBuilder = () => {
                                         padding: '0.4rem', width: '32px', height: '32px', background: 'white', boxShadow: 'var(--shadow-sm)',
                                         opacity: index === 0 ? 0.3 : 1, cursor: index === 0 ? 'default' : 'pointer'
                                     }}
-                                    onClick={() => handleMoveUp(index)}
+                                    onClick={() => handleMovePackageUp(index)}
                                     disabled={index === 0}
                                 >
-                                    <ArrowUp size={16} />
+                                    <ChevronUp size={16} />
                                 </button>
                                 <button
                                     className="btn"
@@ -545,10 +668,10 @@ const PackageBuilder = () => {
                                         padding: '0.4rem', width: '32px', height: '32px', background: 'white', boxShadow: 'var(--shadow-sm)',
                                         opacity: index === packages.length - 1 ? 0.3 : 1, cursor: index === packages.length - 1 ? 'default' : 'pointer'
                                     }}
-                                    onClick={() => handleMoveDown(index)}
+                                    onClick={() => handleMovePackageDown(index)}
                                     disabled={index === packages.length - 1}
                                 >
-                                    <ArrowDown size={16} />
+                                    <ChevronDown size={16} />
                                 </button>
                             </div>
                             
