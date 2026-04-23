@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check, Download, Eye, QrCode } from 'lucide-react';
+import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check, Download, Eye, QrCode, ExternalLink } from 'lucide-react';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
@@ -341,12 +341,14 @@ const SharedQuote = ({ isMenuMode = false }) => {
     return (
         <div className="container" style={{ maxWidth: '800px', padding: '2rem 1rem', position: 'relative' }}>
             <h1 className="brand-logo" style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', fontSize: '1.4rem', margin: 0, zIndex: 10 }}>Muse Catering</h1>
-            <button 
-                onClick={() => navigate('/')}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', marginBottom: '2rem', fontSize: '1rem', fontWeight: 'bold' }}
-            >
-                <ArrowLeft size={20} /> Torna al sito
-            </button>
+            {!isMenuMode && (
+                <button 
+                    onClick={() => navigate('/')}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', marginBottom: '2rem', fontSize: '1rem', fontWeight: 'bold' }}
+                >
+                    <ArrowLeft size={20} /> Torna al sito
+                </button>
+            )}
 
             <div className="glass-panel" style={{ padding: '2.5rem', position: 'relative', overflow: 'hidden', borderRadius: '24px' }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '5px', background: 'var(--color-primary)', borderTopLeftRadius: '24px', borderTopRightRadius: '24px' }}></div>
@@ -577,6 +579,16 @@ const SharedQuote = ({ isMenuMode = false }) => {
                             </>
                         )}
                     </button>
+
+                    {isMenuMode && (
+                        <button 
+                            className="btn btn-outline" 
+                            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '1rem', marginBottom: '1.5rem', fontSize: '1.1rem' }}
+                            onClick={() => window.open('/', '_blank')}
+                        >
+                            <ExternalLink size={20} /> Visita il nostro sito
+                        </button>
+                    )}
 
                     {!isMenuMode && (
                         <div style={{ backgroundColor: 'rgba(175, 68, 72, 0.05)', padding: '1.5rem', borderRadius: '16px', border: '1px dashed var(--color-primary)', marginBottom: '2rem', textAlign: 'center' }}>
