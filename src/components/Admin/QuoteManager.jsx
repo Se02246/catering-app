@@ -330,92 +330,64 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                 }
 
                                 return (
-                                <div key={item.instanceId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                            <button 
-                                                className="btn btn-outline" 
-                                                style={{ padding: '0.1rem', visibility: index === 0 ? 'hidden' : 'visible' }} 
-                                                onClick={() => moveItem(index, -1)}
-                                            >
-                                                <ChevronUp size={16} />
-                                            </button>
-                                            <button 
-                                                className="btn btn-outline" 
-                                                style={{ padding: '0.1rem', visibility: index === currentQuote.items.length - 1 ? 'hidden' : 'visible' }} 
-                                                onClick={() => moveItem(index, 1)}
-                                            >
-                                                <ChevronDown size={16} />
-                                            </button>
-                                        </div>
+                                <div key={item.instanceId} style={{ display: 'flex', flexDirection: 'column', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--color-border)', gap: '1rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div style={{ flex: 1 }}>
-                                            <p style={{ fontWeight: 'bold', margin: 0 }}>
+                                            <p style={{ fontWeight: 'bold', margin: 0, fontSize: '1rem' }}>
                                                 {item.name}
-                                                <div style={{ display: 'flex', gap: '0.25rem' }}>
-                                                    {item.is_gluten_free && (
-                                                        <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                            Senza Glutine
-                                                        </span>
-                                                    )}
-                                                    {item.is_lactose_free && (
-                                                        <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                            Senza Lattosio
-                                                        </span>
-                                                    )}
-                                                </div>
                                             </p>
-                                            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
-                                                Prezzo unitario: € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)}
+                                            <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.25rem' }}>
+                                                {item.is_gluten_free && (
+                                                    <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        Senza Glutine
+                                                    </span>
+                                                )}
+                                                {item.is_lactose_free && (
+                                                    <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        Senza Lattosio
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: '0.25rem 0 0 0' }}>
+                                                Unitario: € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)}
                                             </p>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button className="btn btn-outline" style={{ padding: '0.4rem', border: 'none', color: 'var(--color-primary)' }} onClick={() => { setEditingItemId(item.instanceId); setEditingItemData({ ...item }); }}>
+                                                <Edit size={18} />
+                                            </button>
+                                            <button style={{ color: '#e63946', background: 'none', border: 'none', cursor: 'pointer', padding: '0.4rem' }} onClick={() => removeItem(item.instanceId)}>
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '6px', flexWrap: 'wrap', gap: '0.75rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, -1)}><Minus size={14} /></button>
-                                            <input 
-                                                type="number" 
-                                                value={item.quantity} 
-                                                onChange={(e) => {
-                                                    const val = parseFloat(e.target.value) || 0;
-                                                    const updatedItems = currentQuote.items.map(it => it.instanceId === item.instanceId ? { ...it, quantity: val } : it);
-                                                    const newTotal = updatedItems.reduce((sum, it) => {
-                                                        const pKg = Number(it.price_per_kg) || 0;
-                                                        const pPc = Number(it.price_per_piece) || 0;
-                                                        const price = it.is_sold_by_piece ? pPc : pKg;
-                                                        return sum + (price * (Number(it.quantity) || 0));
-                                                    }, 0);
-                                                    setCurrentQuote({ ...currentQuote, items: updatedItems, total_price: newTotal });
-                                                }}
-                                                style={{ width: '60px', textAlign: 'center', padding: '0.3rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
-                                            />
-                                            <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, 1)}><Plus size={14} /></button>
-                                            <button 
-                                                type="button" 
-                                                className="btn btn-outline"
-                                                style={{ 
-                                                    padding: '0.2rem 0.5rem', 
-                                                    borderRadius: '4px',
-                                                    marginLeft: '0.25rem',
-                                                    opacity: canToggleUnit ? 1 : 0.4,
-                                                    cursor: canToggleUnit ? 'pointer' : 'not-allowed',
-                                                    color: 'var(--color-primary)',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: 'bold',
-                                                    minWidth: '35px'
-                                                }} 
-                                                onClick={() => {
-                                                    if (canToggleUnit) {
-                                                        const updatedItems = currentQuote.items.map(it => {
-                                                            if (it.instanceId === item.instanceId) {
-                                                                const newIsPieces = !it.is_sold_by_piece;
-                                                                return { 
-                                                                    ...it, 
-                                                                    is_sold_by_piece: newIsPieces,
-                                                                    quantity: !newIsPieces ? Math.ceil(it.quantity) : it.quantity
-                                                                };
-                                                            }
-                                                            return it;
-                                                        });
+                                            <div style={{ display: 'flex', flexDirection: 'row', gap: '0.25rem', marginRight: '0.5rem' }}>
+                                                <button 
+                                                    className="btn btn-outline" 
+                                                    style={{ padding: '0.2rem', visibility: index === 0 ? 'hidden' : 'visible' }} 
+                                                    onClick={() => moveItem(index, -1)}
+                                                >
+                                                    <ChevronUp size={16} />
+                                                </button>
+                                                <button 
+                                                    className="btn btn-outline" 
+                                                    style={{ padding: '0.2rem', visibility: index === currentQuote.items.length - 1 ? 'hidden' : 'visible' }} 
+                                                    onClick={() => moveItem(index, 1)}
+                                                >
+                                                    <ChevronDown size={16} />
+                                                </button>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, -1)}><Minus size={14} /></button>
+                                                <input 
+                                                    type="number" 
+                                                    value={item.quantity} 
+                                                    onChange={(e) => {
+                                                        const val = parseFloat(e.target.value) || 0;
+                                                        const updatedItems = currentQuote.items.map(it => it.instanceId === item.instanceId ? { ...it, quantity: val } : it);
                                                         const newTotal = updatedItems.reduce((sum, it) => {
                                                             const pKg = Number(it.price_per_kg) || 0;
                                                             const pPc = Number(it.price_per_piece) || 0;
@@ -423,22 +395,55 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                             return sum + (price * (Number(it.quantity) || 0));
                                                         }, 0);
                                                         setCurrentQuote({ ...currentQuote, items: updatedItems, total_price: newTotal });
-                                                    }
-                                                }}
-                                                title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
-                                            >
-                                                {item.is_sold_by_piece ? 'pz' : 'kg'}
-                                            </button>
+                                                    }}
+                                                    style={{ width: '60px', textAlign: 'center', padding: '0.3rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                                                />
+                                                <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, 1)}><Plus size={14} /></button>
+                                                <button 
+                                                    type="button" 
+                                                    className="btn btn-outline"
+                                                    style={{ 
+                                                        padding: '0.2rem 0.5rem', 
+                                                        borderRadius: '4px',
+                                                        marginLeft: '0.25rem',
+                                                        opacity: canToggleUnit ? 1 : 0.4,
+                                                        cursor: canToggleUnit ? 'pointer' : 'not-allowed',
+                                                        color: 'var(--color-primary)',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 'bold',
+                                                        minWidth: '35px'
+                                                    }} 
+                                                    onClick={() => {
+                                                        if (canToggleUnit) {
+                                                            const updatedItems = currentQuote.items.map(it => {
+                                                                if (it.instanceId === item.instanceId) {
+                                                                    const newIsPieces = !it.is_sold_by_piece;
+                                                                    return { 
+                                                                        ...it, 
+                                                                        is_sold_by_piece: newIsPieces,
+                                                                        quantity: !newIsPieces ? Math.ceil(it.quantity) : it.quantity
+                                                                    };
+                                                                }
+                                                                return it;
+                                                            });
+                                                            const newTotal = updatedItems.reduce((sum, it) => {
+                                                                const pKg = Number(it.price_per_kg) || 0;
+                                                                const pPc = Number(it.price_per_piece) || 0;
+                                                                const price = it.is_sold_by_piece ? pPc : pKg;
+                                                                return sum + (price * (Number(it.quantity) || 0));
+                                                            }, 0);
+                                                            setCurrentQuote({ ...currentQuote, items: updatedItems, total_price: newTotal });
+                                                        }
+                                                    }}
+                                                    title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
+                                                >
+                                                    {item.is_sold_by_piece ? 'pz' : 'kg'}
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div style={{ minWidth: '80px', textAlign: 'right', fontWeight: 'bold', color: 'var(--color-primary-dark)' }}>
-                                            € {( (item.is_sold_by_piece ? (Number(item.price_per_piece) || 0) : (Number(item.price_per_kg) || 0)) * (Number(item.quantity) || 0) ).toFixed(2)}
+                                        <div style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--color-primary-dark)', fontSize: '1.1rem' }}>
+                                            Tot: € {( (item.is_sold_by_piece ? (Number(item.price_per_piece) || 0) : (Number(item.price_per_kg) || 0)) * (Number(item.quantity) || 0) ).toFixed(2)}
                                         </div>
-                                        <button className="btn btn-outline" style={{ padding: '0.4rem', border: 'none', color: 'var(--color-primary)' }} onClick={() => { setEditingItemId(item.instanceId); setEditingItemData({ ...item }); }}>
-                                            <Edit size={18} />
-                                        </button>
-                                        <button style={{ color: '#e63946', background: 'none', border: 'none', cursor: 'pointer', padding: '0.4rem' }} onClick={() => removeItem(item.instanceId)}>
-                                            <Trash2 size={18} />
-                                        </button>
                                     </div>
                                 </div>
                                 );

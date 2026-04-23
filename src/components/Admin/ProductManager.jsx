@@ -453,29 +453,11 @@ const ProductManager = () => {
                                                         : (product.price_per_kg * item.quantity);
 
                                                     return (
-                                                        <div key={item.tempId} className="glass-panel" style={{ padding: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
-                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
-                                                                    <button 
-                                                                        type="button" 
-                                                                        className="btn btn-outline" 
-                                                                        style={{ padding: '0.05rem', visibility: index === 0 ? 'hidden' : 'visible' }} 
-                                                                        onClick={() => moveQuoteItem(index, -1)}
-                                                                    >
-                                                                        <ChevronUp size={14} />
-                                                                    </button>
-                                                                    <button 
-                                                                        type="button" 
-                                                                        className="btn btn-outline" 
-                                                                        style={{ padding: '0.05rem', visibility: index === newQuote.items.length - 1 ? 'hidden' : 'visible' }} 
-                                                                        onClick={() => moveQuoteItem(index, 1)}
-                                                                    >
-                                                                        <ChevronDown size={14} />
-                                                                    </button>
-                                                                </div>
+                                                        <div key={item.tempId} className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--color-border)' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                                                 <div style={{ minWidth: 0, flex: 1 }}>
                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                                                        <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{product?.name}</div>
+                                                                        <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>{product?.name}</div>
                                                                         <div style={{ display: 'flex', gap: '0.2rem' }}>
                                                                             {product?.is_gluten_free && (
                                                                                 <span style={{ color: '#FF9800', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>GF</span>
@@ -485,60 +467,83 @@ const ProductManager = () => {
                                                                             )}
                                                                         </div>
                                                                     </div>
-                                                                    <div style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 'bold' }}>
-                                                                        € {itemPrice.toFixed(2)}
+                                                                    <div style={{ fontSize: '0.8rem', color: 'var(--color-primary)', fontWeight: 'bold', marginTop: '0.25rem' }}>
+                                                                        Tot: € {itemPrice.toFixed(2)}
                                                                     </div>
                                                                 </div>
+                                                                <button type="button" style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', padding: '0.25rem' }} onClick={() => removeQuoteItem(item.tempId)}>
+                                                                    <Trash2 size={18} />
+                                                                </button>
                                                             </div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                                <button type="button" className="btn btn-outline" style={{ padding: '0.25rem', borderRadius: '4px' }} onClick={() => updateQuoteItem(item.tempId, 'quantity', Math.max(step, (parseFloat(item.quantity) || 0) - step).toFixed(isPieces ? 0 : 1))}>
-                                                                    <Minus size={14} />
-                                                                </button>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                                                    <input
-                                                                        type="number" step={step}
-                                                                        style={{ width: '50px', textAlign: 'center', border: 'none', background: 'transparent', fontWeight: 'bold' }}
-                                                                        value={item.quantity}
-                                                                        onChange={(e) => updateQuoteItem(item.tempId, 'quantity', e.target.value)}
-                                                                    />
-                                                                    <span style={{ fontSize: '0.8rem' }}>{unit}</span>
+
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '0.5rem', borderRadius: '6px' }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                    <div style={{ display: 'flex', flexDirection: 'row', gap: '0.2rem', marginRight: '0.25rem' }}>
+                                                                        <button 
+                                                                            type="button" 
+                                                                            className="btn btn-outline" 
+                                                                            style={{ padding: '0.2rem', visibility: index === 0 ? 'hidden' : 'visible' }} 
+                                                                            onClick={() => moveQuoteItem(index, -1)}
+                                                                        >
+                                                                            <ChevronUp size={16} />
+                                                                        </button>
+                                                                        <button 
+                                                                            type="button" 
+                                                                            className="btn btn-outline" 
+                                                                            style={{ padding: '0.2rem', visibility: index === newQuote.items.length - 1 ? 'hidden' : 'visible' }} 
+                                                                            onClick={() => moveQuoteItem(index, 1)}
+                                                                        >
+                                                                            <ChevronDown size={16} />
+                                                                        </button>
+                                                                    </div>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                                        <button type="button" className="btn btn-outline" style={{ padding: '0.2rem', borderRadius: '4px' }} onClick={() => updateQuoteItem(item.tempId, 'quantity', Math.max(step, (parseFloat(item.quantity) || 0) - step).toFixed(isPieces ? 0 : 1))}>
+                                                                            <Minus size={14} />
+                                                                        </button>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                                                            <input
+                                                                                type="number" step={step}
+                                                                                style={{ width: '45px', textAlign: 'center', border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '0.9rem' }}
+                                                                                value={item.quantity}
+                                                                                onChange={(e) => updateQuoteItem(item.tempId, 'quantity', e.target.value)}
+                                                                            />
+                                                                            <span style={{ fontSize: '0.8rem' }}>{unit}</span>
+                                                                        </div>
+                                                                        <button type="button" className="btn btn-outline" style={{ padding: '0.2rem', borderRadius: '4px' }} onClick={() => updateQuoteItem(item.tempId, 'quantity', ((parseFloat(item.quantity) || 0) + step).toFixed(isPieces ? 0 : 1))}>
+                                                                            <Plus size={14} />
+                                                                        </button>
+                                                                        <button 
+                                                                            type="button" 
+                                                                            className="btn btn-outline"
+                                                                            style={{ 
+                                                                                padding: '0.2rem 0.4rem', 
+                                                                                borderRadius: '4px',
+                                                                                marginLeft: '0.25rem',
+                                                                                opacity: canToggleUnit ? 1 : 0.4,
+                                                                                cursor: canToggleUnit ? 'pointer' : 'not-allowed',
+                                                                                color: 'var(--color-primary)',
+                                                                                fontSize: '0.7rem',
+                                                                                fontWeight: 'bold',
+                                                                                minWidth: '30px'
+                                                                            }} 
+                                                                            onClick={() => {
+                                                                                if (canToggleUnit) {
+                                                                                    setNewQuote({
+                                                                                        ...newQuote,
+                                                                                        items: newQuote.items.map(it => 
+                                                                                            it.tempId === item.tempId 
+                                                                                                ? { ...it, is_sold_by_piece: !isPieces, quantity: !isPieces ? Math.ceil(it.quantity) : it.quantity } 
+                                                                                                : it
+                                                                                        )
+                                                                                    });
+                                                                                }
+                                                                            }}
+                                                                            title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
+                                                                        >
+                                                                            {isPieces ? 'pz' : 'kg'}
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
-                                                                <button type="button" className="btn btn-outline" style={{ padding: '0.25rem', borderRadius: '4px' }} onClick={() => updateQuoteItem(item.tempId, 'quantity', ((parseFloat(item.quantity) || 0) + step).toFixed(isPieces ? 0 : 1))}>
-                                                                    <Plus size={14} />
-                                                                </button>
-                                                                <button 
-                                                                    type="button" 
-                                                                    className="btn btn-outline"
-                                                                    style={{ 
-                                                                        padding: '0.2rem 0.4rem', 
-                                                                        borderRadius: '4px',
-                                                                        marginLeft: '0.25rem',
-                                                                        opacity: canToggleUnit ? 1 : 0.4,
-                                                                        cursor: canToggleUnit ? 'pointer' : 'not-allowed',
-                                                                        color: 'var(--color-primary)',
-                                                                        fontSize: '0.7rem',
-                                                                        fontWeight: 'bold',
-                                                                        minWidth: '30px'
-                                                                    }} 
-                                                                    onClick={() => {
-                                                                        if (canToggleUnit) {
-                                                                            setNewQuote({
-                                                                                ...newQuote,
-                                                                                items: newQuote.items.map(it => 
-                                                                                    it.tempId === item.tempId 
-                                                                                        ? { ...it, is_sold_by_piece: !isPieces, quantity: !isPieces ? Math.ceil(it.quantity) : it.quantity } 
-                                                                                        : it
-                                                                                )
-                                                                            });
-                                                                        }
-                                                                    }}
-                                                                    title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
-                                                                >
-                                                                    {isPieces ? 'pz' : 'kg'}
-                                                                </button>
-                                                                <button type="button" style={{ background: 'none', border: 'none', color: '#E11D48', marginLeft: '0.5rem', cursor: 'pointer' }} onClick={() => removeQuoteItem(item.tempId)}>
-                                                                    <Trash2 size={16} />
-                                                                </button>
                                                             </div>
                                                         </div>
                                                     );
