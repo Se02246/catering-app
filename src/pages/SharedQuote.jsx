@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check, Download, Eye, QrCode, ExternalLink } from 'lucide-react';
+import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check, Download, Eye, QrCode, ExternalLink, Share2 } from 'lucide-react';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
@@ -18,7 +18,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const [isGeneratingQr, setIsGeneratingQr] = useState(false);
 
-    const handleCopyToClipboard = () => {
+    const handleShareQuote = async () => {
         let text = `Riepilogo preventivo\n`;
         text += `ID preventivo: ${id}\n`;
         text += `Creato il ${new Date(quote?.created_at).toLocaleDateString('it-IT')}\n\n`;
@@ -31,10 +31,28 @@ const SharedQuote = ({ isMenuMode = false }) => {
         }
         text += `\nLink della pagina share: ${window.location.href}`;
 
-        navigator.clipboard.writeText(text).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        }).catch(err => console.error('Errore durante la copia:', err));
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Riepilogo Preventivo Muse Catering',
+                    text: text,
+                    url: window.location.href,
+                });
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Errore durante la condivisione:', err);
+                }
+            }
+        } else {
+            // Fallback al clipboard se navigator.share non è supportato
+            try {
+                await navigator.clipboard.writeText(text);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch (err) {
+                console.error('Errore durante la copia:', err);
+            }
+        }
     };
 
     useEffect(() => {
@@ -404,8 +422,8 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                 <p style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--color-primary)', textDecoration: 'underline' }}>{id.substring(0, 8).toUpperCase()}</p>
                             </div>
                             <button
-                                onClick={handleCopyToClipboard}
-                                title="Copia preventivo come testo"
+                                onClick={handleShareQuote}
+                                title="Condividi o copia preventivo"
                                 style={{
                                     background: 'none',
                                     border: 'none',
@@ -420,7 +438,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                     backgroundColor: copied ? 'rgba(76, 175, 80, 0.1)' : 'rgba(175, 68, 72, 0.05)'
                                 }}
                             >
-                                {copied ? <Check size={20} /> : <Copy size={20} />}
+                                {copied ? <Check size={20} /> : <Share2 size={20} />}
                             </button>
                         </div>
                     )}
