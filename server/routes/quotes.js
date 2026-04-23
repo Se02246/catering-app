@@ -72,8 +72,8 @@ Estrai le informazioni e restituisci un oggetto JSON con la seguente struttura e
   "items": [
     {
       "id": ID del prodotto dal database (intero),
-      "quantity": quantità richiesta (numero, es. 2 per 2kg o 2 pezzi),
-      "is_sold_by_piece": booleano (imposta a true se l'utente richiede esplicitamente "pezzi", "pz", "porzioni" per questo prodotto, altrimenti false se richiede "kg", "chili", o se non specificato usa il valore di default del prodotto dal database),
+      "quantity": quantità richiesta (numero, es. 2 per 2kg o 2 pezzi. Se l'utente non lo specifica, deduci una quantità adeguata in base al numero di persone o al contesto),
+      "is_sold_by_piece": booleano (imposta a true per pezzi/porzioni, false per kg/chili. Se non specificato, decidi in autonomia la scelta più logica per il tipo di prodotto),
       "price_per_piece": prezzo unitario (dal db),
       "price_per_kg": prezzo al kg (dal db),
       "name": "nome prodotto",
@@ -87,9 +87,9 @@ Estrai le informazioni e restituisci un oggetto JSON con la seguente struttura e
   "manual_total_price": numero o null (se l'utente specifica un budget o un prezzo totale globale per l'intero preventivo, inserisci qui il numero, altrimenti null)
 }
 IMPORTANTE:
-- Controlla se l'utente specifica la quantità in "kg" o in "pezzi"/"pz".
-- Imposta il campo "is_sold_by_piece" di conseguenza (true per pezzi, false per kg).
-- Se l'utente non specifica l'unità di misura, usa il valore di "is_sold_by_piece" che trovi per quel prodotto nel database.
+- Controlla se l'utente specifica la quantità in "kg" o in "pezzi"/"pz" e imposta "is_sold_by_piece" di conseguenza (true per pezzi, false per kg).
+- Se l'utente NON specifica l'unità di misura per un prodotto, DEDUCI TU se è più logico calcolarlo a chili (false) o a pezzi/porzioni (true) in base alla natura del prodotto (es. una torta a kg, dei salatini a pezzi) e al contesto del preventivo (es. numero di invitati).
+- Se l'utente non specifica la quantità, DEDUCI TU una quantità proporzionata e adeguata al contesto del preventivo (es. calcola circa 200g-300g di carne a persona se è a kg, oppure 1 pezzo a persona).
 - Fai molta attenzione alle richieste globali come "tutto senza glutine" o "budget totale di 500€".
 - Restituisci SOLO IL JSON, senza blocchi di codice \`\`\` o altro testo.
 `;
