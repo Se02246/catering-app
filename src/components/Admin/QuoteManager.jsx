@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown } from 'lucide-react';
 
 
 const QuoteManager = ({ initialSearchId = '' }) => {
@@ -89,6 +89,18 @@ const QuoteManager = ({ initialSearchId = '' }) => {
             items: updatedItems, 
             total_price: newSuggestedTotal
         });
+    };
+
+    const moveItem = (index, direction) => {
+        const newItems = [...currentQuote.items];
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= newItems.length) return;
+        
+        const temp = newItems[index];
+        newItems[index] = newItems[targetIndex];
+        newItems[targetIndex] = temp;
+        
+        setCurrentQuote({ ...currentQuote, items: newItems });
     };
 
     const addProductToQuote = (prod) => {
@@ -266,7 +278,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                             </button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {currentQuote.items.map((item) => {
+                            {currentQuote.items.map((item, index) => {
                                 const canToggleUnit = Number(item.price_per_kg) > 0 && Number(item.price_per_piece) > 0;
                                 if (editingItemId === item.instanceId) {
                                     return (
@@ -319,25 +331,43 @@ const QuoteManager = ({ initialSearchId = '' }) => {
 
                                 return (
                                 <div key={item.instanceId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <p style={{ fontWeight: 'bold', margin: 0 }}>
-                                            {item.name}
-                                            <div style={{ display: 'flex', gap: '0.25rem' }}>
-                                                {item.is_gluten_free && (
-                                                    <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                        Senza Glutine
-                                                    </span>
-                                                )}
-                                                {item.is_lactose_free && (
-                                                    <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                        Senza Lattosio
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </p>
-                                        <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
-                                            Prezzo unitario applicato: € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)}
-                                        </p>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                            <button 
+                                                className="btn btn-outline" 
+                                                style={{ padding: '0.1rem', visibility: index === 0 ? 'hidden' : 'visible' }} 
+                                                onClick={() => moveItem(index, -1)}
+                                            >
+                                                <ChevronUp size={16} />
+                                            </button>
+                                            <button 
+                                                className="btn btn-outline" 
+                                                style={{ padding: '0.1rem', visibility: index === currentQuote.items.length - 1 ? 'hidden' : 'visible' }} 
+                                                onClick={() => moveItem(index, 1)}
+                                            >
+                                                <ChevronDown size={16} />
+                                            </button>
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <p style={{ fontWeight: 'bold', margin: 0 }}>
+                                                {item.name}
+                                                <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                                    {item.is_gluten_free && (
+                                                        <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                            Senza Glutine
+                                                        </span>
+                                                    )}
+                                                    {item.is_lactose_free && (
+                                                        <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                            Senza Lattosio
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </p>
+                                            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
+                                                Prezzo unitario: € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)}
+                                            </p>
+                                        </div>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -363,12 +393,15 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                 type="button" 
                                                 className="btn btn-outline"
                                                 style={{ 
-                                                    padding: '0.2rem', 
+                                                    padding: '0.2rem 0.5rem', 
                                                     borderRadius: '4px',
                                                     marginLeft: '0.25rem',
                                                     opacity: canToggleUnit ? 1 : 0.4,
                                                     cursor: canToggleUnit ? 'pointer' : 'not-allowed',
-                                                    color: 'var(--color-primary)'
+                                                    color: 'var(--color-primary)',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 'bold',
+                                                    minWidth: '35px'
                                                 }} 
                                                 onClick={() => {
                                                     if (canToggleUnit) {
@@ -394,8 +427,11 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                 }}
                                                 title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
                                             >
-                                                {item.is_sold_by_piece ? <Hash size={14} /> : <Scale size={14} />}
+                                                {item.is_sold_by_piece ? 'pz' : 'kg'}
                                             </button>
+                                        </div>
+                                        <div style={{ minWidth: '80px', textAlign: 'right', fontWeight: 'bold', color: 'var(--color-primary-dark)' }}>
+                                            € {( (item.is_sold_by_piece ? (Number(item.price_per_piece) || 0) : (Number(item.price_per_kg) || 0)) * (Number(item.quantity) || 0) ).toFixed(2)}
                                         </div>
                                         <button className="btn btn-outline" style={{ padding: '0.4rem', border: 'none', color: 'var(--color-primary)' }} onClick={() => { setEditingItemId(item.instanceId); setEditingItemData({ ...item }); }}>
                                             <Edit size={18} />

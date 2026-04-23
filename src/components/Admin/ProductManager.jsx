@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText, Minus, Search, Send, Scale, Hash } from 'lucide-react';
+import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText, Minus, Search, Send, Scale, Hash, ChevronUp, ChevronDown } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 import HideModal from '../Common/HideModal';
 import { useNavigate } from 'react-router-dom';
@@ -56,6 +56,18 @@ const ProductManager = () => {
             ...newQuote,
             items: newQuote.items.filter(item => item.tempId !== tempId)
         });
+    };
+
+    const moveQuoteItem = (index, direction) => {
+        const newItems = [...newQuote.items];
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= newItems.length) return;
+        
+        const temp = newItems[index];
+        newItems[index] = newItems[targetIndex];
+        newItems[targetIndex] = temp;
+        
+        setNewQuote({ ...newQuote, items: newItems });
     };
 
     const calculateQuoteTotal = () => {
@@ -428,7 +440,7 @@ const ProductManager = () => {
                                             {newQuote.items.length === 0 ? (
                                                 <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', fontSize: '0.9rem', textAlign: 'center', padding: '1rem' }}>Seleziona i prodotti dalla lista a sinistra.</p>
                                             ) : (
-                                                newQuote.items.map((item) => {
+                                                newQuote.items.map((item, index) => {
                                                     const product = products.find(p => p.id === item.product_id);
                                                     const isPieces = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : product?.is_sold_by_piece;
                                                     const unit = isPieces ? 'pz' : 'kg';
@@ -442,20 +454,40 @@ const ProductManager = () => {
 
                                                     return (
                                                         <div key={item.tempId} className="glass-panel" style={{ padding: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                            <div style={{ minWidth: 0, flex: 1 }}>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                                                    <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{product?.name}</div>
-                                                                    <div style={{ display: 'flex', gap: '0.2rem' }}>
-                                                                        {product?.is_gluten_free && (
-                                                                            <span style={{ color: '#FF9800', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>GF</span>
-                                                                        )}
-                                                                        {product?.is_lactose_free && (
-                                                                            <span style={{ color: '#03A9F4', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>LF</span>
-                                                                        )}
-                                                                    </div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                                                                    <button 
+                                                                        type="button" 
+                                                                        className="btn btn-outline" 
+                                                                        style={{ padding: '0.05rem', visibility: index === 0 ? 'hidden' : 'visible' }} 
+                                                                        onClick={() => moveQuoteItem(index, -1)}
+                                                                    >
+                                                                        <ChevronUp size={14} />
+                                                                    </button>
+                                                                    <button 
+                                                                        type="button" 
+                                                                        className="btn btn-outline" 
+                                                                        style={{ padding: '0.05rem', visibility: index === newQuote.items.length - 1 ? 'hidden' : 'visible' }} 
+                                                                        onClick={() => moveQuoteItem(index, 1)}
+                                                                    >
+                                                                        <ChevronDown size={14} />
+                                                                    </button>
                                                                 </div>
-                                                                <div style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 'bold' }}>
-                                                                    € {itemPrice.toFixed(2)}
+                                                                <div style={{ minWidth: 0, flex: 1 }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                                                        <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{product?.name}</div>
+                                                                        <div style={{ display: 'flex', gap: '0.2rem' }}>
+                                                                            {product?.is_gluten_free && (
+                                                                                <span style={{ color: '#FF9800', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>GF</span>
+                                                                            )}
+                                                                            {product?.is_lactose_free && (
+                                                                                <span style={{ color: '#03A9F4', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>LF</span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 'bold' }}>
+                                                                        € {itemPrice.toFixed(2)}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -478,12 +510,15 @@ const ProductManager = () => {
                                                                     type="button" 
                                                                     className="btn btn-outline"
                                                                     style={{ 
-                                                                        padding: '0.25rem', 
+                                                                        padding: '0.2rem 0.4rem', 
                                                                         borderRadius: '4px',
                                                                         marginLeft: '0.25rem',
                                                                         opacity: canToggleUnit ? 1 : 0.4,
                                                                         cursor: canToggleUnit ? 'pointer' : 'not-allowed',
-                                                                        color: 'var(--color-primary)'
+                                                                        color: 'var(--color-primary)',
+                                                                        fontSize: '0.7rem',
+                                                                        fontWeight: 'bold',
+                                                                        minWidth: '30px'
                                                                     }} 
                                                                     onClick={() => {
                                                                         if (canToggleUnit) {
@@ -499,7 +534,7 @@ const ProductManager = () => {
                                                                     }}
                                                                     title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
                                                                 >
-                                                                    {isPieces ? <Hash size={14} /> : <Scale size={14} />}
+                                                                    {isPieces ? 'pz' : 'kg'}
                                                                 </button>
                                                                 <button type="button" style={{ background: 'none', border: 'none', color: '#E11D48', marginLeft: '0.5rem', cursor: 'pointer' }} onClick={() => removeQuoteItem(item.tempId)}>
                                                                     <Trash2 size={16} />
