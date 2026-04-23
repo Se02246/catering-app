@@ -151,6 +151,19 @@ export const api = {
     },
 
     // Quotes
+    generateAiQuote: async (prompt) => {
+        const res = await fetch(`${API_URL}/quotes/ai-generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to generate AI quote' }));
+            throw new Error(error.error || 'Failed to generate AI quote');
+        }
+        return res.json();
+    },
+
     createQuote: async (quote) => {
         const res = await fetch(`${API_URL}/quotes`, {
             method: 'POST',

@@ -14,6 +14,50 @@ const QuoteManager = ({ initialSearchId = '' }) => {
     const [editingItemId, setEditingItemId] = useState(null);
     const [editingItemData, setEditingItemData] = useState(null);
 
+    const [isModeSelectionOpen, setIsModeSelectionOpen] = useState(false);
+    const [isAiPromptOpen, setIsAiPromptOpen] = useState(false);
+    const [aiPrompt, setAiPrompt] = useState('');
+    const [aiLoading, setAiLoading] = useState(false);
+
+    const handleGenerateAiQuote = async () => {
+        if (!aiPrompt.trim()) return;
+        setAiLoading(true);
+        setMessage(null);
+        try {
+            const aiData = await api.generateAiQuote(aiPrompt);
+            
+            const newQuote = await api.createQuote({ items: [], total_price: 0 });
+            
+            const itemsWithIds = (aiData.items || []).map(item => ({
+                ...item,
+                instanceId: `${Date.now()}-${Math.random()}`,
+                quantity: Number(item.quantity) || 1
+            }));
+
+            const finalQuote = {
+                ...newQuote,
+                items: itemsWithIds,
+                total_price: aiData.total_price || 0,
+                is_gluten_free: aiData.is_gluten_free || false,
+                is_lactose_free: aiData.is_lactose_free || false
+            };
+
+            setSearchId(newQuote.id);
+            setCurrentQuote(finalQuote);
+            
+            await api.updateQuote(newQuote.id, finalQuote, finalQuote.total_price);
+
+            setMessage({ type: 'success', text: 'Preventivo generato con l\'IA! Controlla i dati e applica eventuali correzioni.' });
+            setIsAiPromptOpen(false);
+            setAiPrompt('');
+        } catch (err) {
+            console.error(err);
+            setMessage({ type: 'error', text: err.message || 'Errore durante la generazione con IA.' });
+        } finally {
+            setAiLoading(false);
+        }
+    };
+
     // Auto-search if initialSearchId is provided
     React.useEffect(() => {
         if (initialSearchId) {
@@ -196,7 +240,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                     <Search size={20} style={{ marginRight: '8px' }} />
                     {loading ? 'Ricerca...' : 'Cerca'}
                 </button>
-                <button type="button" className="btn btn-outline" disabled={loading} onClick={handleCreateNewQuote}>
+                <button type="button" className="btn btn-outline" disabled={loading} onClick={() => setIsModeSelectionOpen(true)}>
                     <Plus size={20} style={{ marginRight: '8px' }} />
                     Nuovo Preventivo
                 </button>
@@ -490,6 +534,61 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                         <button className="btn btn-primary" style={{ padding: '1rem 2rem' }} onClick={handleSave} disabled={saving}>
                             <Save size={20} style={{ marginRight: '8px' }} />
                             {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {isModeSelectionOpen && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                    <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '400px', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0 }}>Nuovo Preventivo</h3>
+                            <button onClick={() => setIsModeSelectionOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+                        </div>
+                        <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>Scegli come vuoi creare il nuovo preventivo:</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <button 
+                                className="btn btn-outline" 
+                                style={{ padding: '1rem', fontSize: '1.1rem' }} 
+                                onClick={() => { setIsModeSelectionOpen(false); handleCreateNewQuote(); }}
+                            >
+                                Creazione Manuale
+                            </button>
+                            <button 
+                                className="btn btn-primary" 
+                                style={{ padding: '1rem', fontSize: '1.1rem', background: 'linear-gradient(45deg, var(--color-primary), #9c27b0)', border: 'none' }} 
+                                onClick={() => { setIsModeSelectionOpen(false); setIsAiPromptOpen(true); }}
+                            >
+                                Intelligenza Artificiale
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isAiPromptOpen && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                    <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '500px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0 }}>Genera con IA</h3>
+                            <button onClick={() => setIsAiPromptOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }} disabled={aiLoading}><X size={24} /></button>
+                        </div>
+                        <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Descrivi il catering (es. "Preventivo per un matrimonio di 50 persone, tutto senza glutine, includi 2 tipi di pasta e 1 dolce").</p>
+                        <textarea
+                            value={aiPrompt}
+                            onChange={e => setAiPrompt(e.target.value)}
+                            style={{ width: '100%', height: '150px', padding: '1rem', borderRadius: '8px', border: '1px solid var(--color-border)', marginBottom: '1rem', resize: 'none' }}
+                            placeholder="Scrivi qui il tuo prompt..."
+                            disabled={aiLoading}
+                        />
+                        <button 
+                            className="btn btn-primary" 
+                            style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} 
+                            onClick={handleGenerateAiQuote}
+                            disabled={aiLoading || !aiPrompt.trim()}
+                        >
+                            {aiLoading ? 'Generazione in corso...' : 'Invia e Genera'}
                         </button>
                     </div>
                 </div>
