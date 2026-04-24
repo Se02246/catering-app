@@ -52,7 +52,6 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
     const handleShareQuote = async () => {
         let text = `Riepilogo preventivo\n`;
-        text += `ID preventivo: ${currentQuote.id}\n`;
         text += `Creato il ${new Date(currentQuote.created_at).toLocaleDateString('it-IT')}\n\n`;
         text += `Prodotti:\n`;
         if (currentQuote && currentQuote.items) {
@@ -73,7 +72,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 await navigator.share({
                     title: 'Riepilogo Preventivo Muse Catering',
                     text: text,
-                    url: `${window.location.origin}/quote/${currentQuote.id}`,
+                    // Omitting 'url' here to avoid duplicate links in the shared message
                 });
             } catch (err) {
                 if (err.name !== 'AbortError') {

@@ -26,7 +26,6 @@ const SharedQuote = ({ isMenuMode = false }) => {
 
     const handleShareQuote = async () => {
         let text = `Riepilogo preventivo\n`;
-        text += `ID preventivo: ${id}\n`;
         text += `Creato il ${new Date(quote?.created_at).toLocaleDateString('it-IT')}\n\n`;
         text += `Prodotti:\n`;
         if (quote && quote.items) {
@@ -47,7 +46,8 @@ const SharedQuote = ({ isMenuMode = false }) => {
                 await navigator.share({
                     title: 'Riepilogo Preventivo Muse Catering',
                     text: text,
-                    url: window.location.href,
+                    // Omitting 'url' here because it's already in the 'text' 
+                    // and some platforms append it twice if both are provided.
                 });
             } catch (err) {
                 if (err.name !== 'AbortError') {
@@ -568,6 +568,20 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                 )}
                             </div>
                         ))}
+
+                        {quote?.notes && (
+                            <div style={{ 
+                                marginTop: '1rem', 
+                                padding: '1.5rem', 
+                                backgroundColor: 'white', 
+                                borderRadius: '16px', 
+                                border: '1px solid var(--color-border)',
+                                boxShadow: 'var(--shadow-sm)'
+                            }}>
+                                <h4 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.75rem', fontSize: '1.1rem' }}>Note sul preventivo</h4>
+                                <p style={{ margin: 0, color: 'var(--color-text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{quote.notes}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -665,20 +679,6 @@ const SharedQuote = ({ isMenuMode = false }) => {
                             >
                                 <Send size={20} /> Richiedi Informazioni su WhatsApp
                             </button>
-                        </div>
-                    )}
-
-                    {quote?.notes && (
-                        <div style={{ 
-                            marginBottom: '2rem', 
-                            padding: '1.5rem', 
-                            backgroundColor: 'white', 
-                            borderRadius: '16px', 
-                            border: '1px solid var(--color-border)',
-                            boxShadow: 'var(--shadow-sm)'
-                        }}>
-                            <h4 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.75rem', fontSize: '1.1rem' }}>Note sul preventivo</h4>
-                            <p style={{ margin: 0, color: 'var(--color-text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{quote.notes}</p>
                         </div>
                     )}
 
