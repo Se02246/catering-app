@@ -7,7 +7,7 @@ import HideModal from '../Common/HideModal';
 import { useNavigate } from 'react-router-dom';
 
 
-const ProductManager = () => {
+const ProductManager = ({ onCreateQuoteClick }) => {
     const { products, isLoading, mutate } = useProducts();
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
@@ -23,122 +23,15 @@ const ProductManager = () => {
 
     const [calcError, setCalcError] = useState('');
 
-    const [isCreatingQuote, setIsCreatingQuote] = useState(false);
-    const [searchTermQuote, setSearchTermQuote] = useState('');
-    const [newQuote, setNewQuote] = useState({
-        items: [], // { product_id, quantity, tempId }
-        total_price: 0,
-        is_gluten_free: false,
-        is_lactose_free: false
-    });
-
     useEffect(() => {
-        if (isEditing || isCreatingQuote) {
+        if (isEditing) {
             document.body.classList.add('modal-open');
             setCalcError('');
         } else {
             document.body.classList.remove('modal-open');
         }
         return () => document.body.classList.remove('modal-open');
-    }, [isEditing, isCreatingQuote]);
-
-    const updateQuoteItem = (tempId, field, value) => {
-        setNewQuote({
-            ...newQuote,
-            items: newQuote.items.map(item =>
-                item.tempId === tempId ? { ...item, [field]: value } : item
-            )
-        });
-    };
-
-    const removeQuoteItem = (tempId) => {
-        setNewQuote({
-            ...newQuote,
-            items: newQuote.items.filter(item => item.tempId !== tempId)
-        });
-    };
-
-    const moveQuoteItem = (index, direction) => {
-        const newItems = [...newQuote.items];
-        const targetIndex = index + direction;
-        if (targetIndex < 0 || targetIndex >= newItems.length) return;
-        
-        const temp = newItems[index];
-        newItems[index] = newItems[targetIndex];
-        newItems[targetIndex] = temp;
-        
-        setNewQuote({ ...newQuote, items: newItems });
-    };
-
-    const calculateQuoteTotal = () => {
-        return newQuote.items.reduce((sum, item) => {
-            const prod = products.find(p => p.id == item.product_id);
-            if (!prod) return sum;
-
-            const isPieces = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : prod.is_sold_by_piece;
-            if (isPieces) {
-                return sum + (prod.price_per_piece * item.quantity);
-            } else {
-                return sum + (prod.price_per_kg * item.quantity);
-            }
-        }, 0);
-    };
-
-    const handleSaveQuoteToWhatsApp = async () => {
-        if (newQuote.items.length === 0) {
-            alert('Aggiungi almeno un prodotto al preventivo');
-            return;
-        }
-
-        try {
-            const suggestedTotal = calculateQuoteTotal();
-            const finalTotal = parseFloat(newQuote.total_price) || suggestedTotal;
-            
-            const quoteToSave = {
-                items: newQuote.items.map(item => {
-                    const p = products.find(prod => prod.id === item.product_id);
-                    const isPieces = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : p?.is_sold_by_piece;
-                    return {
-                        ...p,
-                        quantity: item.quantity,
-                        is_sold_by_piece: isPieces,
-                        hide_quantity: p?.hide_quantity || false,
-                        hide_unit_price: p?.hide_unit_price || false
-                    };
-                }),
-                total_price: finalTotal.toFixed(2),
-                is_gluten_free: newQuote.is_gluten_free,
-                is_lactose_free: newQuote.is_lactose_free
-            };
-
-            const savedQuote = await api.createQuote(quoteToSave);
-            const quoteId = savedQuote.id;
-            const shareUrl = `${window.location.origin}/quote/${quoteId}`;
-
-            const phoneNumber = "393495416637"; // Barbara
-            let message = `Preventivo da ${finalTotal.toFixed(2)} euro\n`;
-            
-            newQuote.items.forEach(item => {
-                const p = products.find(prod => prod.id === item.product_id);
-                const isPieces = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : p?.is_sold_by_piece;
-                const unit = isPieces ? 'pz' : 'kg';
-                const itemPrice = isPieces 
-                    ? (p.price_per_piece * item.quantity) 
-                    : (p.price_per_kg * item.quantity);
-                
-                message += `${item.quantity}${unit} ${p.name} [${itemPrice.toFixed(2)}€]\n`;
-            });
-
-            message += `\n${shareUrl}`;
-
-            window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
-            setIsCreatingQuote(false);
-            setNewQuote({ items: [], total_price: 0 });
-        } catch (err) {
-            console.error(err);
-            alert('Errore durante la creazione del preventivo');
-        }
-    };
+    }, [isEditing]);
 
     const resetForm = () => {
         setCurrentProduct({
@@ -290,7 +183,7 @@ const ProductManager = () => {
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <button 
                         className="btn btn-outline" 
-                        onClick={() => setIsCreatingQuote(true)}
+                        onClick={onCreateQuoteClick}
                         style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                     >
                         <FileText size={18} />
@@ -302,340 +195,6 @@ const ProductManager = () => {
                     </button>
                 </div>
             </div>
-
-            {isCreatingQuote && (
-                <div className="modal-overlay" style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-                    display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 3000
-                }} onClick={() => setIsCreatingQuote(false)}>
-                    <div className="modal-content bounce-in" style={{ 
-                        width: '95vw', 
-                        maxWidth: '1200px', 
-                        maxHeight: '90vh', 
-                        padding: '0', 
-                        backgroundColor: 'var(--color-bg)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        overflow: 'hidden'
-                    }} onClick={e => e.stopPropagation()}>
-                        
-                        {/* Fixed Header */}
-                        <div style={{ 
-                            padding: '1.5rem', 
-                            borderBottom: '1px solid var(--color-border)', 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center',
-                            backgroundColor: 'white',
-                            zIndex: 10
-                        }}>
-                            <h3 style={{ margin: 0 }}>Nuovo Preventivo Condivisibile</h3>
-                            <button 
-                                className="btn btn-outline" 
-                                style={{ padding: '0.5rem', borderRadius: '50%', width: '40px', height: '40px' }}
-                                onClick={() => setIsCreatingQuote(false)}
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {/* Scrollable Main Area */}
-                        <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
-                            <div style={{ 
-                                display: 'grid', 
-                                gridTemplateColumns: window.innerWidth > 992 ? '1.2fr 1fr' : '1fr', 
-                                gap: '2rem' 
-                            }}>
-                                
-                                {/* Section 1: Product Picker */}
-                                <div style={{ minWidth: 0 }}>
-                                    <div style={{ 
-                                        position: 'sticky', 
-                                        top: '0', 
-                                        backgroundColor: 'var(--color-bg)', 
-                                        paddingBottom: '1rem',
-                                        zIndex: 5
-                                    }}>
-                                        <h4 style={{ marginBottom: '1rem' }}>1. Seleziona Prodotti</h4>
-                                        <div style={{ position: 'relative' }}>
-                                            <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                                            <input
-                                                type="text"
-                                                placeholder="Cerca prodotto nel catalogo..."
-                                                style={{ width: '100%', padding: '0.75rem 0.75rem 0.75rem 2.5rem', borderRadius: 'var(--radius-full)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}
-                                                onChange={(e) => setSearchTermQuote(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                    
-                                    <div style={{ 
-                                        display: 'grid', 
-                                        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
-                                        gap: '1rem',
-                                        maxHeight: window.innerWidth > 992 ? 'none' : '400px',
-                                        overflowY: 'auto',
-                                        padding: '0.5rem'
-                                    }}>
-                                        {products.filter(p => p.name.toLowerCase().includes((searchTermQuote || '').toLowerCase())).map(p => {
-                                            const existing = newQuote.items.find(i => i.product_id === p.id);
-                                            const isAdded = !!existing;
-                                            return (
-                                                <div key={p.id} className="glass-panel" style={{
-                                                    padding: '1rem', border: isAdded ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
-                                                    display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease'
-                                                }}>
-                                                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem' }}>
-                                                        <img
-                                                            src={p.image_url || 'https://placehold.co/100x100?text=No+Img'}
-                                                            alt={p.name}
-                                                            style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '8px' }}
-                                                        />
-                                                        <div style={{ minWidth: 0 }}>
-                                                            <h5 style={{ margin: 0, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</h5>
-                                                            <p style={{ margin: 0, color: 'var(--color-primary)', fontSize: '0.8rem', fontWeight: '700' }}>
-                                                                {p.is_sold_by_piece ? `€${p.price_per_piece}/pz` : `€${p.price_per_kg}/kg`}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        className={isAdded ? "btn btn-primary" : "btn btn-outline"}
-                                                        style={{ width: '100%', padding: '0.5rem', fontSize: '0.8rem' }}
-                                                        onClick={() => {
-                                                            if (p.allow_multiple) {
-                                                                setNewQuote({
-                                                                    ...newQuote,
-                                                                    items: [...newQuote.items, { product_id: p.id, quantity: 1, tempId: Date.now() + Math.random() }]
-                                                                });
-                                                            } else {
-                                                                if (existing) {
-                                                                    updateQuoteItem(existing.tempId, 'quantity', parseFloat(existing.quantity) + 1);
-                                                                } else {
-                                                                    setNewQuote({
-                                                                        ...newQuote,
-                                                                        items: [...newQuote.items, { product_id: p.id, quantity: 1, tempId: Date.now() }]
-                                                                    });
-                                                                }
-                                                            }
-                                                        }}
-                                                    >
-                                                        {isAdded ? '+ Aggiungi un altro' : 'Aggiungi'}
-                                                    </button>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                {/* Section 2: Quote Summary */}
-                                <div>
-                                    <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', border: '1px solid var(--color-border)' }}>
-                                        <h4 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>2. Configura Preventivo</h4>
-
-                                        <h5 style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                                            Prodotti Selezionati <span>({newQuote.items.length})</span>
-                                        </h5>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem' }}>
-                                            {newQuote.items.length === 0 ? (
-                                                <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', fontSize: '0.9rem', textAlign: 'center', padding: '1rem' }}>Seleziona i prodotti dalla lista a sinistra.</p>
-                                            ) : (
-                                                newQuote.items.map((item, index) => {
-                                                    const product = products.find(p => p.id === item.product_id);
-                                                    const isPieces = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : product?.is_sold_by_piece;
-                                                    const unit = isPieces ? 'pz' : 'kg';
-                                                    const step = isPieces ? 1 : 0.1;
-                                                    
-                                                    const canToggleUnit = Number(product?.price_per_kg) > 0 && Number(product?.price_per_piece) > 0;
-
-                                                    const itemPrice = isPieces 
-                                                        ? (product.price_per_piece * item.quantity) 
-                                                        : (product.price_per_kg * item.quantity);
-
-                                                    return (
-                                                        <div key={item.tempId} className="glass-panel" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--color-border)' }}>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                                <div style={{ minWidth: 0, flex: 1 }}>
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                                                        <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>{product?.name}</div>
-                                                                        <div style={{ display: 'flex', gap: '0.2rem' }}>
-                                                                            {product?.is_gluten_free && (
-                                                                                <span style={{ color: '#FF9800', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>GF</span>
-                                                                            )}
-                                                                            {product?.is_lactose_free && (
-                                                                                <span style={{ color: '#03A9F4', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>LF</span>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                    <div style={{ fontSize: '0.8rem', color: 'var(--color-primary)', fontWeight: 'bold', marginTop: '0.25rem' }}>
-                                                                        Tot: € {itemPrice.toFixed(2)}
-                                                                    </div>
-                                                                </div>
-                                                                <button type="button" style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', padding: '0.25rem' }} onClick={() => removeQuoteItem(item.tempId)}>
-                                                                    <Trash2 size={18} />
-                                                                </button>
-                                                            </div>
-
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '0.5rem', borderRadius: '6px' }}>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                                    <div style={{ display: 'flex', flexDirection: 'row', gap: '0.2rem', marginRight: '0.25rem' }}>
-                                                                        <button 
-                                                                            type="button" 
-                                                                            className="btn btn-outline" 
-                                                                            style={{ padding: '0.2rem', visibility: index === 0 ? 'hidden' : 'visible' }} 
-                                                                            onClick={() => moveQuoteItem(index, -1)}
-                                                                        >
-                                                                            <ChevronUp size={16} />
-                                                                        </button>
-                                                                        <button 
-                                                                            type="button" 
-                                                                            className="btn btn-outline" 
-                                                                            style={{ padding: '0.2rem', visibility: index === newQuote.items.length - 1 ? 'hidden' : 'visible' }} 
-                                                                            onClick={() => moveQuoteItem(index, 1)}
-                                                                        >
-                                                                            <ChevronDown size={16} />
-                                                                        </button>
-                                                                    </div>
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                                                        <button type="button" className="btn btn-outline" style={{ padding: '0.2rem', borderRadius: '4px' }} onClick={() => updateQuoteItem(item.tempId, 'quantity', Math.max(step, (parseFloat(item.quantity) || 0) - step).toFixed(isPieces ? 0 : 1))}>
-                                                                            <Minus size={14} />
-                                                                        </button>
-                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                                                            <input
-                                                                                type="number" step={step}
-                                                                                style={{ width: '45px', textAlign: 'center', border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '0.9rem' }}
-                                                                                value={item.quantity}
-                                                                                onChange={(e) => updateQuoteItem(item.tempId, 'quantity', e.target.value)}
-                                                                            />
-                                                                            <span style={{ fontSize: '0.8rem' }}>{unit}</span>
-                                                                        </div>
-                                                                        <button type="button" className="btn btn-outline" style={{ padding: '0.2rem', borderRadius: '4px' }} onClick={() => updateQuoteItem(item.tempId, 'quantity', ((parseFloat(item.quantity) || 0) + step).toFixed(isPieces ? 0 : 1))}>
-                                                                            <Plus size={14} />
-                                                                        </button>
-                                                                        <button 
-                                                                            type="button" 
-                                                                            className="btn btn-outline"
-                                                                            style={{ 
-                                                                                padding: '0.2rem 0.4rem', 
-                                                                                borderRadius: '4px',
-                                                                                marginLeft: '0.25rem',
-                                                                                opacity: canToggleUnit ? 1 : 0.4,
-                                                                                cursor: canToggleUnit ? 'pointer' : 'not-allowed',
-                                                                                color: 'var(--color-primary)',
-                                                                                fontSize: '0.7rem',
-                                                                                fontWeight: 'bold',
-                                                                                minWidth: '30px'
-                                                                            }} 
-                                                                            onClick={() => {
-                                                                                if (canToggleUnit) {
-                                                                                    setNewQuote({
-                                                                                        ...newQuote,
-                                                                                        items: newQuote.items.map(it => 
-                                                                                            it.tempId === item.tempId 
-                                                                                                ? { ...it, is_sold_by_piece: !isPieces, quantity: !isPieces ? Math.ceil(it.quantity) : it.quantity } 
-                                                                                                : it
-                                                                                        )
-                                                                                    });
-                                                                                }
-                                                                            }}
-                                                                            title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
-                                                                        >
-                                                                            {isPieces ? 'pz' : 'kg'}
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })
-                                            )}
-                                        </div>
-
-                                        {newQuote.items.length > 0 && (
-                                            <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '1.5rem' }}>
-                                                
-                                                <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#fdf2f2', borderRadius: '8px', border: '1px solid #fee2e2' }}>
-                                                    <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', fontWeight: 'bold' }}>Opzioni Dietetiche Globali:</p>
-                                                    <div style={{ display: 'flex', gap: '2rem' }}>
-                                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                                                            <input 
-                                                                type="checkbox" 
-                                                                checked={newQuote.is_gluten_free} 
-                                                                onChange={e => setNewQuote({ ...newQuote, is_gluten_free: e.target.checked })}
-                                                                style={{ width: '18px', height: '18px' }}
-                                                            />
-                                                            Tutto Senza Glutine
-                                                        </label>
-                                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#03A9F4', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                                                            <input 
-                                                                type="checkbox" 
-                                                                checked={newQuote.is_lactose_free} 
-                                                                onChange={e => setNewQuote({ ...newQuote, is_lactose_free: e.target.checked })}
-                                                                style={{ width: '18px', height: '18px' }}
-                                                            />
-                                                            Tutto Senza Lattosio
-                                                        </label>
-                                                    </div>
-                                                </div>
-
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                                                    <div>
-                                                        <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '0.4rem' }}>Prezzo Finale da mostrare (€)</label>
-                                                        <input
-                                                            type="number" step="0.01"
-                                                            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
-                                                            value={newQuote.total_price}
-                                                            onChange={e => setNewQuote({ ...newQuote, total_price: e.target.value })}
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-outline"
-                                                            style={{ padding: '0.75rem', fontSize: '0.75rem' }}
-                                                            onClick={() => setNewQuote({ ...newQuote, total_price: calculateQuoteTotal().toFixed(2) })}
-                                                        >
-                                                            Usa Suggerito: €{calculateQuoteTotal().toFixed(2)}
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div style={{ textAlign: 'right' }}>
-                                                    <span style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)', marginRight: '1rem' }}>Totale Preventivo:</span>
-                                                    <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>
-                                                        € {parseFloat(newQuote.total_price || 0).toFixed(2)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Fixed Footer */}
-                        <div style={{ 
-                            padding: '1.5rem', 
-                            borderTop: '1px solid var(--color-border)', 
-                            backgroundColor: 'white',
-                            display: 'flex',
-                            gap: '1rem',
-                            zIndex: 10
-                        }}>
-                            <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setIsCreatingQuote(false)}>Annulla</button>
-                            <button 
-                                className="btn btn-primary" 
-                                style={{ flex: 1, backgroundColor: '#25D366', borderColor: '#25D366' }}
-                                onClick={handleSaveQuoteToWhatsApp}
-                            >
-                                <Send size={18} style={{ marginRight: '8px' }} />
-                                Salva e Invia su WhatsApp
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {isEditing && (
                 <div className="modal-overlay" style={{
@@ -707,7 +266,7 @@ const ProductManager = () => {
                                     />
                                 </div>
 
-                                <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.05)' }}>
+                                <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.1)' }}>
                                     <div style={{ marginBottom: '1rem' }}>
                                         <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>Pezzi per Kg</label>
                                         <input
@@ -806,7 +365,7 @@ const ProductManager = () => {
                                     </div>
                                 </div>
 
-                                <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.05)' }}>
+                                <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.1)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
                                         <input
                                             type="checkbox"
@@ -831,7 +390,7 @@ const ProductManager = () => {
                                     )}
                                 </div>
 
-                                <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.05)' }}>
+                                <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.1)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
                                         <input
                                             type="checkbox"
@@ -845,7 +404,7 @@ const ProductManager = () => {
                                     <small style={{ color: '#666' }}>Permette di aggiungere il prodotto più volte nel preventivo.</small>
                                 </div>
 
-                                <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.05)' }}>
+                                <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.1)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
                                         <input
                                             type="checkbox"
@@ -883,7 +442,7 @@ const ProductManager = () => {
                                     <small style={{ color: '#666' }}>Nasconde questo prodotto dal menù digitale e dal PDF del menù.</small>
                                 </div>
 
-                                <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.05)' }}>
+                                <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.1)' }}>
                                     <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                                         <div style={{ display: 'flex', alignItems: 'center' }}>
                                             <input

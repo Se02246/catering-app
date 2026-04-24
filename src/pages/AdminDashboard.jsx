@@ -10,6 +10,7 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
     const [activeTab, setActiveTab] = useState(queryParams.get('tab') || 'products');
+    const [autoOpenQuoteModal, setAutoOpenQuoteModal] = useState(false);
     const searchId = queryParams.get('searchId') || '';
 
     useEffect(() => {
@@ -18,6 +19,11 @@ const AdminDashboard = () => {
             navigate('/login');
         }
     }, [navigate]);
+
+    const handleNewQuoteRequest = () => {
+        setActiveTab('quotes');
+        setAutoOpenQuoteModal(true);
+    };
 
     return (
         <div className="container admin-dashboard" style={{ position: 'relative' }}>
@@ -75,10 +81,16 @@ const AdminDashboard = () => {
                 </button>
             </div>
 
-            {activeTab === 'products' && <ProductManager />}
+            {activeTab === 'products' && <ProductManager onCreateQuoteClick={handleNewQuoteRequest} />}
             {activeTab === 'packages' && <PackageBuilder />}
             {activeTab === 'settings' && <SettingsManager />}
-            {activeTab === 'quotes' && <QuoteManager initialSearchId={searchId} />}
+            {activeTab === 'quotes' && (
+                <QuoteManager 
+                    initialSearchId={searchId} 
+                    autoOpenNewModal={autoOpenQuoteModal} 
+                    onModalOpened={() => setAutoOpenQuoteModal(false)} 
+                />
+            )}
 
         </div>
     );

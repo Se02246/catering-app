@@ -4,7 +4,7 @@ import { useProducts } from '../../hooks/useData';
 import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2 } from 'lucide-react';
 
 
-const QuoteManager = ({ initialSearchId = '' }) => {
+const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalOpened }) => {
     const { products } = useProducts();
     const [searchId, setSearchId] = useState(initialSearchId);
     const [currentQuote, setCurrentQuote] = useState(null);
@@ -18,6 +18,14 @@ const QuoteManager = ({ initialSearchId = '' }) => {
     const [isAiPromptOpen, setIsAiPromptOpen] = useState(false);
     const [aiPrompt, setAiPrompt] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
+
+    // Auto-open modal if requested
+    React.useEffect(() => {
+        if (autoOpenNewModal) {
+            setIsModeSelectionOpen(true);
+            if (onModalOpened) onModalOpened();
+        }
+    }, [autoOpenNewModal, onModalOpened]);
 
     // Centralized auto-save function
     const autoSave = async (updatedQuote) => {
