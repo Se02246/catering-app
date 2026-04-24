@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2 } from 'lucide-react';
 
 
 const QuoteManager = ({ initialSearchId = '' }) => {
@@ -18,6 +18,27 @@ const QuoteManager = ({ initialSearchId = '' }) => {
     const [isAiPromptOpen, setIsAiPromptOpen] = useState(false);
     const [aiPrompt, setAiPrompt] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
+
+    // Centralized auto-save function
+    const autoSave = async (updatedQuote) => {
+        setSaving(true);
+        try {
+            await api.updateQuote(updatedQuote.id, {
+                items: updatedQuote.items,
+                total_price: updatedQuote.total_price,
+                is_gluten_free: updatedQuote.is_gluten_free,
+                is_lactose_free: updatedQuote.is_lactose_free
+            });
+            // Show a brief success indicator
+            setMessage({ type: 'success', text: 'Modifiche salvate automaticamente' });
+            setTimeout(() => setMessage(null), 2000);
+        } catch (err) {
+            console.error('Auto-save failed:', err);
+            setMessage({ type: 'error', text: 'Errore nel salvataggio automatico' });
+        } finally {
+            setSaving(false);
+        }
+    };
 
     const handleGenerateAiQuote = async () => {
         if (!aiPrompt.trim()) return;
@@ -70,7 +91,6 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         let idToSearch = searchId.trim();
         if (!idToSearch) return;
 
-        // If the user pasted a full URL, extract the last part (the UUID)
         if (idToSearch.includes('/quote/')) {
             const parts = idToSearch.split('/quote/');
             idToSearch = parts[parts.length - 1];
@@ -80,13 +100,12 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         setMessage(null);
         try {
             const data = await api.getQuote(idToSearch);
-            // Ensure every item has a unique instanceId for local UI state management
             const itemsWithIds = (data.items || []).map(item => ({
                 ...item,
                 instanceId: item.instanceId || `${Date.now()}-${Math.random()}`
             }));
             setCurrentQuote({ ...data, items: itemsWithIds });
-            setSearchId(data.id); // Update input field with the full UUID
+            setSearchId(data.id);
         } catch (err) {
             console.error(err);
             setMessage({ type: 'error', text: 'Preventivo non trovato.' });
@@ -118,21 +137,25 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         }).filter(Boolean);
 
         const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
-        setCurrentQuote({ 
+        const updatedQuote = { 
             ...currentQuote, 
             items: updatedItems, 
             total_price: newSuggestedTotal
-        });
+        };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
     };
 
     const removeItem = (instanceId) => {
         const updatedItems = currentQuote.items.filter(item => item.instanceId !== instanceId);
         const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
-        setCurrentQuote({ 
+        const updatedQuote = { 
             ...currentQuote, 
             items: updatedItems, 
             total_price: newSuggestedTotal
-        });
+        };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
     };
 
     const moveItem = (index, direction) => {
@@ -144,7 +167,9 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         newItems[index] = newItems[targetIndex];
         newItems[targetIndex] = temp;
         
-        setCurrentQuote({ ...currentQuote, items: newItems });
+        const updatedQuote = { ...currentQuote, items: newItems };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
     };
 
     const addProductToQuote = (prod) => {
@@ -157,11 +182,13 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         };
         const updatedItems = [...currentQuote.items, newItem];
         const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
-        setCurrentQuote({ 
+        const updatedQuote = { 
             ...currentQuote, 
             items: updatedItems, 
             total_price: newSuggestedTotal
-        });
+        };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
     };
 
     const refreshProductsFromCatalog = () => {
@@ -182,31 +209,14 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         });
 
         const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
-        setCurrentQuote({ 
+        const updatedQuote = { 
             ...currentQuote, 
             items: updatedItems, 
             total_price: newSuggestedTotal 
-        });
-        setMessage({ type: 'success', text: 'Prodotti sincronizzati col catalogo! (Clicca Salva Modifiche per applicare permanentemente)' });
-        setTimeout(() => setMessage(null), 5000);
-    };
-
-    const handleSave = async () => {
-        setSaving(true);
-        try {
-            await api.updateQuote(currentQuote.id, {
-                items: currentQuote.items,
-                total_price: currentQuote.total_price,
-                is_gluten_free: currentQuote.is_gluten_free,
-                is_lactose_free: currentQuote.is_lactose_free
-            });
-            setMessage({ type: 'success', text: 'Preventivo aggiornato con successo!' });
-        } catch (err) {
-            console.error(err);
-            setMessage({ type: 'error', text: 'Errore durante il salvataggio.' });
-        } finally {
-            setSaving(false);
-        }
+        };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
+        setMessage({ type: 'success', text: 'Prodotti sincronizzati e salvati!' });
     };
 
     const handleCreateNewQuote = async () => {
@@ -216,7 +226,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
             const newQuote = await api.createQuote({ items: [], total_price: 0 });
             setSearchId(newQuote.id);
             setCurrentQuote({ ...newQuote, items: [] });
-            setMessage({ type: 'success', text: 'Nuovo preventivo creato! Ora puoi aggiungere i prodotti.' });
+            setMessage({ type: 'success', text: 'Nuovo preventivo creato!' });
         } catch (err) {
             console.error(err);
             setMessage({ type: 'error', text: 'Errore durante la creazione del preventivo.' });
@@ -225,12 +235,66 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         }
     };
 
+    const toggleGlobalFlag = (field, value) => {
+        const updatedQuote = { ...currentQuote, [field]: value };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
+    };
+
+    const updateItemDetails = () => {
+        const updatedItems = currentQuote.items.map(it => it.instanceId === editingItemId ? editingItemData : it);
+        const updatedQuote = { ...currentQuote, items: updatedItems };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
+        setEditingItemId(null);
+        setEditingItemData(null);
+    };
+
+    const toggleItemUnit = (item) => {
+        const canToggleUnit = Number(item.price_per_kg) > 0 && Number(item.price_per_piece) > 0;
+        if (!canToggleUnit) return;
+
+        const updatedItems = currentQuote.items.map(it => {
+            if (it.instanceId === item.instanceId) {
+                const newIsPieces = !it.is_sold_by_piece;
+                return { 
+                    ...it, 
+                    is_sold_by_piece: newIsPieces,
+                    quantity: !newIsPieces ? Math.ceil(it.quantity) : it.quantity
+                };
+            }
+            return it;
+        });
+        const newTotal = calculateSuggestedTotal(updatedItems);
+        const updatedQuote = { ...currentQuote, items: updatedItems, total_price: newTotal };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
+    };
+
+    const handleManualPriceChange = (val) => {
+        const updatedQuote = { ...currentQuote, total_price: parseFloat(val) || 0 };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
+    };
+
     const isQuoteGlutenFree = currentQuote && (currentQuote.is_gluten_free || (currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_gluten_free)));
     const isQuoteLactoseFree = currentQuote && (currentQuote.is_lactose_free || (currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_lactose_free)));
 
     return (
         <div className="admin-card">
-            <h2 style={{ marginBottom: '1.5rem', color: 'var(--color-primary-dark)' }}>Gestione Preventivi Clienti</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>Gestione Preventivi Clienti</h2>
+                {saving && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                        <Loader2 size={16} className="animate-spin" /> Salvataggio in corso...
+                    </div>
+                )}
+                {message?.type === 'success' && !saving && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2e7d32', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                        <CheckCircle2 size={16} /> Modifiche salvate
+                    </div>
+                )}
+            </div>
             
             <form onSubmit={handleSearch} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
                 <input 
@@ -250,14 +314,14 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                 </button>
             </form>
 
-            {message && (
+            {message && message.type === 'error' && (
                 <div style={{ 
                     padding: '1rem', 
                     borderRadius: '8px', 
                     marginBottom: '1.5rem',
-                    backgroundColor: message.type === 'success' ? '#e8f5e9' : '#ffebee',
-                    color: message.type === 'success' ? '#2e7d32' : '#c62828',
-                    border: `1px solid ${message.type === 'success' ? '#a5d6a7' : '#ef9a9a'}`
+                    backgroundColor: '#ffebee',
+                    color: '#c62828',
+                    border: `1px solid #ef9a9a`
                 }}>
                     {message.text}
                 </div>
@@ -296,7 +360,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                 <input 
                                     type="checkbox" 
                                     checked={currentQuote.is_gluten_free || false} 
-                                    onChange={e => setCurrentQuote({ ...currentQuote, is_gluten_free: e.target.checked })}
+                                    onChange={e => toggleGlobalFlag('is_gluten_free', e.target.checked)}
                                     style={{ width: '18px', height: '18px' }}
                                 />
                                 Tutto Senza Glutine
@@ -305,7 +369,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                 <input 
                                     type="checkbox" 
                                     checked={currentQuote.is_lactose_free || false} 
-                                    onChange={e => setCurrentQuote({ ...currentQuote, is_lactose_free: e.target.checked })}
+                                    onChange={e => toggleGlobalFlag('is_lactose_free', e.target.checked)}
                                     style={{ width: '18px', height: '18px' }}
                                 />
                                 Tutto Senza Lattosio
@@ -331,11 +395,6 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                 if (editingItemId === item.instanceId) {
                                     return (
                                         <div key={item.instanceId} style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid var(--color-primary)' }}>
-                                            <div style={{ marginBottom: '1rem', padding: '0.5rem', backgroundColor: 'rgba(155, 57, 61, 0.05)', borderRadius: '6px', border: '1px solid rgba(155, 57, 61, 0.1)' }}>
-                                                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-primary)', fontWeight: 'bold' }}>
-                                                    ⚠️ Nota: Clicca "Salva Dettagli" e poi ricordati di cliccare "Salva Modifiche" in fondo alla pagina per rendere le modifiche permanenti.
-                                                </p>
-                                            </div>
                                             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Nome Prodotto</label>
@@ -368,12 +427,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                                                 <button className="btn btn-outline" style={{ padding: '0.4rem 1rem' }} onClick={() => { setEditingItemId(null); setEditingItemData(null); }}>Annulla</button>
-                                                <button className="btn btn-primary" style={{ padding: '0.4rem 1rem' }} onClick={() => {
-                                                    const updatedItems = currentQuote.items.map(it => it.instanceId === editingItemId ? editingItemData : it);
-                                                    setCurrentQuote({ ...currentQuote, items: updatedItems });
-                                                    setEditingItemId(null);
-                                                    setEditingItemData(null);
-                                                }}>Salva Dettagli</button>
+                                                <button className="btn btn-primary" style={{ padding: '0.4rem 1rem' }} onClick={updateItemDetails}>Salva Dettagli</button>
                                             </div>
                                         </div>
                                     );
@@ -438,13 +492,10 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                     onChange={(e) => {
                                                         const val = parseFloat(e.target.value) || 0;
                                                         const updatedItems = currentQuote.items.map(it => it.instanceId === item.instanceId ? { ...it, quantity: val } : it);
-                                                        const newTotal = updatedItems.reduce((sum, it) => {
-                                                            const pKg = Number(it.price_per_kg) || 0;
-                                                            const pPc = Number(it.price_per_piece) || 0;
-                                                            const price = it.is_sold_by_piece ? pPc : pKg;
-                                                            return sum + (price * (Number(it.quantity) || 0));
-                                                        }, 0);
-                                                        setCurrentQuote({ ...currentQuote, items: updatedItems, total_price: newTotal });
+                                                        const newTotal = calculateSuggestedTotal(updatedItems);
+                                                        const updatedQuote = { ...currentQuote, items: updatedItems, total_price: newTotal };
+                                                        setCurrentQuote(updatedQuote);
+                                                        autoSave(updatedQuote);
                                                     }}
                                                     style={{ width: '60px', textAlign: 'center', padding: '0.3rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
                                                 />
@@ -463,28 +514,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                         fontWeight: 'bold',
                                                         minWidth: '35px'
                                                     }} 
-                                                    onClick={() => {
-                                                        if (canToggleUnit) {
-                                                            const updatedItems = currentQuote.items.map(it => {
-                                                                if (it.instanceId === item.instanceId) {
-                                                                    const newIsPieces = !it.is_sold_by_piece;
-                                                                    return { 
-                                                                        ...it, 
-                                                                        is_sold_by_piece: newIsPieces,
-                                                                        quantity: !newIsPieces ? Math.ceil(it.quantity) : it.quantity
-                                                                    };
-                                                                }
-                                                                return it;
-                                                            });
-                                                            const newTotal = updatedItems.reduce((sum, it) => {
-                                                                const pKg = Number(it.price_per_kg) || 0;
-                                                                const pPc = Number(it.price_per_piece) || 0;
-                                                                const price = it.is_sold_by_piece ? pPc : pKg;
-                                                                return sum + (price * (Number(it.quantity) || 0));
-                                                            }, 0);
-                                                            setCurrentQuote({ ...currentQuote, items: updatedItems, total_price: newTotal });
-                                                        }
-                                                    }}
+                                                    onClick={() => toggleItemUnit(item)}
                                                     title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
                                                 >
                                                     {item.is_sold_by_piece ? 'pz' : 'kg'}
@@ -532,15 +562,11 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                 <input 
                                     type="number" 
                                     value={currentQuote.total_price}
-                                    onChange={(e) => setCurrentQuote({ ...currentQuote, total_price: parseFloat(e.target.value) || 0 })}
+                                    onChange={(e) => handleManualPriceChange(e.target.value)}
                                     style={{ marginLeft: '1rem', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)', width: '120px' }}
                                 />
                             </div>
                         </div>
-                        <button className="btn btn-primary" style={{ padding: '1rem 2rem' }} onClick={handleSave} disabled={saving}>
-                            <Save size={20} style={{ marginRight: '8px' }} />
-                            {saving ? 'Salvataggio...' : 'Salva Modifiche'}
-                        </button>
                     </div>
                 </div>
             )}
