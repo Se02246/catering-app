@@ -337,29 +337,6 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Nome Prodotto</label>
                                                     <input type="text" value={editingItemData.name || ''} onChange={e => setEditingItemData({...editingItemData, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
                                                 </div>
-                                                <div style={{ flex: 1, minWidth: '200px' }}>
-                                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>URL Immagine</label>
-                                                    <input 
-                                                        type="text" 
-                                                        value={editingItemData.image_url || ''} 
-                                                        onChange={e => {
-                                                            const newUrl = e.target.value;
-                                                            // If user manually changes image_url, we should probably clear the images array 
-                                                            // to ensure the override is respected by ProductDetailsModal
-                                                            setEditingItemData({
-                                                                ...editingItemData, 
-                                                                image_url: newUrl,
-                                                                images: (editingItemData.images && editingItemData.images[0] === newUrl) ? editingItemData.images : []
-                                                            });
-                                                        }} 
-                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} 
-                                                    />
-                                                    {(editingItemData.images && editingItemData.images.length > 0) && (
-                                                        <p style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
-                                                            Questo prodotto ha una galleria immagini. Modificando questo campo userai un'immagine singola come override.
-                                                        </p>
-                                                    )}
-                                                </div>
                                             </div>
                                             <div style={{ marginBottom: '1rem' }}>
                                                 <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione</label>
