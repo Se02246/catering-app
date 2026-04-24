@@ -186,11 +186,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             return item;
         }).filter(Boolean);
 
-        const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
         const updatedQuote = { 
             ...currentQuote, 
-            items: updatedItems, 
-            total_price: newSuggestedTotal
+            items: updatedItems
         };
         setCurrentQuote(updatedQuote);
         autoSave(updatedQuote);
@@ -198,11 +196,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
     const removeItem = (instanceId) => {
         const updatedItems = currentQuote.items.filter(item => item.instanceId !== instanceId);
-        const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
         const updatedQuote = { 
             ...currentQuote, 
-            items: updatedItems, 
-            total_price: newSuggestedTotal
+            items: updatedItems
         };
         setCurrentQuote(updatedQuote);
         autoSave(updatedQuote);
@@ -231,11 +227,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             original_menu_description: prod.menu_description
         };
         const updatedItems = [...currentQuote.items, newItem];
-        const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
         const updatedQuote = { 
             ...currentQuote, 
-            items: updatedItems, 
-            total_price: newSuggestedTotal
+            items: updatedItems
         };
         setCurrentQuote(updatedQuote);
         autoSave(updatedQuote);
@@ -258,11 +252,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             };
         });
 
-        const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
         const updatedQuote = { 
             ...currentQuote, 
-            items: updatedItems, 
-            total_price: newSuggestedTotal 
+            items: updatedItems
         };
         setCurrentQuote(updatedQuote);
         autoSave(updatedQuote);
@@ -275,7 +267,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         try {
             const newQuote = await api.createQuote({ items: [], total_price: 0 });
             setSearchId(newQuote.id);
-            setCurrentQuote({ ...newQuote, items: [] });
+            setCurrentQuote({ ...newQuote, items: [], total_price: 0 });
             setMessage({ type: 'success', text: 'Nuovo preventivo creato!' });
         } catch (err) {
             console.error(err);
@@ -315,8 +307,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             }
             return it;
         });
-        const newTotal = calculateSuggestedTotal(updatedItems);
-        const updatedQuote = { ...currentQuote, items: updatedItems, total_price: newTotal };
+        const updatedQuote = { ...currentQuote, items: updatedItems };
         setCurrentQuote(updatedQuote);
         autoSave(updatedQuote);
     };
@@ -325,6 +316,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         const updatedQuote = { ...currentQuote, total_price: parseFloat(val) || 0 };
         setCurrentQuote(updatedQuote);
         autoSave(updatedQuote);
+    };
+
+    const applySuggestedTotal = () => {
+        const suggested = calculateSuggestedTotal(currentQuote.items);
+        handleManualPriceChange(suggested);
     };
 
     const isQuoteGlutenFree = currentQuote && (currentQuote.is_gluten_free || (currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_gluten_free)));
@@ -447,6 +443,160 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                            <h4 style={{ margin: 0 }}>Prodotti nel preventivo</h4>
+                            <button 
+                                className="btn btn-outline" 
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }} 
+                                onClick={refreshProductsFromCatalog}
+                                title="Aggiorna le versioni dei prodotti (immagini, prezzi, descrizioni) con la versione attuale caricata nel catalogo"
+                            >
+                                <RefreshCw size={16} /> Aggiorna prodotti dal catalogo
+                            </button>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {currentQuote.items.map((item, index) => {
+                                const canToggleUnit = Number(item.price_per_kg) > 0 && Number(item.price_per_piece) > 0;
+                                if (editingItemId === item.instanceId) {
+                                    return (
+                                        <div key={item.instanceId} style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid var(--color-primary)' }}>
+                                            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Nome Prodotto</label>
+                                                    <input type="text" value={editingItemData.name || ''} onChange={e => setEditingItemData({...editingItemData, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                                                </div>
+                                            </div>
+                                            <div style={{ marginBottom: '1rem' }}>
+                                                <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione Preventivo</label>
+                                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0.4rem' }}>Se vuota, userà la descrizione standard del catalogo.</p>
+                                                <textarea value={editingItemData.description || ''} onChange={e => setEditingItemData({...editingItemData, description: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} />
+                                            </div>
+                                            <div style={{ marginBottom: '1rem' }}>
+                                                <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione Menù Digitale e PDF (Sovrascrittura)</label>
+                                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0.4rem' }}>Se compilata, <strong>sostituirà</strong> la descrizione menù del catalogo solo in questo preventivo.</p>
+                                                <textarea value={editingItemData.menu_description || ''} onChange={e => setEditingItemData({...editingItemData, menu_description: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} placeholder="Descrizione specifica per il menù..." />
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input type="checkbox" checked={editingItemData.is_gluten_free || false} onChange={e => setEditingItemData({...editingItemData, is_gluten_free: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    Senza Glutine
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#03A9F4', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input type="checkbox" checked={editingItemData.is_lactose_free || false} onChange={e => setEditingItemData({...editingItemData, is_lactose_free: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    Senza Lattosio
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#666', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input type="checkbox" checked={editingItemData.hide_in_menu || false} onChange={e => setEditingItemData({...editingItemData, hide_in_menu: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    Nascondi nel menù
+                                                </label>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                                <button className="btn btn-outline" style={{ padding: '0.4rem 1rem' }} onClick={() => { setEditingItemId(null); setEditingItemData(null); }}>Annulla</button>
+                                                <button className="btn btn-primary" style={{ padding: '0.4rem 1rem' }} onClick={updateItemDetails}>Salva Dettagli</button>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                <div key={item.instanceId} style={{ display: 'flex', flexDirection: 'column', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--color-border)', gap: '1rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div style={{ flex: 1 }}>
+                                            <p style={{ fontWeight: 'bold', margin: 0, fontSize: '1rem' }}>
+                                                {item.name}
+                                            </p>
+                                            <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.25rem' }}>
+                                                {item.is_gluten_free && (
+                                                    <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        Senza Glutine
+                                                    </span>
+                                                )}
+                                                {item.is_lactose_free && (
+                                                    <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        Senza Lattosio
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: '0.25rem 0 0 0' }}>
+                                                Unitario: € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)}
+                                            </p>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button className="btn btn-outline" style={{ padding: '0.4rem', border: 'none', color: 'var(--color-primary)' }} onClick={() => { setEditingItemId(item.instanceId); setEditingItemData({ ...item }); }}>
+                                                <Edit size={18} />
+                                            </button>
+                                            <button style={{ color: '#e63946', background: 'none', border: 'none', cursor: 'pointer', padding: '0.4rem' }} onClick={() => removeItem(item.instanceId)}>
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '6px', flexWrap: 'wrap', gap: '0.75rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'row', gap: '0.25rem', marginRight: '0.5rem' }}>
+                                                <button 
+                                                    className="btn btn-outline" 
+                                                    style={{ padding: '0.2rem', visibility: index === 0 ? 'hidden' : 'visible' }} 
+                                                    onClick={() => moveItem(index, -1)}
+                                                >
+                                                    <ChevronUp size={16} />
+                                                </button>
+                                                <button 
+                                                    className="btn btn-outline" 
+                                                    style={{ padding: '0.2rem', visibility: index === currentQuote.items.length - 1 ? 'hidden' : 'visible' }} 
+                                                    onClick={() => moveItem(index, 1)}
+                                                >
+                                                    <ChevronDown size={16} />
+                                                </button>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, -1)}><Minus size={14} /></button>
+                                                <input 
+                                                    type="number" 
+                                                    value={item.quantity} 
+                                                    onChange={(e) => {
+                                                        const val = parseFloat(e.target.value) || 0;
+                                                        const updatedItems = currentQuote.items.map(it => it.instanceId === item.instanceId ? { ...it, quantity: val } : it);
+                                                        const newTotal = calculateSuggestedTotal(updatedItems);
+                                                        const updatedQuote = { ...currentQuote, items: updatedItems, total_price: newTotal };
+                                                        setCurrentQuote(updatedQuote);
+                                                        autoSave(updatedQuote);
+                                                    }}
+                                                    style={{ width: '60px', textAlign: 'center', padding: '0.3rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                                                />
+                                                <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, 1)}><Plus size={14} /></button>
+                                                <button 
+                                                    type="button" 
+                                                    className="btn btn-outline"
+                                                    style={{ 
+                                                        padding: '0.2rem 0.5rem', 
+                                                        borderRadius: '4px',
+                                                        marginLeft: '0.25rem',
+                                                        opacity: canToggleUnit ? 1 : 0.4,
+                                                        cursor: canToggleUnit ? 'pointer' : 'not-allowed',
+                                                        color: 'var(--color-primary)',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 'bold',
+                                                        minWidth: '35px'
+                                                    }} 
+                                                    onClick={() => toggleItemUnit(item)}
+                                                    title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
+                                                >
+                                                    {item.is_sold_by_piece ? 'pz' : 'kg'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--color-primary-dark)', fontSize: '1.1rem' }}>
+                                            Tot: € {( (item.is_sold_by_piece ? (Number(item.price_per_piece) || 0) : (Number(item.price_per_kg) || 0)) * (Number(item.quantity) || 0) ).toFixed(2)}
+                                        </div>
+                                    </div>
+                                </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div style={{ marginBottom: '2rem' }}>
                         <h4 style={{ marginBottom: '1rem' }}>Aggiungi Prodotto</h4>
                         <select 
                             style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)' }}
@@ -489,19 +639,52 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         />
                     </div>
 
-                    <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Totale ricalcolato: </span>
-                            <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {(Number(currentQuote.total_price) || 0).toFixed(2)}</span>
-                            <div style={{ marginTop: '0.5rem' }}>
-                                <label style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Sovrascrivi prezzo totale manualmente:</label>
+                    <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: '1.5rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <label style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--color-primary-dark)' }}>
+                                Prezzo Totale Preventivo (€)
+                            </label>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                 <input 
                                     type="number" 
                                     value={currentQuote.total_price}
                                     onChange={(e) => handleManualPriceChange(e.target.value)}
-                                    style={{ marginLeft: '1rem', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)', width: '120px' }}
+                                    style={{ 
+                                        padding: '1rem', 
+                                        borderRadius: '12px', 
+                                        border: '2px solid var(--color-primary)', 
+                                        fontSize: '1.5rem', 
+                                        fontWeight: '800',
+                                        width: '200px',
+                                        textAlign: 'center',
+                                        color: 'var(--color-primary-dark)',
+                                        backgroundColor: 'white'
+                                    }}
                                 />
+                                <button 
+                                    className="btn btn-outline"
+                                    onClick={applySuggestedTotal}
+                                    style={{ 
+                                        padding: '0.8rem 1.5rem', 
+                                        borderRadius: '12px',
+                                        fontSize: '1rem',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '0.2rem',
+                                        backgroundColor: 'rgba(175, 68, 72, 0.05)',
+                                        border: '1px dashed var(--color-primary)',
+                                        minWidth: '150px'
+                                    }}
+                                >
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>Applica suggerito:</span>
+                                    <span>€ {calculateSuggestedTotal(currentQuote.items).toFixed(2)}</span>
+                                </button>
                             </div>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
+                                Il prezzo totale non viene aggiornato automaticamente. Usa il tasto a fianco per applicare il valore calcolato.
+                            </p>
                         </div>
                     </div>
                 </div>
