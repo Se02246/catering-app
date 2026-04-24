@@ -303,6 +303,29 @@ const SharedQuote = ({ isMenuMode = false }) => {
             doc.setTextColor(0);
         }
 
+        if (quote?.menu_notes) {
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            } else {
+                yPos += 5;
+            }
+            
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(155, 57, 61);
+            doc.text("Note del Menù", 15, yPos);
+            yPos += 7;
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(50);
+            
+            const lines = doc.splitTextToSize(quote.menu_notes, 180);
+            doc.text(lines, 15, yPos);
+            yPos += (lines.length * 6) + 10;
+        }
+
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
@@ -682,7 +705,21 @@ const SharedQuote = ({ isMenuMode = false }) => {
                         </div>
                     )}
 
-                    <p style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                    {isMenuMode && quote?.menu_notes && (
+                        <div style={{ 
+                            marginTop: '2rem', 
+                            padding: '1.5rem', 
+                            backgroundColor: 'rgba(255, 255, 255, 0.7)', 
+                            borderRadius: '16px', 
+                            border: '1px solid var(--color-border)',
+                            boxShadow: 'var(--shadow-sm)'
+                        }}>
+                            <h4 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.75rem', fontSize: '1.1rem' }}>Note del Menù</h4>
+                            <p style={{ margin: 0, color: 'var(--color-text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{quote.menu_notes}</p>
+                        </div>
+                    )}
+
+                    <p style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--color-text-muted)', marginTop: '2rem' }}>
                         Muse Catering - Qualità e Passione per i tuoi eventi
                     </p>
                 </div>

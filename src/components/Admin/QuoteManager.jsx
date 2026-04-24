@@ -37,7 +37,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 total_price: updatedQuote.total_price,
                 is_gluten_free: updatedQuote.is_gluten_free,
                 is_lactose_free: updatedQuote.is_lactose_free,
-                notes: updatedQuote.notes
+                notes: updatedQuote.notes,
+                menu_notes: updatedQuote.menu_notes
             });
             // Show a brief success indicator
             setMessage({ type: 'success', text: 'Modifiche salvate automaticamente' });
@@ -628,6 +629,27 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 autoSave(updatedQuote);
                             }}
                             placeholder="Inserisci qui eventuali note o messaggi personalizzati per il cliente..."
+                            style={{ 
+                                width: '100%', 
+                                padding: '1rem', 
+                                borderRadius: '8px', 
+                                border: '1px solid var(--color-border)', 
+                                minHeight: '100px',
+                                fontSize: '0.95rem'
+                            }}
+                        />
+                    </div>
+
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h4 style={{ marginBottom: '1rem' }}>Note menù</h4>
+                        <textarea
+                            value={currentQuote.menu_notes || ''}
+                            onChange={e => {
+                                const updatedQuote = { ...currentQuote, menu_notes: e.target.value };
+                                setCurrentQuote(updatedQuote);
+                                autoSave(updatedQuote);
+                            }}
+                            placeholder="Inserisci qui eventuali note che appariranno solo nel menù digitale e nel PDF..."
                             style={{ 
                                 width: '100%', 
                                 padding: '1rem', 

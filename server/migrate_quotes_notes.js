@@ -6,7 +6,8 @@ async function migrate() {
     try {
         await client.query(`
             ALTER TABLE quotes 
-            ADD COLUMN IF NOT EXISTS notes TEXT;
+            ADD COLUMN IF NOT EXISTS notes TEXT,
+            ADD COLUMN IF NOT EXISTS menu_notes TEXT;
         `);
         console.log('Migration completed: notes column added.');
     } catch (err) {

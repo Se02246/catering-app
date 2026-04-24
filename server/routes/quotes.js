@@ -126,11 +126,11 @@ IMPORTANTE:
 
 // Save a new quote and get its unique ID
 router.post('/', async (req, res) => {
-    const { items, total_price, is_gluten_free, is_lactose_free, notes } = req.body;
+    const { items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes } = req.body;
     try {
         const result = await pool.query(
-            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, notes) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, notes || null]
+            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, notes || null, menu_notes || null]
         );
         res.status(201).json({ id: result.rows[0].id });
     } catch (err) {
@@ -192,11 +192,11 @@ router.get('/:id', async (req, res) => {
 // Update an existing quote (Admin)
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { items, total_price, is_gluten_free, is_lactose_free, notes } = req.body;
+    const { items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, notes = $5 WHERE id = $6 RETURNING *',
-            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, notes, id]
+            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, notes = $5, menu_notes = $6 WHERE id = $7 RETURNING *',
+            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, notes, menu_notes, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Quote not found' });
