@@ -26,6 +26,15 @@ const AdminDashboard = () => {
         setAutoOpenQuoteModal(true);
     };
 
+    const tabBtnStyle = { 
+        whiteSpace: 'nowrap', 
+        padding: '0.6rem 1.2rem', 
+        fontSize: '1.05rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    };
+
     return (
         <div className="container admin-dashboard" style={{ position: 'relative' }}>
             <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.5rem' }}>
@@ -51,35 +60,35 @@ const AdminDashboard = () => {
             </div>
             <h1 style={{ marginBottom: '2rem' }}>Admin Dashboard</h1>
 
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', borderBottom: '1px solid var(--color-border)', overflowX: 'auto' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', borderBottom: '1px solid var(--color-border)', overflowX: 'auto', paddingBottom: '0.5rem' }}>
                 <button
                     className={`btn ${activeTab === 'products' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setActiveTab('products')}
-                    style={{ whiteSpace: 'nowrap' }}
+                    style={tabBtnStyle}
                 >
                     Prodotti
                 </button>
                 <button
                     className={`btn ${activeTab === 'packages' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setActiveTab('packages')}
-                    style={{ whiteSpace: 'nowrap' }}
+                    style={tabBtnStyle}
                 >
                     Pacchetti
                 </button>
                 <button
-                    className={`btn ${activeTab === 'settings' ? 'btn-primary' : 'btn-outline'}`}
-                    onClick={() => setActiveTab('settings')}
-                    style={{ whiteSpace: 'nowrap', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    title="Impostazioni"
-                >
-                    <Settings size={20} />
-                </button>
-                <button
                     className={`btn ${activeTab === 'quotes' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setActiveTab('quotes')}
-                    style={{ whiteSpace: 'nowrap' }}
+                    style={tabBtnStyle}
                 >
                     Preventivi
+                </button>
+                <button
+                    className={`btn ${activeTab === 'settings' ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setActiveTab('settings')}
+                    style={{ ...tabBtnStyle, padding: '0.6rem 0.8rem' }}
+                    title="Impostazioni"
+                >
+                    <Settings size={22} />
                 </button>
             </div>
 

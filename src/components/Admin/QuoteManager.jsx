@@ -316,8 +316,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     {loading ? <Loader2 size={20} className="animate-spin" /> : <Search size={20} />}
                 </button>
                 <button type="button" className="btn btn-outline" disabled={loading} onClick={() => setIsModeSelectionOpen(true)}>
-                    <Plus size={20} style={{ marginRight: '8px' }} />
-                    Nuovo Preventivo
+                    Nuovo
                 </button>
             </form>
 
@@ -582,7 +581,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
                     <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '400px', textAlign: 'center' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                            <h3 style={{ margin: 0 }}>Nuovo Preventivo</h3>
+                            <h3 style={{ margin: 0 }}>Nuovo</h3>
                             <button onClick={() => setIsModeSelectionOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
                         </div>
                         <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>Scegli come vuoi creare il nuovo preventivo:</p>
