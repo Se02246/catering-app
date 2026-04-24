@@ -592,7 +592,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
                             </div>
                         ))}
 
-                        {quote?.notes && (
+                        {!isMenuMode && quote?.notes && (
                             <div style={{ 
                                 marginTop: '1rem', 
                                 padding: '1.5rem', 
@@ -603,6 +603,20 @@ const SharedQuote = ({ isMenuMode = false }) => {
                             }}>
                                 <h4 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.75rem', fontSize: '1.1rem' }}>Note sul preventivo</h4>
                                 <p style={{ margin: 0, color: 'var(--color-text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{quote.notes}</p>
+                            </div>
+                        )}
+
+                        {isMenuMode && quote?.menu_notes && (
+                            <div style={{ 
+                                marginTop: '1rem', 
+                                padding: '1.5rem', 
+                                backgroundColor: 'rgba(255, 255, 255, 0.7)', 
+                                borderRadius: '16px', 
+                                border: '1px solid var(--color-border)',
+                                boxShadow: 'var(--shadow-sm)'
+                            }}>
+                                <h4 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.75rem', fontSize: '1.1rem' }}>Note del Menù</h4>
+                                <p style={{ margin: 0, color: 'var(--color-text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{quote.menu_notes}</p>
                             </div>
                         )}
                     </div>
@@ -702,20 +716,6 @@ const SharedQuote = ({ isMenuMode = false }) => {
                             >
                                 <Send size={20} /> Richiedi Informazioni su WhatsApp
                             </button>
-                        </div>
-                    )}
-
-                    {isMenuMode && quote?.menu_notes && (
-                        <div style={{ 
-                            marginTop: '2rem', 
-                            padding: '1.5rem', 
-                            backgroundColor: 'rgba(255, 255, 255, 0.7)', 
-                            borderRadius: '16px', 
-                            border: '1px solid var(--color-border)',
-                            boxShadow: 'var(--shadow-sm)'
-                        }}>
-                            <h4 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.75rem', fontSize: '1.1rem' }}>Note del Menù</h4>
-                            <p style={{ margin: 0, color: 'var(--color-text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{quote.menu_notes}</p>
                         </div>
                     )}
 
