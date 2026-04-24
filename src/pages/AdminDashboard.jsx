@@ -4,6 +4,7 @@ import ProductManager from '../components/Admin/ProductManager';
 import PackageBuilder from '../components/Admin/PackageBuilder';
 import SettingsManager from '../components/Admin/SettingsManager';
 import QuoteManager from '../components/Admin/QuoteManager';
+import { Settings } from 'lucide-react';
 
 const AdminDashboard = () => {
     const location = useLocation();
@@ -50,7 +51,7 @@ const AdminDashboard = () => {
             </div>
             <h1 style={{ marginBottom: '2rem' }}>Admin Dashboard</h1>
 
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--color-border)', overflowX: 'auto' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', borderBottom: '1px solid var(--color-border)', overflowX: 'auto' }}>
                 <button
                     className={`btn ${activeTab === 'products' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setActiveTab('products')}
@@ -63,21 +64,22 @@ const AdminDashboard = () => {
                     onClick={() => setActiveTab('packages')}
                     style={{ whiteSpace: 'nowrap' }}
                 >
-                    Pacchetti Catering
+                    Pacchetti
                 </button>
                 <button
                     className={`btn ${activeTab === 'settings' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setActiveTab('settings')}
-                    style={{ whiteSpace: 'nowrap' }}
+                    style={{ whiteSpace: 'nowrap', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    title="Impostazioni"
                 >
-                    Impostazioni
+                    <Settings size={20} />
                 </button>
                 <button
                     className={`btn ${activeTab === 'quotes' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setActiveTab('quotes')}
                     style={{ whiteSpace: 'nowrap' }}
                 >
-                    Preventivi Clienti
+                    Preventivi
                 </button>
             </div>
 

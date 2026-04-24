@@ -211,7 +211,7 @@ const PackageBuilder = () => {
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <h2>Gestione Pacchetti Catering</h2>
+                <h2>Gestione Pacchetti</h2>
                 <button className="btn btn-primary" onClick={() => {
                     setIsCreating(true);
                     setEditingId(null);
@@ -250,7 +250,7 @@ const PackageBuilder = () => {
                             backgroundColor: 'white',
                             zIndex: 10
                         }}>
-                            <h3 style={{ margin: 0 }}>{editingId ? 'Modifica Pacchetto' : 'Nuovo Pacchetto Catering'}</h3>
+                            <h3 style={{ margin: 0 }}>{editingId ? 'Modifica Pacchetto' : 'Nuovo Pacchetto'}</h3>
                             <button 
                                 className="btn btn-outline" 
                                 style={{ padding: '0.5rem', borderRadius: '50%', width: '40px', height: '40px' }}

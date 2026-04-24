@@ -291,7 +291,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     return (
         <div className="admin-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>Gestione Preventivi Clienti</h2>
+                <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>Gestione Preventivi</h2>
                 {saving && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)', fontSize: '0.9rem', fontWeight: 'bold' }}>
                         <Loader2 size={16} className="animate-spin" /> Salvataggio in corso...
@@ -312,9 +312,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     onChange={(e) => setSearchId(e.target.value)}
                     style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)' }}
                 />
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                    <Search size={20} style={{ marginRight: '8px' }} />
-                    {loading ? 'Ricerca...' : 'Cerca'}
+                <button type="submit" className="btn btn-primary" disabled={loading} title="Cerca">
+                    {loading ? <Loader2 size={20} className="animate-spin" /> : <Search size={20} />}
                 </button>
                 <button type="button" className="btn btn-outline" disabled={loading} onClick={() => setIsModeSelectionOpen(true)}>
                     <Plus size={20} style={{ marginRight: '8px' }} />
