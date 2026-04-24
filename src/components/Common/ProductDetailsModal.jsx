@@ -3,7 +3,7 @@ import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
 import { ChevronLeft, Calendar, Info, ShoppingCart } from 'lucide-react';
 
-const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
+const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing, isMenuMode = false }) => {
     const { setting: showQuoteSetting, isLoading: isSettingLoading } = useSetting('show_quote_builder');
     const showPrice = !isSettingLoading && showQuoteSetting?.value !== 'false';
     const [activeImageIndex, setActiveImageIndex] = React.useState(0);
@@ -89,9 +89,9 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
         return product.image_url && product.image_url.trim() !== '' ? [product.image_url] : [];
     }, [product.images, product.image_url]);
 
-    const displayDescription = product.menu_description && product.menu_description.trim() !== '' 
-        ? product.menu_description 
-        : (product.description && product.description.trim() !== '' ? product.description : 'Nessuna descrizione disponibile.');
+    const displayDescription = isMenuMode 
+        ? (product.menu_description && product.menu_description.trim() !== '' ? product.menu_description : (product.original_menu_description || ''))
+        : (product.description && product.description.trim() !== '' ? product.description : (product.original_description || ''));
 
     return (
         <div 

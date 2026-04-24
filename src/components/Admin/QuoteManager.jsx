@@ -151,7 +151,9 @@ const QuoteManager = ({ initialSearchId = '' }) => {
         const newItem = {
             ...prod,
             quantity: prod.min_order_quantity || 1,
-            instanceId: Date.now() + Math.random()
+            instanceId: Date.now() + Math.random(),
+            original_description: prod.description,
+            original_menu_description: prod.menu_description
         };
         const updatedItems = [...currentQuote.items, newItem];
         const newSuggestedTotal = calculateSuggestedTotal(updatedItems);
@@ -173,7 +175,9 @@ const QuoteManager = ({ initialSearchId = '' }) => {
             return {
                 ...liveProduct,
                 quantity: item.quantity,
-                instanceId: item.instanceId
+                instanceId: item.instanceId,
+                original_description: liveProduct.description,
+                original_menu_description: liveProduct.menu_description
             };
         });
 
@@ -339,13 +343,14 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                 </div>
                                             </div>
                                             <div style={{ marginBottom: '1rem' }}>
-                                                <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione</label>
+                                                <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione Preventivo</label>
+                                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0.4rem' }}>Se vuota, userà la descrizione standard del catalogo.</p>
                                                 <textarea value={editingItemData.description || ''} onChange={e => setEditingItemData({...editingItemData, description: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} />
                                             </div>
                                             <div style={{ marginBottom: '1rem' }}>
-                                                <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione sul Menù (Opzionale)</label>
-                                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0.4rem' }}>Se compilata, <strong>sostituirà completamente</strong> la descrizione principale nel menù digitale.</p>
-                                                <textarea value={editingItemData.menu_description || ''} onChange={e => setEditingItemData({...editingItemData, menu_description: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} placeholder="Descrizione personalizzata per il menù..." />
+                                                <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione Menù Digitale e PDF (Sovrascrittura)</label>
+                                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0.4rem' }}>Se compilata, <strong>sostituirà</strong> la descrizione menù del catalogo solo in questo preventivo.</p>
+                                                <textarea value={editingItemData.menu_description || ''} onChange={e => setEditingItemData({...editingItemData, menu_description: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} placeholder="Descrizione specifica per il menù..." />
                                             </div>
                                             <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontSize: '0.9rem', fontWeight: 'bold' }}>

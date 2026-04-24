@@ -270,13 +270,18 @@ const SharedQuote = ({ isMenuMode = false }) => {
                 textY += 6;
             }
 
-            if (item.menu_description || item.description) {
+            if (item.menu_description || item.original_menu_description || item.description) {
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(80);
                 
                 const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = item.menu_description || item.description;
+                // Use custom menu description or fallback to original menu description
+                const displayDesc = item.menu_description && item.menu_description.trim() !== '' 
+                    ? item.menu_description 
+                    : (item.original_menu_description || '');
+                
+                tempDiv.innerHTML = displayDesc;
                 let textDesc = tempDiv.textContent || tempDiv.innerText || "";
                 
                 const lines = doc.splitTextToSize(textDesc, 200 - xText - 15);
@@ -662,6 +667,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
             {selectedProduct && (
                 <ProductDetailsModal 
                     product={selectedProduct} 
+                    isMenuMode={isMenuMode}
                     onClose={() => {
                         setIsClosing(true);
                         setTimeout(() => {
