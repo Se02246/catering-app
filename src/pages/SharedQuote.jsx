@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check, Download, Eye, QrCode, ExternalLink, Share2 } from 'lucide-react';
@@ -17,6 +17,12 @@ const SharedQuote = ({ isMenuMode = false }) => {
     const [copied, setCopied] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const [isGeneratingQr, setIsGeneratingQr] = useState(false);
+    
+    // Use a ref to keep track of selectedProduct without triggering the effect loop
+    const selectedProductRef = useRef(null);
+    useEffect(() => {
+        selectedProductRef.current = selectedProduct;
+    }, [selectedProduct]);
 
     const handleShareQuote = async () => {
         let text = `Riepilogo preventivo\n`;
@@ -62,14 +68,18 @@ const SharedQuote = ({ isMenuMode = false }) => {
                 const data = menuId ? await api.getQuoteByMenuId(menuId) : await api.getQuote(id);
                 setQuote(data);
                 
-                // Synchronize selected product if modal is open
-                if (selectedProduct) {
+                // Synchronize selected product if modal is open, using the ref to avoid dependency loop
+                const currentSelected = selectedProductRef.current;
+                if (currentSelected) {
                     const updatedProduct = data.items.find(item => 
-                        (item.instanceId && item.instanceId === selectedProduct.instanceId) ||
-                        (item.id && item.id === selectedProduct.id && item.name === selectedProduct.name)
+                        (item.instanceId && item.instanceId === currentSelected.instanceId) ||
+                        (item.id && item.id === currentSelected.id && item.name === currentSelected.name)
                     );
                     if (updatedProduct) {
-                        setSelectedProduct(updatedProduct);
+                        // Check if data actually changed before updating to minimize re-renders
+                        if (JSON.stringify(updatedProduct) !== JSON.stringify(currentSelected)) {
+                            setSelectedProduct(updatedProduct);
+                        }
                     }
                 }
 
@@ -85,7 +95,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
         fetchQuote(true);
         const interval = setInterval(() => fetchQuote(false), 5000);
         return () => clearInterval(interval);
-    }, [id, menuId, selectedProduct]);
+    }, [id, menuId]);
 
     if (loading) return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '1rem' }}>
