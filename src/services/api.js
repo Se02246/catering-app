@@ -174,13 +174,13 @@ export const api = {
         return res.json();
     },
 
-    saveQuote: async (items, total_price) => {
-        const res = await fetch(`${API_URL}/quotes`, {
-            method: 'POST',
+    updateQuote: async (id, updates) => {
+        const res = await fetch(`${API_URL}/quotes/${id}`, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items, total_price })
+            body: JSON.stringify(updates)
         });
-        if (!res.ok) throw new Error('Failed to save quote');
+        if (!res.ok) throw new Error('Failed to update quote');
         return res.json();
     },
 

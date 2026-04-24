@@ -80,11 +80,27 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
         };
     }, []);
 
-    if (!product) return null;
+    const validImages = React.useMemo(() => {
+        // If image_url is specifically set and not part of images array, it might be an override
+        const hasImagesArray = product.images && product.images.length > 0;
+        const mainImageUrl = product.image_url && product.image_url.trim() !== '' ? product.image_url : null;
+        
+        if (hasImagesArray) {
+            const filteredImages = product.images.filter(img => img && img.trim() !== '');
+            // If we have a main image_url that is NOT the first image in the array, 
+            // it's likely a manual override from the Quote Manager
+            if (mainImageUrl && filteredImages[0] !== mainImageUrl) {
+                return [mainImageUrl, ...filteredImages.filter(img => img !== mainImageUrl)];
+            }
+            return filteredImages;
+        }
+        
+        return mainImageUrl ? [mainImageUrl] : [];
+    }, [product.images, product.image_url]);
 
-    const validImages = product.images && product.images.length > 0
-        ? product.images.filter(img => img && img.trim() !== '')
-        : (product.image_url && product.image_url.trim() !== '' ? [product.image_url] : []);
+    const displayDescription = product.menu_description && product.menu_description.trim() !== '' 
+        ? product.menu_description 
+        : (product.description && product.description.trim() !== '' ? product.description : 'Nessuna descrizione disponibile.');
 
     return (
         <div 
@@ -255,7 +271,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing }) => {
 
                             <div 
                                 style={{ fontSize: '1rem', lineHeight: '1.7', color: 'var(--color-text-muted)', marginBottom: '2rem' }}
-                                dangerouslySetInnerHTML={{ __html: formatCustomText(product.menu_description || product.description || 'Nessuna descrizione disponibile.') }}
+                                dangerouslySetInnerHTML={{ __html: formatCustomText(displayDescription) }}
                             />
 
                             {/* Product Specs */}

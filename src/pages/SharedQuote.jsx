@@ -61,6 +61,18 @@ const SharedQuote = ({ isMenuMode = false }) => {
             try {
                 const data = menuId ? await api.getQuoteByMenuId(menuId) : await api.getQuote(id);
                 setQuote(data);
+                
+                // Synchronize selected product if modal is open
+                if (selectedProduct) {
+                    const updatedProduct = data.items.find(item => 
+                        (item.instanceId && item.instanceId === selectedProduct.instanceId) ||
+                        (item.id && item.id === selectedProduct.id && item.name === selectedProduct.name)
+                    );
+                    if (updatedProduct) {
+                        setSelectedProduct(updatedProduct);
+                    }
+                }
+
                 setError(null);
             } catch (err) {
                 console.error('Error fetching quote:', err);
@@ -73,7 +85,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
         fetchQuote(true);
         const interval = setInterval(() => fetchQuote(false), 5000);
         return () => clearInterval(interval);
-    }, [id, menuId]);
+    }, [id, menuId, selectedProduct]);
 
     if (loading) return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '1rem' }}>

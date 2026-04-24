@@ -327,6 +327,11 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                 if (editingItemId === item.instanceId) {
                                     return (
                                         <div key={item.instanceId} style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid var(--color-primary)' }}>
+                                            <div style={{ marginBottom: '1rem', padding: '0.5rem', backgroundColor: 'rgba(155, 57, 61, 0.05)', borderRadius: '6px', border: '1px solid rgba(155, 57, 61, 0.1)' }}>
+                                                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-primary)', fontWeight: 'bold' }}>
+                                                    ⚠️ Nota: Clicca "Salva Dettagli" e poi ricordati di cliccare "Salva Modifiche" in fondo alla pagina per rendere le modifiche permanenti.
+                                                </p>
+                                            </div>
                                             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Nome Prodotto</label>
@@ -334,7 +339,26 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                                 </div>
                                                 <div style={{ flex: 1, minWidth: '200px' }}>
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>URL Immagine</label>
-                                                    <input type="text" value={editingItemData.image_url || ''} onChange={e => setEditingItemData({...editingItemData, image_url: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                                                    <input 
+                                                        type="text" 
+                                                        value={editingItemData.image_url || ''} 
+                                                        onChange={e => {
+                                                            const newUrl = e.target.value;
+                                                            // If user manually changes image_url, we should probably clear the images array 
+                                                            // to ensure the override is respected by ProductDetailsModal
+                                                            setEditingItemData({
+                                                                ...editingItemData, 
+                                                                image_url: newUrl,
+                                                                images: (editingItemData.images && editingItemData.images[0] === newUrl) ? editingItemData.images : []
+                                                            });
+                                                        }} 
+                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} 
+                                                    />
+                                                    {(editingItemData.images && editingItemData.images.length > 0) && (
+                                                        <p style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
+                                                            Questo prodotto ha una galleria immagini. Modificando questo campo userai un'immagine singola come override.
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div style={{ marginBottom: '1rem' }}>
@@ -343,7 +367,7 @@ const QuoteManager = ({ initialSearchId = '' }) => {
                                             </div>
                                             <div style={{ marginBottom: '1rem' }}>
                                                 <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione sul Menù (Opzionale)</label>
-                                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0.4rem' }}>Verrà visualizzata solo nel menù digitale, sostituendo la descrizione principale.</p>
+                                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0.4rem' }}>Se compilata, <strong>sostituirà completamente</strong> la descrizione principale nel menù digitale.</p>
                                                 <textarea value={editingItemData.menu_description || ''} onChange={e => setEditingItemData({...editingItemData, menu_description: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} placeholder="Descrizione personalizzata per il menù..." />
                                             </div>
                                             <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
