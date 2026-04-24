@@ -269,8 +269,8 @@ const SharedQuote = ({ isMenuMode = false }) => {
             textY += 6;
 
             let labels = [];
-            if (item.is_gluten_free && !isQuoteGlutenFree) labels.push("Gluten Free");
-            if (item.is_lactose_free && !isQuoteLactoseFree) labels.push("Senza Lattosio");
+            if (isQuoteGlutenFree || item.is_gluten_free) labels.push("Gluten Free");
+            if (isQuoteLactoseFree || item.is_lactose_free) labels.push("Senza Lattosio");
             
             if (labels.length > 0) {
                 doc.setFontSize(10);
@@ -526,12 +526,12 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                         <p style={{ fontWeight: 'bold', margin: 0 }}>
                                             {item.name}
                                             <span style={{ marginLeft: '0.5rem', display: 'inline-flex', gap: '0.25rem' }}>
-                                                {item.is_gluten_free && !quote.is_gluten_free && (
+                                                {(quote.is_gluten_free || item.is_gluten_free) && (
                                                     <span style={{ color: '#FF9800', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
                                                         Senza Glutine
                                                     </span>
                                                 )}
-                                                {item.is_lactose_free && !quote.is_lactose_free && (
+                                                {(quote.is_lactose_free || item.is_lactose_free) && (
                                                     <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
                                                         Senza Lattosio
                                                     </span>

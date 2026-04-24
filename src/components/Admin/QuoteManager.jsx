@@ -506,12 +506,12 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                 {item.name}
                                             </p>
                                             <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.25rem' }}>
-                                                {item.is_gluten_free && (
+                                                {(currentQuote.is_gluten_free || item.is_gluten_free) && (
                                                     <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
                                                         Senza Glutine
                                                     </span>
                                                 )}
-                                                {item.is_lactose_free && (
+                                                {(currentQuote.is_lactose_free || item.is_lactose_free) && (
                                                     <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
                                                         Senza Lattosio
                                                     </span>
