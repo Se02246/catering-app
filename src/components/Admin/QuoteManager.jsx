@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2 } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2 } from 'lucide-react';
 
 
 const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalOpened }) => {
@@ -13,6 +13,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     const [saving, setSaving] = useState(false);
     const [editingItemId, setEditingItemId] = useState(null);
     const [editingItemData, setEditingItemData] = useState(null);
+    const [copied, setCopied] = useState(false);
 
     const [isModeSelectionOpen, setIsModeSelectionOpen] = useState(false);
     const [isAiPromptOpen, setIsAiPromptOpen] = useState(false);
@@ -35,7 +36,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 items: updatedQuote.items,
                 total_price: updatedQuote.total_price,
                 is_gluten_free: updatedQuote.is_gluten_free,
-                is_lactose_free: updatedQuote.is_lactose_free
+                is_lactose_free: updatedQuote.is_lactose_free,
+                notes: updatedQuote.notes
             });
             // Show a brief success indicator
             setMessage({ type: 'success', text: 'Modifiche salvate automaticamente' });
@@ -45,6 +47,47 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             setMessage({ type: 'error', text: 'Errore nel salvataggio automatico' });
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleShareQuote = async () => {
+        let text = `Riepilogo preventivo\n`;
+        text += `ID preventivo: ${currentQuote.id}\n`;
+        text += `Creato il ${new Date(currentQuote.created_at).toLocaleDateString('it-IT')}\n\n`;
+        text += `Prodotti:\n`;
+        if (currentQuote && currentQuote.items) {
+            currentQuote.items.forEach(item => {
+                const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : 'kg'}` : "";
+                text += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
+            });
+        }
+        
+        if (currentQuote.notes) {
+            text += `\nNote sul preventivo:\n${currentQuote.notes}\n`;
+        }
+
+        text += `\nLink della pagina share: ${window.location.origin}/quote/${currentQuote.id}`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Riepilogo Preventivo Muse Catering',
+                    text: text,
+                    url: `${window.location.origin}/quote/${currentQuote.id}`,
+                });
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Errore durante la condivisione:', err);
+                }
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(text);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch (err) {
+                console.error('Errore durante la copia:', err);
+            }
         }
     };
 
@@ -354,9 +397,30 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 </div>
                             </div>
                         </div>
-                        <a href={`/quote/${currentQuote.id}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 'bold' }}>
-                            Vedi Pagina Pubblica <ExternalLink size={16} />
-                        </a>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <button
+                                onClick={handleShareQuote}
+                                title="Condividi o copia preventivo"
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: copied ? '#4CAF50' : 'var(--color-primary)',
+                                    cursor: 'pointer',
+                                    padding: '0.5rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s ease',
+                                    borderRadius: '8px',
+                                    backgroundColor: copied ? 'rgba(76, 175, 80, 0.1)' : 'rgba(175, 68, 72, 0.05)'
+                                }}
+                            >
+                                {copied ? <CheckCircle2 size={20} /> : <Share2 size={20} />}
+                            </button>
+                            <a href={`/quote/${currentQuote.id}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 'bold' }}>
+                                Vedi Pagina Pubblica <ExternalLink size={16} />
+                            </a>
+                        </div>
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>
@@ -381,6 +445,27 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 Tutto Senza Lattosio
                             </label>
                         </div>
+                    </div>
+
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h4 style={{ marginBottom: '1rem' }}>Note sul preventivo</h4>
+                        <textarea
+                            value={currentQuote.notes || ''}
+                            onChange={e => {
+                                const updatedQuote = { ...currentQuote, notes: e.target.value };
+                                setCurrentQuote(updatedQuote);
+                                autoSave(updatedQuote);
+                            }}
+                            placeholder="Inserisci qui eventuali note o messaggi personalizzati per il cliente..."
+                            style={{ 
+                                width: '100%', 
+                                padding: '1rem', 
+                                borderRadius: '8px', 
+                                border: '1px solid var(--color-border)', 
+                                minHeight: '100px',
+                                fontSize: '0.95rem'
+                            }}
+                        />
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>

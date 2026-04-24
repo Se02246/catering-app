@@ -35,6 +35,11 @@ const SharedQuote = ({ isMenuMode = false }) => {
                 text += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
             });
         }
+
+        if (quote?.notes) {
+            text += `\nNote sul preventivo:\n${quote.notes}\n`;
+        }
+
         text += `\nLink della pagina share: ${window.location.href}`;
 
         if (navigator.share) {
@@ -115,7 +120,12 @@ const SharedQuote = ({ isMenuMode = false }) => {
     const sendToWhatsApp = () => {
         const phoneNumber = "393495416637";
         const url = window.location.href;
-        const message = `Ciao Barbara, ho visualizzato questo preventivo sul tuo sito e vorrei maggiori informazioni:\n\n${url}\n\nTotale: € ${quote.total_price}`;
+        let message = `Ciao Barbara, ho visualizzato questo preventivo sul tuo sito e vorrei maggiori informazioni:\n\n${url}\n\nTotale: € ${quote.total_price}`;
+        
+        if (quote.notes) {
+            message += `\n\nNote sul preventivo:\n${quote.notes}`;
+        }
+        
         window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
@@ -655,6 +665,20 @@ const SharedQuote = ({ isMenuMode = false }) => {
                             >
                                 <Send size={20} /> Richiedi Informazioni su WhatsApp
                             </button>
+                        </div>
+                    )}
+
+                    {quote?.notes && (
+                        <div style={{ 
+                            marginBottom: '2rem', 
+                            padding: '1.5rem', 
+                            backgroundColor: 'white', 
+                            borderRadius: '16px', 
+                            border: '1px solid var(--color-border)',
+                            boxShadow: 'var(--shadow-sm)'
+                        }}>
+                            <h4 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.75rem', fontSize: '1.1rem' }}>Note sul preventivo</h4>
+                            <p style={{ margin: 0, color: 'var(--color-text)', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{quote.notes}</p>
                         </div>
                     )}
 
