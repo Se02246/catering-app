@@ -49,7 +49,7 @@ const QuoteBuilder = () => {
                 });
                 
                 setCart(prev => [...prev, ...newCartItems]);
-                setAiPrompt('');
+                // removed setAiPrompt('') to keep user text
                 if (data.ai_explanation) {
                     setAiResponse(data.ai_explanation);
                 }
@@ -249,7 +249,9 @@ const QuoteBuilder = () => {
                             title="Genera Preventivo"
                         >
                             {isGeneratingAi ? (
-                                <Loader2 size={24} className="animate-spin" />
+                                <div className="animate-spin" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Loader2 size={24} />
+                                </div>
                             ) : (
                                 <Send size={20} style={{ marginLeft: '-2px', marginTop: '2px' }} />
                             )}

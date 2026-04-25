@@ -56,7 +56,10 @@ router.post('/ai-generate', async (req, res) => {
             price_per_piece: p.price_per_piece,
             is_sold_by_piece: p.is_sold_by_piece,
             is_gluten_free: p.is_gluten_free,
-            is_lactose_free: p.is_lactose_free
+            is_lactose_free: p.is_lactose_free,
+            servings_per_unit: p.servings_per_unit,
+            min_order_quantity: p.min_order_quantity,
+            order_increment: p.order_increment
         }));
 
         const aiPrompt = `
@@ -89,9 +92,12 @@ Estrai le informazioni e restituisci un oggetto JSON con la seguente struttura e
 }
 IMPORTANTE:
 - RISPETTA TASSATIVAMENTE il valore di "is_sold_by_piece" che trovi nel database per ogni prodotto. NON ALTERARLO MAI.
+- PORZIONI (servings_per_unit): Se per un prodotto è specificato quante persone sazia un pezzo o un kg ("servings_per_unit"), usalo ESATTAMENTE per calcolare la quantità necessaria in base al numero degli invitati.
+- LIMITI D'ORDINE: Assicurati che la quantità calcolata non sia mai inferiore a "min_order_quantity". Inoltre, la quantità finale deve rispettare l'incremento specificato in "order_increment" (es. se min è 10 e l'incremento è 5, le quantità valide sono 10, 15, 20...).
 - Se l'utente chiede una quantità in "pezzi" (es. 100 tramezzini) ma il prodotto nel database è venduto a kg ("is_sold_by_piece": false), CALCOLA TU a quanti KG corrispondono indicativamente quei pezzi e inserisci la quantità in KG (es. 100 tramezzini potrebbero essere 3.5 kg, quindi "quantity": 3.5). NON mettere 100 kg.
 - Se l'utente chiede una quantità in "kg" ma il prodotto nel database è venduto a pezzi ("is_sold_by_piece": true), CALCOLA TU a quanti PEZZI corrispondono indicativamente quei kg e inserisci la quantità in PEZZI.
 - Se l'utente non specifica la quantità, DEDUCI TU una quantità proporzionata e adeguata al contesto del preventivo, rispettando rigorosamente l'unità di misura (KG o PEZZI) stabilita nel database.
+- VARIETÀ E QUANTITÀ MASSIMA: In eventi medi o grandi, prediligi sempre un'ALTA VARIETÀ di prodotti (es. 10-20 tipi diversi) piuttosto che pochi prodotti in enormi quantità. Per i prodotti venduti a KG, cerca di non superare mai i 2/3 kg per singolo prodotto (salvo specifiche e precise richieste dell'utente di quantità superiori).
 - Fai molta attenzione alle richieste globali come "tutto senza glutine" o "budget totale di 500€".
 - Restituisci SOLO IL JSON, senza blocchi di codice \`\`\` o altro testo.
 `;
