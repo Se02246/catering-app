@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Info, Search, Calendar, Wand2, Loader2 } from 'lucide-react';
+import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Search, Calendar, Wand2, Loader2 } from 'lucide-react';
 import ProductDetailsModal from '../Common/ProductDetailsModal';
-import { formatCustomText } from '../../utils/textFormatting';
 
 const QuoteBuilder = () => {
     const { products: rawProducts, isLoading } = useProducts();
@@ -49,15 +48,15 @@ const QuoteBuilder = () => {
                 setCart(prev => [...prev, ...newCartItems]);
                 setAiPrompt('');
             }
-        } catch (err) {
-            setAiError(err.message || "Errore durante la generazione con IA. Riprova.");
+        } catch (error) {
+            setAiError(error.message || "Errore durante la generazione con IA. Riprova.");
         } finally {
             setIsGeneratingAi(false);
         }
     };
 
     useEffect(() => {
-        const handlePopState = (event) => {
+        const handlePopState = () => {
             if (selectedProduct) {
                 setIsProductClosing(true);
                 setTimeout(() => {
@@ -75,12 +74,13 @@ const QuoteBuilder = () => {
     }, [cart]);
 
     useEffect(() => {
+        const currentRef = quoteSummaryRef.current;
         const observer = new IntersectionObserver(
             ([entry]) => setIsQuoteVisible(entry.isIntersecting),
             { threshold: 0.1 }
         );
-        if (quoteSummaryRef.current) observer.observe(quoteSummaryRef.current);
-        return () => { if (quoteSummaryRef.current) observer.unobserve(quoteSummaryRef.current); };
+        if (currentRef) observer.observe(currentRef);
+        return () => { if (currentRef) observer.unobserve(currentRef); };
     }, [cart.length]);
 
     const products = React.useMemo(() => {
@@ -117,8 +117,6 @@ const QuoteBuilder = () => {
             }
         }
     };
-
-    const removeFromCart = (instanceId) => setCart(cart.filter(item => item.instanceId !== instanceId));
 
     const updateQuantity = (instanceId, delta) => {
         setCart(cart.map(item => {
