@@ -96,15 +96,21 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         setAiLoading(true);
         setMessage(null);
         try {
-            const aiData = await api.generateAiQuote(aiPrompt);
+            const aiData = await api.generateAiQuote(aiPrompt, 'admin');
             
             const newQuote = await api.createQuote({ items: [], total_price: 0 });
             
-            const itemsWithIds = (aiData.items || []).map(item => ({
-                ...item,
-                instanceId: `${Date.now()}-${Math.random()}`,
-                quantity: Number(item.quantity) || 1
-            }));
+            const itemsWithIds = (aiData.items || []).map(item => {
+                const catalogProduct = products.find(p => p.id === item.id);
+                return {
+                    ...catalogProduct, // Start with full catalog data (images, etc.)
+                    ...item, // Overwrite with AI-specific values (quantity, unit choice)
+                    instanceId: `${Date.now()}-${Math.random()}`,
+                    quantity: Number(item.quantity) || 1,
+                    // Ensure image fields are correctly set if missing in 'item' but present in 'catalogProduct'
+                    images: catalogProduct?.images || (catalogProduct?.image_url ? [catalogProduct.image_url] : [])
+                };
+            });
 
             const finalQuote = {
                 ...newQuote,
@@ -248,6 +254,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 ...liveProduct,
                 quantity: item.quantity,
                 instanceId: item.instanceId,
+                is_sold_by_piece: item.is_sold_by_piece, // Preserve user selection
                 original_description: liveProduct.description,
                 original_menu_description: liveProduct.menu_description
             };

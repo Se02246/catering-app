@@ -187,11 +187,11 @@ export const api = {
     },
 
     // Quotes
-    generateAiQuote: async (prompt) => {
+    generateAiQuote: async (prompt, source = 'client') => {
         const res = await fetch(`${API_URL}/quotes/ai-generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt })
+            body: JSON.stringify({ prompt, source })
         });
         if (!res.ok) {
             const error = await res.json().catch(() => ({ error: 'Failed to generate AI quote' }));

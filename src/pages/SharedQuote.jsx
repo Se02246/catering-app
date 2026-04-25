@@ -648,29 +648,27 @@ const SharedQuote = ({ isMenuMode = false }) => {
                         </div>
                     )}
 
-                    {!isMenuMode && (
-                        <button 
-                            className="btn" 
-                            style={{ 
-                                width: '100%', 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'center', 
-                                gap: '0.75rem', 
-                                padding: '1.2rem', 
-                                marginBottom: '2rem', 
-                                fontSize: '1.1rem',
-                                backgroundColor: 'var(--color-accent)',
-                                color: 'white',
-                                fontWeight: 'bold',
-                                boxShadow: '0 4px 15px rgba(197, 160, 89, 0.4)',
-                                border: 'none'
-                            }}
-                            onClick={() => navigate('/recensioni')}
-                        >
-                            <Star size={22} fill="white" /> Lascia una recensione
-                        </button>
-                    )}
+                    <button 
+                        className="btn" 
+                        style={{ 
+                            width: '100%', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            gap: '0.75rem', 
+                            padding: '1.2rem', 
+                            marginBottom: '2rem', 
+                            fontSize: '1.1rem',
+                            backgroundColor: 'var(--color-accent)',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            boxShadow: '0 4px 15px rgba(197, 160, 89, 0.4)',
+                            border: 'none'
+                        }}
+                        onClick={() => navigate('/recensioni')}
+                    >
+                        <Star size={22} fill="white" /> Lascia una recensione
+                    </button>
 
                     {!isMenuMode && (
                         <button 

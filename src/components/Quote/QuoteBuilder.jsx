@@ -28,7 +28,7 @@ const QuoteBuilder = () => {
         setAiError(null);
         setAiResponse(null);
         try {
-            const data = await api.generateAiQuote(aiPrompt);
+            const data = await api.generateAiQuote(aiPrompt, 'client');
             if (data && data.items && Array.isArray(data.items)) {
                 const newCartItems = [];
                 data.items.forEach(aiItem => {
@@ -48,9 +48,11 @@ const QuoteBuilder = () => {
                             min_order_quantity: product.min_order_quantity ? parseFloat(product.min_order_quantity) : 1,
                             order_increment: product.order_increment !== undefined ? parseFloat(product.order_increment) : 1,
                             images: product.images || (product.image_url ? [product.image_url] : []),
-                            is_sold_by_piece: Boolean(product.is_sold_by_piece),
+                            is_sold_by_piece: aiItem.is_sold_by_piece !== undefined ? Boolean(aiItem.is_sold_by_piece) : Boolean(product.is_sold_by_piece),
                             price_per_piece: product.price_per_piece ? parseFloat(product.price_per_piece) : null,
                             quantity: aiItem.quantity || product.min_order_quantity || 1,
+                            description: aiItem.description || product.description,
+                            menu_description: aiItem.menu_description || product.menu_description,
                             instanceId: Date.now() + Math.random()
                         });
                     }
