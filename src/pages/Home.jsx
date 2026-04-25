@@ -5,7 +5,7 @@ import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import ReviewCard from '../components/Common/ReviewCard';
 import { formatCustomText } from '../utils/textFormatting';
-import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star } from 'lucide-react';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -14,6 +14,32 @@ const Home = () => {
     const { reviews, isLoading: isReviewsLoading } = useReviews();
     
     const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false';
+
+    // Statistics for Reviews Summary
+    const stats = React.useMemo(() => {
+        if (!reviews || reviews.length === 0) return null;
+
+        const total = reviews.length;
+        const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+        const avg = (sum / total).toFixed(1);
+        
+        const recommendedCount = reviews.filter(r => r.rating >= 4).length;
+        const rate = Math.round((recommendedCount / total) * 100);
+
+        return {
+            averageRating: avg,
+            totalReviews: total,
+            recommendationRate: rate
+        };
+    }, [reviews]);
+
+    const getRatingLabel = (rating) => {
+        const r = parseFloat(rating);
+        if (r >= 4.5) return 'Eccellente';
+        if (r >= 4.0) return 'Molto buono';
+        if (r >= 3.0) return 'Buono';
+        return 'Sufficiente';
+    };
 
     const [selectedPackage, setSelectedPackage] = React.useState(null);
     const [selectedProduct, setSelectedProduct] = React.useState(null);
@@ -289,6 +315,31 @@ const Home = () => {
                     <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>
                         Le esperienze di chi ha già scelto i nostri servizi.
                     </p>
+
+                    {!isReviewsLoading && stats && (
+                        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                    <Star size={24} fill="#FFD700" color="#FFD700" />
+                                    <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-text)' }}>{stats.averageRating}</span>
+                                </div>
+                                <div style={{ fontSize: '1rem', color: 'var(--color-text)' }}>
+                                    <span style={{ fontWeight: '600' }}>{getRatingLabel(stats.averageRating)}</span>
+                                    <span style={{ margin: '0 0.4rem', color: 'var(--color-text-muted)' }}>·</span>
+                                    <span style={{ color: 'var(--color-text-muted)' }}>{stats.totalReviews} Recensioni</span>
+                                </div>
+                            </div>
+                            <div style={{ 
+                                fontSize: '0.75rem', 
+                                fontWeight: '800', 
+                                letterSpacing: '0.05em', 
+                                color: 'var(--color-accent)', 
+                                textTransform: 'uppercase'
+                            }}>
+                                Consigliato dal {stats.recommendationRate}% delle coppie
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {isReviewsLoading ? (
