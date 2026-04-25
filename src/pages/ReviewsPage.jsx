@@ -130,12 +130,12 @@ const ReviewsPage = () => {
         <div className="container fade-in" style={{ paddingBottom: '5rem' }}>
             <Header isReviewsPage={true} />
 
-            <div id="reviews-top" className="section-header" style={{ marginBottom: '3rem', textAlign: 'left', maxWidth: 'none' }}>
+            <div id="reviews-top" className="section-header" style={{ marginBottom: '3rem', textAlign: 'center', maxWidth: 'none' }}>
                 <h1 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', color: 'var(--color-primary-dark)' }}>
-                    Recensioni su Muse Catering
+                    Recensioni
                 </h1>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <Star size={32} fill="#FFD700" color="#FFD700" />
                         <span style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-text)' }}>{stats.averageRating}</span>
@@ -147,19 +147,20 @@ const ReviewsPage = () => {
                     </div>
                 </div>
 
-                <button 
-                    className="btn btn-primary" 
-                    onClick={() => setIsModalOpen(true)}
-                    style={{ 
-                        padding: '1rem 2.5rem', 
-                        fontSize: '1.1rem', 
-                        marginBottom: '3rem',
-                        width: '100%',
-                        maxWidth: '400px'
-                    }}
-                >
-                    Scrivi una recensione
-                </button>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '3rem' }}>
+                    <button 
+                        className="btn btn-primary" 
+                        onClick={() => setIsModalOpen(true)}
+                        style={{ 
+                            padding: '1rem 2.5rem', 
+                            fontSize: '1.1rem', 
+                            width: '100%',
+                            maxWidth: '400px'
+                        }}
+                    >
+                        Scrivi una recensione
+                    </button>
+                </div>
 
                 {stats.allImages.length > 0 && (
                     <div style={{ 
