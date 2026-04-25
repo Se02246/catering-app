@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Search, Calendar, Wand2, Loader2 } from 'lucide-react';
+import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Search, Calendar, Wand2, Loader2, Info } from 'lucide-react';
 import ProductDetailsModal from '../Common/ProductDetailsModal';
 
 const QuoteBuilder = () => {
@@ -18,6 +18,7 @@ const QuoteBuilder = () => {
     const [aiPrompt, setAiPrompt] = useState('');
     const [isGeneratingAi, setIsGeneratingAi] = useState(false);
     const [aiError, setAiError] = useState(null);
+    const [showAiInfo, setShowAiInfo] = useState(false);
     const quoteSummaryRef = useRef(null);
 
     const handleAiGenerate = async () => {
@@ -172,55 +173,84 @@ const QuoteBuilder = () => {
             {/* Catalog Section */}
             <div className="fade-in" style={{ paddingBottom: '4rem' }}>
                 {/* AI Quote Generator Section */}
-                <div style={{ marginBottom: '2rem' }}>
-                    <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(155, 57, 61, 0.15)', background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,245,245,0.9) 100%)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1rem' }}>
-                            <div style={{ padding: '0.6rem', borderRadius: '50%', background: 'var(--color-primary-light)', color: 'var(--color-primary-dark)' }}>
-                                <Wand2 size={24} />
-                            </div>
-                            <h3 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1.2rem' }}>Genera con IA</h3>
-                        </div>
-                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', marginBottom: '1rem' }}>
-                            Descrivi il tuo evento (es. "Festa di compleanno per 20 persone con opzioni senza glutine") e la nostra IA creerà una proposta su misura per te.
-                        </p>
-                        <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
-                            <textarea
-                                value={aiPrompt}
-                                onChange={(e) => setAiPrompt(e.target.value)}
-                                placeholder="Descrivi qui cosa desideri..."
-                                style={{
-                                    width: '100%', padding: '1rem', borderRadius: 'var(--radius-md)',
-                                    border: '1px solid rgba(0,0,0,0.1)', background: 'white',
-                                    fontSize: '0.95rem', minHeight: '100px', resize: 'vertical',
-                                    fontFamily: 'inherit', outline: 'none'
-                                }}
-                                disabled={isGeneratingAi}
-                            />
-                            {aiError && (
-                                <div style={{ color: '#E11D48', fontSize: '0.9rem', padding: '0.5rem', backgroundColor: 'rgba(225, 29, 72, 0.05)', borderRadius: 'var(--radius-sm)' }}>
-                                    {aiError}
-                                </div>
-                            )}
-                            <button 
-                                className="btn btn-primary" 
-                                onClick={handleAiGenerate}
-                                disabled={isGeneratingAi || !aiPrompt.trim()}
-                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.8rem', alignSelf: 'flex-start' }}
-                            >
-                                {isGeneratingAi ? (
-                                    <>
-                                        <Loader2 size={18} className="animate-spin" />
-                                        Generazione in corso...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Wand2 size={18} />
-                                        Genera Proposta
-                                    </>
-                                )}
-                            </button>
-                        </div>
+                <div style={{ marginBottom: '3rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                        <h3 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1.3rem' }}>Genera con IA</h3>
+                        <button 
+                            onClick={() => setShowAiInfo(!showAiInfo)}
+                            style={{ 
+                                background: 'var(--color-primary-light)', border: 'none', color: 'var(--color-primary-dark)', 
+                                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                                width: '22px', height: '22px', borderRadius: '50%', fontSize: '0.8rem', fontWeight: 'bold'
+                            }}
+                            title="Come funziona?"
+                        >
+                            ?
+                        </button>
                     </div>
+                    
+                    {showAiInfo && (
+                        <div className="fade-in" style={{ backgroundColor: 'rgba(155, 57, 61, 0.05)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
+                            Descrivi il tuo evento (es. "Festa di compleanno per 20 persone con opzioni senza glutine") e la nostra IA creerà una proposta su misura per te estraendo i prodotti ottimali dal catalogo.
+                        </div>
+                    )}
+
+                    <div style={{ position: 'relative', width: '100%' }}>
+                        <textarea
+                            value={aiPrompt}
+                            onChange={(e) => setAiPrompt(e.target.value)}
+                            placeholder="Descrivi qui l'evento e cosa desideri..."
+                            style={{
+                                width: '100%', 
+                                padding: '1.5rem 4.5rem 1.5rem 1.5rem', 
+                                borderRadius: '24px',
+                                border: '2px solid rgba(155, 57, 61, 0.1)', 
+                                background: 'var(--color-bg)',
+                                fontSize: '1rem', 
+                                minHeight: '120px', 
+                                resize: 'vertical',
+                                fontFamily: 'inherit', 
+                                outline: 'none',
+                                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)',
+                                transition: 'border-color 0.3s',
+                                boxSizing: 'border-box'
+                            }}
+                            disabled={isGeneratingAi}
+                            onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                            onBlur={(e) => e.target.style.borderColor = 'rgba(155, 57, 61, 0.1)'}
+                        />
+                        <button 
+                            className="btn btn-primary" 
+                            onClick={handleAiGenerate}
+                            disabled={isGeneratingAi || !aiPrompt.trim()}
+                            style={{ 
+                                position: 'absolute', 
+                                bottom: '1rem', 
+                                right: '1rem',
+                                width: '48px',
+                                height: '48px',
+                                borderRadius: '50%',
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                padding: 0,
+                                boxShadow: 'var(--shadow-md)',
+                                transition: 'all 0.3s'
+                            }}
+                            title="Genera Preventivo"
+                        >
+                            {isGeneratingAi ? (
+                                <Loader2 size={24} className="animate-spin" />
+                            ) : (
+                                <Send size={20} style={{ marginLeft: '-2px', marginTop: '2px' }} />
+                            )}
+                        </button>
+                    </div>
+                    {aiError && (
+                        <div style={{ color: '#E11D48', fontSize: '0.9rem', padding: '0.8rem', backgroundColor: 'rgba(225, 29, 72, 0.05)', borderRadius: 'var(--radius-sm)', marginTop: '0.5rem' }}>
+                            {aiError}
+                        </div>
+                    )}
                 </div>
 
                 <div style={{ 
@@ -327,7 +357,13 @@ const QuoteBuilder = () => {
                                 {cart.map(item => (
                                     <div key={item.instanceId} style={{ marginBottom: '1.2rem', paddingBottom: '1.2rem', borderBottom: '1px dashed rgba(155, 57, 61, 0.1)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
-                                            <div style={{ fontWeight: '700', fontSize: '1rem', color: 'var(--color-primary-dark)' }}>{item.name}</div>
+                                            <div>
+                                                <div style={{ fontWeight: '700', fontSize: '1rem', color: 'var(--color-primary-dark)', marginBottom: '0.2rem' }}>{item.name}</div>
+                                                <div className="dietary-badges" style={{ gap: '0.3rem' }}>
+                                                    {item.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Glutine</span>}
+                                                    {item.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Lattosio</span>}
+                                                </div>
+                                            </div>
                                             <div style={{ fontWeight: '800', color: 'var(--color-text)' }}>€ {calculateItemPrice(item).toFixed(2)}</div>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
