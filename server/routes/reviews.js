@@ -49,4 +49,24 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// Update a review (e.g. add a response)
+router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { response } = req.body;
+    
+    try {
+        const result = await pool.query(
+            'UPDATE reviews SET response = $1 WHERE id = $2 RETURNING *',
+            [response, id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Review not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error updating review:', err);
+        res.status(500).json({ error: 'Server error updating review' });
+    }
+});
+
 export default router;

@@ -102,6 +102,22 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                         </div>
                     )}
                 </div>
+            {review.response && (
+                <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
+                    <h5 style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>
+                        Risposta di Muse Catering:
+                    </h5>
+                    <p style={{ 
+                        margin: 0, 
+                        color: 'var(--color-text)', 
+                        fontSize: '0.9rem', 
+                        lineHeight: '1.5',
+                        fontStyle: 'italic',
+                        whiteSpace: 'pre-line'
+                    }}>
+                        {review.response}
+                    </p>
+                </div>
             )}
         </div>
     );

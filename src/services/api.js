@@ -176,6 +176,16 @@ export const api = {
         return res.json();
     },
 
+    updateReview: async (id, reviewData) => {
+        const res = await fetch(`${API_URL}/reviews/${id}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify(reviewData)
+        });
+        if (!res.ok) throw new Error('Failed to update review');
+        return res.json();
+    },
+
     // Quotes
     generateAiQuote: async (prompt) => {
         const res = await fetch(`${API_URL}/quotes/ai-generate`, {
