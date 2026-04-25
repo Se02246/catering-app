@@ -354,7 +354,7 @@ const Home = () => {
                                 className="no-scrollbar"
                             >
                                 {reviews.slice(0, 6).map((review, index) => (
-                                    <div key={review.id} style={{ animationDelay: `${index * 0.1}s` }} className="fade-in">
+                                    <div key={review.id} style={{ animationDelay: `${index * 0.1}s`, scrollSnapAlign: 'start', scrollSnapStop: 'always' }} className="fade-in">
                                         <ReviewCard review={review} layout="carousel" />
                                     </div>
                                 ))}

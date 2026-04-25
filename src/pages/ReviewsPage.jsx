@@ -511,7 +511,7 @@ const ReviewsPage = () => {
                             className="no-scrollbar"
                         >
                             {stats.allImages.map((img, idx) => (
-                                <div key={idx} style={{ minWidth: '100%', height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', scrollSnapAlign: 'start' }}>
+                                <div key={idx} style={{ minWidth: '100%', height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
                                     <img 
                                         src={img} 
                                         alt={`Gallery image ${idx + 1}`}

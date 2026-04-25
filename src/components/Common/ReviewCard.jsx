@@ -83,7 +83,7 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                         className="no-scrollbar"
                     >
                         {images.map((img, idx) => (
-                            <div key={idx} style={{ minWidth: '100%', height: '100%', scrollSnapAlign: 'start' }}>
+                            <div key={idx} style={{ minWidth: '100%', height: '100%', scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
                                 <img 
                                     src={img} 
                                     alt={`Servizio Muse Catering ${idx + 1}`}
