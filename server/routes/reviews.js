@@ -37,4 +37,16 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Delete a review
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM reviews WHERE id = $1', [id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting review:', err);
+        res.status(500).json({ error: 'Server error deleting review' });
+    }
+});
+
 export default router;

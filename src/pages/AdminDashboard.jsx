@@ -4,7 +4,8 @@ import ProductManager from '../components/Admin/ProductManager';
 import PackageBuilder from '../components/Admin/PackageBuilder';
 import SettingsManager from '../components/Admin/SettingsManager';
 import QuoteManager from '../components/Admin/QuoteManager';
-import { Settings } from 'lucide-react';
+import ReviewManager from '../components/Admin/ReviewManager';
+import { Settings, MessageSquare } from 'lucide-react';
 
 const AdminDashboard = () => {
     const location = useLocation();
@@ -83,6 +84,13 @@ const AdminDashboard = () => {
                     Preventivi
                 </button>
                 <button
+                    className={`btn ${activeTab === 'reviews' ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setActiveTab('reviews')}
+                    style={tabBtnStyle}
+                >
+                    Recensioni
+                </button>
+                <button
                     className={`btn ${activeTab === 'settings' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setActiveTab('settings')}
                     style={{ ...tabBtnStyle, padding: '0.6rem 0.8rem' }}
@@ -95,6 +103,7 @@ const AdminDashboard = () => {
             {activeTab === 'products' && <ProductManager onCreateQuoteClick={handleNewQuoteRequest} />}
             {activeTab === 'packages' && <PackageBuilder />}
             {activeTab === 'settings' && <SettingsManager />}
+            {activeTab === 'reviews' && <ReviewManager />}
             {activeTab === 'quotes' && (
                 <QuoteManager 
                     initialSearchId={searchId} 

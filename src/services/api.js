@@ -167,6 +167,15 @@ export const api = {
         return res.json();
     },
 
+    deleteReview: async (id) => {
+        const res = await fetch(`${API_URL}/reviews/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to delete review');
+        return res.json();
+    },
+
     // Quotes
     generateAiQuote: async (prompt) => {
         const res = await fetch(`${API_URL}/quotes/ai-generate`, {

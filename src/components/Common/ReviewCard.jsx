@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Star, User } from 'lucide-react';
 
 const ReviewCard = ({ review, layout = 'vertical' }) => {
     const { author_name, rating, comment, image_url, created_at } = review;
-    
+
     // Fallback initials for the avatar if no image is provided
     const initials = author_name
         ? author_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
@@ -18,10 +19,10 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
     const isCarousel = layout === 'carousel';
 
     return (
-        <div 
-            className="glass-panel" 
-            style={{ 
-                padding: '1.5rem', 
+        <div
+            className="glass-panel"
+            style={{
+                padding: '1.5rem',
                 borderRadius: 'var(--radius-lg)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -36,23 +37,23 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 {image_url ? (
-                    <img 
-                        src={image_url} 
-                        alt={`Foto di ${author_name}`} 
-                        style={{ 
-                            width: '50px', 
-                            height: '50px', 
-                            borderRadius: '50%', 
-                            objectFit: 'cover' 
-                        }} 
+                    <img
+                        src={image_url}
+                        alt={`Foto di ${author_name}`}
+                        style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '50%',
+                            objectFit: 'cover'
+                        }}
                     />
                 ) : (
-                    <div 
-                        style={{ 
-                            width: '50px', 
-                            height: '50px', 
-                            borderRadius: '50%', 
-                            backgroundColor: 'var(--color-primary-light)', 
+                    <div
+                        style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '50%',
+                            backgroundColor: 'var(--color-primary-light)',
                             color: 'var(--color-primary-dark)',
                             display: 'flex',
                             alignItems: 'center',
@@ -72,19 +73,19 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
 
             <div style={{ display: 'flex', gap: '2px', color: '#FFD700' }}>
                 {[...Array(5)].map((_, i) => (
-                    <Star 
-                        key={i} 
-                        size={16} 
-                        fill={i < rating ? '#FFD700' : 'transparent'} 
-                        color={i < rating ? '#FFD700' : 'var(--color-border)'} 
+                    <Star
+                        key={i}
+                        size={16}
+                        fill={i < rating ? '#FFD700' : 'transparent'}
+                        color={i < rating ? '#FFD700' : 'var(--color-border)'}
                     />
                 ))}
             </div>
 
-            <p style={{ 
-                margin: 0, 
-                color: 'var(--color-text)', 
-                fontSize: '0.95rem', 
+            <p style={{
+                margin: 0,
+                color: 'var(--color-text)',
+                fontSize: '0.95rem',
                 lineHeight: '1.6',
                 fontStyle: 'italic',
                 flexGrow: 1 // Push everything else up if content is small
