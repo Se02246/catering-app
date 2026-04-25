@@ -74,11 +74,13 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                         style={{
                             display: 'flex',
                             overflowX: 'auto',
+                            overflowY: 'hidden',
                             scrollSnapType: 'x mandatory',
                             width: '100%',
                             height: '100%',
                             scrollbarWidth: 'none',
-                            WebkitOverflowScrolling: 'touch'
+                            WebkitOverflowScrolling: 'touch',
+                            touchAction: 'pan-x'
                         }}
                         className="no-scrollbar"
                     >
