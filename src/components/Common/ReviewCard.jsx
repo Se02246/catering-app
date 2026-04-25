@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 const ReviewCard = ({ review, layout = 'vertical' }) => {
     const { author_name, rating, comment, images = [], created_at } = review;
@@ -14,14 +13,13 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
 
     const isCarousel = layout === 'carousel';
 
-    const nextImg = (e) => {
-        e.stopPropagation();
-        setActiveImg((prev) => (prev + 1) % images.length);
-    };
-
-    const prevImg = (e) => {
-        e.stopPropagation();
-        setActiveImg((prev) => (prev - 1 + images.length) % images.length);
+    const handleScroll = (e) => {
+        const scrollPosition = e.target.scrollLeft;
+        const width = e.target.offsetWidth;
+        const newIndex = Math.round(scrollPosition / width);
+        if (newIndex !== activeImg) {
+            setActiveImg(newIndex);
+        }
     };
 
     return (
@@ -70,31 +68,35 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
             </p>
 
             {images && images.length > 0 && (
-                <div style={{ position: 'relative', marginTop: '0.5rem', borderRadius: '12px', overflow: 'hidden', aspectRatio: '4/3' }}>
-                    <img 
-                        src={images[activeImg]} 
-                        alt={`Servizio Muse Catering ${activeImg + 1}`}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
+                <div style={{ position: 'relative', marginTop: '0.5rem', borderRadius: '12px', overflow: 'hidden', aspectRatio: '4/5' }}>
+                    <div 
+                        onScroll={handleScroll}
+                        style={{
+                            display: 'flex',
+                            overflowX: 'auto',
+                            scrollSnapType: 'x mandatory',
+                            width: '100%',
+                            height: '100%',
+                            scrollbarWidth: 'none',
+                            WebkitOverflowScrolling: 'touch'
+                        }}
+                        className="no-scrollbar"
+                    >
+                        {images.map((img, idx) => (
+                            <div key={idx} style={{ minWidth: '100%', height: '100%', scrollSnapAlign: 'start' }}>
+                                <img 
+                                    src={img} 
+                                    alt={`Servizio Muse Catering ${idx + 1}`}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                            </div>
+                        ))}
+                    </div>
 
                     {images.length > 1 && (
-                        <>
-                            <button 
-                                onClick={prevImg}
-                                style={{ position: 'absolute', left: '5px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                            >
-                                <ChevronLeft size={16} />
-                            </button>
-                            <button 
-                                onClick={nextImg}
-                                style={{ position: 'absolute', right: '5px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                            >
-                                <ChevronRight size={16} />
-                            </button>
-                            <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.3)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '0.7rem' }}>
-                                {activeImg + 1} / {images.length}
-                            </div>
-                        </>
+                        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.3)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '0.7rem', pointerEvents: 'none' }}>
+                            {activeImg + 1} / {images.length}
+                        </div>
                     )}
                 </div>
             )}

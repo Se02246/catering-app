@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageSquare, Plus, X, Star, Save, Loader } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Plus, X, Star, Save, Loader, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useReviews } from '../hooks/useData';
 import ReviewCard from '../components/Common/ReviewCard';
 import Header from '../components/Layout/Header';
@@ -17,7 +17,19 @@ const ReviewsPage = () => {
 
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+    const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+    const galleryScrollRef = React.useRef(null);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Effect to scroll to correct image when gallery opens
+    React.useEffect(() => {
+        if (isGalleryOpen && galleryScrollRef.current) {
+            const container = galleryScrollRef.current;
+            const width = container.offsetWidth;
+            container.scrollLeft = currentPhotoIndex * width;
+        }
+    }, [isGalleryOpen]);
     const [newReview, setNewReview] = useState({
         author_name: '',
         rating: 5,
@@ -135,17 +147,6 @@ const ReviewsPage = () => {
                     </div>
                 </div>
 
-                <div style={{ 
-                    fontSize: '0.85rem', 
-                    fontWeight: '800', 
-                    letterSpacing: '0.05em', 
-                    color: 'var(--color-text-muted)', 
-                    textTransform: 'uppercase',
-                    marginBottom: '2rem'
-                }}>
-                    Consigliato dal {stats.recommendationRate}% delle coppie
-                </div>
-
                 <button 
                     className="btn btn-primary" 
                     onClick={() => setIsModalOpen(true)}
@@ -165,33 +166,45 @@ const ReviewsPage = () => {
                         marginBottom: '4rem',
                         display: 'grid',
                         gridTemplateColumns: '2fr 1.2fr 1fr',
-                        gridTemplateRows: 'repeat(2, 120px)',
+                        gridTemplateRows: 'repeat(2, 180px)',
                         gap: '8px',
                         borderRadius: 'var(--radius-lg)',
                         overflow: 'hidden'
                     }}>
                         {/* Image 1 (Large Left) */}
-                        <div style={{ gridColumn: '1', gridRow: '1 / 3' }}>
+                        <div 
+                            style={{ gridColumn: '1', gridRow: '1 / 3', cursor: 'pointer' }}
+                            onClick={() => { setCurrentPhotoIndex(0); setIsGalleryOpen(true); }}
+                        >
                             <img src={stats.allImages[0]} alt="Review Gallery 1" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
                         
                         {/* Image 2 (Large Middle) */}
                         {stats.allImages.length > 1 && (
-                            <div style={{ gridColumn: '2', gridRow: '1 / 3' }}>
+                            <div 
+                                style={{ gridColumn: '2', gridRow: '1 / 3', cursor: 'pointer' }}
+                                onClick={() => { setCurrentPhotoIndex(1); setIsGalleryOpen(true); }}
+                            >
                                 <img src={stats.allImages[1]} alt="Review Gallery 2" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
                         )}
 
                         {/* Image 3 (Small Top Right) */}
                         {stats.allImages.length > 2 && (
-                            <div style={{ gridColumn: '3', gridRow: '1' }}>
+                            <div 
+                                style={{ gridColumn: '3', gridRow: '1', cursor: 'pointer' }}
+                                onClick={() => { setCurrentPhotoIndex(2); setIsGalleryOpen(true); }}
+                            >
                                 <img src={stats.allImages[2]} alt="Review Gallery 3" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
                         )}
 
                         {/* Image 4 (Small Bottom Right + Overlay) */}
                         {stats.allImages.length > 3 && (
-                            <div style={{ gridColumn: '3', gridRow: '2', position: 'relative' }}>
+                            <div 
+                                style={{ gridColumn: '3', gridRow: '2', position: 'relative', cursor: 'pointer' }}
+                                onClick={() => { setCurrentPhotoIndex(3); setIsGalleryOpen(true); }}
+                            >
                                 <img src={stats.allImages[3]} alt="Review Gallery 4" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 {stats.allImages.length > 4 && (
                                     <div style={{ 
@@ -310,26 +323,6 @@ const ReviewsPage = () => {
                     ))}
                 </div>
             )}
-
-            {/* FAB - Leave a Review */}
-            <button
-                className="btn btn-primary"
-                style={{
-                    position: 'fixed',
-                    bottom: '2rem',
-                    right: '2rem',
-                    borderRadius: '50px',
-                    padding: '1rem 1.5rem',
-                    boxShadow: 'var(--shadow-lg)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    zIndex: 100
-                }}
-                onClick={() => setIsModalOpen(true)}
-            >
-                <Plus size={24} /> Lascia una recensione
-            </button>
 
             {/* Modal */}
             {isModalOpen && (
@@ -465,6 +458,70 @@ const ReviewsPage = () => {
                                 {isSaving ? <Loader className="animate-spin" size={22} /> : <Save size={22} />}
                                 {isSaving ? 'Invio in corso...' : 'Invia Recensione'}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Gallery Modal */}
+            {isGalleryOpen && (
+                <div className="modal-overlay" onClick={() => setIsGalleryOpen(false)} style={{ zIndex: 3000, backgroundColor: 'rgba(0,0,0,0.9)' }}>
+                    <button 
+                        onClick={() => setIsGalleryOpen(false)}
+                        style={{ position: 'absolute', top: '2rem', right: '2rem', background: 'none', border: 'none', color: 'white', cursor: 'pointer', zIndex: 3100 }}
+                    >
+                        <X size={40} />
+                    </button>
+
+                    <div 
+                        className="modal-content fade-in" 
+                        onClick={e => e.stopPropagation()} 
+                        style={{ 
+                            background: 'none', 
+                            boxShadow: 'none', 
+                            maxWidth: '95vw', 
+                            width: '100%',
+                            maxHeight: '90vh', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            position: 'relative'
+                        }}
+                    >
+                        <div 
+                            ref={galleryScrollRef}
+                            onScroll={(e) => {
+                                const scrollPosition = e.target.scrollLeft;
+                                const width = e.target.offsetWidth;
+                                const newIndex = Math.round(scrollPosition / width);
+                                if (newIndex !== currentPhotoIndex) {
+                                    setCurrentPhotoIndex(newIndex);
+                                }
+                            }}
+                            style={{
+                                display: 'flex',
+                                overflowX: 'auto',
+                                scrollSnapType: 'x mandatory',
+                                width: '100%',
+                                height: '100%',
+                                scrollbarWidth: 'none',
+                                WebkitOverflowScrolling: 'touch',
+                                alignItems: 'center'
+                            }}
+                            className="no-scrollbar"
+                        >
+                            {stats.allImages.map((img, idx) => (
+                                <div key={idx} style={{ minWidth: '100%', height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', scrollSnapAlign: 'start' }}>
+                                    <img 
+                                        src={img} 
+                                        alt={`Gallery image ${idx + 1}`}
+                                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 'var(--radius-lg)' }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+
+                        <div style={{ position: 'absolute', bottom: '-40px', color: 'white', fontSize: '1rem', fontWeight: 'bold' }}>
+                            {currentPhotoIndex + 1} / {stats.allImages.length}
                         </div>
                     </div>
                 </div>

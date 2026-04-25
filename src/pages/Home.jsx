@@ -329,15 +329,6 @@ const Home = () => {
                                     <span style={{ color: 'var(--color-text-muted)' }}>{stats.totalReviews} Recensioni</span>
                                 </div>
                             </div>
-                            <div style={{ 
-                                fontSize: '0.75rem', 
-                                fontWeight: '800', 
-                                letterSpacing: '0.05em', 
-                                color: 'var(--color-accent)', 
-                                textTransform: 'uppercase'
-                            }}>
-                                Consigliato dal {stats.recommendationRate}% delle coppie
-                            </div>
                         </div>
                     )}
                 </div>
