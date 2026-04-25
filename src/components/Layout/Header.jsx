@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Download, Utensils, FileText, MessageCircle } from 'lucide-react';
+import { Lock, Download, Utensils, FileText, MessageCircle, Star } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
 import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
@@ -10,6 +10,7 @@ const Header = () => {
     const location = useLocation();
     const isHome = location.pathname === '/';
     const isQuote = location.pathname === '/quote';
+    const isReviews = location.pathname === '/reviews';
     const { showPrompt, handleInstallClick } = useInstallPromptContext();
     const { setting: headerSetting } = useSetting('header_text');
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
@@ -107,6 +108,13 @@ const Header = () => {
                         </button>
                     </>
                 )}
+                <button
+                    onClick={() => navigate('/reviews')}
+                    className={`nav-btn ${isReviews ? 'active' : ''}`}
+                >
+                    <Star size={20} />
+                    Recensioni
+                </button>
             </div>
 
             <div style={{ maxWidth: '400px', margin: '1.5rem auto 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

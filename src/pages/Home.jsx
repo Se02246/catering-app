@@ -295,27 +295,33 @@ const Home = () => {
                     <div style={{ textAlign: 'center', padding: '3rem 0' }}>
                         <div className="animate-pulse" style={{ color: 'var(--color-primary)', fontWeight: 600 }}>Caricamento recensioni...</div>
                     </div>
-                ) : reviews && reviews.length > 0 ? (
+                ) : (
                     <>
-                        <div 
-                            style={{
-                                display: 'flex',
-                                gap: '1.5rem',
-                                overflowX: 'auto',
-                                scrollSnapType: 'x mandatory',
-                                paddingBottom: '1rem',
-                                scrollbarWidth: 'none',
-                                WebkitOverflowScrolling: 'touch',
-                                alignItems: 'stretch'
-                            }}
-                            className="no-scrollbar"
-                        >
-                            {reviews.slice(0, 6).map((review, index) => (
-                                <div key={review.id} style={{ animationDelay: `${index * 0.1}s` }} className="fade-in">
-                                    <ReviewCard review={review} layout="carousel" />
-                                </div>
-                            ))}
-                        </div>
+                        {reviews && reviews.length > 0 ? (
+                            <div 
+                                style={{
+                                    display: 'flex',
+                                    gap: '1.5rem',
+                                    overflowX: 'auto',
+                                    scrollSnapType: 'x mandatory',
+                                    paddingBottom: '1rem',
+                                    scrollbarWidth: 'none',
+                                    WebkitOverflowScrolling: 'touch',
+                                    alignItems: 'stretch'
+                                }}
+                                className="no-scrollbar"
+                            >
+                                {reviews.slice(0, 6).map((review, index) => (
+                                    <div key={review.id} style={{ animationDelay: `${index * 0.1}s` }} className="fade-in">
+                                        <ReviewCard review={review} layout="carousel" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
+                                <p>Non ci sono ancora recensioni. Torna a trovarci presto!</p>
+                            </div>
+                        )}
                         
                         <div style={{ textAlign: 'center', marginTop: '2rem' }}>
                             <button 
@@ -327,7 +333,7 @@ const Home = () => {
                             </button>
                         </div>
                     </>
-                ) : null}
+                )}
             </section>
 
             {selectedPackage && (
