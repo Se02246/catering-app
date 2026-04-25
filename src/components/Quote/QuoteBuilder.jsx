@@ -269,7 +269,7 @@ const QuoteBuilder = () => {
                             title="Genera Preventivo"
                         >
                             {isGeneratingAi ? (
-                                <div className="animate-pulse" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div className="animate-sparkle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <Sparkles size={24} />
                                 </div>
                             ) : (
