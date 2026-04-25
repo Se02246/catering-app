@@ -19,12 +19,14 @@ const QuoteBuilder = () => {
     const [isGeneratingAi, setIsGeneratingAi] = useState(false);
     const [aiError, setAiError] = useState(null);
     const [showAiInfo, setShowAiInfo] = useState(false);
+    const [aiResponse, setAiResponse] = useState(null);
     const quoteSummaryRef = useRef(null);
 
     const handleAiGenerate = async () => {
         if (!aiPrompt.trim()) return;
         setIsGeneratingAi(true);
         setAiError(null);
+        setAiResponse(null);
         try {
             const data = await api.generateAiQuote(aiPrompt);
             if (data && data.items && Array.isArray(data.items)) {
@@ -48,6 +50,13 @@ const QuoteBuilder = () => {
                 
                 setCart(prev => [...prev, ...newCartItems]);
                 setAiPrompt('');
+                if (data.ai_explanation) {
+                    setAiResponse(data.ai_explanation);
+                }
+                setTimeout(() => {
+                    const targetId = data.ai_explanation ? 'ai-response-box' : 'quote-summary';
+                    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
             }
         } catch (error) {
             setAiError(error.message || "Errore durante la generazione con IA. Riprova.");
@@ -332,6 +341,19 @@ const QuoteBuilder = () => {
                 </div>
             </div>
 
+            {/* AI Explanation Box */}
+            {aiResponse && (
+                <div id="ai-response-box" className="premium-card fade-in" style={{ marginBottom: '2rem', padding: '1.5rem', borderRadius: '16px', background: 'linear-gradient(to right, rgba(155, 57, 61, 0.05), rgba(155, 57, 61, 0.02))', borderLeft: '4px solid var(--color-primary)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
+                        <Wand2 size={20} style={{ color: 'var(--color-primary)' }} />
+                        <h4 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1.1rem' }}>La Proposta dell'IA</h4>
+                    </div>
+                    <p style={{ margin: 0, color: 'var(--color-text)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                        {aiResponse}
+                    </p>
+                </div>
+            )}
+
             {/* Quote Summary Section */}
             <div ref={quoteSummaryRef} id="quote-summary" className="premium-card fade-in" style={{ height: 'fit-content', position: 'sticky', top: '2rem', borderRadius: '24px', overflow: 'hidden' }}>
                 <div style={{ padding: '2rem', background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))', color: 'white', borderTopLeftRadius: '24px', borderTopRightRadius: '24px' }}>
@@ -353,7 +375,7 @@ const QuoteBuilder = () => {
                         </div>
                     ) : (
                         <>
-                            <div style={{ marginBottom: '3.5rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                            <div style={{ marginBottom: '3.5rem', paddingRight: '0.5rem' }}>
                                 {cart.map(item => (
                                     <div key={item.instanceId} style={{ marginBottom: '1.2rem', paddingBottom: '1.2rem', borderBottom: '1px dashed rgba(155, 57, 61, 0.1)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>

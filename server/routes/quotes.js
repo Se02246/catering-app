@@ -84,7 +84,8 @@ Estrai le informazioni e restituisci un oggetto JSON con la seguente struttura e
   ],
   "is_gluten_free": booleano (true se l'utente richiede esplicitamente che TUTTO il preventivo sia senza glutine, altrimenti false),
   "is_lactose_free": booleano (true se l'utente richiede esplicitamente che TUTTO il preventivo sia senza lattosio, altrimenti false),
-  "manual_total_price": numero o null (se l'utente specifica un budget o un prezzo totale globale per l'intero preventivo, inserisci qui il numero, altrimenti null)
+  "manual_total_price": numero o null (se l'utente specifica un budget o un prezzo totale globale per l'intero preventivo, inserisci qui il numero, altrimenti null),
+  "ai_explanation": "string (spiega in modo chiaro, accattivante e persuasivo le scelte fatte per questo preventivo, giustificando perché hai selezionato questi prodotti specifici e come si adattano perfettamente alla richiesta. Rivolgiti direttamente al cliente in tono cordiale e professionale. Massimo 3-4 frasi brevi.)"
 }
 IMPORTANTE:
 - RISPETTA TASSATIVAMENTE il valore di "is_sold_by_piece" che trovi nel database per ogni prodotto. NON ALTERARLO MAI.
