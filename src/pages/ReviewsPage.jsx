@@ -154,16 +154,25 @@ const ReviewsPage = () => {
 
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '3rem' }}>
                     <button 
-                        className="btn btn-primary" 
+                        className="btn" 
                         onClick={() => setIsModalOpen(true)}
                         style={{ 
-                            padding: '1rem 2.5rem', 
+                            padding: '1.2rem 2.5rem', 
                             fontSize: '1.1rem', 
                             width: '100%',
-                            maxWidth: '400px'
+                            maxWidth: '400px',
+                            backgroundColor: 'var(--color-accent)',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            boxShadow: '0 4px 15px rgba(197, 160, 89, 0.4)',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.75rem'
                         }}
                     >
-                        Scrivi una recensione
+                        <Star size={22} fill="white" /> Lascia una recensione
                     </button>
                 </div>
 
