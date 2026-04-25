@@ -148,16 +148,17 @@ img {
   animation: bounceOut 0.5s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
   }
-  to {
-    transform: rotate(360deg);
+  50% {
+    opacity: .5;
+    transform: scale(.8);
   }
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite !important;
-  transform-origin: center;
+.animate-pulse {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
 }

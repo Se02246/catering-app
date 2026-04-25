@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Search, Calendar, Wand2, Loader2, Info } from 'lucide-react';
+import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Search, Calendar, Wand2, Sparkles, Loader2, Info } from 'lucide-react';
 import ProductDetailsModal from '../Common/ProductDetailsModal';
 
 const QuoteBuilder = () => {
@@ -153,7 +153,11 @@ const QuoteBuilder = () => {
     const handleShareQuote = async () => {
         setIsSaving(true);
         try {
-            const result = await api.saveQuote(cart, calculateTotal());
+            const quoteData = {
+                items: cart,
+                total_price: calculateTotal()
+            };
+            const result = await api.createQuote(quoteData);
             const url = `${window.location.origin}/quote/${result.id}`;
             const message = `Ciao Barbara, ho creato un preventivo sul tuo sito. Puoi visualizzarlo qui:\n\n${url}`;
             window.open(`https://wa.me/393495416637?text=${encodeURIComponent(message)}`, '_blank');
@@ -249,8 +253,8 @@ const QuoteBuilder = () => {
                             title="Genera Preventivo"
                         >
                             {isGeneratingAi ? (
-                                <div className="animate-spin" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Loader2 size={24} />
+                                <div className="animate-pulse" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Sparkles size={24} />
                                 </div>
                             ) : (
                                 <Send size={20} style={{ marginLeft: '-2px', marginTop: '2px' }} />
