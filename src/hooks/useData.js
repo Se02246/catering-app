@@ -5,6 +5,7 @@ const fetcher = (url) => {
     // Determine which API method to call based on the key
     if (url === '/products') return api.getProducts();
     if (url === '/caterings') return api.getCaterings();
+    if (url === '/reviews') return api.getReviews();
     if (url.startsWith('/settings/')) {
         const key = url.split('/')[2];
         return api.getSetting(key);
@@ -36,6 +37,21 @@ export const useCaterings = () => {
 
     return {
         caterings: data || [],
+        isLoading,
+        isError: error,
+        mutate
+    };
+};
+
+export const useReviews = () => {
+    const { data, error, mutate, isLoading } = useSWR('/reviews', fetcher, {
+        revalidateOnFocus: true,
+        refreshInterval: 10000,
+        dedupingInterval: 5000,
+    });
+
+    return {
+        reviews: data || [],
         isLoading,
         isError: error,
         mutate

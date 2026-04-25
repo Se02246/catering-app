@@ -1,11 +1,12 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import AdminDashboard from './pages/AdminDashboard';
 import CreateQuote from './pages/CreateQuote';
 import Login from './pages/Login';
 import SharedQuote from './pages/SharedQuote';
 import SharedPackage from './pages/SharedPackage';
+import ReviewsPage from './pages/ReviewsPage';
 import { Lock } from 'lucide-react';
 import './styles/index.css';
 import { InstallPromptProvider } from './context/InstallPromptContext';
@@ -46,6 +47,7 @@ function AppContent() {
           <Route path="/menu/:menuId" element={<SharedQuote isMenuMode={true} />} />
           <Route path="/package/:id" element={<SharedPackage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
         </Routes>
       </main>
     </div>

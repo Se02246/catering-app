@@ -1,15 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCaterings, useSetting } from '../hooks/useData';
+import { useCaterings, useSetting, useReviews } from '../hooks/useData';
 import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
+import ReviewCard from '../components/Common/ReviewCard';
 import { formatCustomText } from '../utils/textFormatting';
-import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare } from 'lucide-react';
 
 const Home = () => {
     const navigate = useNavigate();
     const { caterings, isLoading, isError } = useCaterings();
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
+    const { reviews, isLoading: isReviewsLoading } = useReviews();
     
     const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false';
 
@@ -95,7 +97,7 @@ const Home = () => {
     }, [selectedPackage, selectedProduct]);
 
     React.useEffect(() => {
-        const handlePopState = (event) => {
+        const handlePopState = () => {
             if (selectedProduct) {
                 setIsProductClosing(true);
                 setTimeout(() => {
@@ -279,6 +281,54 @@ const Home = () => {
                     </div>
                 </section>
             )}
+
+            {/* Reviews Section */}
+            <section id="reviews" style={{ marginTop: '5rem' }}>
+                <div className="section-header">
+                    <h2>Dicono di noi</h2>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>
+                        Le esperienze di chi ha già scelto i nostri servizi.
+                    </p>
+                </div>
+
+                {isReviewsLoading ? (
+                    <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+                        <div className="animate-pulse" style={{ color: 'var(--color-primary)', fontWeight: 600 }}>Caricamento recensioni...</div>
+                    </div>
+                ) : reviews && reviews.length > 0 ? (
+                    <>
+                        <div 
+                            style={{
+                                display: 'flex',
+                                gap: '1.5rem',
+                                overflowX: 'auto',
+                                scrollSnapType: 'x mandatory',
+                                paddingBottom: '1rem',
+                                scrollbarWidth: 'none',
+                                WebkitOverflowScrolling: 'touch',
+                                alignItems: 'stretch'
+                            }}
+                            className="no-scrollbar"
+                        >
+                            {reviews.slice(0, 6).map((review, index) => (
+                                <div key={review.id} style={{ animationDelay: `${index * 0.1}s` }} className="fade-in">
+                                    <ReviewCard review={review} layout="carousel" />
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                            <button 
+                                className="btn btn-outline" 
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem' }}
+                                onClick={() => navigate('/reviews')}
+                            >
+                                <MessageSquare size={18} /> Leggi tutte le recensioni
+                            </button>
+                        </div>
+                    </>
+                ) : null}
+            </section>
 
             {selectedPackage && (
                 <div 

@@ -150,6 +150,13 @@ export const api = {
         return res.json();
     },
 
+    // Reviews
+    getReviews: async () => {
+        const res = await fetch(`${API_URL}/reviews`);
+        if (!res.ok) throw new Error('Failed to fetch reviews');
+        return res.json();
+    },
+
     // Quotes
     generateAiQuote: async (prompt) => {
         const res = await fetch(`${API_URL}/quotes/ai-generate`, {
