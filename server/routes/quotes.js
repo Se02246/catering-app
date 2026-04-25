@@ -44,7 +44,8 @@ async function generateWithFallback(modelIndex, prompt, imageParts = []) {
 
 // Generate AI quote
 router.post('/ai-generate', async (req, res) => {
-    const { prompt } = req.body;
+    const { prompt, source } = req.body;
+    const isAdmin = source === 'admin';
 
     try {
         const productsResult = await pool.query('SELECT * FROM products');
