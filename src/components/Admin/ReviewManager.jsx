@@ -99,7 +99,7 @@ const ReviewManager = () => {
                                 </p>
                                 
                                 {review.images && review.images.length > 0 && (
-                                    <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '1rem' }}>
                                         {review.images.map((img, idx) => (
                                             <img 
                                                 key={idx} 
