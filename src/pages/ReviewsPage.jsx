@@ -223,92 +223,139 @@ const ReviewsPage = () => {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="modal-overlay" onClick={() => !isSaving && setIsModalOpen(false)}>
-                    <div className="modal-content fade-in" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h3 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>La tua opinione conta</h3>
+                <div className="modal-overlay" onClick={() => !isSaving && setIsModalOpen(false)} style={{ zIndex: 2000 }}>
+                    <div 
+                        className="modal-content fade-in" 
+                        onClick={e => e.stopPropagation()} 
+                        style={{ 
+                            maxWidth: '600px', 
+                            width: '95%', 
+                            maxHeight: '90vh', 
+                            display: 'flex', 
+                            flexDirection: 'column',
+                            padding: '0' // Remove padding to handle scroll area better
+                        }}
+                    >
+                        {/* Modal Header */}
+                        <div style={{ 
+                            padding: '1.5rem', 
+                            borderBottom: '1px solid var(--color-border)', 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            flexShrink: 0
+                        }}>
+                            <h3 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1.3rem' }}>La tua opinione conta</h3>
                             <button 
                                 onClick={() => !isSaving && setIsModalOpen(false)} 
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}
                             >
                                 <X size={24} />
                             </button>
                         </div>
 
-                        {message && (
-                            <div className={`message-banner ${message.type}`} style={{ marginBottom: '1.5rem', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
-                                {message.text}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSaveReview}>
-                            <div style={{ marginBottom: '1.2rem' }}>
-                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>Nome *</label>
-                                <input
-                                    type="text"
-                                    value={newReview.author_name}
-                                    onChange={e => setNewReview({ ...newReview, author_name: e.target.value })}
-                                    placeholder="Il tuo nome"
-                                    required
-                                    className="input-elegant"
-                                    style={{ width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}
-                                />
-                            </div>
-
-                            <div style={{ marginBottom: '1.2rem' }}>
-                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>Valutazione *</label>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    {[1, 2, 3, 4, 5].map(star => (
-                                        <button
-                                            key={star}
-                                            type="button"
-                                            onClick={() => setNewReview({ ...newReview, rating: star })}
-                                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                                        >
-                                            <Star 
-                                                size={32} 
-                                                fill={star <= newReview.rating ? '#FFD700' : 'transparent'} 
-                                                color={star <= newReview.rating ? '#FFD700' : 'var(--color-border)'} 
-                                            />
-                                        </button>
-                                    ))}
+                        {/* Modal Body - Scrollable */}
+                        <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
+                            {message && (
+                                <div className={`message-banner ${message.type}`} style={{ marginBottom: '1.5rem', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+                                    {message.text}
                                 </div>
-                            </div>
+                            )}
 
-                            <div style={{ marginBottom: '1.2rem' }}>
-                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>Recensione *</label>
-                                <textarea
-                                    value={newReview.comment}
-                                    onChange={e => setNewReview({ ...newReview, comment: e.target.value })}
-                                    placeholder="Racconta la tua esperienza..."
-                                    required
-                                    rows={4}
-                                    className="input-elegant"
-                                    style={{ width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', resize: 'none' }}
-                                />
-                            </div>
+                            <form id="review-form" onSubmit={handleSaveReview}>
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Nome e Cognome *</label>
+                                    <input
+                                        type="text"
+                                        value={newReview.author_name}
+                                        onChange={e => setNewReview({ ...newReview, author_name: e.target.value })}
+                                        placeholder="Esempio: Mario Rossi"
+                                        required
+                                        className="input-elegant"
+                                        style={{ width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '1rem' }}
+                                    />
+                                </div>
 
-                            <div style={{ marginBottom: '2rem' }}>
-                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem' }}>La tua foto (opzionale)</label>
-                                <ImageUpload 
-                                    images={newReview.image_url ? [newReview.image_url] : []}
-                                    onUpload={urls => setNewReview({ ...newReview, image_url: urls[0] || '' })}
-                                />
-                                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-                                    Carica una foto per rendere la tua recensione più autentica.
-                                </p>
-                            </div>
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Valutazione *</label>
+                                    <div style={{ display: 'flex', gap: '0.6rem', padding: '0.5rem 0' }}>
+                                        {[1, 2, 3, 4, 5].map(star => (
+                                            <button
+                                                key={star}
+                                                type="button"
+                                                onClick={() => setNewReview({ ...newReview, rating: star })}
+                                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, transition: 'transform 0.2s' }}
+                                                className="star-hover"
+                                            >
+                                                <Star 
+                                                    size={36} 
+                                                    fill={star <= newReview.rating ? '#FFD700' : 'transparent'} 
+                                                    color={star <= newReview.rating ? '#FFD700' : 'var(--color-border)'} 
+                                                    strokeWidth={1.5}
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginTop: '0.3rem' }}>
+                                        Seleziona da 1 a 5 stelle
+                                    </p>
+                                </div>
 
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Recensione *</label>
+                                    <textarea
+                                        value={newReview.comment}
+                                        onChange={e => setNewReview({ ...newReview, comment: e.target.value })}
+                                        placeholder="Descrivi la tua esperienza con Muse Catering..."
+                                        required
+                                        rows={5}
+                                        className="input-elegant"
+                                        style={{ width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', resize: 'none', fontSize: '1rem', lineHeight: '1.5' }}
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>La tua foto (consigliata)</label>
+                                    <ImageUpload 
+                                        images={newReview.image_url ? [newReview.image_url] : []}
+                                        onUpload={urls => setNewReview({ ...newReview, image_url: urls[0] || '' })}
+                                    />
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
+                                        Una foto reale rende il tuo feedback più prezioso.
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div style={{ 
+                            padding: '1.5rem', 
+                            borderTop: '1px solid var(--color-border)', 
+                            background: 'rgba(255,255,255,0.5)',
+                            display: 'flex',
+                            gap: '1rem',
+                            flexShrink: 0
+                        }}>
+                            <button 
+                                type="button" 
+                                className="btn btn-outline" 
+                                onClick={() => !isSaving && setIsModalOpen(false)}
+                                style={{ flex: 1 }}
+                                disabled={isSaving}
+                            >
+                                Annulla
+                            </button>
                             <button 
                                 type="submit" 
+                                form="review-form"
                                 className="btn btn-primary" 
                                 disabled={isSaving}
-                                style={{ width: '100%', padding: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
+                                style={{ flex: 2, padding: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', fontSize: '1.1rem', fontWeight: 'bold' }}
                             >
-                                {isSaving ? <Loader className="animate-spin" size={20} /> : <Save size={20} />}
-                                {isSaving ? 'Invio in corso...' : 'Pubblica Recensione'}
+                                {isSaving ? <Loader className="animate-spin" size={22} /> : <Save size={22} />}
+                                {isSaving ? 'Invio in corso...' : 'Invia Recensione'}
                             </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             )}
