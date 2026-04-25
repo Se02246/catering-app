@@ -77,7 +77,7 @@ Estrai le informazioni e restituisci un oggetto JSON con la seguente struttura e
     {
       "id": ID del prodotto dal database (intero),
       "quantity": quantità richiesta (numero, es. 2 per 2kg o 2 pezzi. Se l'utente non lo specifica, deduci una quantità adeguata in base al numero di persone o al contesto),
-      "is_sold_by_piece": booleano (${isAdmin ? "DEVE ESSERE ESATTAMENTE UGUALE al valore presente nel database per quel prodotto. NON CAMBIARLO MAI" : "puoi scegliere se vendere il prodotto a pezzi (true) o a kg (false) in base alla richiesta del cliente, purché il prodotto abbia entrambi i prezzi definiti nel DB"}),
+      "is_sold_by_piece": booleano (${!isAdmin ? "DEVE ESSERE ESATTAMENTE UGUALE al valore presente nel database per quel prodotto. NON CAMBIARLO MAI" : "puoi scegliere se vendere il prodotto a pezzi (true) o a kg (false) in base alla richiesta del cliente, purché il prodotto abbia entrambi i prezzi definiti nel DB"}),
       "price_per_piece": prezzo unitario (dal db),
       "price_per_kg": prezzo al kg (dal db),
       "name": "nome prodotto",
@@ -92,12 +92,12 @@ Estrai le informazioni e restituisci un oggetto JSON con la seguente struttura e
   "ai_explanation": "string (spiega in modo chiaro, accattivante e persuasivo le scelte fatte per questo preventivo, giustificando perché hai selezionato questi prodotti specifici e come si adattano perfettamente alla richiesta. Rivolgiti direttamente al cliente in tono cordiale e professionale. Massimo 3-4 frasi brevi.)"
 }
 IMPORTANTE:
-${isAdmin ? "- RISPETTA TASSATIVAMENTE il valore di \"is_sold_by_piece\" che trovi nel database per ogni prodotto. NON ALTERARLO MAI." : "- Se decidi di cambiare l'unità di misura (da KG a PEZZI o viceversa), assicurati che il prezzo corrispondente (price_per_piece o price_per_kg) sia presente e non sia zero."}
+${!isAdmin ? "- RISPETTA TASSATIVAMENTE il valore di \"is_sold_by_piece\" che trovi nel database per ogni prodotto. NON ALTERARLO MAI." : "- Se decidi di cambiare l'unità di misura (da KG a PEZZI o viceversa), assicurati che il prezzo corrispondente (price_per_piece o price_per_kg) sia presente e non sia zero."}
 - PORZIONI (servings_per_unit): Se per un prodotto è specificato quante persone sazia un pezzo o un kg ("servings_per_unit"), usalo ESATTAMENTE per calcolare la quantità necessaria in base al numero degli invitati.
 - LIMITI D'ORDINE: Assicurati che la quantità calcolata non sia mai inferiore a "min_order_quantity". Inoltre, la quantità finale deve rispettare l'incremento specificato in "order_increment" (es. se min è 10 e l'incremento è 5, le quantità valide sono 10, 15, 20...).
-- Se l'utente chiede una quantità in "pezzi" (es. 100 tramezzini) ma il prodotto nel database è venduto a kg ("is_sold_by_piece": false), ${isAdmin ? "CALCOLA TU a quanti KG corrispondono indicativamente quei pezzi e inserisci la quantità in KG. NON mettere 100 kg." : "puoi scegliere di impostare \"is_sold_by_piece\": true e inserire 100 come quantità, purché il prezzo per pezzo sia disponibile."}
-- Se l'utente chiede una quantità in "kg" ma il prodotto nel database è venduto a pezzi ("is_sold_by_piece": true), ${isAdmin ? "CALCOLA TU a quanti PEZZI corrispondono indicativamente quei kg e inserisci la quantità in PEZZI." : "puoi scegliere di impostare \"is_sold_by_piece\": false e inserire la quantità in KG, purché il prezzo per kg sia disponibile."}
-- Se l'utente non specifica la quantità, DEDUCI TU una quantità proporzionata e adeguata al contesto del preventivo, rispettando rigorosamente l'unità di misura (KG o PEZZI) ${isAdmin ? "stabilita nel database" : "più adatta al prodotto"}.
+- Se l'utente chiede una quantità in "pezzi" (es. 100 tramezzini) ma il prodotto nel database è venduto a kg ("is_sold_by_piece": false), ${!isAdmin ? "CALCOLA TU a quanti KG corrispondono indicativamente quei pezzi e inserisci la quantità in KG. NON mettere 100 kg." : "puoi scegliere di impostare \"is_sold_by_piece\": true e inserire 100 come quantità, purché il prezzo per pezzo sia disponibile."}
+- Se l'utente chiede una quantità in "kg" ma il prodotto nel database è venduto a pezzi ("is_sold_by_piece": true), ${!isAdmin ? "CALCOLA TU a quanti PEZZI corrispondono indicativamente quei kg e inserisci la quantità in PEZZI." : "puoi scegliere di impostare \"is_sold_by_piece\": false e inserire la quantità in KG, purché il prezzo per kg sia disponibile."}
+- Se l'utente non specifica la quantità, DEDUCI TU una quantità proporzionata e adeguata al contesto del preventivo, rispettando rigorosamente l'unità di misura (KG o PEZZI) ${!isAdmin ? "stabilita nel database" : "più adatta al prodotto"}.
 - VARIETÀ E QUANTITÀ MASSIMA: In eventi medi o grandi, prediligi sempre un'ALTA VARIETÀ di prodotti (es. 10-20 tipi diversi) piuttosto che pochi prodotti in enormi quantità. Per i prodotti venduti a KG, cerca di non superare mai i 2/3 kg per singolo prodotto (salvo specifiche e precise richieste dell'utente di quantità superiori).
 - Fai molta attenzione alle richieste globali come "tutto senza glutine" o "budget totale di 500€".
 - Restituisci SOLO IL JSON, senza blocchi di codice \`\`\` o altro testo.
