@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Info, Search, Calendar } from 'lucide-react';
+import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Info, Search, Calendar, Wand2, Loader2 } from 'lucide-react';
 import ProductDetailsModal from '../Common/ProductDetailsModal';
 import { formatCustomText } from '../../utils/textFormatting';
 
@@ -16,7 +16,45 @@ const QuoteBuilder = () => {
     const [isProductClosing, setIsProductClosing] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [aiPrompt, setAiPrompt] = useState('');
+    const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+    const [aiError, setAiError] = useState(null);
     const quoteSummaryRef = useRef(null);
+
+    const handleAiGenerate = async () => {
+        if (!aiPrompt.trim()) return;
+        setIsGeneratingAi(true);
+        setAiError(null);
+        try {
+            const data = await api.generateAiQuote(aiPrompt);
+            if (data && data.items && Array.isArray(data.items)) {
+                const newCartItems = [];
+                data.items.forEach(aiItem => {
+                    const product = rawProducts.find(p => p.id === aiItem.id);
+                    if (product) {
+                        newCartItems.push({
+                            ...product,
+                            price_per_kg: parseFloat(product.price_per_kg),
+                            min_order_quantity: product.min_order_quantity ? parseFloat(product.min_order_quantity) : 1,
+                            order_increment: product.order_increment !== undefined ? parseFloat(product.order_increment) : 1,
+                            images: product.images || (product.image_url ? [product.image_url] : []),
+                            is_sold_by_piece: Boolean(product.is_sold_by_piece),
+                            price_per_piece: product.price_per_piece ? parseFloat(product.price_per_piece) : null,
+                            quantity: aiItem.quantity || product.min_order_quantity || 1,
+                            instanceId: Date.now() + Math.random()
+                        });
+                    }
+                });
+                
+                setCart(prev => [...prev, ...newCartItems]);
+                setAiPrompt('');
+            }
+        } catch (err) {
+            setAiError(err.message || "Errore durante la generazione con IA. Riprova.");
+        } finally {
+            setIsGeneratingAi(false);
+        }
+    };
 
     useEffect(() => {
         const handlePopState = (event) => {
@@ -135,6 +173,58 @@ const QuoteBuilder = () => {
         <div className="grid-quote-builder">
             {/* Catalog Section */}
             <div className="fade-in" style={{ paddingBottom: '4rem' }}>
+                {/* AI Quote Generator Section */}
+                <div style={{ marginBottom: '2rem' }}>
+                    <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(155, 57, 61, 0.15)', background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,245,245,0.9) 100%)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1rem' }}>
+                            <div style={{ padding: '0.6rem', borderRadius: '50%', background: 'var(--color-primary-light)', color: 'var(--color-primary-dark)' }}>
+                                <Wand2 size={24} />
+                            </div>
+                            <h3 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1.2rem' }}>Genera con IA</h3>
+                        </div>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem', marginBottom: '1rem' }}>
+                            Descrivi il tuo evento (es. "Festa di compleanno per 20 persone con opzioni senza glutine") e la nostra IA creerà una proposta su misura per te.
+                        </p>
+                        <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
+                            <textarea
+                                value={aiPrompt}
+                                onChange={(e) => setAiPrompt(e.target.value)}
+                                placeholder="Descrivi qui cosa desideri..."
+                                style={{
+                                    width: '100%', padding: '1rem', borderRadius: 'var(--radius-md)',
+                                    border: '1px solid rgba(0,0,0,0.1)', background: 'white',
+                                    fontSize: '0.95rem', minHeight: '100px', resize: 'vertical',
+                                    fontFamily: 'inherit', outline: 'none'
+                                }}
+                                disabled={isGeneratingAi}
+                            />
+                            {aiError && (
+                                <div style={{ color: '#E11D48', fontSize: '0.9rem', padding: '0.5rem', backgroundColor: 'rgba(225, 29, 72, 0.05)', borderRadius: 'var(--radius-sm)' }}>
+                                    {aiError}
+                                </div>
+                            )}
+                            <button 
+                                className="btn btn-primary" 
+                                onClick={handleAiGenerate}
+                                disabled={isGeneratingAi || !aiPrompt.trim()}
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.8rem', alignSelf: 'flex-start' }}
+                            >
+                                {isGeneratingAi ? (
+                                    <>
+                                        <Loader2 size={18} className="animate-spin" />
+                                        Generazione in corso...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Wand2 size={18} />
+                                        Genera Proposta
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div style={{ 
                     position: 'sticky', 
                     top: '0', 
