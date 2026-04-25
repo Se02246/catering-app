@@ -62,7 +62,8 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                 fontSize: '0.95rem', 
                 lineHeight: '1.6',
                 fontStyle: 'italic',
-                flexGrow: 1
+                flexGrow: 1,
+                whiteSpace: 'pre-line'
             }}>
                 "{comment}"
             </p>
