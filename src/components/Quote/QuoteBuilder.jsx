@@ -34,8 +34,16 @@ const QuoteBuilder = () => {
                 data.items.forEach(aiItem => {
                     const product = rawProducts.find(p => p.id === aiItem.id);
                     if (product) {
-                        newCartItems.push({
+                        const prodData = {
                             ...product,
+                            original_description: product.description,
+                            original_menu_description: product.menu_description
+                        };
+                        delete prodData.description;
+                        delete prodData.menu_description;
+
+                        newCartItems.push({
+                            ...prodData,
                             price_per_kg: parseFloat(product.price_per_kg),
                             min_order_quantity: product.min_order_quantity ? parseFloat(product.min_order_quantity) : 1,
                             order_increment: product.order_increment !== undefined ? parseFloat(product.order_increment) : 1,
@@ -114,15 +122,23 @@ const QuoteBuilder = () => {
     }, [rawProducts, searchTerm]);
 
     const addToCart = (product) => {
+        const prodData = {
+            ...product,
+            original_description: product.description,
+            original_menu_description: product.menu_description
+        };
+        delete prodData.description;
+        delete prodData.menu_description;
+
         if (product.allow_multiple) {
-            const newItem = { ...product, quantity: product.min_order_quantity || 1, instanceId: Date.now() + Math.random() };
+            const newItem = { ...prodData, quantity: product.min_order_quantity || 1, instanceId: Date.now() + Math.random() };
             if (product.max_order_quantity && newItem.quantity > product.max_order_quantity) return;
             setCart([...cart, newItem]);
         } else {
             const existing = cart.find(item => item.id === product.id);
             if (existing) setCart(cart.filter(item => item.id !== product.id));
             else {
-                const newItem = { ...product, quantity: product.min_order_quantity || 1, instanceId: Date.now() + Math.random() };
+                const newItem = { ...prodData, quantity: product.min_order_quantity || 1, instanceId: Date.now() + Math.random() };
                 setCart([...cart, newItem]);
             }
         }
