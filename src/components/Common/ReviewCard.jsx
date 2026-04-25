@@ -80,8 +80,7 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                             width: '100%',
                             height: '100%',
                             scrollbarWidth: 'none',
-                            WebkitOverflowScrolling: 'touch',
-                            touchAction: 'pan-x'
+                            WebkitOverflowScrolling: 'touch'
                         }}
                         className="no-scrollbar"
                     >
@@ -102,6 +101,7 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                         </div>
                     )}
                 </div>
+            )}
             {review.response && (
                 <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
                     <h5 style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>

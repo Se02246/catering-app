@@ -11,6 +11,11 @@ const ReviewsPage = () => {
     const navigate = useNavigate();
     const { reviews, isLoading, isError, mutate } = useReviews();
     
+    // Force scroll to top on mount
+    React.useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+    
     // Filters state
     const [ratingFilter, setRatingFilter] = useState('All');
     const [yearFilter, setYearFilter] = useState('All');

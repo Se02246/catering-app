@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Download, Utensils, FileText, MessageCircle, ArrowLeft } from 'lucide-react';
+import { Lock, Download, Utensils, FileText, MessageCircle, ArrowLeft, MessageSquare } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
 import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
@@ -133,23 +133,48 @@ const Header = ({ isReviewsPage = false }) => {
                     </div>
 
                     <div style={{ maxWidth: '400px', margin: '1.5rem auto 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        <button
-                            onClick={contactWhatsApp}
-                            className="btn install-btn"
-                        >
-                            <MessageCircle size={20} style={{ marginRight: '0.5rem' }} />
-                            Contatta
-                        </button>
-
-                        {showPrompt && (
+                        <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
                             <button
-                                onClick={handleInstallClick}
+                                onClick={contactWhatsApp}
                                 className="btn install-btn"
+                                style={{ flex: 1, padding: '0.6rem 1rem', fontSize: '0.9rem', minHeight: 'auto' }}
                             >
-                                <Download size={20} style={{ marginRight: '0.5rem' }} />
-                                Installa l'App
+                                <MessageCircle size={18} style={{ marginRight: '0.4rem' }} />
+                                Contatta
                             </button>
-                        )}
+
+                            {showPrompt && (
+                                <button
+                                    onClick={handleInstallClick}
+                                    className="btn install-btn"
+                                    style={{ flex: 1, padding: '0.6rem 1rem', fontSize: '0.9rem', minHeight: 'auto' }}
+                                >
+                                    <Download size={18} style={{ marginRight: '0.4rem' }} />
+                                    Installa
+                                </button>
+                            )}
+                        </div>
+
+                        <button
+                            onClick={() => navigate('/recensioni')}
+                            className="btn btn-outline"
+                            style={{ 
+                                width: '100%', 
+                                padding: '0.6rem 1rem', 
+                                fontSize: '0.9rem', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                gap: '0.5rem',
+                                borderRadius: '50px',
+                                border: '1px solid var(--color-primary)',
+                                color: 'var(--color-primary)',
+                                background: 'transparent'
+                            }}
+                        >
+                            <MessageSquare size={18} />
+                            Recensioni
+                        </button>
                     </div>
                 </>
             )}
