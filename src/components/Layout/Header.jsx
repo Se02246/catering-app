@@ -84,7 +84,7 @@ const Header = ({ isReviewsPage = false }) => {
             <h1 className="brand-logo">Muse Catering</h1>
 
             {isReviewsPage && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
                     <button 
                         onClick={() => navigate('/')}
                         className="btn btn-outline"
