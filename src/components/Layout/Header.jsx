@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Download, Utensils, FileText, MessageCircle, ArrowLeft, MessageSquare } from 'lucide-react';
+import { Lock, Download, Utensils, FileText, MessageCircle, ArrowLeft, MessageSquare, Star } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
 import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
@@ -84,7 +84,7 @@ const Header = ({ isReviewsPage = false }) => {
             <h1 className="brand-logo">Muse Catering</h1>
 
             {isReviewsPage && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
                     <button 
                         onClick={() => navigate('/')}
                         className="btn btn-outline"
@@ -136,8 +136,20 @@ const Header = ({ isReviewsPage = false }) => {
                         <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
                             <button
                                 onClick={contactWhatsApp}
-                                className="btn install-btn"
-                                style={{ flex: 1, padding: '0.6rem 1rem', fontSize: '0.9rem', minHeight: 'auto' }}
+                                className="btn btn-outline"
+                                style={{ 
+                                    flex: 1, 
+                                    padding: '0.6rem 1rem', 
+                                    fontSize: '0.9rem', 
+                                    minHeight: 'auto',
+                                    borderRadius: '50px',
+                                    border: '1px solid var(--color-primary)',
+                                    color: 'var(--color-primary)',
+                                    background: 'transparent',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
                             >
                                 <MessageCircle size={18} style={{ marginRight: '0.4rem' }} />
                                 Contatta
@@ -146,8 +158,20 @@ const Header = ({ isReviewsPage = false }) => {
                             {showPrompt && (
                                 <button
                                     onClick={handleInstallClick}
-                                    className="btn install-btn"
-                                    style={{ flex: 1, padding: '0.6rem 1rem', fontSize: '0.9rem', minHeight: 'auto' }}
+                                    className="btn btn-outline"
+                                    style={{ 
+                                        flex: 1, 
+                                        padding: '0.6rem 1rem', 
+                                        fontSize: '0.9rem', 
+                                        minHeight: 'auto',
+                                        borderRadius: '50px',
+                                        border: '1px solid var(--color-primary)',
+                                        color: 'var(--color-primary)',
+                                        background: 'transparent',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
                                 >
                                     <Download size={18} style={{ marginRight: '0.4rem' }} />
                                     Installa
@@ -172,7 +196,7 @@ const Header = ({ isReviewsPage = false }) => {
                                 background: 'transparent'
                             }}
                         >
-                            <MessageSquare size={18} />
+                            <Star size={18} />
                             Recensioni
                         </button>
                     </div>

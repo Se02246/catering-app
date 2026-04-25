@@ -35,7 +35,7 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                 maxWidth: isCarousel ? '350px' : '100%',
                 scrollSnapAlign: isCarousel ? 'center' : 'none',
                 flexShrink: isCarousel ? 0 : 1,
-                boxShadow: 'var(--shadow-sm)',
+                boxShadow: isCarousel ? 'var(--shadow-sm)' : 'var(--glass-shadow)',
                 height: '100%'
             }}
         >

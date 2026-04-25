@@ -368,7 +368,7 @@ const Home = () => {
                                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem' }}
                                 onClick={() => navigate('/recensioni')}
                             >
-                                <MessageSquare size={18} /> Leggi tutte le recensioni
+                                <Star size={18} /> Leggi tutte le recensioni
                             </button>
                         </div>
                     </>
