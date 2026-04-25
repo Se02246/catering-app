@@ -47,7 +47,7 @@ function AppContent() {
           <Route path="/menu/:menuId" element={<SharedQuote isMenuMode={true} />} />
           <Route path="/package/:id" element={<SharedPackage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/reviews" element={<ReviewsPage />} />
+          <Route path="/recensioni" element={<ReviewsPage />} />
         </Routes>
       </main>
     </div>

@@ -1,16 +1,15 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Download, Utensils, FileText, MessageCircle, Star } from 'lucide-react';
+import { Lock, Download, Utensils, FileText, MessageCircle } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
 import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
 
-const Header = () => {
+const Header = ({ isReviewsPage = false }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const isHome = location.pathname === '/';
     const isQuote = location.pathname === '/quote';
-    const isReviews = location.pathname === '/reviews';
     const { showPrompt, handleInstallClick } = useInstallPromptContext();
     const { setting: headerSetting } = useSetting('header_text');
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
@@ -84,58 +83,55 @@ const Header = () => {
 
             <h1 className="brand-logo">Muse Catering</h1>
             
-            <div 
-                className="header-description"
-                dangerouslySetInnerHTML={{ __html: formatCustomText(headerText) }}
-            />
+            {!isReviewsPage && (
+                <>
+                    <div 
+                        className="header-description"
+                        dangerouslySetInnerHTML={{ __html: formatCustomText(headerText) }}
+                    />
 
-            <div className="nav-container">
-                {showQuoteBuilder && (
-                    <>
+                    <div className="nav-container">
+                        {showQuoteBuilder && (
+                            <>
+                                <button
+                                    onClick={scrollToPackages}
+                                    className={`nav-btn ${isHome ? 'active' : ''}`}
+                                >
+                                    <Utensils size={20} />
+                                    Pacchetti
+                                </button>
+                                <button
+                                    onClick={scrollToQuote}
+                                    className={`nav-btn ${isQuote ? 'active' : ''}`}
+                                >
+                                    <FileText size={20} />
+                                    Preventivo
+                                </button>
+                            </>
+                        )}
+                    </div>
+
+                    <div style={{ maxWidth: '400px', margin: '1.5rem auto 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         <button
-                            onClick={scrollToPackages}
-                            className={`nav-btn ${isHome ? 'active' : ''}`}
+                            onClick={contactWhatsApp}
+                            className="btn install-btn"
                         >
-                            <Utensils size={20} />
-                            Pacchetti
+                            <MessageCircle size={20} style={{ marginRight: '0.5rem' }} />
+                            Contatta
                         </button>
-                        <button
-                            onClick={scrollToQuote}
-                            className={`nav-btn ${isQuote ? 'active' : ''}`}
-                        >
-                            <FileText size={20} />
-                            Preventivo
-                        </button>
-                    </>
-                )}
-                <button
-                    onClick={() => navigate('/reviews')}
-                    className={`nav-btn ${isReviews ? 'active' : ''}`}
-                >
-                    <Star size={20} />
-                    Recensioni
-                </button>
-            </div>
 
-            <div style={{ maxWidth: '400px', margin: '1.5rem auto 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <button
-                    onClick={contactWhatsApp}
-                    className="btn install-btn"
-                >
-                    <MessageCircle size={20} style={{ marginRight: '0.5rem' }} />
-                    Contatta
-                </button>
-
-                {showPrompt && (
-                    <button
-                        onClick={handleInstallClick}
-                        className="btn install-btn"
-                    >
-                        <Download size={20} style={{ marginRight: '0.5rem' }} />
-                        Installa l'App
-                    </button>
-                )}
-            </div>
+                        {showPrompt && (
+                            <button
+                                onClick={handleInstallClick}
+                                className="btn install-btn"
+                            >
+                                <Download size={20} style={{ marginRight: '0.5rem' }} />
+                                Installa l'App
+                            </button>
+                        )}
+                    </div>
+                </>
+            )}
         </header>
     );
 };

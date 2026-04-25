@@ -327,7 +327,7 @@ const Home = () => {
                             <button 
                                 className="btn btn-outline" 
                                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem' }}
-                                onClick={() => navigate('/reviews')}
+                                onClick={() => navigate('/recensioni')}
                             >
                                 <MessageSquare size={18} /> Leggi tutte le recensioni
                             </button>

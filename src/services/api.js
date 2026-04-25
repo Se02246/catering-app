@@ -157,6 +157,16 @@ export const api = {
         return res.json();
     },
 
+    createReview: async (review) => {
+        const res = await fetch(`${API_URL}/reviews`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(review)
+        });
+        if (!res.ok) throw new Error('Failed to create review');
+        return res.json();
+    },
+
     // Quotes
     generateAiQuote: async (prompt) => {
         const res = await fetch(`${API_URL}/quotes/ai-generate`, {
