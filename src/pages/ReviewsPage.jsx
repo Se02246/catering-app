@@ -33,7 +33,7 @@ const ReviewsPage = () => {
         return ['All', ...Array.from(new Set(years)).sort((a, b) => b - a)];
     }, [reviews]);
 
-    // Apply filters
+    // Applying filters
     const filteredReviews = useMemo(() => {
         if (!reviews) return [];
         
@@ -46,6 +46,46 @@ const ReviewsPage = () => {
             return matchesRating && matchesYear;
         });
     }, [reviews, ratingFilter, yearFilter]);
+
+    // Statistics & Photos for Summary Header
+    const stats = useMemo(() => {
+        if (!reviews || reviews.length === 0) return {
+            averageRating: 0,
+            totalReviews: 0,
+            recommendationRate: 100,
+            allImages: []
+        };
+
+        const total = reviews.length;
+        const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+        const avg = (sum / total).toFixed(1);
+        
+        const recommendedCount = reviews.filter(r => r.rating >= 4).length;
+        const rate = Math.round((recommendedCount / total) * 100);
+
+        // Collect all images from reviews
+        const images = [];
+        reviews.forEach(r => {
+            if (r.images && Array.isArray(r.images)) {
+                images.push(...r.images);
+            }
+        });
+
+        return {
+            averageRating: avg,
+            totalReviews: total,
+            recommendationRate: rate,
+            allImages: images.slice(0, 20) // Limit to top 20 photos
+        };
+    }, [reviews]);
+
+    const getRatingLabel = (rating) => {
+        const r = parseFloat(rating);
+        if (r >= 4.5) return 'Eccellente';
+        if (r >= 4.0) return 'Molto buono';
+        if (r >= 3.0) return 'Buono';
+        return 'Sufficiente';
+    };
 
     const handleSaveReview = async (e) => {
         e.preventDefault();
@@ -78,30 +118,100 @@ const ReviewsPage = () => {
         <div className="container fade-in" style={{ paddingBottom: '5rem' }}>
             <Header isReviewsPage={true} />
 
-            <div id="reviews-top" className="section-header" style={{ marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                    <button 
-                        onClick={() => navigate(-1)} 
-                        style={{ 
-                            background: 'none', 
-                            border: 'none', 
-                            color: 'var(--color-primary)', 
-                            cursor: 'pointer', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            padding: '0.5rem',
-                            borderRadius: '50%',
-                            transition: 'background-color 0.2s'
-                        }}
-                        className="hover-bg-primary-light"
-                    >
-                        <ArrowLeft size={24} />
-                    </button>
-                    <h2 style={{ margin: 0 }}>Dicono di noi</h2>
+            <div id="reviews-top" className="section-header" style={{ marginBottom: '3rem', textAlign: 'left', maxWidth: 'none' }}>
+                <h1 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', color: 'var(--color-primary-dark)' }}>
+                    Recensioni su Muse Catering
+                </h1>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Star size={32} fill="#FFD700" color="#FFD700" />
+                        <span style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-text)' }}>{stats.averageRating}</span>
+                    </div>
+                    <div style={{ fontSize: '1.2rem', color: 'var(--color-text)' }}>
+                        <span style={{ fontWeight: '600' }}>{getRatingLabel(stats.averageRating)}</span>
+                        <span style={{ margin: '0 0.5rem', color: 'var(--color-text-muted)' }}>·</span>
+                        <span style={{ color: 'var(--color-text-muted)' }}>{stats.totalReviews} Recensioni</span>
+                    </div>
                 </div>
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-                    Leggi le esperienze di chi ha già scelto il nostro servizio catering per i propri eventi speciali.
-                </p>
+
+                <div style={{ 
+                    fontSize: '0.85rem', 
+                    fontWeight: '800', 
+                    letterSpacing: '0.05em', 
+                    color: 'var(--color-text-muted)', 
+                    textTransform: 'uppercase',
+                    marginBottom: '2rem'
+                }}>
+                    Consigliato dal {stats.recommendationRate}% delle coppie
+                </div>
+
+                <button 
+                    className="btn btn-primary" 
+                    onClick={() => setIsModalOpen(true)}
+                    style={{ 
+                        padding: '1rem 2.5rem', 
+                        fontSize: '1.1rem', 
+                        marginBottom: '3rem',
+                        width: '100%',
+                        maxWidth: '400px'
+                    }}
+                >
+                    Scrivi una recensione
+                </button>
+
+                {stats.allImages.length > 0 && (
+                    <div style={{ 
+                        marginBottom: '4rem',
+                        display: 'grid',
+                        gridTemplateColumns: '2fr 1.2fr 1fr',
+                        gridTemplateRows: 'repeat(2, 120px)',
+                        gap: '8px',
+                        borderRadius: 'var(--radius-lg)',
+                        overflow: 'hidden'
+                    }}>
+                        {/* Image 1 (Large Left) */}
+                        <div style={{ gridColumn: '1', gridRow: '1 / 3' }}>
+                            <img src={stats.allImages[0]} alt="Review Gallery 1" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        
+                        {/* Image 2 (Large Middle) */}
+                        {stats.allImages.length > 1 && (
+                            <div style={{ gridColumn: '2', gridRow: '1 / 3' }}>
+                                <img src={stats.allImages[1]} alt="Review Gallery 2" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                        )}
+
+                        {/* Image 3 (Small Top Right) */}
+                        {stats.allImages.length > 2 && (
+                            <div style={{ gridColumn: '3', gridRow: '1' }}>
+                                <img src={stats.allImages[2]} alt="Review Gallery 3" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                        )}
+
+                        {/* Image 4 (Small Bottom Right + Overlay) */}
+                        {stats.allImages.length > 3 && (
+                            <div style={{ gridColumn: '3', gridRow: '2', position: 'relative' }}>
+                                <img src={stats.allImages[3]} alt="Review Gallery 4" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                {stats.allImages.length > 4 && (
+                                    <div style={{ 
+                                        position: 'absolute', 
+                                        inset: 0, 
+                                        backgroundColor: 'rgba(0,0,0,0.4)', 
+                                        color: 'white', 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center',
+                                        fontSize: '1.2rem',
+                                        fontWeight: 'bold'
+                                    }}>
+                                        +{stats.allImages.length - 3}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Filters Section */}

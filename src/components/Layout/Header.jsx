@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Download, Utensils, FileText, MessageCircle } from 'lucide-react';
+import { Lock, Download, Utensils, FileText, MessageCircle, ArrowLeft } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
 import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
@@ -82,6 +82,27 @@ const Header = ({ isReviewsPage = false }) => {
             </div>
 
             <h1 className="brand-logo">Muse Catering</h1>
+
+            {isReviewsPage && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '0.5rem' }}>
+                    <button 
+                        onClick={() => navigate('/')}
+                        className="btn btn-outline"
+                        style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.5rem',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '50px',
+                            fontSize: '0.9rem',
+                            backgroundColor: 'rgba(255,255,255,0.5)',
+                            border: '1px solid var(--color-border)'
+                        }}
+                    >
+                        <ArrowLeft size={16} /> Torna alla Home
+                    </button>
+                </div>
+            )}
             
             {!isReviewsPage && (
                 <>
