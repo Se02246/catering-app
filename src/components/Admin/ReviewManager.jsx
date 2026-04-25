@@ -53,18 +53,6 @@ const ReviewManager = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
                     {reviews.map(review => (
                         <div key={review.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-                            {review.image_url ? (
-                                <img 
-                                    src={review.image_url} 
-                                    alt={review.author_name} 
-                                    style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }} 
-                                />
-                            ) : (
-                                <div style={{ width: '60px', height: '60px', borderRadius: '12px', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.4rem', flexShrink: 0 }}>
-                                    {review.author_name.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                                     <div>
@@ -106,9 +94,22 @@ const ReviewManager = () => {
                                         {isDeleting === review.id ? <Loader className="animate-spin" size={18} /> : <Trash2 size={18} />}
                                     </button>
                                 </div>
-                                <p style={{ margin: 0, color: 'var(--color-text)', fontSize: '0.95rem', lineHeight: '1.5', fontStyle: 'italic' }}>
+                                <p style={{ margin: '0.5rem 0 1rem', color: 'var(--color-text)', fontSize: '0.95rem', lineHeight: '1.5', fontStyle: 'italic' }}>
                                     "{review.comment}"
                                 </p>
+                                
+                                {review.images && review.images.length > 0 && (
+                                    <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+                                        {review.images.map((img, idx) => (
+                                            <img 
+                                                key={idx} 
+                                                src={img} 
+                                                alt={`Review img ${idx}`} 
+                                                style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover' }} 
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}

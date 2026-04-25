@@ -14,9 +14,9 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Add a review (Optional: useful for admin testing or adding reviews from dashboard later)
+// Add a review
 router.post('/', async (req, res) => {
-    const { author_name, rating, comment, image_url } = req.body;
+    const { author_name, rating, comment, images } = req.body;
     if (!author_name || !rating || !comment) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -27,8 +27,8 @@ router.post('/', async (req, res) => {
 
     try {
         const result = await pool.query(
-            'INSERT INTO reviews (author_name, rating, comment, image_url) VALUES ($1, $2, $3, $4) RETURNING *',
-            [author_name, rating, comment, image_url || null]
+            'INSERT INTO reviews (author_name, rating, comment, images) VALUES ($1, $2, $3, $4) RETURNING *',
+            [author_name, rating, comment, images || []]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {

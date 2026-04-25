@@ -22,7 +22,7 @@ const ReviewsPage = () => {
         author_name: '',
         rating: 5,
         comment: '',
-        image_url: ''
+        images: []
     });
     const [message, setMessage] = useState(null);
 
@@ -63,7 +63,7 @@ const ReviewsPage = () => {
             setMessage({ type: 'success', text: 'Grazie! La tua recensione è stata pubblicata.' });
             setTimeout(() => {
                 setIsModalOpen(false);
-                setNewReview({ author_name: '', rating: 5, comment: '', image_url: '' });
+                setNewReview({ author_name: '', rating: 5, comment: '', images: [] });
                 setMessage(null);
             }, 2000);
         } catch (err) {
@@ -315,13 +315,13 @@ const ReviewsPage = () => {
                                 </div>
 
                                 <div style={{ marginBottom: '1rem' }}>
-                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>La tua foto (consigliata)</label>
+                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Foto del servizio (consigliate)</label>
                                     <ImageUpload 
-                                        images={newReview.image_url ? [newReview.image_url] : []}
-                                        onUpload={urls => setNewReview({ ...newReview, image_url: urls[0] || '' })}
+                                        images={newReview.images}
+                                        onUpload={urls => setNewReview({ ...newReview, images: urls })}
                                     />
                                     <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
-                                        Una foto reale rende il tuo feedback più prezioso.
+                                        Carica foto del cibo o dell'allestimento per mostrare la qualità del servizio.
                                     </p>
                                 </div>
                             </form>
