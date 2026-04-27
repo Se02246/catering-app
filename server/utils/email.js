@@ -25,13 +25,22 @@ export const sendReviewNotification = async (review, frontendUrl) => {
             subject: 'Nuova Recensione Ricevuta',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                    <h2 style="color: #333; text-align: center;">Hai ricevuto una nuova recensione!</h2>
+                    <h1 style="font-family: 'Brittany Signature', 'Outfit', cursive, sans-serif; color: #9b393d; font-size: 42px; text-align: center; margin: 10px 0 20px 0; font-weight: normal;">Muse Catering</h1>
+                    <h2 style="color: #333; text-align: center; margin-bottom: 20px;">Hai ricevuto una nuova recensione!</h2>
                     
                     <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
                         <p><strong>Autore:</strong> ${review.author_name}</p>
                         <p><strong>Valutazione:</strong> ${review.rating} / 5 ⭐</p>
                         <p><strong>Commento:</strong></p>
                         <p style="font-style: italic; color: #555;">"${review.comment}"</p>
+                        ${review.images && review.images.length > 0 ? `
+                        <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
+                            <p style="margin-bottom: 10px;"><strong>Foto Allegate:</strong></p>
+                            <div style="display: block; text-align: center;">
+                                ${review.images.map(img => `<img src="${img}" alt="Foto recensione" style="max-width: 100%; max-height: 250px; border-radius: 8px; margin: 5px; display: inline-block;" />`).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
                     </div>
 
                     <div style="text-align: center; margin-top: 30px;">
