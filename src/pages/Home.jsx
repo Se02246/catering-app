@@ -5,7 +5,7 @@ import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import ReviewCard from '../components/Common/ReviewCard';
 import { formatCustomText } from '../utils/textFormatting';
-import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star, MapPin, Send, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star, MapPin, Send, Sparkles, Instagram, MessageCircle } from 'lucide-react';
 
 const PackageCard = ({ pkg, index, openPackage }) => {
     const cardRef = React.useRef(null);
@@ -457,9 +457,16 @@ const Home = () => {
         window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
+    const contactWhatsApp = () => {
+        const phoneNumber = "393495416637";
+        const message = "Ciao Barbara, vorrei avere maggiori informazioni sui vostri servizi di catering.";
+        window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    };
+
     const handleHomeAiSubmit = () => {
         if (!homeAiPrompt.trim()) return;
         navigate('/quote', { state: { initialAiPrompt: homeAiPrompt } });
+        window.scrollTo(0, 0);
     };
 
     return (
@@ -517,7 +524,10 @@ const Home = () => {
                         <button
                             className="btn btn-primary"
                             style={{ padding: '0.8rem 2rem', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}
-                            onClick={() => navigate('/quote')}
+                            onClick={() => {
+                                navigate('/quote');
+                                window.scrollTo(0, 0);
+                            }}
                         >
                             Crealo!
                         </button>
@@ -687,10 +697,49 @@ const Home = () => {
                             <h3 style={{ margin: 0, fontSize: '1.5rem' }}>Contatti</h3>
                         </div>
                         <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
-                            📞 Telefono: <a href="tel:+393495416637" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>+39 349 541 6637</a><br /><br />
-                            ✉️ Email: <a href="mailto:info@musecatering.it" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>info@musecatering.it</a><br /><br />
                             Siamo a tua disposizione per qualsiasi richiesta o per organizzare il tuo prossimo evento perfetto.
                         </p>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+                            <button
+                                onClick={contactWhatsApp}
+                                className="btn btn-primary"
+                                style={{ 
+                                    width: '100%', 
+                                    padding: '0.8rem 1rem', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    gap: '0.75rem',
+                                    borderRadius: '50px',
+                                    fontSize: '1rem'
+                                }}
+                            >
+                                <MessageCircle size={20} />
+                                WhatsApp
+                            </button>
+
+                            <button
+                                onClick={() => window.open('https://www.instagram.com/muse_catering_?igsh=amNwajZrcW5kczAx', '_blank')}
+                                className="btn btn-outline"
+                                style={{ 
+                                    width: '100%', 
+                                    padding: '0.8rem 1rem', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    gap: '0.75rem',
+                                    borderRadius: '50px',
+                                    fontSize: '1rem',
+                                    border: '1px solid var(--color-primary)',
+                                    color: 'var(--color-primary)',
+                                    background: 'transparent'
+                                }}
+                            >
+                                <Instagram size={20} />
+                                Instagram
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>

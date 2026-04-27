@@ -3,6 +3,10 @@ import QuoteBuilder from '../components/Quote/QuoteBuilder';
 import Header from '../components/Layout/Header';
 
 const CreateQuote = () => {
+    React.useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     return (
         <div className="container fade-in" style={{ paddingBottom: '5rem' }}>
             <Header />
