@@ -354,7 +354,7 @@ const QuoteBuilder = () => {
 
                 <div style={{ 
                     position: 'sticky', 
-                    top: '0', 
+                    top: '10px', 
                     zIndex: 500, 
                     backgroundColor: 'transparent',
                     padding: '0.5rem 0 1rem',
