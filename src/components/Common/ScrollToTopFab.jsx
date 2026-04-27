@@ -4,6 +4,7 @@ import { ArrowUp } from 'lucide-react';
 
 const ScrollToTopFab = () => {
     const [isVisible, setIsVisible] = useState(false);
+    const [isCartVisible, setIsCartVisible] = useState(false);
     const location = useLocation();
     const isQuotePage = location.pathname === '/quote';
 
@@ -13,6 +14,18 @@ const ScrollToTopFab = () => {
             setIsVisible(true);
         } else {
             setIsVisible(false);
+        }
+
+        // Check if mobile cart FAB is present and visible in the DOM
+        if (isQuotePage) {
+            const cartFab = document.getElementById('mobile-cart-fab');
+            if (cartFab) {
+                const style = window.getComputedStyle(cartFab);
+                const isPresent = style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+                setIsCartVisible(isPresent);
+            } else {
+                setIsCartVisible(false);
+            }
         }
     };
 
@@ -25,15 +38,17 @@ const ScrollToTopFab = () => {
 
     useEffect(() => {
         window.addEventListener('scroll', toggleVisibility);
+        // Also check on mount/location change
+        toggleVisibility();
         return () => window.removeEventListener('scroll', toggleVisibility);
-    }, []);
+    }, [location.pathname]);
 
     return (
         <div 
             className={`scroll-to-top ${isVisible ? 'visible' : ''}`}
             style={{
                 position: 'fixed',
-                bottom: isQuotePage ? '7.5rem' : '2rem',
+                bottom: (isQuotePage && isCartVisible) ? '8.5rem' : '2rem',
                 right: '2rem',
                 zIndex: 2000,
                 opacity: isVisible ? 1 : 0,
@@ -46,20 +61,20 @@ const ScrollToTopFab = () => {
                 onClick={scrollToTop}
                 className="btn btn-primary"
                 style={{
-                    width: '50px',
-                    height: '50px',
+                    width: '70px',
+                    height: '70px',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     padding: 0,
-                    boxShadow: '0 4px 12px rgba(155, 57, 61, 0.3)',
+                    boxShadow: '0 4px 15px rgba(155, 57, 61, 0.4)',
                     border: 'none',
                     cursor: 'pointer'
                 }}
                 aria-label="Torna in alto"
             >
-                <ArrowUp size={24} />
+                <ArrowUp size={32} />
             </button>
         </div>
     );
