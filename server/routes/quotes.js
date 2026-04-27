@@ -79,7 +79,13 @@ router.post('/ai-generate', async (req, res) => {
     const isAdmin = source === 'admin';
 
     try {
-        const productsResult = await pool.query('SELECT * FROM products');
+        // Public users should only see visible and non-expired products
+        let query = 'SELECT * FROM products';
+        if (!isAdmin) {
+            query += ' WHERE is_visible = true AND (hide_at IS NULL OR hide_at > NOW())';
+        }
+        
+        const productsResult = await pool.query(query);
         const productsList = productsResult.rows.map(p => ({
             id: p.id,
             name: p.name,
