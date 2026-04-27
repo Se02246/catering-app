@@ -604,18 +604,27 @@ const Home = () => {
 
                     {/* Card 2: Dove siamo */}
                     <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', animationDelay: '0.1s', overflow: 'hidden' }}>
-                        <img
-                            src="/where.jpeg"
-                            alt="Dove Siamo - Servizio a domicilio"
-                            style={{ width: '100%', height: '200px', objectFit: 'cover', flexShrink: 0 }}
-                        />
+                        <a 
+                            href="https://www.google.com/maps/place/08020+Irgoli+NU/@40.4106195,9.6115904,15z/data=!3m1!4b1!4m6!3m5!1s0x12deede3d3e26b93:0x7986762e93de8660!8m2!3d40.4088282!4d9.6302764!16zL20vMGdxdm1j?entry=ttu&g_ep=EgoyMDI2MDQyMi4wIKXMDSoASAFQAw%3D%3D" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            style={{ display: 'block', height: '200px' }}
+                        >
+                            <img
+                                src="/where.jpeg"
+                                alt="Dove Siamo - Servizio a domicilio"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', flexShrink: 0, transition: 'transform 0.3s ease' }}
+                                className="card-hover-img"
+                            />
+                        </a>
                         <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-primary-dark)' }}>
                                 <MapPin size={28} />
                                 <h3 style={{ margin: 0, fontSize: '1.5rem' }}>Dove Siamo</h3>
                             </div>
                             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
-                                Al momento non disponiamo di una sede fisica aperta al pubblico, in quanto siamo specializzati esclusivamente in <strong>catering a domicilio</strong>. Non devi preoccuparti di nulla: portiamo noi la nostra cucina <strong>direttamente a casa tua</strong> o nella location che hai scelto per il tuo evento.
+                                Al momento non disponiamo di una sede fisica aperta al pubblico, in quanto siamo specializzati esclusivamente in <strong>catering a domicilio</strong>. Non devi preoccuparti di nulla: portiamo noi la nostra cucina <strong>direttamente a casa tua</strong> o nella location che hai scelto per il tuo evento.<br /><br />
+                                <strong>Consegnamo in tutta la provincia di nuoro e anche oltre!</strong>
                             </p>
                         </div>
                     </div>
