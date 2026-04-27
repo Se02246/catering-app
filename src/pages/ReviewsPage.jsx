@@ -36,7 +36,7 @@ const ReviewsPage = () => {
         }
     }, [isGalleryOpen]);
     const [newReview, setNewReview] = useState({
-        author_name: '',
+        title: '',
         rating: 5,
         comment: '',
         images: []
@@ -106,7 +106,7 @@ const ReviewsPage = () => {
 
     const handleSaveReview = async (e) => {
         e.preventDefault();
-        if (!newReview.author_name || !newReview.comment) {
+        if (!newReview.title || !newReview.comment) {
             setMessage({ type: 'error', text: 'Per favore, compila tutti i campi obbligatori.' });
             return;
         }
@@ -120,7 +120,7 @@ const ReviewsPage = () => {
             setMessage({ type: 'success', text: 'Grazie! La tua recensione è stata pubblicata.' });
             setTimeout(() => {
                 setIsModalOpen(false);
-                setNewReview({ author_name: '', rating: 5, comment: '', images: [] });
+                setNewReview({ title: '', rating: 5, comment: '', images: [] });
                 setMessage(null);
             }, 2000);
         } catch (err) {
@@ -383,12 +383,12 @@ const ReviewsPage = () => {
 
                             <form id="review-form" onSubmit={handleSaveReview}>
                                 <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Nome e Cognome *</label>
+                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Riassunto recensione *</label>
                                     <input
                                         type="text"
-                                        value={newReview.author_name}
-                                        onChange={e => setNewReview({ ...newReview, author_name: e.target.value })}
-                                        placeholder="Esempio: Mario Rossi"
+                                        value={newReview.title}
+                                        onChange={e => setNewReview({ ...newReview, title: e.target.value })}
+                                        placeholder="Esempio: Servizio eccezionale!"
                                         required
                                         className="input-elegant"
                                         style={{ width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '1rem' }}
