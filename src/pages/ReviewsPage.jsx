@@ -106,8 +106,8 @@ const ReviewsPage = () => {
 
     const handleSaveReview = async (e) => {
         e.preventDefault();
-        if (!newReview.title || !newReview.comment) {
-            setMessage({ type: 'error', text: 'Per favore, compila tutti i campi obbligatori.' });
+        if (!newReview.title) {
+            setMessage({ type: 'error', text: 'Per favore, inserisci un riassunto per la recensione.' });
             return;
         }
 
@@ -421,12 +421,11 @@ const ReviewsPage = () => {
                                 </div>
 
                                 <div style={{ marginBottom: '1.5rem' }}>
-                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Recensione *</label>
+                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Recensione (Opzionale)</label>
                                     <textarea
                                         value={newReview.comment}
                                         onChange={e => setNewReview({ ...newReview, comment: e.target.value })}
                                         placeholder="Descrivi la tua esperienza con Muse Catering..."
-                                        required
                                         rows={5}
                                         className="input-elegant"
                                         style={{ width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', resize: 'none', fontSize: '1rem', lineHeight: '1.5' }}

@@ -31,8 +31,10 @@ export const sendReviewNotification = async (review, frontendUrl) => {
                     <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
                         <p><strong>Titolo:</strong> ${review.title}</p>
                         <p><strong>Valutazione:</strong> ${review.rating} / 5 ⭐</p>
-                        <p><strong>Commento:</strong></p>
+                        ${review.comment ? `
+                        <p><strong>Recensione completa:</strong></p>
                         <p style="font-style: italic; color: #555;">"${review.comment}"</p>
+                        ` : ''}
                         ${review.images && review.images.length > 0 ? `
                         <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
                             <p style="margin-bottom: 10px;"><strong>Foto Allegate:</strong></p>

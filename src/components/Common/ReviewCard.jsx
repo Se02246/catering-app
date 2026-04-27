@@ -56,17 +56,19 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                 </div>
             </div>
 
-            <p style={{ 
-                margin: 0, 
-                color: 'var(--color-text)', 
-                fontSize: '0.95rem', 
-                lineHeight: '1.6',
-                fontStyle: 'italic',
-                flexGrow: 1,
-                whiteSpace: 'pre-line'
-            }}>
-                "{comment}"
-            </p>
+            {comment && (
+                <p style={{ 
+                    margin: 0, 
+                    color: 'var(--color-text)', 
+                    fontSize: '0.95rem', 
+                    lineHeight: '1.6',
+                    fontStyle: 'italic',
+                    flexGrow: 1,
+                    whiteSpace: 'pre-line'
+                }}>
+                    "{comment}"
+                </p>
+            )}
 
             {images && images.length > 0 && (
                 <div style={{ position: 'relative', marginTop: '0.5rem', borderRadius: '12px', overflow: 'hidden', aspectRatio: '4/5' }}>
