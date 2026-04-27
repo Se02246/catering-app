@@ -355,18 +355,18 @@ const QuoteBuilder = () => {
                 <div style={{ 
                     position: 'sticky', 
                     top: '0', 
-                    zIndex: 100, 
-                    backgroundColor: 'var(--color-bg)',
+                    zIndex: 500, 
+                    backgroundColor: 'transparent',
                     padding: '0.5rem 0 1rem',
                     margin: '0 0 1rem'
                 }}>
                     <div style={{ 
                         position: 'relative',
                         backdropFilter: 'blur(10px)',
-                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.5)',
                         borderRadius: 'var(--radius-lg)',
-                        boxShadow: 'var(--shadow-md)',
-                        border: '1px solid rgba(155, 57, 61, 0.1)'
+                        boxShadow: 'var(--shadow-sm)',
+                        border: '1px solid rgba(155, 57, 61, 0.05)'
                     }}>
                         <Search style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-accent)' }} size={20} />
                         <input 
