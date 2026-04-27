@@ -12,6 +12,7 @@ const PackageCard = ({ pkg, index, openPackage }) => {
     const [isInView, setIsInView] = React.useState(false);
     const [isHovered, setIsHovered] = React.useState(false);
     const [currentImgIndex, setCurrentImgIndex] = React.useState(0);
+    const [prevImgIndex, setPrevImgIndex] = React.useState(null);
     const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
 
     React.useEffect(() => {
@@ -42,10 +43,14 @@ const PackageCard = ({ pkg, index, openPackage }) => {
         if (shouldAnimate && pkg.images && pkg.images.length > 1) {
             timer = setTimeout(() => {
                 interval = setInterval(() => {
-                    setCurrentImgIndex(prev => (prev + 1) % pkg.images.length);
+                    setCurrentImgIndex(prev => {
+                        setPrevImgIndex(prev);
+                        return (prev + 1) % pkg.images.length;
+                    });
                 }, 2000);
             }, 2000);
         } else {
+            setPrevImgIndex(null);
             setCurrentImgIndex(0);
         }
         return () => {
@@ -80,12 +85,12 @@ const PackageCard = ({ pkg, index, openPackage }) => {
                             width: '100%', 
                             height: '100%', 
                             objectFit: 'cover', 
-                            transition: 'opacity 1s ease-in-out, transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1)',
-                            opacity: currentImgIndex === i ? 1 : 0,
+                            transition: currentImgIndex === i ? 'opacity 1s ease-in-out, transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1)' : 'none',
+                            opacity: (currentImgIndex === i || prevImgIndex === i) ? 1 : 0,
                             position: i === 0 ? 'relative' : 'absolute',
                             top: 0,
                             left: 0,
-                            zIndex: currentImgIndex === i ? 1 : 0
+                            zIndex: currentImgIndex === i ? 2 : (prevImgIndex === i ? 1 : 0)
                         }}
                         className="card-hover-img"
                     />
@@ -123,6 +128,123 @@ const PackageCard = ({ pkg, index, openPackage }) => {
                     </button>
                 </div>
             </div>
+        </div>
+    );
+};
+
+const InfiniteReviewsCarousel = ({ reviews }) => {
+    const [isPaused, setIsPaused] = React.useState(false);
+    const carouselRef = React.useRef(null);
+    const pauseTimeoutRef = React.useRef(null);
+    const scrollTimeoutRef = React.useRef(null);
+    
+    const displayReviews = reviews.slice(0, 20);
+    // Duplicate the array to create an infinite loop effect: [Set 1, Set 2, Set 3]
+    const tripleReviews = [...displayReviews, ...displayReviews, ...displayReviews];
+
+    React.useEffect(() => {
+        // Set initial scroll to the middle set
+        if (carouselRef.current && displayReviews.length > 0) {
+            const container = carouselRef.current;
+            // Wait a brief moment to ensure DOM is fully rendered and CSS is applied
+            setTimeout(() => {
+                const firstCard = container.children[0];
+                if (firstCard) {
+                    const cardWidth = firstCard.offsetWidth;
+                    const gap = 24; // 1.5rem = 24px
+                    const singleSetWidth = (cardWidth + gap) * displayReviews.length;
+                    
+                    // Temporarily disable scroll snap for the initial jump
+                    container.style.scrollSnapType = 'none';
+                    container.scrollLeft = singleSetWidth;
+                    
+                    // Force reflow and re-enable snap
+                    void container.offsetWidth;
+                    container.style.scrollSnapType = 'x mandatory';
+                }
+            }, 100);
+        }
+    }, [displayReviews.length]);
+
+    const handleInteraction = () => {
+        setIsPaused(true);
+        if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+        pauseTimeoutRef.current = setTimeout(() => {
+            setIsPaused(false);
+        }, 12000); // 12 seconds pause
+    };
+
+    React.useEffect(() => {
+        if (isPaused || displayReviews.length === 0) return;
+
+        const interval = setInterval(() => {
+            if (carouselRef.current) {
+                const container = carouselRef.current;
+                const cardWidth = container.children[0]?.offsetWidth || 320;
+                const gap = 24;
+                
+                container.scrollBy({ left: cardWidth + gap, behavior: 'smooth' });
+            }
+        }, 6000); // Scroll every 6 seconds
+
+        return () => clearInterval(interval);
+    }, [isPaused, displayReviews.length]);
+
+    const handleScroll = () => {
+        if (!carouselRef.current || displayReviews.length === 0) return;
+        
+        const container = carouselRef.current;
+        const cardWidth = container.children[0]?.offsetWidth || 320;
+        const gap = 24;
+        const singleSetWidth = (cardWidth + gap) * displayReviews.length;
+
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+
+        // Wait until scrolling stops before checking boundaries
+        scrollTimeoutRef.current = setTimeout(() => {
+            // If scrolled into the first set
+            if (container.scrollLeft < singleSetWidth - (cardWidth + gap)) {
+                container.style.scrollSnapType = 'none';
+                container.scrollLeft += singleSetWidth;
+                void container.offsetWidth;
+                container.style.scrollSnapType = 'x mandatory';
+            } 
+            // If scrolled into the third set
+            else if (container.scrollLeft > singleSetWidth * 2 - (cardWidth + gap) / 2) {
+                container.style.scrollSnapType = 'none';
+                container.scrollLeft -= singleSetWidth;
+                void container.offsetWidth;
+                container.style.scrollSnapType = 'x mandatory';
+            }
+        }, 150);
+    };
+
+    return (
+        <div 
+            ref={carouselRef}
+            onScroll={handleScroll}
+            onTouchStart={handleInteraction}
+            onMouseDown={handleInteraction}
+            onWheel={handleInteraction}
+            style={{
+                display: 'flex',
+                gap: '1.5rem',
+                overflowX: 'auto',
+                scrollSnapType: 'x mandatory',
+                paddingBottom: '1rem',
+                paddingLeft: 'calc(50% - 160px)',
+                paddingRight: 'calc(50% - 160px)',
+                scrollbarWidth: 'none',
+                WebkitOverflowScrolling: 'touch',
+                alignItems: 'stretch'
+            }}
+            className="no-scrollbar"
+        >
+            {tripleReviews.map((review, index) => (
+                <div key={`${review.id}-${index}`} style={{ scrollSnapAlign: 'center', scrollSnapStop: 'always', flexShrink: 0 }}>
+                    <ReviewCard review={review} layout="carousel" />
+                </div>
+            ))}
         </div>
     );
 };

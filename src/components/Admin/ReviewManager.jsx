@@ -79,7 +79,10 @@ const ReviewManager = () => {
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                                     <div>
-                                        <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--color-text)' }}>{review.author_name}</h4>
+                                        <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>{review.title}</h4>
+                                        <div style={{ fontSize: '0.9rem', color: 'var(--color-text)', marginTop: '0.2rem', fontWeight: 500 }}>
+                                            {review.author_name || 'Utente Anonimo'}
+                                        </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.2rem' }}>
                                             <div style={{ display: 'flex', gap: '2px' }}>
                                                 {[...Array(5)].map((_, i) => (
