@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Download, Utensils, FileText, MessageCircle, ArrowLeft, MessageSquare, Star } from 'lucide-react';
+import { Lock, Download, FileText, MessageCircle, ArrowLeft, MessageSquare, Star } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
 import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
@@ -8,8 +8,6 @@ import { useSetting } from '../../hooks/useData';
 const Header = ({ isReviewsPage = false }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const isHome = location.pathname === '/';
-    const isQuote = location.pathname === '/quote';
     const { showPrompt, handleInstallClick } = useInstallPromptContext();
     const { setting: headerSetting } = useSetting('header_text');
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
@@ -17,23 +15,6 @@ const Header = ({ isReviewsPage = false }) => {
     const headerText = headerSetting?.value || " ";
     const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false';
     const isLoggedIn = !!localStorage.getItem('token');
-
-    const scrollToPackages = () => {
-        if (isHome) {
-            const element = document.getElementById('packages');
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }
-        } else {
-            navigate('/');
-            setTimeout(() => {
-                const element = document.getElementById('packages');
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                }
-            }, 100);
-        }
-    };
 
     const scrollToQuote = () => {
         const performScroll = () => {
@@ -83,7 +64,7 @@ const Header = ({ isReviewsPage = false }) => {
 
             <h1 className="brand-logo">Muse Catering</h1>
 
-            {isReviewsPage && (
+            {(isReviewsPage || location.pathname === '/quote') && (
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
                     <button 
                         onClick={() => navigate('/')}
@@ -104,33 +85,23 @@ const Header = ({ isReviewsPage = false }) => {
                 </div>
             )}
             
-            {!isReviewsPage && (
+            {!(isReviewsPage || location.pathname === '/quote') && (
                 <>
-                    <div 
-                        className="header-description"
+                    <div className="header-description"
                         dangerouslySetInnerHTML={{ __html: formatCustomText(headerText) }}
                     />
 
-                    <div className="nav-container">
-                        {showQuoteBuilder && (
-                            <>
-                                <button
-                                    onClick={scrollToPackages}
-                                    className={`nav-btn ${isHome ? 'active' : ''}`}
-                                >
-                                    <Utensils size={20} />
-                                    Pacchetti
-                                </button>
-                                <button
-                                    onClick={scrollToQuote}
-                                    className={`nav-btn ${isQuote ? 'active' : ''}`}
-                                >
-                                    <FileText size={20} />
-                                    Preventivo
-                                </button>
-                            </>
-                        )}
-                    </div>
+                    {showQuoteBuilder && (
+                        <div style={{ textAlign: 'center', marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+                            <button
+                                onClick={scrollToQuote}
+                                className="btn btn-outline"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem', width: 'fit-content' }}
+                            >
+                                <FileText size={18} /> Crea il tuo preventivo
+                            </button>
+                        </div>
+                    )}
 
                     <div style={{ maxWidth: '400px', margin: '1.5rem auto 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>

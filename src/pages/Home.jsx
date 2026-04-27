@@ -5,7 +5,7 @@ import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import ReviewCard from '../components/Common/ReviewCard';
 import { formatCustomText } from '../utils/textFormatting';
-import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star, MapPin } from 'lucide-react';
 
 const PackageCard = ({ pkg, index, openPackage }) => {
     const cardRef = React.useRef(null);
@@ -557,17 +557,77 @@ const Home = () => {
                             </div>
                         )}
                         
-                        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                        <div style={{ textAlign: 'center', marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                             <button 
                                 className="btn btn-outline" 
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem' }}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem', width: 'fit-content' }}
                                 onClick={() => navigate('/recensioni')}
                             >
                                 <Star size={18} /> Leggi tutte le recensioni
                             </button>
+
+                            <button 
+                                className="btn btn-outline" 
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem', width: 'fit-content' }}
+                                onClick={() => {
+                                    const el = document.getElementById('chi-siamo');
+                                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                            >
+                                <MapPin size={18} /> Chi e Dove siamo
+                            </button>
                         </div>
                     </>
                 )}
+            </section>
+
+            {/* Chi Siamo Section */}
+            <section id="chi-siamo" style={{ marginTop: '5rem', marginBottom: '3rem' }}>
+                <div className="section-header">
+                    <h2>Chi e Dove siamo</h2>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>
+                        La nostra storia e dove trovarci per rendere speciale il tuo evento.
+                    </p>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginTop: '2rem' }}>
+                    {/* Card 1: La mia storia */}
+                    <div className="premium-card fade-in" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-primary-dark)' }}>
+                            <Info size={28} />
+                            <h3 style={{ margin: 0, fontSize: '1.5rem' }}>La Mia Storia</h3>
+                        </div>
+                        <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
+                            Mi chiamo Barbara, e la cucina è sempre stata parte della mia vita. Crescendo in una famiglia che adorava riunirsi attorno ai fornelli, ho imparato che il cibo non è solo nutrimento, ma un modo per creare legami e regalare emozioni. Negli anni, ho trasformato questa passione in una vera e propria arte, dedicandomi alla preparazione di torte per compleanni, catering di dolci e salati, e tante altre creazioni su misura. Oggi, con grande entusiasmo, ho deciso di aprire le porte della mia cucina al pubblico, offrendo le mie specialità a chi ama scoprire il sapore genuino delle cose fatte in casa.
+                        </p>
+                    </div>
+
+                    {/* Card 2: Dove siamo */}
+                    <div className="premium-card fade-in" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', animationDelay: '0.1s' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-primary-dark)' }}>
+                            <MapPin size={28} />
+                            <h3 style={{ margin: 0, fontSize: '1.5rem' }}>Dove Siamo</h3>
+                        </div>
+                        <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
+                            <strong>Muse Catering</strong><br/>
+                            Via Roma 123, 00100 Città (PR)<br/><br/>
+                            Vieni a trovarci per una consulenza personalizzata. Ti aspettiamo nel nostro laboratorio per scoprire tutte le nostre proposte.
+                        </p>
+                    </div>
+
+                    {/* Card 3: Contatti */}
+                    <div className="premium-card fade-in" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', animationDelay: '0.2s' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-primary-dark)' }}>
+                            <MessageSquare size={28} />
+                            <h3 style={{ margin: 0, fontSize: '1.5rem' }}>Contatti</h3>
+                        </div>
+                        <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
+                            📞 Telefono: <a href="tel:+393495416637" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>+39 349 541 6637</a><br/><br/>
+                            ✉️ Email: <a href="mailto:info@musecatering.it" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>info@musecatering.it</a><br/><br/>
+                            Siamo a tua disposizione per qualsiasi richiesta o per organizzare il tuo prossimo evento perfetto.
+                        </p>
+                    </div>
+                </div>
             </section>
 
             {selectedPackage && (
