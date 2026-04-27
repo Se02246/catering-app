@@ -550,27 +550,7 @@ const Home = () => {
                 ) : (
                     <>
                         {reviews && reviews.length > 0 ? (
-                            <div 
-                                style={{
-                                    display: 'flex',
-                                    gap: '1.5rem',
-                                    overflowX: 'auto',
-                                    scrollSnapType: 'x mandatory',
-                                    paddingBottom: '1rem',
-                                    paddingLeft: 'calc(50% - 160px)',
-                                    paddingRight: 'calc(50% - 160px)',
-                                    scrollbarWidth: 'none',
-                                    WebkitOverflowScrolling: 'touch',
-                                    alignItems: 'stretch'
-                                }}
-                                className="no-scrollbar"
-                            >
-                                {reviews.slice(0, 20).map((review, index) => (
-                                    <div key={review.id} style={{ animationDelay: `${index * 0.1}s`, scrollSnapAlign: 'center', scrollSnapStop: 'always' }} className="fade-in">
-                                        <ReviewCard review={review} layout="carousel" />
-                                    </div>
-                                ))}
-                            </div>
+                            <InfiniteReviewsCarousel reviews={reviews} />
                         ) : (
                             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
                                 <p>Non ci sono ancora recensioni. Torna a trovarci presto!</p>
