@@ -136,33 +136,51 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
     const [isPaused, setIsPaused] = React.useState(false);
     const carouselRef = React.useRef(null);
     const pauseTimeoutRef = React.useRef(null);
-    const scrollTimeoutRef = React.useRef(null);
+    const isScrollingRef = React.useRef(false);
+    const scrollEndTimeoutRef = React.useRef(null);
     
     const displayReviews = reviews.slice(0, 20);
-    // Duplicate the array to create an infinite loop effect: [Set 1, Set 2, Set 3]
-    const tripleReviews = [...displayReviews, ...displayReviews, ...displayReviews];
+    
+    // Use 7 sets to create huge buffers. Sets are 0, 1, 2, 3, 4, 5, 6.
+    // We will keep the user looping between Sets 2, 3, and 4.
+    // They will never see Set 0 (left padding) or Set 6 (right padding).
+    const MULTIPLIER = 7;
+    const CENTER_SET_INDEX = 3;
+    const repeatedReviews = Array(MULTIPLIER).fill(displayReviews).flat();
+
+    const getSetWidth = () => {
+        if (!carouselRef.current) return 0;
+        const container = carouselRef.current;
+        const firstCard = container.children[0];
+        if (!firstCard) return 0;
+        const cardWidth = firstCard.offsetWidth;
+        const gap = parseFloat(window.getComputedStyle(container).gap) || 24;
+        return (cardWidth + gap) * displayReviews.length;
+    };
 
     React.useEffect(() => {
-        // Set initial scroll to the middle set
         if (carouselRef.current && displayReviews.length > 0) {
-            const container = carouselRef.current;
-            // Wait a brief moment to ensure DOM is fully rendered and CSS is applied
-            setTimeout(() => {
-                const firstCard = container.children[0];
-                if (firstCard) {
-                    const cardWidth = firstCard.offsetWidth;
-                    const gap = 24; // 1.5rem = 24px
-                    const singleSetWidth = (cardWidth + gap) * displayReviews.length;
-                    
-                    // Temporarily disable scroll snap for the initial jump
+            const initScroll = () => {
+                const singleSetWidth = getSetWidth();
+                if (singleSetWidth > 0) {
+                    const container = carouselRef.current;
                     container.style.scrollSnapType = 'none';
-                    container.scrollLeft = singleSetWidth;
-                    
-                    // Force reflow and re-enable snap
+                    // Start exactly at the beginning of the center set (Set 3)
+                    container.scrollLeft = singleSetWidth * CENTER_SET_INDEX;
                     void container.offsetWidth;
                     container.style.scrollSnapType = 'x mandatory';
+                    return true;
                 }
-            }, 100);
+                return false;
+            };
+
+            // Try to initialize scroll. If elements aren't rendered with width yet, wait a bit.
+            if (!initScroll()) {
+                const intervalId = setInterval(() => {
+                    if (initScroll()) clearInterval(intervalId);
+                }, 100);
+                setTimeout(() => clearInterval(intervalId), 2000); // Stop trying after 2s
+            }
         }
     }, [displayReviews.length]);
 
@@ -171,21 +189,22 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
         if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
         pauseTimeoutRef.current = setTimeout(() => {
             setIsPaused(false);
-        }, 12000); // 12 seconds pause
+        }, 12000);
     };
 
     React.useEffect(() => {
         if (isPaused || displayReviews.length === 0) return;
 
         const interval = setInterval(() => {
-            if (carouselRef.current) {
+            if (carouselRef.current && !isScrollingRef.current) {
                 const container = carouselRef.current;
-                const cardWidth = container.children[0]?.offsetWidth || 320;
-                const gap = 24;
+                const firstCard = container.children[0];
+                const cardWidth = firstCard?.offsetWidth || 300;
+                const gap = parseFloat(window.getComputedStyle(container).gap) || 24;
                 
                 container.scrollBy({ left: cardWidth + gap, behavior: 'smooth' });
             }
-        }, 6000); // Scroll every 6 seconds
+        }, 6000);
 
         return () => clearInterval(interval);
     }, [isPaused, displayReviews.length]);
@@ -193,26 +212,31 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
     const handleScroll = () => {
         if (!carouselRef.current || displayReviews.length === 0) return;
         
+        isScrollingRef.current = true;
         const container = carouselRef.current;
-        const cardWidth = container.children[0]?.offsetWidth || 320;
-        const gap = 24;
-        const singleSetWidth = (cardWidth + gap) * displayReviews.length;
+        const singleSetWidth = getSetWidth();
+        if (singleSetWidth === 0) return;
 
-        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        if (scrollEndTimeoutRef.current) clearTimeout(scrollEndTimeoutRef.current);
 
-        // Wait until scrolling stops before checking boundaries
-        scrollTimeoutRef.current = setTimeout(() => {
-            // If scrolled into the first set
-            if (container.scrollLeft < singleSetWidth - (cardWidth + gap)) {
+        scrollEndTimeoutRef.current = setTimeout(() => {
+            isScrollingRef.current = false;
+            
+            const currentScroll = container.scrollLeft;
+
+            // If user scrolled left into Set 1 (or earlier)
+            if (currentScroll < singleSetWidth * 2) {
                 container.style.scrollSnapType = 'none';
-                container.scrollLeft += singleSetWidth;
+                // Jump forward 2 sets back into the safe zone
+                container.scrollLeft += singleSetWidth * 2; 
                 void container.offsetWidth;
                 container.style.scrollSnapType = 'x mandatory';
             } 
-            // If scrolled into the third set
-            else if (container.scrollLeft > singleSetWidth * 2 - (cardWidth + gap) / 2) {
+            // If user scrolled right into Set 5 (or later)
+            else if (currentScroll > singleSetWidth * 5) {
                 container.style.scrollSnapType = 'none';
-                container.scrollLeft -= singleSetWidth;
+                // Jump backward 2 sets back into the safe zone
+                container.scrollLeft -= singleSetWidth * 2; 
                 void container.offsetWidth;
                 container.style.scrollSnapType = 'x mandatory';
             }
@@ -240,8 +264,8 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
             }}
             className="no-scrollbar"
         >
-            {tripleReviews.map((review, index) => (
-                <div key={`${review.id}-${index}`} style={{ scrollSnapAlign: 'center', scrollSnapStop: 'always', flexShrink: 0 }}>
+            {repeatedReviews.map((review, index) => (
+                <div key={`${review.id}-${index}`} style={{ scrollSnapAlign: 'center', scrollSnapStop: 'always', flexShrink: 0, display: 'flex' }}>
                     <ReviewCard review={review} layout="carousel" />
                 </div>
             ))}
