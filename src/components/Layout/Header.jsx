@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Download, FileText, MessageCircle, ArrowLeft, MessageSquare, Star } from 'lucide-react';
+import { Lock, Download, FileText, MessageCircle, ArrowLeft, MessageSquare, Star, MapPin } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
 import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
@@ -91,18 +91,6 @@ const Header = ({ isReviewsPage = false }) => {
                         dangerouslySetInnerHTML={{ __html: formatCustomText(headerText) }}
                     />
 
-                    {showQuoteBuilder && (
-                        <div style={{ textAlign: 'center', marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
-                            <button
-                                onClick={scrollToQuote}
-                                className="btn btn-outline"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem', width: 'fit-content' }}
-                            >
-                                <FileText size={18} /> Crea il tuo preventivo
-                            </button>
-                        </div>
-                    )}
-
                     <div style={{ maxWidth: '400px', margin: '1.5rem auto 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
                             <button
@@ -150,6 +138,29 @@ const Header = ({ isReviewsPage = false }) => {
                             )}
                         </div>
 
+                        {showQuoteBuilder && (
+                            <button
+                                onClick={scrollToQuote}
+                                className="btn btn-outline"
+                                style={{ 
+                                    width: '100%', 
+                                    padding: '0.6rem 1rem', 
+                                    fontSize: '0.9rem', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    gap: '0.5rem',
+                                    borderRadius: '50px',
+                                    border: '1px solid var(--color-primary)',
+                                    color: 'var(--color-primary)',
+                                    background: 'transparent'
+                                }}
+                            >
+                                <FileText size={18} />
+                                Crea il tuo preventivo
+                            </button>
+                        )}
+
                         <button
                             onClick={() => navigate('/recensioni')}
                             className="btn btn-outline"
@@ -170,6 +181,36 @@ const Header = ({ isReviewsPage = false }) => {
                             <Star size={18} />
                             Recensioni
                         </button>
+
+                        <button
+                            onClick={() => {
+                                const el = document.getElementById('chi-siamo');
+                                if (el) {
+                                    const yOffset = -80; // Offset per lo scrolling
+                                    const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                                    window.scrollTo({ top: y, behavior: 'smooth' });
+                                } else {
+                                    navigate('/#chi-siamo');
+                                }
+                            }}
+                            className="btn btn-outline"
+                            style={{ 
+                                width: '100%', 
+                                padding: '0.6rem 1rem', 
+                                fontSize: '0.9rem', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                gap: '0.5rem',
+                                borderRadius: '50px',
+                                border: '1px solid var(--color-primary)',
+                                color: 'var(--color-primary)',
+                                background: 'transparent'
+                            }}
+                        >
+                            <MapPin size={18} />
+                            Chi e Dove siamo
+                        </button>
                     </div>
                 </>
             )}
@@ -178,3 +219,4 @@ const Header = ({ isReviewsPage = false }) => {
 };
 
 export default Header;
+

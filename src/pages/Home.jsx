@@ -605,10 +605,10 @@ const Home = () => {
                     {/* Card 2: Dove siamo */}
                     <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', animationDelay: '0.1s', overflow: 'hidden' }}>
                         <a 
-                            href="https://www.google.com/maps/place/08020+Irgoli+NU/@40.4106195,9.6115904,15z/data=!3m1!4b1!4m6!3m5!1s0x12deede3d3e26b93:0x7986762e93de8660!8m2!3d40.4088282!4d9.6302764!16zL20vMGdxdm1j?entry=ttu&g_ep=EgoyMDI2MDQyMi4wIKXMDSoASAFQAw%3D%3D" 
+                            href="https://maps.app.goo.gl/AJnNk1cq5XKT6qVk6g_st=ac" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            style={{ display: 'block', height: '200px' }}
+                            style={{ display: 'block', height: '350px' }}
                         >
                             <img
                                 src="/where.jpeg"
