@@ -189,7 +189,7 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
         if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
         pauseTimeoutRef.current = setTimeout(() => {
             setIsPaused(false);
-        }, 12000);
+        }, 8000);
     };
 
     React.useEffect(() => {
@@ -204,7 +204,7 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
                 
                 container.scrollBy({ left: cardWidth + gap, behavior: 'smooth' });
             }
-        }, 6000);
+        }, 5000);
 
         return () => clearInterval(interval);
     }, [isPaused, displayReviews.length]);
