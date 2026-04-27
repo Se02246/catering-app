@@ -81,10 +81,10 @@ const PackageCard = ({ pkg, index, openPackage }) => {
                         key={i}
                         src={img}
                         alt={pkg.name}
-                        style={{ 
-                            width: '100%', 
-                            height: '100%', 
-                            objectFit: 'cover', 
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
                             transition: currentImgIndex === i ? 'opacity 1s ease-in-out, transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1)' : 'none',
                             opacity: (currentImgIndex === i || prevImgIndex === i) ? 1 : 0,
                             position: i === 0 ? 'relative' : 'absolute',
@@ -104,8 +104,8 @@ const PackageCard = ({ pkg, index, openPackage }) => {
                 </div>
 
                 <h3 className="card-title">{pkg.name}</h3>
-                
-                <div 
+
+                <div
                     className="card-text"
                     dangerouslySetInnerHTML={{ __html: formatCustomText(pkg.description) }}
                 />
@@ -138,9 +138,9 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
     const pauseTimeoutRef = React.useRef(null);
     const isScrollingRef = React.useRef(false);
     const scrollEndTimeoutRef = React.useRef(null);
-    
+
     const displayReviews = reviews.slice(0, 20);
-    
+
     // Use 7 sets to create huge buffers. Sets are 0, 1, 2, 3, 4, 5, 6.
     // We will keep the user looping between Sets 2, 3, and 4.
     // They will never see Set 0 (left padding) or Set 6 (right padding).
@@ -201,7 +201,7 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
                 const firstCard = container.children[0];
                 const cardWidth = firstCard?.offsetWidth || 300;
                 const gap = parseFloat(window.getComputedStyle(container).gap) || 24;
-                
+
                 container.scrollBy({ left: cardWidth + gap, behavior: 'smooth' });
             }
         }, 5000);
@@ -211,7 +211,7 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
 
     const handleScroll = () => {
         if (!carouselRef.current || displayReviews.length === 0) return;
-        
+
         isScrollingRef.current = true;
         const container = carouselRef.current;
         const singleSetWidth = getSetWidth();
@@ -221,22 +221,22 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
 
         scrollEndTimeoutRef.current = setTimeout(() => {
             isScrollingRef.current = false;
-            
+
             const currentScroll = container.scrollLeft;
 
             // If user scrolled left into Set 1 (or earlier)
             if (currentScroll < singleSetWidth * 2) {
                 container.style.scrollSnapType = 'none';
                 // Jump forward 2 sets back into the safe zone
-                container.scrollLeft += singleSetWidth * 2; 
+                container.scrollLeft += singleSetWidth * 2;
                 void container.offsetWidth;
                 container.style.scrollSnapType = 'x mandatory';
-            } 
+            }
             // If user scrolled right into Set 5 (or later)
             else if (currentScroll > singleSetWidth * 5) {
                 container.style.scrollSnapType = 'none';
                 // Jump backward 2 sets back into the safe zone
-                container.scrollLeft -= singleSetWidth * 2; 
+                container.scrollLeft -= singleSetWidth * 2;
                 void container.offsetWidth;
                 container.style.scrollSnapType = 'x mandatory';
             }
@@ -244,7 +244,7 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
     };
 
     return (
-        <div 
+        <div
             ref={carouselRef}
             onScroll={handleScroll}
             onTouchStart={handleInteraction}
@@ -278,7 +278,7 @@ const Home = () => {
     const { caterings, isLoading, isError } = useCaterings();
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
     const { reviews, isLoading: isReviewsLoading } = useReviews();
-    
+
     const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false';
 
     // Statistics for Reviews Summary
@@ -288,7 +288,7 @@ const Home = () => {
         const total = reviews.length;
         const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
         const avg = (sum / total).toFixed(1);
-        
+
         const recommendedCount = reviews.filter(r => r.rating >= 4).length;
         const rate = Math.round((recommendedCount / total) * 100);
 
@@ -311,7 +311,7 @@ const Home = () => {
     const [selectedProduct, setSelectedProduct] = React.useState(null);
     const [isPackageClosing, setIsPackageClosing] = React.useState(false);
     const [isProductClosing, setIsProductClosing] = React.useState(false);
-    
+
     // Swipe to close logic for Package Modal
     const [packageDragY, setPackageDragY] = React.useState(0);
     const [isPackageDragging, setIsPackageDragging] = React.useState(false);
@@ -340,7 +340,7 @@ const Home = () => {
             }
             return;
         }
-        
+
         if (deltaY > 0) {
             setPackageDragY(deltaY);
             if (e.cancelable) e.preventDefault();
@@ -507,8 +507,8 @@ const Home = () => {
                         <p style={{ color: 'var(--color-text-muted)', fontSize: '1rem', maxWidth: '600px', margin: '0 auto 1.5rem' }}>
                             Crea il tuo preventivo personalizzato scegliendo i singoli prodotti dal nostro catalogo.
                         </p>
-                        <button 
-                            className="btn btn-primary" 
+                        <button
+                            className="btn btn-primary"
                             style={{ padding: '0.8rem 2rem', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.75rem' }}
                             onClick={() => navigate('/quote')}
                         >
@@ -556,18 +556,18 @@ const Home = () => {
                                 <p>Non ci sono ancora recensioni. Torna a trovarci presto!</p>
                             </div>
                         )}
-                        
+
                         <div style={{ textAlign: 'center', marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-                            <button 
-                                className="btn btn-outline" 
+                            <button
+                                className="btn btn-outline"
                                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem', width: 'fit-content' }}
                                 onClick={() => navigate('/recensioni')}
                             >
                                 <Star size={18} /> Leggi tutte le recensioni
                             </button>
 
-                            <button 
-                                className="btn btn-outline" 
+                            <button
+                                className="btn btn-outline"
                                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem', width: 'fit-content' }}
                                 onClick={() => {
                                     const el = document.getElementById('chi-siamo');
@@ -589,7 +589,7 @@ const Home = () => {
                         La nostra storia e dove trovarci per rendere speciale il tuo evento.
                     </p>
                 </div>
-                
+
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginTop: '2rem' }}>
                     {/* Card 1: La mia storia */}
                     <div className="premium-card fade-in" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -603,16 +603,21 @@ const Home = () => {
                     </div>
 
                     {/* Card 2: Dove siamo */}
-                    <div className="premium-card fade-in" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', animationDelay: '0.1s' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-primary-dark)' }}>
-                            <MapPin size={28} />
-                            <h3 style={{ margin: 0, fontSize: '1.5rem' }}>Dove Siamo</h3>
+                    <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', animationDelay: '0.1s', overflow: 'hidden' }}>
+                        <img
+                            src="/where.jpeg"
+                            alt="Dove Siamo - Servizio a domicilio"
+                            style={{ width: '100%', height: '200px', objectFit: 'cover', flexShrink: 0 }}
+                        />
+                        <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-primary-dark)' }}>
+                                <MapPin size={28} />
+                                <h3 style={{ margin: 0, fontSize: '1.5rem' }}>Dove Siamo</h3>
+                            </div>
+                            <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
+                                Al momento non disponiamo di una sede fisica aperta al pubblico, in quanto siamo specializzati esclusivamente in <strong>catering a domicilio</strong>. Non devi preoccuparti di nulla: portiamo noi la nostra cucina <strong>direttamente a casa tua</strong> o nella location che hai scelto per il tuo evento.
+                            </p>
                         </div>
-                        <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
-                            <strong>Muse Catering</strong><br/>
-                            Via Roma 123, 00100 Città (PR)<br/><br/>
-                            Vieni a trovarci per una consulenza personalizzata. Ti aspettiamo nel nostro laboratorio per scoprire tutte le nostre proposte.
-                        </p>
                     </div>
 
                     {/* Card 3: Contatti */}
@@ -622,8 +627,8 @@ const Home = () => {
                             <h3 style={{ margin: 0, fontSize: '1.5rem' }}>Contatti</h3>
                         </div>
                         <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
-                            📞 Telefono: <a href="tel:+393495416637" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>+39 349 541 6637</a><br/><br/>
-                            ✉️ Email: <a href="mailto:info@musecatering.it" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>info@musecatering.it</a><br/><br/>
+                            📞 Telefono: <a href="tel:+393495416637" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>+39 349 541 6637</a><br /><br />
+                            ✉️ Email: <a href="mailto:info@musecatering.it" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>info@musecatering.it</a><br /><br />
                             Siamo a tua disposizione per qualsiasi richiesta o per organizzare il tuo prossimo evento perfetto.
                         </p>
                     </div>
@@ -631,16 +636,16 @@ const Home = () => {
             </section>
 
             {selectedPackage && (
-                <div 
-                    className={`modal-overlay ${isPackageClosing ? 'closing' : ''}`} 
-                    onClick={closePackage} 
+                <div
+                    className={`modal-overlay ${isPackageClosing ? 'closing' : ''}`}
+                    onClick={closePackage}
                     style={{ zIndex: 3000 }}
                 >
-                    <div 
-                        style={{ 
-                            position: 'relative', 
-                            width: '100%', 
-                            maxWidth: '800px', 
+                    <div
+                        style={{
+                            position: 'relative',
+                            width: '100%',
+                            maxWidth: '800px',
                             margin: 'auto',
                             touchAction: 'none'
                         }}
@@ -648,10 +653,10 @@ const Home = () => {
                     >
                         {/* Package Badge outside modal-content to prevent clipping */}
                         {selectedPackage.hide_at && (
-                            <div 
-                                className={`package-badge ${isPackageClosing ? 'closing' : ''}`} 
-                                style={{ 
-                                    top: '-12px', 
+                            <div
+                                className={`package-badge ${isPackageClosing ? 'closing' : ''}`}
+                                style={{
+                                    top: '-12px',
                                     right: '-5px',
                                     zIndex: 3010,
                                     position: 'absolute',
@@ -665,10 +670,10 @@ const Home = () => {
 
                         <div
                             className={`modal-content ${isPackageClosing && !isPackageSwipingOut ? 'closing' : ''}`}
-                            style={{ 
-                                width: '100%', 
-                                maxWidth: '800px', 
-                                padding: '0', 
+                            style={{
+                                width: '100%',
+                                maxWidth: '800px',
+                                padding: '0',
                                 overflow: 'hidden',
                                 transform: packageDragY > 0 ? `translate3d(0, ${packageDragY}px, 0)` : '',
                                 transition: isPackageDragging ? 'none' : 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease',
@@ -680,7 +685,7 @@ const Home = () => {
                             onTouchEnd={handlePackageTouchEnd}
                         >
                             {/* Floating Back Button */}
-                            <button 
+                            <button
                                 onClick={closePackage}
                                 style={{
                                     position: 'absolute', top: '1rem', left: '1rem',
@@ -695,13 +700,13 @@ const Home = () => {
                                 <ChevronLeft size={24} />
                             </button>
 
-                            <div 
+                            <div
                                 ref={packageScrollAreaRef}
                                 className="modal-scroll-area"
                             >
                                 {/* Left Side: Image Gallery */}
                                 <div className="package-modal-image-side" style={{ width: '100%', position: 'relative' }}>
-                                    <div 
+                                    <div
                                         onScroll={handleGalleryScroll}
                                         style={{
                                             display: 'flex',
@@ -715,18 +720,18 @@ const Home = () => {
                                     >
                                         {selectedPackage.images && selectedPackage.images.length > 0 ? (
                                             selectedPackage.images.map((img, idx) => (
-                                                <div key={idx} style={{ 
-                                                    minWidth: '100%', 
-                                                    height: '100%', 
+                                                <div key={idx} style={{
+                                                    minWidth: '100%',
+                                                    height: '100%',
                                                     scrollSnapAlign: 'start',
                                                     scrollSnapStop: 'always'
                                                 }}>
                                                     <img
                                                         src={img}
                                                         alt={`${selectedPackage.name} ${idx + 1}`}
-                                                        style={{ 
-                                                            width: '100%', 
-                                                            height: '100%', 
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '100%',
                                                             objectFit: 'cover',
                                                             display: 'block'
                                                         }}
@@ -786,7 +791,7 @@ const Home = () => {
                                             <h2 style={{ fontSize: window.innerWidth > 768 ? '2.2rem' : '1.8rem', color: 'var(--color-primary-dark)', marginBottom: '1.2rem', lineHeight: '1.1' }}>
                                                 {selectedPackage.name}
                                             </h2>
-                                            <div 
+                                            <div
                                                 style={{ fontSize: '1.05rem', lineHeight: '1.7', color: 'var(--color-text-muted)' }}
                                                 dangerouslySetInnerHTML={{ __html: formatCustomText(selectedPackage.description) }}
                                             />
@@ -796,7 +801,7 @@ const Home = () => {
                                             <div style={{ width: '25px', height: '2px', background: 'var(--color-accent)' }}></div>
                                             Incluso nel pacchetto
                                         </h3>
-                                        
+
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '2.5rem' }}>
                                             {selectedPackage.items && selectedPackage.items.map((item, idx) => (
                                                 <div
@@ -842,7 +847,7 @@ const Home = () => {
                                                         </div>
                                                         <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 800, marginTop: '0.2rem' }}>
                                                             {item.is_sold_by_piece
-                                                                ? `${parseFloat(item.quantity)} pz` 
+                                                                ? `${parseFloat(item.quantity)} pz`
                                                                 : `${parseFloat(item.quantity)} kg`
                                                             }
                                                         </div>
@@ -852,10 +857,10 @@ const Home = () => {
                                             ))}
                                         </div>
 
-                                        <div style={{ 
+                                        <div style={{
                                             padding: '2rem 0 0.5rem',
                                             borderTop: '1px solid rgba(155, 57, 61, 0.1)',
-                                            display: 'flex', 
+                                            display: 'flex',
                                             flexDirection: 'column',
                                             gap: '1.2rem'
                                         }}>
@@ -872,9 +877,9 @@ const Home = () => {
                                                     <span className="price-main" style={{ fontSize: '2.4rem' }}>€ {selectedPackage.total_price}</span>
                                                 )}
                                             </div>
-                                            <button 
-                                                className="btn btn-primary" 
-                                                style={{ padding: '1.2rem', fontSize: '1.1rem' }} 
+                                            <button
+                                                className="btn btn-primary"
+                                                style={{ padding: '1.2rem', fontSize: '1.1rem' }}
                                                 onClick={() => handleBookPackage(selectedPackage)}
                                             >
                                                 Prenota Ora
@@ -887,7 +892,7 @@ const Home = () => {
                     </div>
                 </div>
             )}
-            
+
             {selectedProduct && (
                 <ProductDetailsModal
                     product={selectedProduct}
