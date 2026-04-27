@@ -37,11 +37,17 @@ const ReviewsPage = () => {
     }, [isGalleryOpen]);
     const [newReview, setNewReview] = useState({
         title: '',
+        author_name: '',
         rating: 5,
         comment: '',
         images: []
     });
-    const [message, setMessage] = useState(null);
+    const [toast, setToast] = useState(null);
+
+    const showToast = (message, type) => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 4000);
+    };
 
     // Extract unique years for the filter dropdown
     const availableYears = useMemo(() => {
@@ -107,25 +113,25 @@ const ReviewsPage = () => {
     const handleSaveReview = async (e) => {
         e.preventDefault();
         if (!newReview.title) {
-            setMessage({ type: 'error', text: 'Per favore, inserisci un riassunto per la recensione.' });
+            showToast('Per favore, compila il titolo della recensione.', 'error');
             return;
         }
 
         setIsSaving(true);
-        setMessage(null);
 
         try {
             await api.createReview(newReview);
             await mutate(); // Refresh list
-            setMessage({ type: 'success', text: 'Grazie! La tua recensione è stata pubblicata.' });
-            setTimeout(() => {
-                setIsModalOpen(false);
-                setNewReview({ title: '', rating: 5, comment: '', images: [] });
-                setMessage(null);
-            }, 2000);
+            
+            // Chiudi il modale immediatamente
+            setIsModalOpen(false);
+            setNewReview({ title: '', author_name: '', rating: 5, comment: '', images: [] });
+            
+            // Mostra toast di successo
+            showToast('Recensione aggiunta correttamente', 'success');
         } catch (err) {
             console.error(err);
-            setMessage({ type: 'error', text: 'Errore durante il salvataggio. Riprova.' });
+            showToast('Qualcosa non ha funzionato, riprova', 'error');
         } finally {
             setIsSaving(false);
         }
@@ -375,12 +381,6 @@ const ReviewsPage = () => {
 
                         {/* Modal Body - Scrollable */}
                         <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
-                            {message && (
-                                <div className={`message-banner ${message.type}`} style={{ marginBottom: '1.5rem', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
-                                    {message.text}
-                                </div>
-                            )}
-
                             <form id="review-form" onSubmit={handleSaveReview}>
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Riassunto recensione *</label>
@@ -390,6 +390,18 @@ const ReviewsPage = () => {
                                         onChange={e => setNewReview({ ...newReview, title: e.target.value })}
                                         placeholder="Esempio: Servizio eccezionale!"
                                         required
+                                        className="input-elegant"
+                                        style={{ width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '1rem' }}
+                                    />
+                                </div>
+
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Nome (Opzionale)</label>
+                                    <input
+                                        type="text"
+                                        value={newReview.author_name}
+                                        onChange={e => setNewReview({ ...newReview, author_name: e.target.value })}
+                                        placeholder="Esempio: Marco"
                                         className="input-elegant"
                                         style={{ width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '1rem' }}
                                     />
@@ -542,7 +554,29 @@ const ReviewsPage = () => {
                 </div>
             )}
 
-
+            {/* Toast Notification */}
+            {toast && (
+                <div style={{
+                    position: 'fixed',
+                    bottom: '2rem',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: toast.type === 'success' ? 'rgba(74, 222, 128, 0.9)' : 'rgba(248, 113, 113, 0.9)',
+                    color: 'white',
+                    padding: '1rem 2rem',
+                    borderRadius: '50px',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                    zIndex: 9999,
+                    fontWeight: 'bold',
+                    animation: 'fadeInUp 0.3s ease-out',
+                    textAlign: 'center',
+                    minWidth: '300px'
+                }}>
+                    {toast.message}
+                </div>
+            )}
         </div>
     );
 };

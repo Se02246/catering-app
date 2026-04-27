@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 
 // Add a review
 router.post('/', async (req, res) => {
-    const { title, rating, comment, images } = req.body;
+    const { title, author_name, rating, comment, images } = req.body;
     if (!title || !rating) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -28,8 +28,8 @@ router.post('/', async (req, res) => {
 
     try {
         const result = await pool.query(
-            'INSERT INTO reviews (title, rating, comment, images) VALUES ($1, $2, $3, $4) RETURNING *',
-            [title, rating, comment || null, images || []]
+            'INSERT INTO reviews (title, author_name, rating, comment, images) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [title, author_name || null, rating, comment || null, images || []]
         );
         const newReview = result.rows[0];
         

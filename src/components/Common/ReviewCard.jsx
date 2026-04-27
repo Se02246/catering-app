@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Star } from 'lucide-react';
 
 const ReviewCard = ({ review, layout = 'vertical' }) => {
-    const { title, rating, comment, images = [], created_at } = review;
+    const { title, author_name, rating, comment, images = [], created_at } = review;
     const [activeImg, setActiveImg] = useState(0);
 
     const formattedDate = new Date(created_at).toLocaleDateString('it-IT', {
@@ -42,7 +42,8 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>{title}</h4>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Cliente Anonimo • {formattedDate}</span>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--color-text)', display: 'block', marginTop: '4px', fontWeight: '500' }}>{author_name || 'Utente Anonimo'}</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', display: 'block' }}>{formattedDate}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '2px', color: '#FFD700' }}>
                     {[...Array(5)].map((_, i) => (

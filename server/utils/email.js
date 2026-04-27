@@ -29,6 +29,7 @@ export const sendReviewNotification = async (review, frontendUrl) => {
                     <h2 style="color: #333; text-align: center; margin-bottom: 20px;">Hai ricevuto una nuova recensione!</h2>
                     
                     <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                        <p><strong>Nome:</strong> ${review.author_name || 'Utente Anonimo'}</p>
                         <p><strong>Titolo:</strong> ${review.title}</p>
                         <p><strong>Valutazione:</strong> ${review.rating} / 5 ⭐</p>
                         ${review.comment ? `

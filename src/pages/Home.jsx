@@ -44,7 +44,7 @@ const PackageCard = ({ pkg, index, openPackage }) => {
                 interval = setInterval(() => {
                     setCurrentImgIndex(prev => (prev + 1) % pkg.images.length);
                 }, 2000);
-            }, 3000);
+            }, 2000);
         } else {
             setCurrentImgIndex(0);
         }
