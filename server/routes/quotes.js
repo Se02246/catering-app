@@ -42,6 +42,37 @@ async function generateWithFallback(modelIndex, prompt, imageParts = []) {
   }
 }
 
+// Generate 10 AI thoughts/steps for real-time feedback
+router.post('/ai-thoughts', async (req, res) => {
+    const { prompt } = req.body;
+    try {
+        const aiPrompt = `
+In base a questa richiesta di catering: "${prompt}"
+Genera esattamente 10 brevi frasi (massimo 6-7 parole l'una) che descrivano i passaggi mentali e tecnici che stai compiendo.
+Le frasi devono mescolare dettagli specifici della richiesta (nomi, tipo evento, numero persone) con passaggi professionali.
+
+ISTRUZIONI PER I 10 PENSIERI:
+1. Inizia analizzando l'evento specifico dell'utente.
+2. Menziona esplicitamente la consultazione del "catalogo Muse Catering".
+3. Se ci sono allergie o preferenze, nomina la fase di filtraggio.
+4. Parla di "ottimizzazione delle porzioni" e "riduzione degli sprechi".
+5. Inserisci riferimenti alla qualità e alla presentazione Muse.
+6. Termina con la preparazione della proposta finale.
+
+Restituisci SOLO un array JSON di 10 stringhe.
+Esempio: ["Analizzando la tua festa per Marco...", "Consultando il catalogo Muse Catering...", "Selezionando prodotti adatti a 20 bambini...", "Ottimizzando le quantità per evitare sprechi...", ...]
+`;
+        const result = await generateWithFallback(0, aiPrompt);
+        const responseText = result.response.text();
+        let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const thoughts = JSON.parse(jsonStr);
+        res.json(Array.isArray(thoughts) ? thoughts.slice(0, 10) : []);
+    } catch (error) {
+        console.error('Error generating AI thoughts:', error);
+        res.json([]);
+    }
+});
+
 // Generate AI quote
 router.post('/ai-generate', async (req, res) => {
     const { prompt, source } = req.body;

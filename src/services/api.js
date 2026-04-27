@@ -187,6 +187,16 @@ export const api = {
     },
 
     // Quotes
+    getAiThoughts: async (prompt) => {
+        const res = await fetch(`${API_URL}/quotes/ai-thoughts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+        if (!res.ok) return [];
+        return res.json();
+    },
+
     generateAiQuote: async (prompt, source = 'client') => {
         const res = await fetch(`${API_URL}/quotes/ai-generate`, {
             method: 'POST',

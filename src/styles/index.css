@@ -622,19 +622,30 @@ h1, h2, h3, h4, h5, h6 {
 /* Sparkle Animation */
 @keyframes sparkle {
   0%, 100% {
-    opacity: 1;
     transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 0px #FFD700);
+  }
+  25% {
+    transform: scale(1.2) rotate(15deg);
+    filter: drop-shadow(0 0 8px #FFD700);
+    color: #FFD700;
   }
   50% {
-    opacity: 0.8;
-    transform: scale(1.2) rotate(10deg);
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 2px #FFD700);
+  }
+  75% {
+    transform: scale(1.2) rotate(-15deg);
+    filter: drop-shadow(0 0 8px #FFD700);
     color: #FFD700;
   }
 }
 
 .animate-sparkle {
   animation: sparkle 1.5s ease-in-out infinite;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Pulse Animation */
