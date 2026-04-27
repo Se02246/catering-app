@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCaterings, useSetting, useReviews } from '../hooks/useData';
 import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import ReviewCard from '../components/Common/ReviewCard';
 import { formatCustomText } from '../utils/textFormatting';
-import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star, MapPin } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star, MapPin, Send, Sparkles } from 'lucide-react';
 
 const PackageCard = ({ pkg, index, openPackage }) => {
     const cardRef = React.useRef(null);
@@ -279,6 +279,8 @@ const Home = () => {
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
     const { reviews, isLoading: isReviewsLoading } = useReviews();
 
+    const [homeAiPrompt, setHomeAiPrompt] = useState('');
+
     const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false';
 
     // Statistics for Reviews Summary
@@ -455,6 +457,11 @@ const Home = () => {
         window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
+    const handleHomeAiSubmit = () => {
+        if (!homeAiPrompt.trim()) return;
+        navigate('/quote', { state: { initialAiPrompt: homeAiPrompt } });
+    };
+
     return (
         <div className="container fade-in" style={{ paddingBottom: '5rem' }}>
             <Header />
@@ -509,11 +516,66 @@ const Home = () => {
                         </p>
                         <button
                             className="btn btn-primary"
-                            style={{ padding: '0.8rem 2rem', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.75rem' }}
+                            style={{ padding: '0.8rem 2rem', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}
                             onClick={() => navigate('/quote')}
                         >
                             Crealo!
                         </button>
+                        
+                        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center', marginBottom: '1rem' }}>
+                                <div style={{ height: '1px', flex: 1, backgroundColor: 'rgba(155, 57, 61, 0.2)' }}></div>
+                                <h3 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1.1rem' }}>oppure crealo con l'IA</h3>
+                                <div style={{ height: '1px', flex: 1, backgroundColor: 'rgba(155, 57, 61, 0.2)' }}></div>
+                            </div>
+                            
+                            <div style={{ position: 'relative', width: '100%', textAlign: 'left' }}>
+                                <textarea
+                                    value={homeAiPrompt}
+                                    onChange={(e) => setHomeAiPrompt(e.target.value)}
+                                    placeholder="Descrivi qui l'evento e cosa desideri (es. 'Festa per 20 persone con opzioni senza glutine')..."
+                                    style={{
+                                        width: '100%', 
+                                        padding: '1.5rem 4.5rem 1.5rem 1.5rem', 
+                                        borderRadius: '24px',
+                                        border: '2px solid rgba(155, 57, 61, 0.1)', 
+                                        background: 'var(--color-bg)',
+                                        fontSize: '1rem', 
+                                        minHeight: '120px', 
+                                        resize: 'vertical',
+                                        fontFamily: 'inherit', 
+                                        outline: 'none',
+                                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)',
+                                        transition: 'border-color 0.3s',
+                                        boxSizing: 'border-box'
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                                    onBlur={(e) => e.target.style.borderColor = 'rgba(155, 57, 61, 0.1)'}
+                                />
+                                <button 
+                                    className="btn btn-primary" 
+                                    onClick={handleHomeAiSubmit}
+                                    disabled={!homeAiPrompt.trim()}
+                                    style={{ 
+                                        position: 'absolute', 
+                                        bottom: '1rem', 
+                                        right: '1rem',
+                                        width: '48px',
+                                        height: '48px',
+                                        borderRadius: '50%',
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center', 
+                                        padding: 0,
+                                        boxShadow: 'var(--shadow-md)',
+                                        transition: 'all 0.3s'
+                                    }}
+                                    title="Genera Preventivo"
+                                >
+                                    <Send size={20} style={{ marginLeft: '-2px', marginTop: '2px' }} />
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </section>
             )}
@@ -565,17 +627,6 @@ const Home = () => {
                             >
                                 <Star size={18} /> Leggi tutte le recensioni
                             </button>
-
-                            <button
-                                className="btn btn-outline"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem', width: 'fit-content' }}
-                                onClick={() => {
-                                    const el = document.getElementById('chi-siamo');
-                                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                                }}
-                            >
-                                <MapPin size={18} /> Chi e Dove siamo
-                            </button>
                         </div>
                     </>
                 )}
@@ -605,7 +656,7 @@ const Home = () => {
                     {/* Card 2: Dove siamo */}
                     <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', animationDelay: '0.1s', overflow: 'hidden' }}>
                         <a 
-                            href="https://maps.app.goo.gl/AJnNk1cq5XKT6qVk6g_st=ac" 
+                            href="https://www.google.com/maps/place/08020+Irgoli+NU/@40.4106048,9.6310529,15z/data=!3m1!4b1!4m6!3m5!1s0x12deede3d3e26b93:0x7986762e93de8660!8m2!3d40.4088282!4d9.6302764!16zL20vMGdxdm1j!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDQyMi4wIKXMDSoASAFQAw%3D%3D" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             style={{ display: 'block', height: '350px' }}
