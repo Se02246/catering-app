@@ -1,5 +1,6 @@
 import express from 'express';
 import { pool } from '../db.js';
+import { sendReviewNotification } from '../utils/email.js';
 
 const router = express.Router();
 
@@ -30,7 +31,13 @@ router.post('/', async (req, res) => {
             'INSERT INTO reviews (author_name, rating, comment, images) VALUES ($1, $2, $3, $4) RETURNING *',
             [author_name, rating, comment, images || []]
         );
-        res.status(201).json(result.rows[0]);
+        const newReview = result.rows[0];
+        
+        // Send email notification asynchronously
+        const frontendUrl = req.headers.origin || req.protocol + '://' + req.get('host');
+        sendReviewNotification(newReview, frontendUrl);
+
+        res.status(201).json(newReview);
     } catch (err) {
         console.error('Error adding review:', err);
         res.status(500).json({ error: 'Server error adding review' });

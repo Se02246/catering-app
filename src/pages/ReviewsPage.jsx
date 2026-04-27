@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageSquare, Plus, X, Star, Save, Loader, ChevronLeft, ChevronRight, QrCode } from 'lucide-react';
-import QRCode from 'qrcode';
+import { ArrowLeft, MessageSquare, Plus, X, Star, Save, Loader, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useReviews } from '../hooks/useData';
 import ReviewCard from '../components/Common/ReviewCard';
 import Header from '../components/Layout/Header';
@@ -132,29 +131,6 @@ const ReviewsPage = () => {
         }
     };
 
-    const downloadQR = async () => {
-        try {
-            const url = window.location.href;
-            const canvas = document.createElement('canvas');
-            // HD size
-            const size = 1024;
-            await QRCode.toCanvas(canvas, url, {
-                width: size,
-                margin: 2,
-                color: {
-                    dark: '#000000',
-                    light: '#ffffff'
-                }
-            });
-            
-            const link = document.createElement('a');
-            link.download = 'muse-catering-reviews-qr.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        } catch (err) {
-            console.error('Errore generazione QR:', err);
-        }
-    };
 
     return (
         <div className="container fade-in" style={{ paddingBottom: '5rem' }}>
@@ -567,25 +543,7 @@ const ReviewsPage = () => {
                 </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4rem', paddingBottom: '4rem' }}>
-                <button 
-                    className="btn btn-outline"
-                    onClick={downloadQR}
-                    style={{ 
-                        padding: '0.6rem 1.8rem', 
-                        fontSize: '0.9rem',
-                        color: 'var(--color-text-muted)',
-                        borderColor: 'var(--color-border)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        borderRadius: '12px',
-                        background: 'white'
-                    }}
-                >
-                    <QrCode size={18} /> QR
-                </button>
-            </div>
+
         </div>
     );
 };
