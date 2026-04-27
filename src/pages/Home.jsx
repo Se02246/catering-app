@@ -691,7 +691,7 @@ const Home = () => {
                     </div>
 
                     {/* Card 3: Contatti */}
-                    <div className="premium-card fade-in" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', animationDelay: '0.2s' }}>
+                    <div id="contatti-box" className="premium-card fade-in" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', animationDelay: '0.2s' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-primary-dark)' }}>
                             <MessageSquare size={28} />
                             <h3 style={{ margin: 0, fontSize: '1.5rem' }}>Contatti</h3>

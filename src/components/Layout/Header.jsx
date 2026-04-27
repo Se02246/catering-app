@@ -34,6 +34,24 @@ const Header = ({ isReviewsPage = false }) => {
         }
     };
 
+    const scrollToContacts = () => {
+        const performScroll = () => {
+            const element = document.getElementById('contatti-box');
+            if (element) {
+                const yOffset = -80; 
+                const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        };
+
+        if (location.pathname === '/') {
+            performScroll();
+        } else {
+            navigate('/');
+            setTimeout(performScroll, 300);
+        }
+    };
+
     const contactWhatsApp = () => {
         const phoneNumber = "393495416637";
         const message = "Ciao Barbara, vorrei avere maggiori informazioni sui vostri servizi di catering.";
@@ -92,52 +110,6 @@ const Header = ({ isReviewsPage = false }) => {
                     />
 
                     <div style={{ maxWidth: '400px', margin: '1.5rem auto 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        <div style={{ display: 'flex', gap: '0.75rem', width: '100%' }}>
-                            <button
-                                onClick={contactWhatsApp}
-                                className="btn btn-outline"
-                                style={{ 
-                                    flex: 1, 
-                                    padding: '0.6rem 1rem', 
-                                    fontSize: '0.9rem', 
-                                    minHeight: 'auto',
-                                    borderRadius: '50px',
-                                    border: '1px solid var(--color-primary)',
-                                    color: 'var(--color-primary)',
-                                    background: 'transparent',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}
-                            >
-                                <MessageCircle size={18} style={{ marginRight: '0.4rem' }} />
-                                Contatta
-                            </button>
-
-                            {showPrompt && (
-                                <button
-                                    onClick={handleInstallClick}
-                                    className="btn btn-outline"
-                                    style={{ 
-                                        flex: 1, 
-                                        padding: '0.6rem 1rem', 
-                                        fontSize: '0.9rem', 
-                                        minHeight: 'auto',
-                                        borderRadius: '50px',
-                                        border: '1px solid var(--color-primary)',
-                                        color: 'var(--color-primary)',
-                                        background: 'transparent',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}
-                                >
-                                    <Download size={18} style={{ marginRight: '0.4rem' }} />
-                                    Installa
-                                </button>
-                            )}
-                        </div>
-
                         {showQuoteBuilder && (
                             <button
                                 onClick={scrollToQuote}
@@ -211,6 +183,50 @@ const Header = ({ isReviewsPage = false }) => {
                             <MapPin size={18} />
                             Chi e Dove siamo
                         </button>
+
+                        <button
+                            onClick={scrollToContacts}
+                            className="btn btn-outline"
+                            style={{ 
+                                width: '100%', 
+                                padding: '0.6rem 1rem', 
+                                fontSize: '0.9rem', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                gap: '0.5rem',
+                                borderRadius: '50px',
+                                border: '1px solid var(--color-primary)',
+                                color: 'var(--color-primary)',
+                                background: 'transparent'
+                            }}
+                        >
+                            <MessageCircle size={18} />
+                            Contatti
+                        </button>
+
+                        {showPrompt && (
+                            <button
+                                onClick={handleInstallClick}
+                                className="btn btn-outline"
+                                style={{ 
+                                    width: '100%', 
+                                    padding: '0.6rem 1rem', 
+                                    fontSize: '0.9rem', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    gap: '0.5rem',
+                                    borderRadius: '50px',
+                                    border: '1px solid var(--color-primary)',
+                                    color: 'var(--color-primary)',
+                                    background: 'transparent'
+                                }}
+                            >
+                                <Download size={18} />
+                                Installa App
+                            </button>
+                        )}
                     </div>
                 </>
             )}

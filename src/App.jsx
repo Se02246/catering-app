@@ -10,6 +10,7 @@ import ReviewsPage from './pages/ReviewsPage';
 import { Lock } from 'lucide-react';
 import './styles/index.css';
 import { InstallPromptProvider } from './context/InstallPromptContext';
+import ScrollToTopFab from './components/Common/ScrollToTopFab';
 
 function AppContent() {
   React.useEffect(() => {
@@ -50,6 +51,7 @@ function AppContent() {
           <Route path="/recensioni" element={<ReviewsPage />} />
         </Routes>
       </main>
+      <ScrollToTopFab />
     </div>
   );
 }

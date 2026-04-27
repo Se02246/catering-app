@@ -19,6 +19,7 @@ const QuoteBuilder = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [aiPrompt, setAiPrompt] = useState(location.state?.initialAiPrompt || '');
     const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+    const [aiThought, setAiThought] = useState('');
     const [aiError, setAiError] = useState(null);
     const [showAiInfo, setShowAiInfo] = useState(false);
     const [aiResponse, setAiResponse] = useState(null);
@@ -30,6 +31,25 @@ const QuoteBuilder = () => {
         setIsGeneratingAi(true);
         setAiError(null);
         setAiResponse(null);
+        
+        // Sequence of thoughts
+        const thoughts = [
+            "Analizzando la tua richiesta...",
+            "Consultando il catalogo Muse Catering...",
+            "Selezionando i prodotti migliori per te...",
+            "Ottimizzando le quantità...",
+            "Preparando la tua proposta su misura...",
+            "Quasi pronto..."
+        ];
+        
+        let thoughtIndex = 0;
+        setAiThought(thoughts[0]);
+        
+        const thoughtInterval = setInterval(() => {
+            thoughtIndex = (thoughtIndex + 1) % thoughts.length;
+            setAiThought(thoughts[thoughtIndex]);
+        }, 2500);
+
         try {
             const data = await api.generateAiQuote(promptToUse, 'client');
             if (data && data.items && Array.isArray(data.items)) {
@@ -73,7 +93,9 @@ const QuoteBuilder = () => {
         } catch (error) {
             setAiError(error.message || "Errore durante la generazione con IA. Riprova.");
         } finally {
+            clearInterval(thoughtInterval);
             setIsGeneratingAi(false);
+            setAiThought('');
         }
     };
 
@@ -290,11 +312,32 @@ const QuoteBuilder = () => {
                                 </div>
                             ) : (
                                 <Send size={20} style={{ marginLeft: '-2px', marginTop: '2px' }} />
-                            )}
-                        </button>
-                    </div>
-                    {aiError && (
-                        <div style={{ color: '#E11D48', fontSize: '0.9rem', padding: '0.8rem', backgroundColor: 'rgba(225, 29, 72, 0.05)', borderRadius: 'var(--radius-sm)', marginTop: '0.5rem' }}>
+                                )}
+                                </button>
+                                </div>
+
+                                {/* AI Thought Logs */}
+                                {isGeneratingAi && aiThought && (
+                                <div className="fade-in" style={{ 
+                                marginTop: '1rem', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '0.8rem',
+                                padding: '0.8rem 1.2rem',
+                                backgroundColor: 'rgba(155, 57, 61, 0.03)',
+                                borderRadius: '16px',
+                                border: '1px solid rgba(155, 57, 61, 0.05)',
+                                color: 'var(--color-primary-dark)',
+                                fontSize: '0.9rem'
+                                }}>
+                                <Loader2 size={18} className="animate-spin" />
+                                <span key={aiThought} className="fade-in" style={{ fontWeight: '500' }}>
+                                {aiThought}
+                                </span>
+                                </div>
+                                )}
+
+                                {aiError && (                        <div style={{ color: '#E11D48', fontSize: '0.9rem', padding: '0.8rem', backgroundColor: 'rgba(225, 29, 72, 0.05)', borderRadius: 'var(--radius-sm)', marginTop: '0.5rem' }}>
                             {aiError}
                         </div>
                     )}
