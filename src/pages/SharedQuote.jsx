@@ -25,8 +25,13 @@ const SharedQuote = ({ isMenuMode = false }) => {
     }, [selectedProduct]);
 
     const handleShareQuote = async () => {
+        const creationDate = quote?.created_at ? new Date(quote.created_at) : new Date();
+        const dateStr = creationDate instanceof Date && !isNaN(creationDate) 
+            ? creationDate.toLocaleDateString('it-IT') 
+            : new Date().toLocaleDateString('it-IT');
+
         let text = `Riepilogo preventivo\n`;
-        text += `Creato il ${new Date(quote?.created_at).toLocaleDateString('it-IT')}\n\n`;
+        text += `Creato il ${dateStr}\n\n`;
         text += `Prodotti:\n`;
         if (quote && quote.items) {
             quote.items.forEach(item => {

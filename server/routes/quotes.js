@@ -175,10 +175,10 @@ router.post('/', async (req, res) => {
     const { items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes } = req.body;
     try {
         const result = await pool.query(
-            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at',
             [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, notes || null, menu_notes || null]
         );
-        res.status(201).json({ id: result.rows[0].id });
+        res.status(201).json({ id: result.rows[0].id, created_at: result.rows[0].created_at });
     } catch (err) {
         console.error('Error saving quote:', err);
         res.status(500).json({ error: 'Server error saving quote' });
