@@ -7,6 +7,126 @@ import ReviewCard from '../components/Common/ReviewCard';
 import { formatCustomText } from '../utils/textFormatting';
 import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star } from 'lucide-react';
 
+const PackageCard = ({ pkg, index, openPackage }) => {
+    const cardRef = React.useRef(null);
+    const [isInView, setIsInView] = React.useState(false);
+    const [isHovered, setIsHovered] = React.useState(false);
+    const [currentImgIndex, setCurrentImgIndex] = React.useState(0);
+    const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    React.useEffect(() => {
+        if (!isMobile) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsInView(entry.isIntersecting);
+            },
+            { threshold: 0.6 }
+        );
+        if (cardRef.current) observer.observe(cardRef.current);
+        return () => {
+            if (cardRef.current) observer.unobserve(cardRef.current);
+        };
+    }, [isMobile]);
+
+    React.useEffect(() => {
+        let timer;
+        let interval;
+        const shouldAnimate = (isMobile && isInView) || (!isMobile && isHovered);
+
+        if (shouldAnimate && pkg.images && pkg.images.length > 1) {
+            timer = setTimeout(() => {
+                interval = setInterval(() => {
+                    setCurrentImgIndex(prev => (prev + 1) % pkg.images.length);
+                }, 2000);
+            }, 3000);
+        } else {
+            setCurrentImgIndex(0);
+        }
+        return () => {
+            clearTimeout(timer);
+            clearInterval(interval);
+        };
+    }, [isMobile, isInView, isHovered, pkg.images]);
+
+    const imagesToUse = pkg.images && pkg.images.length > 0 ? pkg.images : [pkg.image_url || 'https://placehold.co/600x400?text=Muse+Catering'];
+
+    return (
+        <div
+            ref={cardRef}
+            className="premium-card fade-in"
+            style={{ animationDelay: `${index * 0.1}s` }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            {pkg.hide_at && (
+                <div className="package-badge">
+                    <Calendar size={14} /> Disponibile fino al {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
+                </div>
+            )}
+
+            <div className="image-wrapper" onClick={() => openPackage(pkg)} style={{ cursor: 'pointer', position: 'relative' }}>
+                {imagesToUse.map((img, i) => (
+                    <img
+                        key={i}
+                        src={img}
+                        alt={pkg.name}
+                        style={{ 
+                            width: '100%', 
+                            height: '100%', 
+                            objectFit: 'cover', 
+                            transition: 'opacity 1s ease-in-out, transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1)',
+                            opacity: currentImgIndex === i ? 1 : 0,
+                            position: i === 0 ? 'relative' : 'absolute',
+                            top: 0,
+                            left: 0,
+                            zIndex: currentImgIndex === i ? 1 : 0
+                        }}
+                        className="card-hover-img"
+                    />
+                ))}
+            </div>
+
+            <div className="card-body">
+                <div className="dietary-badges" style={{ marginBottom: '1rem' }}>
+                    {pkg.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
+                    {pkg.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
+                </div>
+
+                <h3 className="card-title">{pkg.name}</h3>
+                
+                <div 
+                    className="card-text"
+                    dangerouslySetInnerHTML={{ __html: formatCustomText(pkg.description) }}
+                />
+
+                <div className="card-footer">
+                    <div className="price-container">
+                        {pkg.discount_percentage > 0 ? (
+                            <>
+                                <span className="price-old">€ {pkg.total_price}</span>
+                                <span className="price-main price-discount">
+                                    € {(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
+                                </span>
+                            </>
+                        ) : (
+                            <span className="price-main">€ {pkg.total_price}</span>
+                        )}
+                    </div>
+                    <button className="btn btn-primary" onClick={() => openPackage(pkg)}>
+                        Scopri di più <ArrowRight size={18} style={{ marginLeft: '0.5rem' }} />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const Home = () => {
     const navigate = useNavigate();
     const { caterings, isLoading, isError } = useCaterings();
@@ -227,58 +347,7 @@ const Home = () => {
                             </div>
                         ) : (
                             processedCaterings.map((pkg, index) => (
-                                <div
-                                    key={pkg.id}
-                                    className="premium-card fade-in"
-                                    style={{ animationDelay: `${index * 0.1}s` }}
-                                >
-                                    {pkg.hide_at && (
-                                        <div className="package-badge">
-                                            <Calendar size={14} /> Disponibile fino al {new Date(pkg.hide_at).toLocaleDateString('it-IT')}
-                                        </div>
-                                    )}
-
-                                    <div className="image-wrapper" onClick={() => openPackage(pkg)} style={{ cursor: 'pointer' }}>
-                                        <img
-                                            src={pkg.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
-                                            alt={pkg.name}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1)' }}
-                                            className="card-hover-img"
-                                        />
-                                    </div>
-
-                                    <div className="card-body">
-                                        <div className="dietary-badges" style={{ marginBottom: '1rem' }}>
-                                            {pkg.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
-                                            {pkg.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
-                                        </div>
-
-                                        <h3 className="card-title">{pkg.name}</h3>
-                                        
-                                        <div 
-                                            className="card-text"
-                                            dangerouslySetInnerHTML={{ __html: formatCustomText(pkg.description) }}
-                                        />
-
-                                        <div className="card-footer">
-                                            <div className="price-container">
-                                                {pkg.discount_percentage > 0 ? (
-                                                    <>
-                                                        <span className="price-old">€ {pkg.total_price}</span>
-                                                        <span className="price-main price-discount">
-                                                            € {(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
-                                                        </span>
-                                                    </>
-                                                ) : (
-                                                    <span className="price-main">€ {pkg.total_price}</span>
-                                                )}
-                                            </div>
-                                            <button className="btn btn-primary" onClick={() => openPackage(pkg)}>
-                                                Scopri di più <ArrowRight size={18} style={{ marginLeft: '0.5rem' }} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                <PackageCard key={pkg.id} pkg={pkg} index={index} openPackage={openPackage} />
                             ))
                         )}
                     </div>
