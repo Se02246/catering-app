@@ -348,6 +348,54 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                 }
             }
 
+            // 3D Depth Effect
+            if (carouselRef.current) {
+                const container = carouselRef.current;
+                const containerRect = container.getBoundingClientRect();
+                const centerOfViewport = containerRect.left + containerRect.width / 2;
+                const scrollLeft = container.scrollLeft;
+                const containerOffsetLeft = containerRect.left - scrollLeft;
+                
+                const children = container.children;
+                const transforms = [];
+                const zIndices = [];
+                
+                for (let i = 0; i < children.length; i++) {
+                    const child = children[i];
+                    const childCenter = containerOffsetLeft + child.offsetLeft + child.offsetWidth / 2;
+                    
+                    const dist = childCenter - centerOfViewport;
+                    const M = window.innerWidth / 2 + 150; 
+                    const nd = Math.max(-1, Math.min(1, dist / M)); 
+                    
+                    const scaleFactor = Math.cos(nd * Math.PI / 2); 
+                    const scale = 0.65 + 0.65 * scaleFactor; 
+                    
+                    const maxPush = 120; 
+                    const translateX = Math.sin(nd * Math.PI / 2) * maxPush;
+                    
+                    const baseRotate = child.dataset.rotate || 0;
+                    const baseTranslateY = parseFloat(child.dataset.translatey || 0);
+                    const baseZIndex = parseInt(child.dataset.zindex || 0);
+                    
+                    const zIndex = baseZIndex + Math.round(100 * scaleFactor);
+                    
+                    // Floating effect
+                    const floatSpeed = 0.002;
+                    const floatAmplitude = 12; // pixels up and down
+                    const floatOffset = Math.sin(time * floatSpeed + i * 0.5) * floatAmplitude;
+                    const finalTranslateY = baseTranslateY + floatOffset;
+                    
+                    transforms.push(`translateX(${translateX}px) scale(${scale}) rotate(${baseRotate}deg) translateY(${finalTranslateY}px)`);
+                    zIndices.push(zIndex);
+                }
+                
+                for (let i = 0; i < children.length; i++) {
+                    children[i].style.transform = transforms[i];
+                    children[i].style.zIndex = zIndices[i];
+                }
+            }
+
             animationRef.current = requestAnimationFrame(animateScroll);
         };
 
@@ -396,17 +444,20 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
 
     return (
         <div style={{
-            width: '100%',
-            marginTop: '2.5rem',
+            marginTop: '3.5rem',
+            marginBottom: '-1rem',
+            marginRight: '-3rem',
+            marginLeft: '-3rem',
             padding: '1rem 0'
         }}>
             <style>{`
                 .product-marquee-container {
                     display: flex;
+                    position: relative;
                     overflow-x: auto;
                     scrollbar-width: none;
                     -ms-overflow-style: none;
-                    padding: 20px 0;
+                    padding: 40px 0; /* Increased padding to prevent clipping when scaled up */
                     align-items: center;
                     /* For smooth touch scrolling on iOS */
                     -webkit-overflow-scrolling: touch;
@@ -416,28 +467,29 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                 }
                 .product-marquee-item {
                     flex-shrink: 0;
-                    margin: 0 -15px;
-                    transition: transform 0.3s ease, z-index 0.3s;
+                    margin: 0 5px;
                     cursor: pointer;
                     position: relative;
                 }
                 .product-marquee-item:hover {
-                    transform: scale(1.15) rotate(0deg) !important;
-                    z-index: 50 !important;
+                    z-index: 1000 !important;
                 }
                 .product-marquee-item img {
-                    width: 120px;
-                    height: 120px;
-                    border-radius: 16px;
+                    width: 160px;
+                    height: 160px;
+                    border-radius: 20px;
                     object-fit: cover;
-                    border: 3px solid white;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                    background-color: white;
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                }
+                .product-marquee-item:hover img {
+                    transform: scale(1.15);
+                    box-shadow: 0 12px 24px rgba(0,0,0,0.4);
                 }
                 @media (max-width: 768px) {
                     .product-marquee-item img {
-                        width: 90px;
-                        height: 90px;
+                        width: 120px;
+                        height: 120px;
                     }
                 }
             `}</style>
@@ -464,15 +516,16 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                                      
                     const topOffset = (index % 3 === 0) ? -10 :
                                       (index % 3 === 1) ? 10 : 0;
+                                      
+                    const baseZIndex = index % 5;
 
                     return (
                         <div 
                             key={`${prod.id}-${index}`} 
                             className="product-marquee-item"
-                            style={{ 
-                                transform: `rotate(${rotation}deg) translateY(${topOffset}px)`,
-                                zIndex: index % 5
-                            }}
+                            data-rotate={rotation}
+                            data-translatey={topOffset}
+                            data-zindex={baseZIndex}
                             onClick={() => openProduct(prod)}
                         >
                             <img src={prod.image_url} alt={prod.name} />
