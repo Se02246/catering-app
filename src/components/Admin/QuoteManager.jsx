@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
 import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle } from 'lucide-react';
@@ -124,6 +124,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         if (currentQuote.notes) {
             textToShare += `\nNote sul preventivo:\n${currentQuote.notes}\n`;
         }
+
+        textToShare += `\nLink della pagina share: ${window.location.origin}/quote/${currentQuote.id}`;
 
         // Add marker for Android app interception
         textToShare += `\n\n[MC-ID: ${currentQuote.id}]`;
