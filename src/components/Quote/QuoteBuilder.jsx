@@ -206,6 +206,7 @@ const QuoteBuilder = () => {
 
     const [eventDate, setEventDate] = useState('');
     const [clientName, setClientName] = useState('');
+    const [notes, setNotes] = useState('');
 
     const calculateItemPrice = (item) => {
         if (item.is_sold_by_piece) return item.price_per_piece * item.quantity;
@@ -217,13 +218,19 @@ const QuoteBuilder = () => {
     const [isSaving, setIsSaving] = useState(false);
 
     const handleShareQuote = async () => {
+        if (!clientName || !clientName.trim()) {
+            alert('Per favore, inserisci il tuo Nome e Cognome prima di inviare il preventivo.');
+            return;
+        }
+
         setIsSaving(true);
         try {
             const quoteData = {
                 items: cart,
                 total_price: calculateTotal(),
                 event_date: eventDate || null,
-                client_name: clientName || null
+                client_name: clientName.trim(),
+                notes: notes.trim() || null
             };
             const result = await api.createQuote(quoteData);
             const url = `${window.location.origin}/quote/${result.id}`;
@@ -530,7 +537,7 @@ const QuoteBuilder = () => {
                             <div style={{ borderTop: '2px solid var(--color-bg)', padding: '1.5rem 0', marginBottom: '0' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
                                     <User size={18} style={{ color: 'var(--color-primary)' }} />
-                                    <h4 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1rem' }}>Nome e Cognome</h4>
+                                    <h4 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1rem' }}>Nome e Cognome *</h4>
                                 </div>
                                 <input
                                     type="text"
@@ -551,7 +558,7 @@ const QuoteBuilder = () => {
                                 />
                             </div>
 
-                            <div style={{ padding: '0 0 1.5rem 0', marginBottom: '1rem' }}>
+                            <div style={{ padding: '0 0 1.5rem 0', marginBottom: '0' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
                                     <Calendar size={18} style={{ color: 'var(--color-primary)' }} />
                                     <h4 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1rem' }}>Data Evento (Opzionale)</h4>
@@ -570,6 +577,31 @@ const QuoteBuilder = () => {
                                         color: 'var(--color-text)',
                                         outline: 'none',
                                         boxSizing: 'border-box'
+                                    }}
+                                />
+                            </div>
+
+                            <div style={{ padding: '0 0 1.5rem 0', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
+                                    <Info size={18} style={{ color: 'var(--color-primary)' }} />
+                                    <h4 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1rem' }}>Note o Richieste Speciali (Opzionale)</h4>
+                                </div>
+                                <textarea
+                                    placeholder="Scrivi qui eventuali allergie, richieste particolari o messaggi per noi..."
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.8rem 1rem',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: '1px solid rgba(155, 57, 61, 0.2)',
+                                        background: 'var(--color-bg)',
+                                        fontSize: '0.95rem',
+                                        color: 'var(--color-text)',
+                                        outline: 'none',
+                                        boxSizing: 'border-box',
+                                        minHeight: '100px',
+                                        resize: 'vertical'
                                     }}
                                 />
                             </div>

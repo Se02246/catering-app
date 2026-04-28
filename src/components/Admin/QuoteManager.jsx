@@ -629,7 +629,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>
-                        <h4 style={{ marginBottom: '1rem' }}>Nome Cliente (Opzionale)</h4>
+                        <h4 style={{ marginBottom: '1rem' }}>Nome Cliente *</h4>
                         <input
                             type="text"
                             placeholder="Inserisci il nome del cliente..."
