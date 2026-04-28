@@ -25,14 +25,11 @@ const SharedQuote = ({ isMenuMode = false }) => {
     }, [selectedProduct]);
 
     const handleShareQuote = async () => {
-        const creationDate = quote?.created_at ? new Date(quote.created_at) : new Date();
-        const dateStr = creationDate instanceof Date && !isNaN(creationDate) 
-            ? creationDate.toLocaleDateString('it-IT') 
-            : new Date().toLocaleDateString('it-IT');
-
         let text = `Riepilogo preventivo\n`;
-        text += `Creato il ${dateStr}\n\n`;
-        text += `Prodotti:\n`;
+        if (quote?.event_date) {
+            text += `Data evento: ${new Date(quote.event_date).toLocaleDateString('it-IT')}\n`;
+        }
+        text += `\nProdotti:\n`;
         if (quote && quote.items) {
             quote.items.forEach(item => {
                 const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : 'kg'}` : "";
@@ -464,9 +461,13 @@ const SharedQuote = ({ isMenuMode = false }) => {
                             </div>
                         </div>
                         {!isMenuMode && (
-                            <p style={{ color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <Calendar size={16} /> Creato il {new Date(quote.created_at).toLocaleDateString('it-IT')}
-                            </p>
+                            <>
+                                {quote.event_date && (
+                                    <p style={{ color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: '600' }}>
+                                        <Calendar size={16} style={{ color: 'var(--color-primary)' }} /> Data Evento: {new Date(quote.event_date).toLocaleDateString('it-IT')}
+                                    </p>
+                                )}
+                            </>
                         )}
                     </div>
                     {!isMenuMode && (

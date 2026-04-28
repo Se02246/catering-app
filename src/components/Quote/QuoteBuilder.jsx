@@ -204,6 +204,8 @@ const QuoteBuilder = () => {
         }).filter(Boolean));
     };
 
+    const [eventDate, setEventDate] = useState('');
+
     const calculateItemPrice = (item) => {
         if (item.is_sold_by_piece) return item.price_per_piece * item.quantity;
         return item.price_per_kg * item.quantity;
@@ -218,7 +220,8 @@ const QuoteBuilder = () => {
         try {
             const quoteData = {
                 items: cart,
-                total_price: calculateTotal()
+                total_price: calculateTotal(),
+                event_date: eventDate || null
             };
             const result = await api.createQuote(quoteData);
             const url = `${window.location.origin}/quote/${result.id}`;
@@ -520,6 +523,29 @@ const QuoteBuilder = () => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+
+                            <div style={{ borderTop: '2px solid var(--color-bg)', padding: '1.5rem 0', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
+                                    <Calendar size={18} style={{ color: 'var(--color-primary)' }} />
+                                    <h4 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1rem' }}>Data Evento (Opzionale)</h4>
+                                </div>
+                                <input
+                                    type="date"
+                                    value={eventDate}
+                                    onChange={(e) => setEventDate(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.8rem 1rem',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: '1px solid rgba(155, 57, 61, 0.2)',
+                                        background: 'var(--color-bg)',
+                                        fontSize: '0.95rem',
+                                        color: 'var(--color-text)',
+                                        outline: 'none',
+                                        boxSizing: 'border-box'
+                                    }}
+                                />
                             </div>
 
                             <div style={{ borderTop: '2px solid var(--color-bg)', paddingTop: '1.5rem' }}>

@@ -172,13 +172,13 @@ ${!isAdmin ? "- RISPETTA TASSATIVAMENTE il valore di \"is_sold_by_piece\" che tr
 
 // Save a new quote and get its unique ID
 router.post('/', async (req, res) => {
-    const { items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes } = req.body;
+    const { items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes, event_date } = req.body;
     try {
         const result = await pool.query(
-            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at',
-            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, notes || null, menu_notes || null]
+            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes, event_date) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, notes || null, menu_notes || null, event_date || null]
         );
-        res.status(201).json({ id: result.rows[0].id, created_at: result.rows[0].created_at });
+        res.status(201).json({ id: result.rows[0].id });
     } catch (err) {
         console.error('Error saving quote:', err);
         res.status(500).json({ error: 'Server error saving quote' });
@@ -238,11 +238,11 @@ router.get('/:id', async (req, res) => {
 // Update an existing quote (Admin)
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes } = req.body;
+    const { items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes, event_date } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, notes = $5, menu_notes = $6 WHERE id = $7 RETURNING *',
-            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, notes, menu_notes, id]
+            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, notes = $5, menu_notes = $6, event_date = $7 WHERE id = $8 RETURNING *',
+            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, notes, menu_notes, event_date || null, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Quote not found' });

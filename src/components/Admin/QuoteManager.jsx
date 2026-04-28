@@ -53,7 +53,6 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
     const handleShareQuote = async () => {
         let text = `Riepilogo preventivo\n`;
-        text += `Creato il ${new Date(currentQuote.created_at).toLocaleDateString('it-IT')}\n\n`;
         text += `Prodotti:\n`;
         if (currentQuote && currentQuote.items) {
             currentQuote.items.forEach(item => {
@@ -624,6 +623,26 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 </option>
                             ))}
                         </select>
+                    </div>
+
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h4 style={{ marginBottom: '1rem' }}>Data Evento (Opzionale)</h4>
+                        <input
+                            type="date"
+                            value={currentQuote.event_date ? new Date(currentQuote.event_date).toISOString().split('T')[0] : ''}
+                            onChange={e => {
+                                const updatedQuote = { ...currentQuote, event_date: e.target.value || null };
+                                setCurrentQuote(updatedQuote);
+                                autoSave(updatedQuote);
+                            }}
+                            style={{
+                                width: '100%',
+                                padding: '1rem',
+                                borderRadius: '8px',
+                                border: '1px solid var(--color-border)',
+                                fontSize: '0.95rem'
+                            }}
+                        />
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>
