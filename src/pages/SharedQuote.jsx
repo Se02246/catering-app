@@ -46,6 +46,9 @@ const SharedQuote = ({ isMenuMode = false }) => {
         }
 
         text += `\nLink della pagina share: ${window.location.href}`;
+        
+        // Add marker for Android app interception
+        text += `\n\n[MC-ID: ${id}]`;
 
         if (navigator.share) {
             try {
@@ -135,7 +138,51 @@ const SharedQuote = ({ isMenuMode = false }) => {
             message += `\n\nNote sul preventivo:\n${quote.notes}`;
         }
         
+        // Add marker for Android app interception
+        message += `\n\n[MC-ID: ${id}]`;
+        
         window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    };
+
+    const shareToOrderMasterApp = () => {
+        let text = `Riepilogo preventivo\n`;
+        if (quote?.event_date) {
+            text += `Data evento: ${new Date(quote.event_date).toLocaleDateString('it-IT')}\n`;
+        }
+        text += `\nProdotti:\n`;
+        if (quote && quote.items) {
+            quote.items.forEach(item => {
+                const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : 'kg'}` : "";
+                text += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
+            });
+        }
+
+        if (quote?.total_price) {
+            text += `\nTotale: € ${Number(quote.total_price).toFixed(2)}\n`;
+        }
+
+        if (quote?.notes) {
+            text += `\nNote sul preventivo:\n${quote.notes}\n`;
+        }
+
+        text += `\nLink della pagina share: ${window.location.href}`;
+        
+        // Add marker for Android app interception
+        text += `\n\n[MC-ID: ${id}]`;
+
+        const encodedText = encodeURIComponent(text);
+        const appPackage = "com.ordermaster.app";
+        const fallbackUrl = encodeURIComponent(`https://play.google.com/store/apps/details?id=${appPackage}`);
+
+        const intentUri = `intent:#Intent;` +
+            `action=android.intent.action.SEND;` +
+            `type=text/plain;` +
+            `package=${appPackage};` +
+            `S.android.intent.extra.TEXT=${encodedText};` +
+            `S.browser_fallback_url=${fallbackUrl};` +
+            `end`;
+
+        window.location.href = intentUri;
     };
 
     const isQuoteGlutenFree = quote.is_gluten_free || (quote.items.length > 0 && quote.items.every(item => item.is_gluten_free));
@@ -751,10 +798,29 @@ const SharedQuote = ({ isMenuMode = false }) => {
                             <p style={{ marginBottom: '1rem', fontWeight: '500' }}>Ti piace questo preventivo? Contattaci per confermare la disponibilità!</p>
                             <button 
                                 className="btn btn-primary" 
-                                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '1rem' }}
+                                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '1rem', marginBottom: '1rem' }}
                                 onClick={sendToWhatsApp}
                             >
                                 <Send size={20} /> Richiedi Informazioni su WhatsApp
+                            </button>
+
+                            <button 
+                                className="btn btn-outline" 
+                                style={{ 
+                                    width: '100%', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    gap: '0.75rem', 
+                                    padding: '1rem',
+                                    backgroundColor: '#0052cc',
+                                    color: 'white',
+                                    border: 'none',
+                                    boxShadow: '0 4px 12px rgba(0, 82, 204, 0.3)'
+                                }}
+                                onClick={shareToOrderMasterApp}
+                            >
+                                <ExternalLink size={20} /> Importa su Ordermaster App
                             </button>
                         </div>
                     )}

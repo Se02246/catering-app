@@ -75,6 +75,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         }
 
         text += `\nLink della pagina share: ${window.location.origin}/quote/${currentQuote.id}`;
+        
+        // Add marker for Android app interception
+        text += `\n\n[MC-ID: ${currentQuote.id}]`;
 
         if (navigator.share) {
             try {
@@ -122,6 +125,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             textToShare += `\nNote sul preventivo:\n${currentQuote.notes}\n`;
         }
 
+        // Add marker for Android app interception
+        textToShare += `\n\n[MC-ID: ${currentQuote.id}]`;
+
         const encodedText = encodeURIComponent(textToShare);
         const appPackage = "com.ordermaster.app";
         const fallbackUrl = encodeURIComponent(`https://play.google.com/store/apps/details?id=${appPackage}`);
@@ -161,6 +167,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         }
 
         textToShare += `\nLink della pagina share: ${window.location.origin}/quote/${currentQuote.id}`;
+        
+        // Add marker for Android app interception
+        textToShare += `\n\n[MC-ID: ${currentQuote.id}]`;
 
         const encodedText = encodeURIComponent(textToShare);
         window.open(`https://wa.me/?text=${encodedText}`, '_blank');
