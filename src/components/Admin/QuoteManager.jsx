@@ -53,6 +53,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
     const handleShareQuote = async () => {
         let text = `Riepilogo preventivo\n`;
+        if (currentQuote && currentQuote.client_name) {
+            text += `Nome: ${currentQuote.client_name}\n`;
+        }
         text += `Prodotti:\n`;
         if (currentQuote && currentQuote.items) {
             currentQuote.items.forEach(item => {
@@ -623,6 +626,27 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 </option>
                             ))}
                         </select>
+                    </div>
+
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h4 style={{ marginBottom: '1rem' }}>Nome Cliente (Opzionale)</h4>
+                        <input
+                            type="text"
+                            placeholder="Inserisci il nome del cliente..."
+                            value={currentQuote.client_name || ''}
+                            onChange={e => {
+                                const updatedQuote = { ...currentQuote, client_name: e.target.value || null };
+                                setCurrentQuote(updatedQuote);
+                                autoSave(updatedQuote);
+                            }}
+                            style={{
+                                width: '100%',
+                                padding: '1rem',
+                                borderRadius: '8px',
+                                border: '1px solid var(--color-border)',
+                                fontSize: '0.95rem'
+                            }}
+                        />
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>

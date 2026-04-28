@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check, Download, Eye, QrCode, ExternalLink, Share2, Star } from 'lucide-react';
+import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check, Download, Eye, QrCode, ExternalLink, Share2, Star, User } from 'lucide-react';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
@@ -124,6 +124,9 @@ const SharedQuote = ({ isMenuMode = false }) => {
         const url = window.location.href;
         let message = `Ciao Barbara, ho visualizzato questo preventivo sul tuo sito e vorrei maggiori informazioni:\n\n${url}\n\nTotale: € ${quote.total_price}`;
         
+        if (quote.client_name) {
+            message += `\nNome: ${quote.client_name}`;
+        }
         if (quote.notes) {
             message += `\n\nNote sul preventivo:\n${quote.notes}`;
         }
@@ -462,6 +465,11 @@ const SharedQuote = ({ isMenuMode = false }) => {
                         </div>
                         {!isMenuMode && (
                             <>
+                                {quote.client_name && (
+                                    <p style={{ color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem', fontWeight: '600', fontSize: '1.1rem' }}>
+                                        <User size={18} style={{ color: 'var(--color-primary)' }} /> {quote.client_name}
+                                    </p>
+                                )}
                                 {quote.event_date && (
                                     <p style={{ color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: '600' }}>
                                         <Calendar size={16} style={{ color: 'var(--color-primary)' }} /> Data Evento: {new Date(quote.event_date).toLocaleDateString('it-IT')}
