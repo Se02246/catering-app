@@ -360,18 +360,23 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                 const transforms = [];
                 const zIndices = [];
                 
+                const isMobile = window.innerWidth <= 768;
+                const M = isMobile ? window.innerWidth / 2 + 50 : window.innerWidth / 2 + 150; 
+                const baseMinScale = isMobile ? 0.45 : 0.65;
+                const maxScale = 1.3;
+                const scaleRange = maxScale - baseMinScale;
+                const maxPush = isMobile ? 70 : 120; 
+                
                 for (let i = 0; i < children.length; i++) {
                     const child = children[i];
                     const childCenter = containerOffsetLeft + child.offsetLeft + child.offsetWidth / 2;
                     
                     const dist = childCenter - centerOfViewport;
-                    const M = window.innerWidth / 2 + 150; 
                     const nd = Math.max(-1, Math.min(1, dist / M)); 
                     
                     const scaleFactor = Math.cos(nd * Math.PI / 2); 
-                    const scale = 0.65 + 0.65 * scaleFactor; 
+                    const scale = baseMinScale + scaleRange * scaleFactor; 
                     
-                    const maxPush = 120; 
                     const translateX = Math.sin(nd * Math.PI / 2) * maxPush;
                     
                     const baseRotate = child.dataset.rotate || 0;
@@ -457,7 +462,7 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                     overflow-x: auto;
                     scrollbar-width: none;
                     -ms-overflow-style: none;
-                    padding: 40px 0; /* Increased padding to prevent clipping when scaled up */
+                    padding: 80px 0; /* Significantly increased padding to prevent any vertical clipping */
                     align-items: center;
                     /* For smooth touch scrolling on iOS */
                     -webkit-overflow-scrolling: touch;
@@ -487,6 +492,9 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                     box-shadow: 0 12px 24px rgba(0,0,0,0.4);
                 }
                 @media (max-width: 768px) {
+                    .product-marquee-item {
+                        margin: 0 -5px; /* Bring them closer on mobile */
+                    }
                     .product-marquee-item img {
                         width: 120px;
                         height: 120px;
@@ -779,7 +787,7 @@ const Home = () => {
                 )}
             </section>
 
-            {showQuoteBuilder && (
+            {showQuoteBuilder ? (
                 <section id="quote-section" style={{ marginTop: '3rem' }}>
                     <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,245,245,0.8) 100%)' }}>
                         <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem', fontSize: '1.5rem' }}>Non trovi quello che cerchi?</h2>
@@ -852,6 +860,13 @@ const Home = () => {
                             </div>
                         </div>
 
+                        <InfiniteProductCarousel products={products} openProduct={openProduct} />
+                    </div>
+                </section>
+            ) : (
+                <section id="products-section" style={{ marginTop: '3rem' }}>
+                    <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,245,245,0.8) 100%)' }}>
+                        <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem', fontSize: '1.5rem' }}>Scopri i nostri prodotti</h2>
                         <InfiniteProductCarousel products={products} openProduct={openProduct} />
                     </div>
                 </section>
