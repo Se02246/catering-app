@@ -930,7 +930,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             backgroundColor: '#0052cc',
                             border: 'none',
                             color: 'white',
-                            boxShadow: '0 4px 15px rgba(0, 82, 204, 0.4)'
+                            boxShadow: '0 4px 15px rgba(0, 82, 204, 0.4)',
+                            transition: 'none' // Disabilita transizioni che bloccano l'animazione
                         }}
                     >
                         <Send size={24} /> Salva su Ordermaster
