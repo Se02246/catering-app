@@ -887,7 +887,23 @@ const Home = () => {
                             </div>
                         </div>
 
-                        <InfiniteProductCarousel products={products} openProduct={openProduct} />
+                        <InfiniteProductCarousel products={products} openProduct={openProduct} onCenterProductChange={setCenterProductName} />
+                        {centerProductName && (
+                            <div className="animate-fade-in" style={{ marginTop: '-2.5rem', marginBottom: '1rem' }}>
+                                <span style={{ 
+                                    color: 'var(--color-text-muted)', 
+                                    fontSize: '0.9rem', 
+                                    fontWeight: '600',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em',
+                                    background: 'rgba(255,255,255,0.5)',
+                                    padding: '0.3rem 1rem',
+                                    borderRadius: '20px'
+                                }}>
+                                    {centerProductName}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </section>
             ) : (
