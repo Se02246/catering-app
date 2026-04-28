@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
 import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle } from 'lucide-react';
@@ -14,14 +14,41 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     const [editingItemId, setEditingItemId] = useState(null);
     const [editingItemData, setEditingItemData] = useState(null);
     const [copied, setCopied] = useState(false);
+    const [isBottomButtonVisible, setIsBottomButtonVisible] = useState(false);
+    const bottomButtonRef = useRef(null);
 
     const [isModeSelectionOpen, setIsModeSelectionOpen] = useState(false);
     const [isAiPromptOpen, setIsAiPromptOpen] = useState(false);
     const [aiPrompt, setAiPrompt] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
 
+    // Intersection Observer to detect when the bottom button is visible
+    useEffect(() => {
+        if (!currentQuote || !currentQuote.needs_sync) {
+            setIsBottomButtonVisible(false);
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsBottomButtonVisible(entry.isIntersecting);
+            },
+            { threshold: 0.1 }
+        );
+
+        if (bottomButtonRef.current) {
+            observer.observe(bottomButtonRef.current);
+        }
+
+        return () => {
+            if (bottomButtonRef.current) {
+                observer.unobserve(bottomButtonRef.current);
+            }
+        };
+    }, [currentQuote]);
+
     // Auto-open modal if requested
-    React.useEffect(() => {
+    useEffect(() => {
         if (autoOpenNewModal) {
             setIsModeSelectionOpen(true);
             if (onModalOpened) onModalOpened();
@@ -884,6 +911,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     </button>
 
                     <button
+                        ref={bottomButtonRef}
                         onClick={shareToOrderMaster}
                         className="btn btn-primary"
                         style={{
@@ -900,7 +928,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             border: 'none',
                             color: 'white',
                             boxShadow: '0 4px 15px rgba(0, 82, 204, 0.4)',
-                            transition: 'all 0.3s ease'
+                            transition: 'all 0.3s ease',
+                            animation: currentQuote.needs_sync ? 'fab-flash 0.8s infinite alternate' : 'none'
                         }}
                     >
                         <Send size={24} /> Importa su Ordermaster
@@ -963,37 +992,38 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 </div>
             )}
 
-            {/* OrderMaster FAB - Visible only when currentQuote needs sync */}
-            {currentQuote && currentQuote.needs_sync && (
+            {/* OrderMaster FAB - Visible only when currentQuote needs sync and bottom button is NOT visible */}
+            {currentQuote && currentQuote.needs_sync && !isBottomButtonVisible && (
                 <div 
                     style={{
                         position: 'fixed',
                         bottom: '2rem',
-                        right: '7.5rem', // Positioned to the left of the ScrollToTopFab (which is at right: 2rem and width 70px)
+                        right: '2rem',
                         zIndex: 2000,
                         transition: 'all 0.3s ease-in-out',
-                        animation: 'fab-bounce 2s infinite'
+                        animation: 'fab-flash 0.8s infinite alternate'
                     }}
                 >
                     <button
                         onClick={shareToOrderMaster}
                         className="btn btn-primary"
                         style={{
-                            width: '70px',
-                            height: '70px',
-                            borderRadius: '50%',
+                            padding: '1rem 1.5rem',
+                            borderRadius: '50px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            padding: 0,
+                            gap: '0.8rem',
                             backgroundColor: '#0052cc',
-                            boxShadow: '0 4px 15px rgba(0, 82, 204, 0.4)',
+                            boxShadow: '0 4px 20px rgba(0, 82, 204, 0.6)',
                             border: 'none',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            fontSize: '1rem'
                         }}
-                        title="Importa su OrderMaster"
                     >
-                        <Send size={32} />
+                        <Send size={24} /> Importa su Ordermaster
                     </button>
                 </div>
             )}

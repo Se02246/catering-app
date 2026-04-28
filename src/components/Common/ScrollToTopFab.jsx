@@ -7,9 +7,15 @@ const ScrollToTopFab = () => {
     const [isCartVisible, setIsCartVisible] = useState(false);
     const location = useLocation();
     const isQuotePage = location.pathname === '/quote';
+    const isAdminPage = location.pathname.startsWith('/admin');
 
     // Show button when page is scrolled down
     const toggleVisibility = () => {
+        if (isAdminPage) {
+            setIsVisible(false);
+            return;
+        }
+
         if (window.pageYOffset > 300) {
             setIsVisible(true);
         } else {

@@ -180,8 +180,10 @@ img {
   transform-origin: center;
 }
 
-@keyframes fab-bounce {
-  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-  40% {transform: translateY(-10px);}
-  60% {transform: translateY(-5px);}
+@keyframes fab-flash {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 82, 204, 0.7); }
+  30% { transform: scale(1.15); box-shadow: 0 0 20px 10px rgba(0, 82, 204, 0.4); filter: brightness(1.5); }
+  50% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 82, 204, 0); filter: brightness(1); }
+  70% { transform: scale(1.15); box-shadow: 0 0 20px 10px rgba(0, 82, 204, 0.4); filter: brightness(1.5); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 82, 204, 0); }
 }
