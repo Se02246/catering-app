@@ -273,13 +273,14 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
     );
 };
 
-const InfiniteProductCarousel = ({ products, openProduct }) => {
+const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange }) => {
     const carouselRef = React.useRef(null);
     const [isPaused, setIsPaused] = React.useState(false);
     const animationRef = React.useRef(null);
     const isInteractingRef = React.useRef(false);
     const pauseTimeoutRef = React.useRef(null);
     const fractionalScrollRef = React.useRef(0);
+    const lastReportedNameRef = React.useRef('');
 
     const displayProducts = React.useMemo(() => {
         if (!products) return [];
@@ -359,19 +360,33 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                 const children = container.children;
                 const transforms = [];
                 const zIndices = [];
+                
+                let closestIdx = -1;
+                let minAbsDist = Infinity;
+
+                const isMobile = window.innerWidth <= 768;
+                const M = isMobile ? window.innerWidth / 2 + 50 : window.innerWidth / 2 + 150; 
+                const baseMinScale = isMobile ? 0.45 : 0.65;
+                const maxScale = 1.3;
+                const scaleRange = maxScale - baseMinScale;
+                const maxPush = isMobile ? 70 : 120; 
 
                 for (let i = 0; i < children.length; i++) {
                     const child = children[i];
                     const childCenter = containerOffsetLeft + child.offsetLeft + child.offsetWidth / 2;
-
+                    
                     const dist = childCenter - centerOfViewport;
-                    const M = window.innerWidth / 2 + 150;
-                    const nd = Math.max(-1, Math.min(1, dist / M));
+                    const absDist = Math.abs(dist);
+                    if (absDist < minAbsDist) {
+                        minAbsDist = absDist;
+                        closestIdx = i;
+                    }
 
-                    const scaleFactor = Math.cos(nd * Math.PI / 2);
-                    const scale = 0.65 + 0.65 * scaleFactor;
-
-                    const maxPush = 120;
+                    const nd = Math.max(-1, Math.min(1, dist / M)); 
+                    
+                    const scaleFactor = Math.cos(nd * Math.PI / 2); 
+                    const scale = baseMinScale + scaleRange * scaleFactor; 
+                    
                     const translateX = Math.sin(nd * Math.PI / 2) * maxPush;
 
                     const baseRotate = child.dataset.rotate || 0;
@@ -393,6 +408,14 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                 for (let i = 0; i < children.length; i++) {
                     children[i].style.transform = transforms[i];
                     children[i].style.zIndex = zIndices[i];
+                }
+                
+                if (closestIdx !== -1 && onCenterProductChange) {
+                    const currentName = repeatedProducts[closestIdx]?.name || '';
+                    if (currentName !== lastReportedNameRef.current) {
+                        lastReportedNameRef.current = currentName;
+                        onCenterProductChange(currentName);
+                    }
                 }
             }
 
@@ -457,7 +480,7 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                     overflow-x: auto;
                     scrollbar-width: none;
                     -ms-overflow-style: none;
-                    padding: 40px 0; /* Increased padding to prevent clipping when scaled up */
+                    padding: 100px 0; /* Significantly increased padding to prevent clipping when scaled up and floating */
                     align-items: center;
                     /* For smooth touch scrolling on iOS */
                     -webkit-overflow-scrolling: touch;
@@ -543,6 +566,7 @@ const Home = () => {
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
     const { reviews, isLoading: isReviewsLoading } = useReviews();
     const { products } = useProducts();
+    const [centerProductName, setCenterProductName] = useState('');
 
     const [homeAiPrompt, setHomeAiPrompt] = useState('');
 
@@ -779,7 +803,7 @@ const Home = () => {
                 )}
             </section>
 
-            {showQuoteBuilder && (
+            {showQuoteBuilder ? (
                 <section id="quote-section" style={{ marginTop: '3rem' }}>
                     <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,245,245,0.8) 100%)' }}>
                         <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem', fontSize: '1.5rem' }}>Non trovi quello che cerchi?</h2>
@@ -853,6 +877,32 @@ const Home = () => {
                         </div>
 
                         <InfiniteProductCarousel products={products} openProduct={openProduct} />
+                    </div>
+                </section>
+            ) : (
+                <section id="products-section" style={{ marginTop: '3rem' }}>
+                    <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,245,245,0.8) 100%)' }}>
+                        <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem', fontSize: '2rem' }}>Scopri i nostri prodotti</h2>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '1.5rem' }}>
+                            Clicca sul prodotto che ti interessa per vederne i dettagli
+                        </p>
+                        <InfiniteProductCarousel products={products} openProduct={openProduct} onCenterProductChange={setCenterProductName} />
+                        {centerProductName && (
+                            <div className="animate-fade-in" style={{ marginTop: '-2.5rem', marginBottom: '1rem' }}>
+                                <span style={{ 
+                                    color: 'var(--color-text-muted)', 
+                                    fontSize: '0.9rem', 
+                                    fontWeight: '600',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em',
+                                    background: 'rgba(255,255,255,0.5)',
+                                    padding: '0.3rem 1rem',
+                                    borderRadius: '20px'
+                                }}>
+                                    {centerProductName}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </section>
             )}
