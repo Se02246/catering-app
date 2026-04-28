@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCaterings, useSetting, useReviews } from '../hooks/useData';
+import { useCaterings, useSetting, useReviews, useProducts } from '../hooks/useData';
 import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import ReviewCard from '../components/Common/ReviewCard';
@@ -273,11 +273,223 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
     );
 };
 
+const InfiniteProductCarousel = ({ products, openProduct }) => {
+    const carouselRef = React.useRef(null);
+    const [isPaused, setIsPaused] = React.useState(false);
+    const animationRef = React.useRef(null);
+    const isInteractingRef = React.useRef(false);
+    const pauseTimeoutRef = React.useRef(null);
+    const fractionalScrollRef = React.useRef(0);
+
+    const displayProducts = React.useMemo(() => {
+        if (!products) return [];
+        return products.filter(p => p.image_url && !p.hidden_in_menu && !p.hide_in_menu);
+    }, [products]);
+
+    // Use 20 sets to create a huge buffer.
+    const MULTIPLIER = 20;
+    const repeatedProducts = React.useMemo(() => {
+        if (displayProducts.length === 0) return [];
+        return Array(MULTIPLIER).fill(displayProducts).flat();
+    }, [displayProducts]);
+
+    const getSetWidth = React.useCallback(() => {
+        if (!carouselRef.current || displayProducts.length === 0) return 0;
+        const container = carouselRef.current;
+        const firstItemSet0 = container.children[0];
+        const firstItemSet1 = container.children[displayProducts.length];
+        
+        if (firstItemSet0 && firstItemSet1) {
+            return firstItemSet1.offsetLeft - firstItemSet0.offsetLeft;
+        }
+        return 0;
+    }, [displayProducts.length]);
+
+    React.useEffect(() => {
+        if (!carouselRef.current || displayProducts.length === 0) return;
+
+        const initScroll = () => {
+            const setWidth = getSetWidth();
+            if (setWidth > 0) {
+                // Jump to the 10th set (middle of 20 sets)
+                carouselRef.current.scrollLeft = setWidth * 10;
+                return true;
+            }
+            return false;
+        };
+
+        if (!initScroll()) {
+            const interval = setInterval(() => {
+                if (initScroll()) clearInterval(interval);
+            }, 100);
+            setTimeout(() => clearInterval(interval), 2000);
+        }
+    }, [displayProducts.length, getSetWidth]);
+
+    React.useEffect(() => {
+        if (!carouselRef.current || displayProducts.length === 0) return;
+
+        let lastTime = performance.now();
+        const pixelsPerSecond = 40; // Auto-scroll speed
+
+        const animateScroll = (time) => {
+            const deltaTime = time - lastTime;
+            lastTime = time;
+
+            if (!isPaused && !isInteractingRef.current && carouselRef.current) {
+                const container = carouselRef.current;
+                
+                fractionalScrollRef.current += (pixelsPerSecond * deltaTime) / 1000;
+                
+                if (fractionalScrollRef.current >= 1) {
+                    const pixelsToScroll = Math.floor(fractionalScrollRef.current);
+                    container.scrollLeft += pixelsToScroll;
+                    fractionalScrollRef.current -= pixelsToScroll;
+                }
+            }
+
+            animationRef.current = requestAnimationFrame(animateScroll);
+        };
+
+        animationRef.current = requestAnimationFrame(animateScroll);
+
+        return () => {
+            if (animationRef.current) cancelAnimationFrame(animationRef.current);
+        };
+    }, [isPaused, displayProducts.length]);
+
+    const handleScroll = () => {
+        if (!carouselRef.current || displayProducts.length === 0) return;
+
+        const container = carouselRef.current;
+        const setWidth = getSetWidth();
+        if (setWidth === 0) return;
+
+        const currentScroll = container.scrollLeft;
+
+        // Seamless loop jump
+        // If scrolled before set 5, jump forward by 10 sets
+        if (currentScroll < setWidth * 5) {
+            container.scrollLeft += setWidth * 10;
+        } 
+        // If scrolled past set 15, jump backward by 10 sets
+        else if (currentScroll > setWidth * 15) {
+            container.scrollLeft -= setWidth * 10;
+        }
+    };
+
+    const handleInteractionStart = () => {
+        isInteractingRef.current = true;
+        setIsPaused(true);
+        if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+    };
+
+    const handleInteractionEnd = () => {
+        isInteractingRef.current = false;
+        if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+        pauseTimeoutRef.current = setTimeout(() => {
+            setIsPaused(false);
+        }, 2000);
+    };
+
+    if (!displayProducts || displayProducts.length === 0) return null;
+
+    return (
+        <div style={{
+            width: '100%',
+            marginTop: '2.5rem',
+            padding: '1rem 0'
+        }}>
+            <style>{`
+                .product-marquee-container {
+                    display: flex;
+                    overflow-x: auto;
+                    scrollbar-width: none;
+                    -ms-overflow-style: none;
+                    padding: 20px 0;
+                    align-items: center;
+                    /* For smooth touch scrolling on iOS */
+                    -webkit-overflow-scrolling: touch;
+                }
+                .product-marquee-container::-webkit-scrollbar {
+                    display: none;
+                }
+                .product-marquee-item {
+                    flex-shrink: 0;
+                    margin: 0 -15px;
+                    transition: transform 0.3s ease, z-index 0.3s;
+                    cursor: pointer;
+                    position: relative;
+                }
+                .product-marquee-item:hover {
+                    transform: scale(1.15) rotate(0deg) !important;
+                    z-index: 50 !important;
+                }
+                .product-marquee-item img {
+                    width: 120px;
+                    height: 120px;
+                    border-radius: 16px;
+                    object-fit: cover;
+                    border: 3px solid white;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    background-color: white;
+                }
+                @media (max-width: 768px) {
+                    .product-marquee-item img {
+                        width: 90px;
+                        height: 90px;
+                    }
+                }
+            `}</style>
+            
+            <div 
+                ref={carouselRef}
+                className="product-marquee-container"
+                onScroll={handleScroll}
+                onTouchStart={handleInteractionStart}
+                onTouchEnd={handleInteractionEnd}
+                onMouseDown={handleInteractionStart}
+                onMouseUp={handleInteractionEnd}
+                onMouseLeave={handleInteractionEnd}
+                onWheel={() => {
+                    handleInteractionStart();
+                    handleInteractionEnd();
+                }}
+            >
+                {repeatedProducts.map((prod, index) => {
+                    const rotation = (index % 5 === 0) ? -12 :
+                                     (index % 5 === 1) ? 8 :
+                                     (index % 5 === 2) ? -6 :
+                                     (index % 5 === 3) ? 14 : -8;
+                                     
+                    const topOffset = (index % 3 === 0) ? -10 :
+                                      (index % 3 === 1) ? 10 : 0;
+
+                    return (
+                        <div 
+                            key={`${prod.id}-${index}`} 
+                            className="product-marquee-item"
+                            style={{ 
+                                transform: `rotate(${rotation}deg) translateY(${topOffset}px)`,
+                                zIndex: index % 5
+                            }}
+                            onClick={() => openProduct(prod)}
+                        >
+                            <img src={prod.image_url} alt={prod.name} />
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
 const Home = () => {
     const navigate = useNavigate();
     const { caterings, isLoading, isError } = useCaterings();
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
     const { reviews, isLoading: isReviewsLoading } = useReviews();
+    const { products } = useProducts();
 
     const [homeAiPrompt, setHomeAiPrompt] = useState('');
 
@@ -586,6 +798,8 @@ const Home = () => {
                                 </button>
                             </div>
                         </div>
+
+                        <InfiniteProductCarousel products={products} openProduct={openProduct} />
                     </div>
                 </section>
             )}
