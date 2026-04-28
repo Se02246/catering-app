@@ -492,7 +492,7 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                 }
                 .product-marquee-item {
                     flex-shrink: 0;
-                    margin: 0 -20px; /* Negative margin to make images overlap slightly */
+                    margin: 0 -10px; /* Reduced negative margin to spread images slightly */
                     cursor: pointer;
                     position: relative;
                     will-change: transform, z-index;
@@ -519,7 +519,7 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                 }
                 @media (max-width: 768px) {
                     .product-marquee-item {
-                        margin: 0 -15px; /* Adjust overlap for mobile */
+                        margin: 0 -8px; /* Adjust overlap for mobile */
                     }
                     .product-marquee-item img {
                         width: 120px;
