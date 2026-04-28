@@ -280,6 +280,17 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
     const isInteractingRef = React.useRef(false);
     const pauseTimeoutRef = React.useRef(null);
     const fractionalScrollRef = React.useRef(0);
+    const layoutCacheRef = React.useRef(null);
+    const lastTransformsRef = React.useRef([]);
+    const lastZIndicesRef = React.useRef([]);
+
+    React.useEffect(() => {
+        const handleResize = () => {
+            layoutCacheRef.current = null;
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const displayProducts = React.useMemo(() => {
         if (!products) return [];
@@ -298,7 +309,7 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
         const container = carouselRef.current;
         const firstItemSet0 = container.children[0];
         const firstItemSet1 = container.children[displayProducts.length];
-        
+
         if (firstItemSet0 && firstItemSet1) {
             return firstItemSet1.offsetLeft - firstItemSet0.offsetLeft;
         }
@@ -338,9 +349,9 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
 
             if (!isPaused && !isInteractingRef.current && carouselRef.current) {
                 const container = carouselRef.current;
-                
+
                 fractionalScrollRef.current += (pixelsPerSecond * deltaTime) / 1000;
-                
+
                 if (fractionalScrollRef.current >= 1) {
                     const pixelsToScroll = Math.floor(fractionalScrollRef.current);
                     container.scrollLeft += pixelsToScroll;
@@ -357,8 +368,10 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                 const containerOffsetLeft = containerRect.left - scrollLeft;
                 
                 const children = container.children;
-                const transforms = [];
-                const zIndices = [];
+                
+                if (!layoutCacheRef.current || layoutCacheRef.current.length !== children.length) {
+                    layoutCacheRef.current = Array.from(children).map(child => child.offsetLeft + child.offsetWidth / 2);
+                }
                 
                 const isMobile = window.innerWidth <= 768;
                 const M = isMobile ? window.innerWidth / 2 + 50 : window.innerWidth / 2 + 150; 
@@ -368,8 +381,7 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                 const maxPush = isMobile ? 70 : 120; 
                 
                 for (let i = 0; i < children.length; i++) {
-                    const child = children[i];
-                    const childCenter = containerOffsetLeft + child.offsetLeft + child.offsetWidth / 2;
+                    const childCenter = containerOffsetLeft + layoutCacheRef.current[i];
                     
                     const dist = childCenter - centerOfViewport;
                     const nd = Math.max(-1, Math.min(1, dist / M)); 
@@ -379,25 +391,37 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                     
                     const translateX = Math.sin(nd * Math.PI / 2) * maxPush;
                     
+                    const child = children[i];
                     const baseRotate = child.dataset.rotate || 0;
                     const baseTranslateY = parseFloat(child.dataset.translatey || 0);
                     const baseZIndex = parseInt(child.dataset.zindex || 0);
                     
                     const zIndex = baseZIndex + Math.round(100 * scaleFactor);
                     
-                    // Floating effect
-                    const floatSpeed = 0.002;
-                    const floatAmplitude = 12; // pixels up and down
-                    const floatOffset = Math.sin(time * floatSpeed + i * 0.5) * floatAmplitude;
-                    const finalTranslateY = baseTranslateY + floatOffset;
+                    // Floating effect ONLY for visible items to allow static off-screen items
+                    let finalTranslateY = baseTranslateY;
+                    if (Math.abs(nd) < 1) {
+                        const floatSpeed = 0.002;
+                        const floatAmplitude = 12; // pixels up and down
+                        const floatOffset = Math.sin(time * floatSpeed + i * 0.5) * floatAmplitude;
+                        finalTranslateY += floatOffset;
+                    }
                     
-                    transforms.push(`translateX(${translateX}px) scale(${scale}) rotate(${baseRotate}deg) translateY(${finalTranslateY}px)`);
-                    zIndices.push(zIndex);
-                }
-                
-                for (let i = 0; i < children.length; i++) {
-                    children[i].style.transform = transforms[i];
-                    children[i].style.zIndex = zIndices[i];
+                    // Rounding for string comparison to prevent microscopic updates
+                    const tX = translateX.toFixed(1);
+                    const sc = scale.toFixed(3);
+                    const tY = finalTranslateY.toFixed(1);
+                    
+                    const transformStr = `translateX(${tX}px) scale(${sc}) rotate(${baseRotate}deg) translateY(${tY}px)`;
+                    
+                    if (lastTransformsRef.current[i] !== transformStr) {
+                        child.style.transform = transformStr;
+                        lastTransformsRef.current[i] = transformStr;
+                    }
+                    if (lastZIndicesRef.current[i] !== zIndex) {
+                        child.style.zIndex = zIndex;
+                        lastZIndicesRef.current[i] = zIndex;
+                    }
                 }
             }
 
@@ -424,7 +448,7 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
         // If scrolled before set 5, jump forward by 10 sets
         if (currentScroll < setWidth * 5) {
             container.scrollLeft += setWidth * 10;
-        } 
+        }
         // If scrolled past set 15, jump backward by 10 sets
         else if (currentScroll > setWidth * 15) {
             container.scrollLeft -= setWidth * 10;
@@ -462,7 +486,7 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                     overflow-x: auto;
                     scrollbar-width: none;
                     -ms-overflow-style: none;
-                    padding: 80px 0; /* Significantly increased padding to prevent any vertical clipping */
+                    padding: 40px 0; /* Increased padding to prevent clipping when scaled up */
                     align-items: center;
                     /* For smooth touch scrolling on iOS */
                     -webkit-overflow-scrolling: touch;
@@ -492,17 +516,14 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                     box-shadow: 0 12px 24px rgba(0,0,0,0.4);
                 }
                 @media (max-width: 768px) {
-                    .product-marquee-item {
-                        margin: 0 -5px; /* Bring them closer on mobile */
-                    }
                     .product-marquee-item img {
                         width: 120px;
                         height: 120px;
                     }
                 }
             `}</style>
-            
-            <div 
+
+            <div
                 ref={carouselRef}
                 className="product-marquee-container"
                 onScroll={handleScroll}
@@ -518,18 +539,18 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
             >
                 {repeatedProducts.map((prod, index) => {
                     const rotation = (index % 5 === 0) ? -12 :
-                                     (index % 5 === 1) ? 8 :
-                                     (index % 5 === 2) ? -6 :
-                                     (index % 5 === 3) ? 14 : -8;
-                                     
+                        (index % 5 === 1) ? 8 :
+                            (index % 5 === 2) ? -6 :
+                                (index % 5 === 3) ? 14 : -8;
+
                     const topOffset = (index % 3 === 0) ? -10 :
-                                      (index % 3 === 1) ? 10 : 0;
-                                      
+                        (index % 3 === 1) ? 10 : 0;
+
                     const baseZIndex = index % 5;
 
                     return (
-                        <div 
-                            key={`${prod.id}-${index}`} 
+                        <div
+                            key={`${prod.id}-${index}`}
                             className="product-marquee-item"
                             data-rotate={rotation}
                             data-translatey={topOffset}
@@ -787,7 +808,7 @@ const Home = () => {
                 )}
             </section>
 
-            {showQuoteBuilder ? (
+            {showQuoteBuilder && (
                 <section id="quote-section" style={{ marginTop: '3rem' }}>
                     <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,245,245,0.8) 100%)' }}>
                         <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem', fontSize: '1.5rem' }}>Non trovi quello che cerchi?</h2>
@@ -804,29 +825,29 @@ const Home = () => {
                         >
                             Crealo!
                         </button>
-                        
+
                         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center', marginBottom: '1rem' }}>
                                 <div style={{ height: '1px', flex: 1, backgroundColor: 'rgba(155, 57, 61, 0.2)' }}></div>
                                 <h3 style={{ margin: 0, color: 'var(--color-primary-dark)', fontSize: '1.1rem' }}>oppure crealo con l'IA</h3>
                                 <div style={{ height: '1px', flex: 1, backgroundColor: 'rgba(155, 57, 61, 0.2)' }}></div>
                             </div>
-                            
+
                             <div style={{ position: 'relative', width: '100%', textAlign: 'left' }}>
                                 <textarea
                                     value={homeAiPrompt}
                                     onChange={(e) => setHomeAiPrompt(e.target.value)}
                                     placeholder="Descrivi qui l'evento e cosa desideri (es. 'Festa per 20 persone con opzioni senza glutine')..."
                                     style={{
-                                        width: '100%', 
-                                        padding: '1.5rem 4.5rem 1.5rem 1.5rem', 
+                                        width: '100%',
+                                        padding: '1.5rem 4.5rem 1.5rem 1.5rem',
                                         borderRadius: '24px',
-                                        border: '2px solid rgba(155, 57, 61, 0.1)', 
+                                        border: '2px solid rgba(155, 57, 61, 0.1)',
                                         background: 'var(--color-bg)',
-                                        fontSize: '1rem', 
-                                        minHeight: '120px', 
+                                        fontSize: '1rem',
+                                        minHeight: '120px',
                                         resize: 'vertical',
-                                        fontFamily: 'inherit', 
+                                        fontFamily: 'inherit',
                                         outline: 'none',
                                         boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)',
                                         transition: 'border-color 0.3s',
@@ -835,20 +856,20 @@ const Home = () => {
                                     onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
                                     onBlur={(e) => e.target.style.borderColor = 'rgba(155, 57, 61, 0.1)'}
                                 />
-                                <button 
-                                    className="btn btn-primary" 
+                                <button
+                                    className="btn btn-primary"
                                     onClick={handleHomeAiSubmit}
                                     disabled={!homeAiPrompt.trim()}
-                                    style={{ 
-                                        position: 'absolute', 
-                                        bottom: '1rem', 
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: '1rem',
                                         right: '1rem',
                                         width: '48px',
                                         height: '48px',
                                         borderRadius: '50%',
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'center', 
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
                                         padding: 0,
                                         boxShadow: 'var(--shadow-md)',
                                         transition: 'all 0.3s'
@@ -860,13 +881,6 @@ const Home = () => {
                             </div>
                         </div>
 
-                        <InfiniteProductCarousel products={products} openProduct={openProduct} />
-                    </div>
-                </section>
-            ) : (
-                <section id="products-section" style={{ marginTop: '3rem' }}>
-                    <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,245,245,0.8) 100%)' }}>
-                        <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem', fontSize: '1.5rem' }}>Scopri i nostri prodotti</h2>
                         <InfiniteProductCarousel products={products} openProduct={openProduct} />
                     </div>
                 </section>
@@ -947,9 +961,9 @@ const Home = () => {
 
                     {/* Card 2: Dove siamo */}
                     <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', animationDelay: '0.1s', overflow: 'hidden' }}>
-                        <a 
-                            href="https://www.google.com/maps/place/08020+Irgoli+NU/@40.4106048,9.6310529,15z/data=!3m1!4b1!4m6!3m5!1s0x12deede3d3e26b93:0x7986762e93de8660!8m2!3d40.4088282!4d9.6302764!16zL20vMGdxdm1j!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDQyMi4wIKXMDSoASAFQAw%3D%3D" 
-                            target="_blank" 
+                        <a
+                            href="https://www.google.com/maps/place/08020+Irgoli+NU/@40.4106048,9.6310529,15z/data=!3m1!4b1!4m6!3m5!1s0x12deede3d3e26b93:0x7986762e93de8660!8m2!3d40.4088282!4d9.6302764!16zL20vMGdxdm1j!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDQyMi4wIKXMDSoASAFQAw%3D%3D"
+                            target="_blank"
                             rel="noopener noreferrer"
                             style={{ display: 'block', height: '350px' }}
                         >
@@ -981,17 +995,17 @@ const Home = () => {
                         <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
                             Siamo a tua disposizione per qualsiasi richiesta o per organizzare il tuo prossimo evento perfetto.
                         </p>
-                        
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
                             <button
                                 onClick={contactWhatsApp}
                                 className="btn btn-primary"
-                                style={{ 
-                                    width: '100%', 
-                                    padding: '0.8rem 1rem', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center', 
+                                style={{
+                                    width: '100%',
+                                    padding: '0.8rem 1rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
                                     gap: '0.75rem',
                                     borderRadius: '50px',
                                     fontSize: '1rem'
@@ -1004,12 +1018,12 @@ const Home = () => {
                             <button
                                 onClick={() => window.open('https://www.instagram.com/muse_catering_?igsh=amNwajZrcW5kczAx', '_blank')}
                                 className="btn btn-outline"
-                                style={{ 
-                                    width: '100%', 
-                                    padding: '0.8rem 1rem', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center', 
+                                style={{
+                                    width: '100%',
+                                    padding: '0.8rem 1rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
                                     gap: '0.75rem',
                                     borderRadius: '50px',
                                     fontSize: '1rem',
