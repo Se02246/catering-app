@@ -138,6 +138,7 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
     const pauseTimeoutRef = React.useRef(null);
     const isScrollingRef = React.useRef(false);
     const scrollEndTimeoutRef = React.useRef(null);
+    const touchStartPos = React.useRef({ x: 0, y: 0 });
 
     const displayReviews = reviews.slice(0, 20);
 
@@ -190,6 +191,18 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
         pauseTimeoutRef.current = setTimeout(() => {
             setIsPaused(false);
         }, 8000);
+    };
+
+    const handleTouchStart = (e) => {
+        touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    };
+
+    const handleTouchMove = (e) => {
+        const deltaX = Math.abs(e.touches[0].clientX - touchStartPos.current.x);
+        const deltaY = Math.abs(e.touches[0].clientY - touchStartPos.current.y);
+        if (deltaX > deltaY && deltaX > 10) {
+            handleInteraction();
+        }
     };
 
     React.useEffect(() => {
@@ -247,7 +260,8 @@ const InfiniteReviewsCarousel = ({ reviews }) => {
         <div
             ref={carouselRef}
             onScroll={handleScroll}
-            onTouchStart={handleInteraction}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
             onMouseDown={handleInteraction}
             onWheel={handleInteraction}
             style={{
@@ -281,6 +295,8 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
     const pauseTimeoutRef = React.useRef(null);
     const fractionalScrollRef = React.useRef(0);
     const lastReportedNameRef = React.useRef('');
+    const touchStartPos = React.useRef({ x: 0, y: 0 });
+    const isTouchScrollingRef = React.useRef(false);
 
     const displayProducts = React.useMemo(() => {
         if (!products) return [];
@@ -468,6 +484,26 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
         }, 2000);
     };
 
+    const handleTouchStart = (e) => {
+        touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        isTouchScrollingRef.current = false;
+    };
+
+    const handleTouchMove = (e) => {
+        if (isTouchScrollingRef.current) {
+            handleInteractionStart();
+            return;
+        }
+
+        const deltaX = Math.abs(e.touches[0].clientX - touchStartPos.current.x);
+        const deltaY = Math.abs(e.touches[0].clientY - touchStartPos.current.y);
+
+        if (deltaX > deltaY && deltaX > 10) {
+            isTouchScrollingRef.current = true;
+            handleInteractionStart();
+        }
+    };
+
     if (!displayProducts || displayProducts.length === 0) return null;
 
     return (
@@ -535,11 +571,12 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                 }
             `}</style>
 
-            <div
+            <div 
                 ref={carouselRef}
                 className="product-marquee-container"
                 onScroll={handleScroll}
-                onTouchStart={handleInteractionStart}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
                 onTouchEnd={handleInteractionEnd}
                 onMouseDown={handleInteractionStart}
                 onMouseUp={handleInteractionEnd}
