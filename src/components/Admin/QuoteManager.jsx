@@ -38,7 +38,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 is_gluten_free: updatedQuote.is_gluten_free,
                 is_lactose_free: updatedQuote.is_lactose_free,
                 notes: updatedQuote.notes,
-                menu_notes: updatedQuote.menu_notes
+                menu_notes: updatedQuote.menu_notes,
+                client_name: updatedQuote.client_name,
+                event_date: updatedQuote.event_date
             });
             // Show a brief success indicator
             setMessage({ type: 'success', text: 'Modifiche salvate automaticamente' });
