@@ -280,17 +280,6 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
     const isInteractingRef = React.useRef(false);
     const pauseTimeoutRef = React.useRef(null);
     const fractionalScrollRef = React.useRef(0);
-    const layoutCacheRef = React.useRef(null);
-    const lastTransformsRef = React.useRef([]);
-    const lastZIndicesRef = React.useRef([]);
-
-    React.useEffect(() => {
-        const handleResize = () => {
-            layoutCacheRef.current = null;
-        };
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     const displayProducts = React.useMemo(() => {
         if (!products) return [];
@@ -366,62 +355,44 @@ const InfiniteProductCarousel = ({ products, openProduct }) => {
                 const centerOfViewport = containerRect.left + containerRect.width / 2;
                 const scrollLeft = container.scrollLeft;
                 const containerOffsetLeft = containerRect.left - scrollLeft;
-                
+
                 const children = container.children;
-                
-                if (!layoutCacheRef.current || layoutCacheRef.current.length !== children.length) {
-                    layoutCacheRef.current = Array.from(children).map(child => child.offsetLeft + child.offsetWidth / 2);
-                }
-                
-                const isMobile = window.innerWidth <= 768;
-                const M = isMobile ? window.innerWidth / 2 + 50 : window.innerWidth / 2 + 150; 
-                const baseMinScale = isMobile ? 0.45 : 0.65;
-                const maxScale = 1.3;
-                const scaleRange = maxScale - baseMinScale;
-                const maxPush = isMobile ? 70 : 120; 
-                
+                const transforms = [];
+                const zIndices = [];
+
                 for (let i = 0; i < children.length; i++) {
-                    const childCenter = containerOffsetLeft + layoutCacheRef.current[i];
-                    
-                    const dist = childCenter - centerOfViewport;
-                    const nd = Math.max(-1, Math.min(1, dist / M)); 
-                    
-                    const scaleFactor = Math.cos(nd * Math.PI / 2); 
-                    const scale = baseMinScale + scaleRange * scaleFactor; 
-                    
-                    const translateX = Math.sin(nd * Math.PI / 2) * maxPush;
-                    
                     const child = children[i];
+                    const childCenter = containerOffsetLeft + child.offsetLeft + child.offsetWidth / 2;
+
+                    const dist = childCenter - centerOfViewport;
+                    const M = window.innerWidth / 2 + 150;
+                    const nd = Math.max(-1, Math.min(1, dist / M));
+
+                    const scaleFactor = Math.cos(nd * Math.PI / 2);
+                    const scale = 0.65 + 0.65 * scaleFactor;
+
+                    const maxPush = 120;
+                    const translateX = Math.sin(nd * Math.PI / 2) * maxPush;
+
                     const baseRotate = child.dataset.rotate || 0;
                     const baseTranslateY = parseFloat(child.dataset.translatey || 0);
                     const baseZIndex = parseInt(child.dataset.zindex || 0);
-                    
+
                     const zIndex = baseZIndex + Math.round(100 * scaleFactor);
-                    
-                    // Floating effect ONLY for visible items to allow static off-screen items
-                    let finalTranslateY = baseTranslateY;
-                    if (Math.abs(nd) < 1) {
-                        const floatSpeed = 0.002;
-                        const floatAmplitude = 12; // pixels up and down
-                        const floatOffset = Math.sin(time * floatSpeed + i * 0.5) * floatAmplitude;
-                        finalTranslateY += floatOffset;
-                    }
-                    
-                    // Rounding for string comparison to prevent microscopic updates
-                    const tX = translateX.toFixed(1);
-                    const sc = scale.toFixed(3);
-                    const tY = finalTranslateY.toFixed(1);
-                    
-                    const transformStr = `translateX(${tX}px) scale(${sc}) rotate(${baseRotate}deg) translateY(${tY}px)`;
-                    
-                    if (lastTransformsRef.current[i] !== transformStr) {
-                        child.style.transform = transformStr;
-                        lastTransformsRef.current[i] = transformStr;
-                    }
-                    if (lastZIndicesRef.current[i] !== zIndex) {
-                        child.style.zIndex = zIndex;
-                        lastZIndicesRef.current[i] = zIndex;
-                    }
+
+                    // Floating effect
+                    const floatSpeed = 0.002;
+                    const floatAmplitude = 12; // pixels up and down
+                    const floatOffset = Math.sin(time * floatSpeed + i * 0.5) * floatAmplitude;
+                    const finalTranslateY = baseTranslateY + floatOffset;
+
+                    transforms.push(`translateX(${translateX}px) scale(${scale}) rotate(${baseRotate}deg) translateY(${finalTranslateY}px)`);
+                    zIndices.push(zIndex);
+                }
+
+                for (let i = 0; i < children.length; i++) {
+                    children[i].style.transform = transforms[i];
+                    children[i].style.zIndex = zIndices[i];
                 }
             }
 
