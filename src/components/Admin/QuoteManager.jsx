@@ -97,6 +97,44 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         }
     };
 
+    const shareToOrderMaster = () => {
+        if (!currentQuote) return;
+
+        let textToShare = `Riepilogo preventivo\n`;
+        if (currentQuote.client_name) {
+            textToShare += `Nome: ${currentQuote.client_name}\n`;
+        }
+        textToShare += `Prodotti:\n`;
+        if (currentQuote.items) {
+            currentQuote.items.forEach(item => {
+                const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : 'kg'}` : "";
+                textToShare += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
+            });
+        }
+        
+        if (currentQuote.total_price) {
+            textToShare += `\nTotale: € ${Number(currentQuote.total_price).toFixed(2)}\n`;
+        }
+
+        if (currentQuote.notes) {
+            textToShare += `\nNote sul preventivo:\n${currentQuote.notes}\n`;
+        }
+
+        const encodedText = encodeURIComponent(textToShare);
+        const appPackage = "com.ordermaster.app";
+        const fallbackUrl = encodeURIComponent(`https://play.google.com/store/apps/details?id=${appPackage}`);
+
+        const intentUri = `intent:#Intent;` +
+            `action=android.intent.action.SEND;` +
+            `type=text/plain;` +
+            `package=${appPackage};` +
+            `S.android.intent.extra.TEXT=${encodedText};` +
+            `S.browser_fallback_url=${fallbackUrl};` +
+            `end`;
+
+        window.location.href = intentUri;
+    };
+
     const handleGenerateAiQuote = async () => {
         if (!aiPrompt.trim()) return;
         setAiLoading(true);
@@ -407,6 +445,25 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <button
+                                onClick={shareToOrderMaster}
+                                title="Invia a OrderMaster"
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--color-primary)',
+                                    cursor: 'pointer',
+                                    padding: '0.5rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s ease',
+                                    borderRadius: '8px',
+                                    backgroundColor: 'rgba(175, 68, 72, 0.05)'
+                                }}
+                            >
+                                <Send size={20} />
+                            </button>
                             <button
                                 onClick={handleShareQuote}
                                 title="Condividi o copia preventivo"
