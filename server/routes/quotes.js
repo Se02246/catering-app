@@ -241,7 +241,7 @@ router.put('/:id', async (req, res) => {
     const { items, total_price, is_gluten_free, is_lactose_free, notes, menu_notes, event_date, client_name } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, notes = $5, menu_notes = $6, event_date = $7, client_name = $8 WHERE id = $9 RETURNING *',
+            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, notes = $5, menu_notes = $6, event_date = $7, client_name = $8, needs_sync = true WHERE id = $9 RETURNING *',
             [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, notes, menu_notes, event_date || null, client_name || null, id]
         );
         if (result.rows.length === 0) {
@@ -251,6 +251,24 @@ router.put('/:id', async (req, res) => {
     } catch (err) {
         console.error('Error updating quote:', err);
         res.status(500).json({ error: 'Server error updating quote' });
+    }
+});
+
+// Mark quote as synced with OrderMaster
+router.post('/:id/mark-synced', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query(
+            'UPDATE quotes SET needs_sync = false WHERE id = $1 RETURNING *',
+            [id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Quote not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error marking quote as synced:', err);
+        res.status(500).json({ error: 'Server error marking quote as synced' });
     }
 });
 

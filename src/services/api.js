@@ -247,6 +247,15 @@ export const api = {
         return res.json();
     },
 
+    markQuoteSynced: async (id) => {
+        const res = await fetch(`${API_URL}/quotes/${id}/mark-synced`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!res.ok) throw new Error('Failed to mark quote as synced');
+        return res.json();
+    },
+
     recalculateProductsPrices: async (percentage) => {
         const res = await fetch(`${API_URL}/products/recalculate`, {
             method: 'POST',

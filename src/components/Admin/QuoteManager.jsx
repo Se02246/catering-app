@@ -42,6 +42,10 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 client_name: updatedQuote.client_name,
                 event_date: updatedQuote.event_date
             });
+            
+            // The backend sets needs_sync to true on every update
+            setCurrentQuote(prev => ({ ...prev, needs_sync: true }));
+
             // Show a brief success indicator
             setMessage({ type: 'success', text: 'Modifiche salvate automaticamente' });
             setTimeout(() => setMessage(null), 2000);
@@ -102,7 +106,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         }
     };
 
-    const shareToOrderMaster = () => {
+    const shareToOrderMaster = async () => {
         if (!currentQuote) return;
 
         let textToShare = `Riepilogo preventivo\n`;
@@ -143,6 +147,14 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             `end`;
 
         window.location.href = intentUri;
+
+        // Mark as synced
+        try {
+            await api.markQuoteSynced(currentQuote.id);
+            setCurrentQuote(prev => ({ ...prev, needs_sync: false }));
+        } catch (err) {
+            console.error('Failed to mark quote as synced:', err);
+        }
     };
 
     const shareToWhatsApp = () => {
@@ -948,6 +960,41 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             {aiLoading ? 'Generazione in corso...' : 'Invia e Genera'}
                         </button>
                     </div>
+                </div>
+            )}
+
+            {/* OrderMaster FAB - Visible only when currentQuote needs sync */}
+            {currentQuote && currentQuote.needs_sync && (
+                <div 
+                    style={{
+                        position: 'fixed',
+                        bottom: '2rem',
+                        right: '7.5rem', // Positioned to the left of the ScrollToTopFab (which is at right: 2rem and width 70px)
+                        zIndex: 2000,
+                        transition: 'all 0.3s ease-in-out',
+                        animation: 'fab-bounce 2s infinite'
+                    }}
+                >
+                    <button
+                        onClick={shareToOrderMaster}
+                        className="btn btn-primary"
+                        style={{
+                            width: '70px',
+                            height: '70px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: 0,
+                            backgroundColor: '#0052cc',
+                            boxShadow: '0 4px 15px rgba(0, 82, 204, 0.4)',
+                            border: 'none',
+                            cursor: 'pointer'
+                        }}
+                        title="Importa su OrderMaster"
+                    >
+                        <Send size={32} />
+                    </button>
                 </div>
             )}
         </div>
