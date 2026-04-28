@@ -484,15 +484,21 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     align-items: center;
                     /* For smooth touch scrolling on iOS */
                     -webkit-overflow-scrolling: touch;
+                    will-change: transform;
+                    transform: translateZ(0);
                 }
                 .product-marquee-container::-webkit-scrollbar {
                     display: none;
                 }
                 .product-marquee-item {
                     flex-shrink: 0;
-                    margin: 0 5px;
+                    margin: 0 -20px; /* Negative margin to make images overlap slightly */
                     cursor: pointer;
                     position: relative;
+                    will-change: transform, z-index;
+                    transform: translateZ(0);
+                    /* Use hardware acceleration for better performance */
+                    backface-visibility: hidden;
                 }
                 .product-marquee-item:hover {
                     z-index: 1000 !important;
@@ -504,12 +510,17 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     object-fit: cover;
                     box-shadow: 0 6px 16px rgba(0,0,0,0.2);
                     transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    will-change: transform, box-shadow;
+                    transform: translateZ(0);
                 }
                 .product-marquee-item:hover img {
-                    transform: scale(1.15);
+                    transform: scale(1.15) translateZ(0);
                     box-shadow: 0 12px 24px rgba(0,0,0,0.4);
                 }
                 @media (max-width: 768px) {
+                    .product-marquee-item {
+                        margin: 0 -15px; /* Adjust overlap for mobile */
+                    }
                     .product-marquee-item img {
                         width: 120px;
                         height: 120px;
