@@ -933,7 +933,7 @@ const Home = () => {
 
                         <InfiniteProductCarousel products={products} openProduct={openProduct} onCenterProductChange={setCenterProductName} />
                         {centerProductName && (
-                            <div className="animate-fade-in" style={{ marginTop: '-2.5rem', marginBottom: '1rem' }}>
+                            <div className="animate-fade-in" style={{ marginTop: '-1.5rem', marginBottom: '1rem' }}>
                                 <span style={{ 
                                     color: 'var(--color-text-muted)', 
                                     fontSize: '0.9rem', 
@@ -959,7 +959,7 @@ const Home = () => {
                         </p>
                         <InfiniteProductCarousel products={products} openProduct={openProduct} onCenterProductChange={setCenterProductName} />
                         {centerProductName && (
-                            <div className="animate-fade-in" style={{ marginTop: '-2.5rem', marginBottom: '1rem' }}>
+                            <div className="animate-fade-in" style={{ marginTop: '-1.5rem', marginBottom: '1rem' }}>
                                 <span style={{ 
                                     color: 'var(--color-text-muted)', 
                                     fontSize: '0.9rem', 

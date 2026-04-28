@@ -64,6 +64,10 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             });
         }
         
+        if (currentQuote?.total_price) {
+            text += `\nTotale: € ${Number(currentQuote.total_price).toFixed(2)}\n`;
+        }
+
         if (currentQuote.notes) {
             text += `\nNote sul preventivo:\n${currentQuote.notes}\n`;
         }

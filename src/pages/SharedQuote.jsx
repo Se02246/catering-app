@@ -37,6 +37,10 @@ const SharedQuote = ({ isMenuMode = false }) => {
             });
         }
 
+        if (quote?.total_price) {
+            text += `\nTotale: € ${Number(quote.total_price).toFixed(2)}\n`;
+        }
+
         if (quote?.notes) {
             text += `\nNote sul preventivo:\n${quote.notes}\n`;
         }
