@@ -692,8 +692,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                     onChange={(e) => {
                                                         const val = parseFloat(e.target.value) || 0;
                                                         const updatedItems = currentQuote.items.map(it => it.instanceId === item.instanceId ? { ...it, quantity: val } : it);
-                                                        const newTotal = calculateSuggestedTotal(updatedItems);
-                                                        const updatedQuote = { ...currentQuote, items: updatedItems, total_price: newTotal };
+                                                        const updatedQuote = { ...currentQuote, items: updatedItems };
                                                         setCurrentQuote(updatedQuote);
                                                         autoSave(updatedQuote);
                                                     }}
@@ -932,7 +931,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             boxShadow: '0 4px 15px rgba(0, 82, 204, 0.4)'
                         }}
                     >
-                        <Send size={24} /> Importa su Ordermaster
+                        <Send size={24} /> Salva su Ordermaster
                     </button>
                 </div>
             )}
@@ -1023,7 +1022,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             fontSize: '1rem'
                         }}
                     >
-                        <Send size={24} /> Importa su Ordermaster
+                        <Send size={24} /> Salva su Ordermaster
                     </button>
                 </div>
             )}

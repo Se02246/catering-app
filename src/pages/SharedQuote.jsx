@@ -820,7 +820,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                 }}
                                 onClick={shareToOrderMasterApp}
                             >
-                                <ExternalLink size={20} /> Importa su Ordermaster App
+                                <ExternalLink size={20} /> Salva su Ordermaster App
                             </button>
                         </div>
                     )}
