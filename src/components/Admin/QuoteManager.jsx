@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle } from 'lucide-react';
 
 
 const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalOpened }) => {
@@ -133,6 +133,35 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             `end`;
 
         window.location.href = intentUri;
+    };
+
+    const shareToWhatsApp = () => {
+        if (!currentQuote) return;
+
+        let textToShare = `Riepilogo preventivo\n`;
+        if (currentQuote.client_name) {
+            textToShare += `Nome: ${currentQuote.client_name}\n`;
+        }
+        textToShare += `Prodotti:\n`;
+        if (currentQuote.items) {
+            currentQuote.items.forEach(item => {
+                const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : 'kg'}` : "";
+                textToShare += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
+            });
+        }
+        
+        if (currentQuote.total_price) {
+            textToShare += `\nTotale: € ${Number(currentQuote.total_price).toFixed(2)}\n`;
+        }
+
+        if (currentQuote.notes) {
+            textToShare += `\nNote sul preventivo:\n${currentQuote.notes}\n`;
+        }
+
+        textToShare += `\nLink della pagina share: ${window.location.origin}/quote/${currentQuote.id}`;
+
+        const encodedText = encodeURIComponent(textToShare);
+        window.open(`https://wa.me/?text=${encodedText}`, '_blank');
     };
 
     const handleGenerateAiQuote = async () => {
@@ -445,25 +474,6 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <button
-                                onClick={shareToOrderMaster}
-                                title="Invia a OrderMaster"
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--color-primary)',
-                                    cursor: 'pointer',
-                                    padding: '0.5rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    transition: 'all 0.2s ease',
-                                    borderRadius: '8px',
-                                    backgroundColor: 'rgba(175, 68, 72, 0.05)'
-                                }}
-                            >
-                                <Send size={20} />
-                            </button>
                             <button
                                 onClick={handleShareQuote}
                                 title="Condividi o copia preventivo"
@@ -820,6 +830,56 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             </p>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {currentQuote && (
+                <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+                    <button
+                        onClick={shareToWhatsApp}
+                        className="btn btn-primary"
+                        style={{
+                            width: '100%',
+                            maxWidth: '400px',
+                            padding: '1.2rem',
+                            fontSize: '1.1rem',
+                            borderRadius: '50px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.8rem',
+                            backgroundColor: '#25D366',
+                            border: 'none',
+                            color: 'white',
+                            boxShadow: '0 4px 15px rgba(37, 211, 102, 0.4)',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        <MessageCircle size={24} /> Condividi su WhatsApp
+                    </button>
+
+                    <button
+                        onClick={shareToOrderMaster}
+                        className="btn btn-primary"
+                        style={{
+                            width: '100%',
+                            maxWidth: '400px',
+                            padding: '1.2rem',
+                            fontSize: '1.1rem',
+                            borderRadius: '50px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.8rem',
+                            backgroundColor: '#0052cc',
+                            border: 'none',
+                            color: 'white',
+                            boxShadow: '0 4px 15px rgba(0, 82, 204, 0.4)',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        <Send size={24} /> Importa su Ordermaster
+                    </button>
                 </div>
             )}
 
