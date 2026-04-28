@@ -125,8 +125,6 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             textToShare += `\nNote sul preventivo:\n${currentQuote.notes}\n`;
         }
 
-        textToShare += `\nLink della pagina share: ${window.location.origin}/quote/${currentQuote.id}`;
-
         // Add marker for Android app interception
         textToShare += `\n\n[MC-ID: ${currentQuote.id}]`;
 
