@@ -664,6 +664,21 @@ h1, h2, h3, h4, h5, h6 {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Pulsazione Fisica Potenziata per OrderMaster */
+@keyframes pulse-force-strong {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); } /* Ingrandimento del 30% */
+  100% { transform: scale(1); }
+}
+
+.animate-pulse-strong {
+  animation: pulse-force-strong 0.6s ease-in-out infinite !important;
+  transition: none !important; /* Impedisce ai conflitti di frenare l'animazione */
+  transform-origin: center center !important;
+  will-change: transform;
+  display: inline-flex !important;
+}
+
 /* Mobile Styles */
 @media (max-width: 768px) {
   .app-container {
