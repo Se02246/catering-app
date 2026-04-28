@@ -16,13 +16,14 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     const [copied, setCopied] = useState(false);
     const [isBottomButtonVisible, setIsBottomButtonVisible] = useState(false);
     const bottomButtonRef = useRef(null);
+    const bottomSentinelRef = useRef(null);
 
     const [isModeSelectionOpen, setIsModeSelectionOpen] = useState(false);
     const [isAiPromptOpen, setIsAiPromptOpen] = useState(false);
     const [aiPrompt, setAiPrompt] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
 
-    // Intersection Observer to detect when the bottom button is visible
+    // Intersection Observer to detect when we are at the bottom of the page
     useEffect(() => {
         if (!currentQuote || !currentQuote.needs_sync) {
             setIsBottomButtonVisible(false);
@@ -31,18 +32,19 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
         const observer = new IntersectionObserver(
             ([entry]) => {
+                // Hide FAB if either the bottom button OR the sentinel is visible
                 setIsBottomButtonVisible(entry.isIntersecting);
             },
-            { threshold: 0.1 }
+            { threshold: 0 }
         );
 
-        if (bottomButtonRef.current) {
-            observer.observe(bottomButtonRef.current);
+        if (bottomSentinelRef.current) {
+            observer.observe(bottomSentinelRef.current);
         }
 
         return () => {
-            if (bottomButtonRef.current) {
-                observer.unobserve(bottomButtonRef.current);
+            if (bottomSentinelRef.current) {
+                observer.unobserve(bottomSentinelRef.current);
             }
         };
     }, [currentQuote]);
@@ -913,7 +915,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     <button
                         ref={bottomButtonRef}
                         onClick={shareToOrderMaster}
-                        className={`btn btn-primary ${currentQuote.needs_sync ? 'animate-flash' : ''}`}
+                        className={`btn btn-primary ${currentQuote.needs_sync ? 'animate-pulse-strong' : ''}`}
                         style={{
                             width: '100%',
                             maxWidth: '400px',
@@ -1003,7 +1005,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 >
                     <button
                         onClick={shareToOrderMaster}
-                        className="btn btn-primary animate-flash"
+                        className="btn btn-primary animate-pulse-strong"
                         style={{
                             pointerEvents: 'auto', // Re-enable clicks for the button
                             padding: '1rem 1.5rem',
@@ -1025,6 +1027,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     </button>
                 </div>
             )}
+
+            {/* Sentinel at the very bottom to hide FAB when user scrolls to the end */}
+            <div ref={bottomSentinelRef} style={{ height: '10px', width: '100%' }}></div>
         </div>
     );
 };
