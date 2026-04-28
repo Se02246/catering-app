@@ -913,7 +913,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     <button
                         ref={bottomButtonRef}
                         onClick={shareToOrderMaster}
-                        className="btn btn-primary"
+                        className={`btn btn-primary ${currentQuote.needs_sync ? 'animate-flash' : ''}`}
                         style={{
                             width: '100%',
                             maxWidth: '400px',
@@ -927,9 +927,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             backgroundColor: '#0052cc',
                             border: 'none',
                             color: 'white',
-                            boxShadow: '0 4px 15px rgba(0, 82, 204, 0.4)',
-                            transition: 'all 0.3s ease',
-                            animation: currentQuote.needs_sync ? 'fab-flash 0.8s infinite alternate' : 'none'
+                            boxShadow: '0 4px 15px rgba(0, 82, 204, 0.4)'
                         }}
                     >
                         <Send size={24} /> Importa su Ordermaster
@@ -1000,14 +998,14 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         bottom: '2rem',
                         right: '2rem',
                         zIndex: 2000,
-                        transition: 'all 0.3s ease-in-out',
-                        animation: 'fab-flash 0.8s infinite alternate'
+                        pointerEvents: 'none' // Allow clicking through the div but not the button
                     }}
                 >
                     <button
                         onClick={shareToOrderMaster}
-                        className="btn btn-primary"
+                        className="btn btn-primary animate-flash"
                         style={{
+                            pointerEvents: 'auto', // Re-enable clicks for the button
                             padding: '1rem 1.5rem',
                             borderRadius: '50px',
                             display: 'flex',
