@@ -808,7 +808,7 @@ const Home = () => {
                 )}
             </section>
 
-            {showQuoteBuilder ? (
+            {showQuoteBuilder && (
                 <section id="quote-section" style={{ marginTop: '3rem' }}>
                     <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,245,245,0.8) 100%)' }}>
                         <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem', fontSize: '1.5rem' }}>Non trovi quello che cerchi?</h2>
@@ -881,16 +881,6 @@ const Home = () => {
                             </div>
                         </div>
 
-                        <InfiniteProductCarousel products={products} openProduct={openProduct} />
-                    </div>
-                </section>
-            ) : (
-                <section id="products-section" style={{ marginTop: '3rem' }}>
-                    <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,245,245,0.8) 100%)' }}>
-                        <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem', fontSize: '2rem' }}>Scopri i nostri prodotti</h2>
-                        <p style={{ color: 'var(--color-text-muted)', fontSize: '1rem', maxWidth: '600px', margin: '0 auto 1.5rem' }}>
-                            Clicca sul prodotto che ti interessa per vederne i dettagli
-                        </p>
                         <InfiniteProductCarousel products={products} openProduct={openProduct} />
                     </div>
                 </section>
