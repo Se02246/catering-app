@@ -313,9 +313,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     const updateQuantity = (instanceId, delta) => {
         const updatedItems = currentQuote.items.map(item => {
             if (item.instanceId === instanceId) {
-                const increment = item.order_increment || 1;
-                const newQty = Math.max(0, item.quantity + (delta * increment));
-                return newQty === 0 ? null : { ...item, quantity: newQty };
+                const currentQty = Number(item.quantity) || 0;
+                const increment = Number(item.order_increment) || 1;
+                const newQty = Math.max(0, currentQty + (delta * increment));
+                // Se la nuova quantità è 0, rimuoviamo l'elemento, altrimenti aggiorniamo
+                return newQty <= 0 ? null : { ...item, quantity: newQty };
             }
             return item;
         }).filter(Boolean);
