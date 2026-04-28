@@ -408,6 +408,11 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                 for (let i = 0; i < children.length; i++) {
                     children[i].style.transform = transforms[i];
                     children[i].style.zIndex = zIndices[i];
+                    if (i === closestIdx) {
+                        children[i].classList.add('is-center');
+                    } else {
+                        children[i].classList.remove('is-center');
+                    }
                 }
                 
                 if (closestIdx !== -1 && onCenterProductChange) {
@@ -500,7 +505,8 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     /* Use hardware acceleration for better performance */
                     backface-visibility: hidden;
                 }
-                .product-marquee-item:hover {
+                .product-marquee-item:hover,
+                .product-marquee-item.is-center {
                     z-index: 1000 !important;
                 }
                 .product-marquee-item img {
@@ -513,7 +519,8 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     will-change: transform, box-shadow;
                     transform: translateZ(0);
                 }
-                .product-marquee-item:hover img {
+                .product-marquee-item:hover img,
+                .product-marquee-item.is-center img {
                     transform: scale(1.15) translateZ(0);
                     box-shadow: 0 12px 24px rgba(0,0,0,0.4);
                 }
