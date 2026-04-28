@@ -508,11 +508,11 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
 
     return (
         <div style={{
-            marginTop: '3.5rem',
+            marginTop: '0.5rem',
             marginBottom: '-1rem',
             marginRight: '-3rem',
             marginLeft: '-3rem',
-            padding: '1rem 0'
+            padding: 0
         }}>
             <style>{`
                 .product-marquee-container {
@@ -521,7 +521,7 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     overflow-x: auto;
                     scrollbar-width: none;
                     -ms-overflow-style: none;
-                    padding: 100px 0; /* Significantly increased padding to prevent clipping when scaled up and floating */
+                    padding: 100px 0; /* Restored to 100px to ensure no clipping occurs */
                     align-items: center;
                     /* For smooth touch scrolling on iOS */
                     -webkit-overflow-scrolling: touch;
@@ -954,7 +954,7 @@ const Home = () => {
                 <section id="products-section" style={{ marginTop: '3rem' }}>
                     <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,245,245,0.8) 100%)' }}>
                         <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem', fontSize: '2rem' }}>Scopri i nostri prodotti</h2>
-                        <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '1.5rem' }}>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
                             Clicca sul prodotto che ti interessa per vederne i dettagli
                         </p>
                         <InfiniteProductCarousel products={products} openProduct={openProduct} onCenterProductChange={setCenterProductName} />
