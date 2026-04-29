@@ -7,13 +7,14 @@ import { Search, ChevronLeft } from 'lucide-react';
 
 const Catalog = () => {
     const navigate = useNavigate();
-    const { products, isLoading } = useProducts();
-    const { setting: showPricesSetting } = useSetting('show_product_prices');
+    const { products, isLoading: isProductsLoading } = useProducts();
+    const { setting: showPricesSetting, isLoading: isPricesLoading } = useSetting('show_product_prices');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isProductClosing, setIsProductClosing] = useState(false);
 
-    const showProductPrices = showPricesSetting?.value !== 'false';
+    const showProductPrices = !isPricesLoading && showPricesSetting?.value !== 'false';
+    const isLoading = isProductsLoading || isPricesLoading;
 
     const visibleProducts = products?.filter(p => !p.hidden_in_menu && !p.hide_in_menu) || [];
     
