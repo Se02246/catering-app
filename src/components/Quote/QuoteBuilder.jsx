@@ -386,6 +386,15 @@ const QuoteBuilder = () => {
                             placeholder="Cerca un prodotto nel catalogo..." 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            onFocus={(e) => {
+                                const container = e.target.closest('div[style*="position: sticky"]');
+                                if (container) {
+                                    setTimeout(() => {
+                                        const topOffset = container.getBoundingClientRect().top + window.scrollY - 10;
+                                        window.scrollTo({ top: topOffset, behavior: 'smooth' });
+                                    }, 150);
+                                }
+                            }}
                             style={{
                                 width: '100%', padding: '1.2rem 1.2rem 1.2rem 3.5rem', borderRadius: '50px',
                                 border: 'none', background: 'transparent',
