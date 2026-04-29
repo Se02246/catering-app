@@ -376,7 +376,7 @@ const QuoteBuilder = () => {
                         position: 'relative',
                         backdropFilter: 'blur(10px)',
                         backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                        borderRadius: 'var(--radius-lg)',
+                        borderRadius: '50px',
                         boxShadow: 'var(--shadow-sm)',
                         border: '1px solid rgba(155, 57, 61, 0.05)'
                     }}>
@@ -387,7 +387,7 @@ const QuoteBuilder = () => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             style={{
-                                width: '100%', padding: '1.2rem 1.2rem 1.2rem 3.5rem', borderRadius: 'var(--radius-lg)',
+                                width: '100%', padding: '1.2rem 1.2rem 1.2rem 3.5rem', borderRadius: '50px',
                                 border: 'none', background: 'transparent',
                                 fontSize: '1rem', outline: 'none',
                                 transition: 'all 0.3s ease'

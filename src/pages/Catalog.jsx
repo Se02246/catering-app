@@ -12,6 +12,10 @@ const Catalog = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isProductClosing, setIsProductClosing] = useState(false);
+    
+    React.useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
     const showProductPrices = !isPricesLoading && showPricesSetting?.value !== 'false';
     const isLoading = isProductsLoading || isPricesLoading;
@@ -48,30 +52,33 @@ const Catalog = () => {
 
             <div style={{ 
                 position: 'sticky', 
-                top: '0', 
-                zIndex: 100, 
-                backgroundColor: 'rgba(255, 255, 255, 0.8)', 
-                backdropFilter: 'blur(10px)',
-                padding: '1rem 0',
-                marginBottom: '2rem',
-                borderBottom: '1px solid rgba(0,0,0,0.05)'
+                top: '10px', 
+                zIndex: 500, 
+                backgroundColor: 'transparent',
+                padding: '0.5rem 0 1rem',
+                margin: '0 0 2rem'
             }}>
-                <div style={{ position: 'relative', maxWidth: '800px', margin: '0 auto' }}>
-                    <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} size={20} />
-                    <input
-                        type="text"
-                        placeholder="Cerca un prodotto..."
+                <div style={{ 
+                    position: 'relative',
+                    maxWidth: '800px',
+                    margin: '0 auto',
+                    backdropFilter: 'blur(10px)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                    borderRadius: '50px',
+                    boxShadow: 'var(--shadow-sm)',
+                    border: '1px solid rgba(155, 57, 61, 0.05)'
+                }}>
+                    <Search style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-accent)' }} size={20} />
+                    <input 
+                        type="text" 
+                        placeholder="Cerca un prodotto nel catalogo..." 
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         style={{
-                            width: '100%',
-                            padding: '1rem 1rem 1rem 3rem',
-                            borderRadius: '50px',
-                            border: '1px solid var(--color-border)',
-                            fontSize: '1rem',
-                            outline: 'none',
-                            boxShadow: 'var(--shadow-sm)',
-                            backgroundColor: 'white'
+                            width: '100%', padding: '1.2rem 1.2rem 1.2rem 3.5rem', borderRadius: '50px',
+                            border: 'none', background: 'transparent',
+                            fontSize: '1rem', outline: 'none',
+                            transition: 'all 0.3s ease'
                         }}
                     />
                 </div>
