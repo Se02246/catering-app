@@ -633,15 +633,34 @@ const Home = () => {
     const showProductPrices = !isPricesSettingLoading && showPricesSetting?.value !== 'false';
     const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false' && showProductPrices;
 
+    const sortedReviews = React.useMemo(() => {
+        if (!reviews) return [];
+        return [...reviews].sort((a, b) => {
+            const helpfulScoreA = (a.helpful_count || 0) * 2 - (a.unhelpful_count || 0);
+            const helpfulScoreB = (b.helpful_count || 0) * 2 - (b.unhelpful_count || 0);
+            
+            const timeA = new Date(a.created_at).getTime();
+            const timeB = new Date(b.created_at).getTime();
+            
+            const daysA = timeA / (1000 * 60 * 60 * 24);
+            const daysB = timeB / (1000 * 60 * 60 * 24);
+            
+            const scoreA = daysA + (helpfulScoreA * 5);
+            const scoreB = daysB + (helpfulScoreB * 5);
+            
+            return scoreB - scoreA;
+        });
+    }, [reviews]);
+
     // Statistics for Reviews Summary
     const stats = React.useMemo(() => {
-        if (!reviews || reviews.length === 0) return null;
+        if (!sortedReviews || sortedReviews.length === 0) return null;
 
-        const total = reviews.length;
-        const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+        const total = sortedReviews.length;
+        const sum = sortedReviews.reduce((acc, r) => acc + r.rating, 0);
         const avg = (sum / total).toFixed(1);
 
-        const recommendedCount = reviews.filter(r => r.rating >= 4).length;
+        const recommendedCount = sortedReviews.filter(r => r.rating >= 4).length;
         const rate = Math.round((recommendedCount / total) * 100);
 
         return {
@@ -649,7 +668,7 @@ const Home = () => {
             totalReviews: total,
             recommendationRate: rate
         };
-    }, [reviews]);
+    }, [sortedReviews]);
 
     const getRatingLabel = (rating) => {
         const r = parseFloat(rating);
@@ -1024,8 +1043,8 @@ const Home = () => {
                     </div>
                 ) : (
                     <>
-                        {reviews && reviews.length > 0 ? (
-                            <InfiniteReviewsCarousel reviews={reviews} />
+                        {sortedReviews && sortedReviews.length > 0 ? (
+                            <InfiniteReviewsCarousel reviews={sortedReviews} />
                         ) : (
                             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
                                 <p>Non ci sono ancora recensioni. Torna a trovarci presto!</p>

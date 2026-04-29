@@ -1,9 +1,22 @@
-import React, { useState } from 'react';
-import { Star } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Star, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { api } from '../../services/api';
 
 const ReviewCard = ({ review, layout = 'vertical' }) => {
-    const { title, author_name, rating, comment, images = [], created_at } = review;
+    const { id, title, author_name, rating, comment, images = [], created_at } = review;
     const [activeImg, setActiveImg] = useState(0);
+    const [helpfulCount, setHelpfulCount] = useState(review.helpful_count || 0);
+    const [unhelpfulCount, setUnhelpfulCount] = useState(review.unhelpful_count || 0);
+    const [userVote, setUserVote] = useState(null); // 'helpful', 'unhelpful', or null
+    const [isVoting, setIsVoting] = useState(false);
+
+    useEffect(() => {
+        // Check local storage for existing vote
+        const storedVotes = JSON.parse(localStorage.getItem('reviewVotes') || '{}');
+        if (storedVotes[id]) {
+            setUserVote(storedVotes[id]);
+        }
+    }, [id]);
 
     const formattedDate = new Date(created_at).toLocaleDateString('it-IT', {
         year: 'numeric',
@@ -19,6 +32,69 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
         const newIndex = Math.round(scrollPosition / width);
         if (newIndex !== activeImg) {
             setActiveImg(newIndex);
+        }
+    };
+
+    const handleVote = async (type) => {
+        if (isVoting) return;
+        
+        let action = 'add';
+        let previousVote = userVote;
+
+        if (userVote === type) {
+            // User is undoing their vote
+            action = 'remove';
+            setUserVote(null);
+            if (type === 'helpful') setHelpfulCount(prev => Math.max(0, prev - 1));
+            else setUnhelpfulCount(prev => Math.max(0, prev - 1));
+        } else {
+            // User is casting a new vote or changing their vote
+            action = 'add';
+            setUserVote(type);
+            if (type === 'helpful') {
+                setHelpfulCount(prev => prev + 1);
+                if (previousVote === 'unhelpful') setUnhelpfulCount(prev => Math.max(0, prev - 1));
+            } else {
+                setUnhelpfulCount(prev => prev + 1);
+                if (previousVote === 'helpful') setHelpfulCount(prev => Math.max(0, prev - 1));
+            }
+        }
+
+        // Update local storage
+        const storedVotes = JSON.parse(localStorage.getItem('reviewVotes') || '{}');
+        if (action === 'remove') {
+            delete storedVotes[id];
+        } else {
+            storedVotes[id] = type;
+        }
+        localStorage.setItem('reviewVotes', JSON.stringify(storedVotes));
+
+        setIsVoting(true);
+        try {
+            // If changing vote, we first remove the old one (if there was one)
+            if (previousVote && action === 'add') {
+                 await api.voteReview(id, previousVote, 'remove');
+            }
+            await api.voteReview(id, type, action);
+        } catch (error) {
+            console.error('Error voting on review:', error);
+            // Revert optimistic update on failure
+            setUserVote(previousVote);
+            if (action === 'add') {
+                if (type === 'helpful') setHelpfulCount(prev => Math.max(0, prev - 1));
+                else setUnhelpfulCount(prev => Math.max(0, prev - 1));
+                if (previousVote === 'unhelpful') setUnhelpfulCount(prev => prev + 1);
+                if (previousVote === 'helpful') setHelpfulCount(prev => prev + 1);
+            } else {
+                if (type === 'helpful') setHelpfulCount(prev => prev + 1);
+                else setUnhelpfulCount(prev => prev + 1);
+            }
+            // Restore local storage on failure
+            if (previousVote) storedVotes[id] = previousVote;
+            else delete storedVotes[id];
+            localStorage.setItem('reviewVotes', JSON.stringify(storedVotes));
+        } finally {
+            setIsVoting(false);
         }
     };
 
@@ -122,6 +198,44 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                     </p>
                 </div>
             )}
+
+            <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', borderTop: '1px solid rgba(155, 57, 61, 0.05)' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: '500' }}>Questa recensione è stata utile?</span>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button 
+                        onClick={() => handleVote('helpful')}
+                        disabled={isVoting}
+                        style={{ 
+                            display: 'flex', alignItems: 'center', gap: '4px', 
+                            background: userVote === 'helpful' ? 'rgba(155, 57, 61, 0.1)' : 'transparent',
+                            color: userVote === 'helpful' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                            border: '1px solid',
+                            borderColor: userVote === 'helpful' ? 'var(--color-primary)' : 'transparent',
+                            borderRadius: '16px', padding: '4px 8px', fontSize: '0.8rem', cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <ThumbsUp size={14} fill={userVote === 'helpful' ? 'var(--color-primary)' : 'transparent'} />
+                        {helpfulCount > 0 && <span>{helpfulCount}</span>}
+                    </button>
+                    <button 
+                        onClick={() => handleVote('unhelpful')}
+                        disabled={isVoting}
+                        style={{ 
+                            display: 'flex', alignItems: 'center', gap: '4px', 
+                            background: userVote === 'unhelpful' ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
+                            color: userVote === 'unhelpful' ? '#666' : 'var(--color-text-muted)',
+                            border: '1px solid',
+                            borderColor: userVote === 'unhelpful' ? '#666' : 'transparent',
+                            borderRadius: '16px', padding: '4px 8px', fontSize: '0.8rem', cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <ThumbsDown size={14} fill={userVote === 'unhelpful' ? '#666' : 'transparent'} />
+                        {unhelpfulCount > 0 && <span>{unhelpfulCount}</span>}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };

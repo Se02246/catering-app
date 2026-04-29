@@ -186,6 +186,16 @@ export const api = {
         return res.json();
     },
 
+    voteReview: async (id, type, action) => {
+        const res = await fetch(`${API_URL}/reviews/${id}/vote`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, action })
+        });
+        if (!res.ok) throw new Error('Failed to vote on review');
+        return res.json();
+    },
+
     // Quotes
     getAiThoughts: async (prompt) => {
         const res = await fetch(`${API_URL}/quotes/ai-thoughts`, {
