@@ -11,7 +11,7 @@ const AdminDashboard = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
-    const [activeTab, setActiveTab] = useState(queryParams.get('tab') || 'products');
+    const [activeTab, setActiveTab] = useState(queryParams.get('tab') || 'quotes');
     const [autoOpenQuoteModal, setAutoOpenQuoteModal] = useState(false);
     const searchId = queryParams.get('searchId') || '';
 
@@ -63,6 +63,13 @@ const AdminDashboard = () => {
 
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', borderBottom: '1px solid var(--color-border)', overflowX: 'auto', paddingBottom: '0.5rem' }}>
                 <button
+                    className={`btn ${activeTab === 'quotes' ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setActiveTab('quotes')}
+                    style={tabBtnStyle}
+                >
+                    Preventivi
+                </button>
+                <button
                     className={`btn ${activeTab === 'products' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setActiveTab('products')}
                     style={tabBtnStyle}
@@ -75,13 +82,6 @@ const AdminDashboard = () => {
                     style={tabBtnStyle}
                 >
                     Pacchetti
-                </button>
-                <button
-                    className={`btn ${activeTab === 'quotes' ? 'btn-primary' : 'btn-outline'}`}
-                    onClick={() => setActiveTab('quotes')}
-                    style={tabBtnStyle}
-                >
-                    Preventivi
                 </button>
                 <button
                     className={`btn ${activeTab === 'reviews' ? 'btn-primary' : 'btn-outline'}`}
@@ -100,10 +100,6 @@ const AdminDashboard = () => {
                 </button>
             </div>
 
-            {activeTab === 'products' && <ProductManager onCreateQuoteClick={handleNewQuoteRequest} />}
-            {activeTab === 'packages' && <PackageBuilder />}
-            {activeTab === 'settings' && <SettingsManager />}
-            {activeTab === 'reviews' && <ReviewManager />}
             {activeTab === 'quotes' && (
                 <QuoteManager 
                     initialSearchId={searchId} 
@@ -111,6 +107,10 @@ const AdminDashboard = () => {
                     onModalOpened={() => setAutoOpenQuoteModal(false)} 
                 />
             )}
+            {activeTab === 'products' && <ProductManager onCreateQuoteClick={handleNewQuoteRequest} />}
+            {activeTab === 'packages' && <PackageBuilder />}
+            {activeTab === 'reviews' && <ReviewManager />}
+            {activeTab === 'settings' && <SettingsManager />}
 
         </div>
     );
