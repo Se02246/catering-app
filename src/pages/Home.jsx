@@ -7,7 +7,7 @@ import ReviewCard from '../components/Common/ReviewCard';
 import { formatCustomText } from '../utils/textFormatting';
 import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star, MapPin, Send, Sparkles, Instagram, MessageCircle } from 'lucide-react';
 
-const PackageCard = ({ pkg, index, openPackage }) => {
+const PackageCard = ({ pkg, index, openPackage, showProductPrices }) => {
     const cardRef = React.useRef(null);
     const [isInView, setIsInView] = React.useState(false);
     const [isHovered, setIsHovered] = React.useState(false);
@@ -111,18 +111,22 @@ const PackageCard = ({ pkg, index, openPackage }) => {
                 />
 
                 <div className="card-footer">
-                    <div className="price-container">
-                        {pkg.discount_percentage > 0 ? (
-                            <>
-                                <span className="price-old">€ {pkg.total_price}</span>
-                                <span className="price-main price-discount">
-                                    € {(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
-                                </span>
-                            </>
-                        ) : (
-                            <span className="price-main">€ {pkg.total_price}</span>
-                        )}
-                    </div>
+                    {showProductPrices ? (
+                        <div className="price-container">
+                            {pkg.discount_percentage > 0 ? (
+                                <>
+                                    <span className="price-old">€ {pkg.total_price}</span>
+                                    <span className="price-main price-discount">
+                                        € {(pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)}
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="price-main">€ {pkg.total_price}</span>
+                            )}
+                        </div>
+                    ) : (
+                        <div></div>
+                    )}
                     <button className="btn btn-primary" onClick={() => openPackage(pkg)}>
                         Scopri di più <ArrowRight size={18} style={{ marginLeft: '0.5rem' }} />
                     </button>
@@ -619,13 +623,15 @@ const Home = () => {
     const navigate = useNavigate();
     const { caterings, isLoading, isError } = useCaterings();
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
+    const { setting: showPricesSetting, isLoading: isPricesSettingLoading } = useSetting('show_product_prices');
     const { reviews, isLoading: isReviewsLoading } = useReviews();
     const { products } = useProducts();
     const [centerProductName, setCenterProductName] = useState('');
 
     const [homeAiPrompt, setHomeAiPrompt] = useState('');
 
-    const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false';
+    const showProductPrices = !isPricesSettingLoading && showPricesSetting?.value !== 'false';
+    const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false' && showProductPrices;
 
     // Statistics for Reviews Summary
     const stats = React.useMemo(() => {
@@ -851,9 +857,8 @@ const Home = () => {
                             </div>
                         ) : (
                             processedCaterings.map((pkg, index) => (
-                                <PackageCard key={pkg.id} pkg={pkg} index={index} openPackage={openPackage} />
-                            ))
-                        )}
+                                <PackageCard key={pkg.id} pkg={pkg} index={index} openPackage={openPackage} showProductPrices={showProductPrices} />
+                            ))                        )}
                     </div>
                 )}
             </section>
@@ -1361,19 +1366,21 @@ const Home = () => {
                                             flexDirection: 'column',
                                             gap: '1.2rem'
                                         }}>
-                                            <div className="price-container" style={{ textAlign: 'center' }}>
-                                                <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Totale Esperienza</span>
-                                                {selectedPackage.discount_percentage > 0 ? (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                                        <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1.2rem' }}>€ {selectedPackage.total_price}</span>
-                                                        <span className="price-main price-discount" style={{ fontSize: '2.4rem' }}>
-                                                            € {(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <span className="price-main" style={{ fontSize: '2.4rem' }}>€ {selectedPackage.total_price}</span>
-                                                )}
-                                            </div>
+                                            {showProductPrices && (
+                                                <div className="price-container" style={{ textAlign: 'center' }}>
+                                                    <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Totale Esperienza</span>
+                                                    {selectedPackage.discount_percentage > 0 ? (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                            <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1.2rem' }}>€ {selectedPackage.total_price}</span>
+                                                            <span className="price-main price-discount" style={{ fontSize: '2.4rem' }}>
+                                                                € {(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="price-main" style={{ fontSize: '2.4rem' }}>€ {selectedPackage.total_price}</span>
+                                                    )}
+                                                </div>
+                                            )}
                                             <button
                                                 className="btn btn-primary"
                                                 style={{ padding: '1.2rem', fontSize: '1.1rem' }}

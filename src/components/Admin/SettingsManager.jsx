@@ -6,11 +6,13 @@ import { api } from '../../services/api';
 const SettingsManager = () => {
     const { setting: headerSetting, isLoading: isHeaderLoading, mutate: mutateHeader } = useSetting('header_text');
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading, mutate: mutateQuoteSetting } = useSetting('show_quote_builder');
+    const { setting: showPricesSetting, isLoading: isPricesSettingLoading, mutate: mutatePricesSetting } = useSetting('show_product_prices');
     const { products, mutate: mutateProducts } = useProducts();
     const { caterings, mutate: mutateCaterings } = useCaterings();
     
     const [headerText, setHeaderText] = useState('');
     const [showQuoteBuilder, setShowQuoteBuilder] = useState(true);
+    const [showProductPrices, setShowProductPrices] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState(null);
 
@@ -33,16 +35,24 @@ const SettingsManager = () => {
         }
     }, [showQuoteSetting]);
 
+    useEffect(() => {
+        if (showPricesSetting) {
+            setShowProductPrices(showPricesSetting.value !== 'false');
+        }
+    }, [showPricesSetting]);
+
     const handleSave = async () => {
         setSaving(true);
         setMessage(null);
         try {
             await Promise.all([
                 api.updateSetting('header_text', headerText),
-                api.updateSetting('show_quote_builder', showQuoteBuilder.toString())
+                api.updateSetting('show_quote_builder', (showProductPrices ? showQuoteBuilder : false).toString()),
+                api.updateSetting('show_product_prices', showProductPrices.toString())
             ]);
             mutateHeader();
             mutateQuoteSetting();
+            mutatePricesSetting();
             setMessage({ type: 'success', text: 'Impostazioni salvate con successo' });
         } catch (error) {
             console.error('Error saving settings:', error);
@@ -216,34 +226,72 @@ const SettingsManager = () => {
                 </div>
 
                 <div className="form-group" style={{ marginTop: '2rem', padding: '1.5rem', backgroundColor: 'rgba(175, 68, 72, 0.05)', borderRadius: '12px', border: '1px solid rgba(175, 68, 72, 0.2)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    {/* Main Toggle: Show Product Prices */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: showProductPrices ? '1.5rem' : 0, paddingBottom: showProductPrices ? '1.5rem' : 0, borderBottom: showProductPrices ? '1px solid rgba(175, 68, 72, 0.1)' : 'none' }}>
                         <div>
                             <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.25rem' }}>
-                                Visibilità Sezione "Crea Preventivo"
+                                Mostra i prezzi dei prodotti
                             </label>
                             <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
-                                Se disattivato, gli utenti potranno vedere solo i pacchetti predefiniti nella Home.
+                                Se disattivato, i prezzi non saranno visibili in tutta l'app (dettagli prodotto, etc.) e la sezione "Crea Preventivo" verrà automaticamente nascosta.
                             </p>
                         </div>
                         <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
                             <input 
                                 type="checkbox" 
-                                checked={showQuoteBuilder}
-                                onChange={(e) => setShowQuoteBuilder(e.target.checked)}
+                                checked={showProductPrices}
+                                onChange={(e) => {
+                                    setShowProductPrices(e.target.checked);
+                                    if (!e.target.checked) {
+                                        setShowQuoteBuilder(false);
+                                    }
+                                }}
                                 style={{ opacity: 0, width: 0, height: 0 }}
                             />
                             <span style={{
                                 position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
-                                backgroundColor: showQuoteBuilder ? 'var(--color-primary)' : '#ccc',
+                                backgroundColor: showProductPrices ? 'var(--color-primary)' : '#ccc',
                                 transition: '.4s', borderRadius: '24px'
                             }}>
                                 <span style={{
-                                    position: 'absolute', content: '""', height: '18px', width: '18px', left: showQuoteBuilder ? '28px' : '4px', bottom: '3px',
+                                    position: 'absolute', content: '""', height: '18px', width: '18px', left: showProductPrices ? '28px' : '4px', bottom: '3px',
                                     backgroundColor: 'white', transition: '.4s', borderRadius: '50%'
                                 }}></span>
                             </span>
                         </label>
                     </div>
+
+                    {/* Sub Toggle: Show Quote Builder (only visible/interactable if showProductPrices is true) */}
+                    {showProductPrices && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '1.5rem', borderLeft: '3px solid var(--color-primary)' }}>
+                            <div>
+                                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                                    Visibilità Sezione "Crea Preventivo"
+                                </label>
+                                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                    Se attivo, mostra la sezione per comporre preventivi personalizzati nella Home.
+                                </p>
+                            </div>
+                            <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={showQuoteBuilder}
+                                    onChange={(e) => setShowQuoteBuilder(e.target.checked)}
+                                    style={{ opacity: 0, width: 0, height: 0 }}
+                                />
+                                <span style={{
+                                    position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                                    backgroundColor: showQuoteBuilder ? 'var(--color-primary)' : '#ccc',
+                                    transition: '.4s', borderRadius: '24px'
+                                }}>
+                                    <span style={{
+                                        position: 'absolute', content: '""', height: '18px', width: '18px', left: showQuoteBuilder ? '28px' : '4px', bottom: '3px',
+                                        backgroundColor: 'white', transition: '.4s', borderRadius: '50%'
+                                    }}></span>
+                                </span>
+                            </label>
+                        </div>
+                    )}
                 </div>
 
                 <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>

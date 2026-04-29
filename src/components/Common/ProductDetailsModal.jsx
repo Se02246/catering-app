@@ -4,8 +4,8 @@ import { useSetting } from '../../hooks/useData';
 import { ChevronLeft, Calendar, Info, ShoppingCart } from 'lucide-react';
 
 const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing, isMenuMode = false }) => {
-    const { setting: showQuoteSetting, isLoading: isSettingLoading } = useSetting('show_quote_builder');
-    const showPrice = !isSettingLoading && showQuoteSetting?.value !== 'false';
+    const { setting: showPricesSetting, isLoading: isSettingLoading } = useSetting('show_product_prices');
+    const showPrice = !isSettingLoading && showPricesSetting?.value !== 'false';
     const [activeImageIndex, setActiveImageIndex] = React.useState(0);
     const scrollAreaRef = React.useRef(null);
     const [dragY, setDragY] = React.useState(0);
