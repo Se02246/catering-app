@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import SharedQuote from './pages/SharedQuote';
 import SharedPackage from './pages/SharedPackage';
 import ReviewsPage from './pages/ReviewsPage';
+import Catalog from './pages/Catalog';
 import { Lock } from 'lucide-react';
 import './styles/index.css';
 import { InstallPromptProvider } from './context/InstallPromptContext';
@@ -49,6 +50,7 @@ function AppContent() {
           <Route path="/package/:id" element={<SharedPackage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/recensioni" element={<ReviewsPage />} />
+          <Route path="/catalogo" element={<Catalog />} />
         </Routes>
       </main>
       <ScrollToTopFab />

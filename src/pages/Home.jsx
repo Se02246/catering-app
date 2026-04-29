@@ -5,7 +5,7 @@ import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import ReviewCard from '../components/Common/ReviewCard';
 import { formatCustomText } from '../utils/textFormatting';
-import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star, MapPin, Send, Sparkles, Instagram, MessageCircle } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star, MapPin, Send, Sparkles, Instagram, MessageCircle, BookOpen } from 'lucide-react';
 
 const PackageCard = ({ pkg, index, openPackage, showProductPrices }) => {
     const cardRef = React.useRef(null);
@@ -936,6 +936,16 @@ const Home = () => {
                             </div>
                         </div>
 
+                        <div style={{ marginTop: '2rem', marginBottom: '1.5rem' }}>
+                            <button
+                                className="btn btn-outline"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '0.8rem 1.5rem', borderRadius: '50px', border: '1px solid var(--color-primary)', color: 'var(--color-primary)' }}
+                                onClick={() => navigate('/catalogo')}
+                            >
+                                <BookOpen size={20} /> Visualizza il catalogo completo
+                            </button>
+                        </div>
+
                         <InfiniteProductCarousel products={products} openProduct={openProduct} onCenterProductChange={setCenterProductName} />
                         {centerProductName && (
                             <div className="animate-fade-in" style={{ marginTop: '-1.5rem', marginBottom: '1rem' }}>
@@ -958,10 +968,18 @@ const Home = () => {
             ) : (
                 <section id="products-section" style={{ marginTop: '3rem' }}>
                     <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,245,245,0.8) 100%)' }}>
-                        <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem', fontSize: '2rem' }}>Scopri i nostri prodotti</h2>
-                        <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-                            Clicca sul prodotto che ti interessa per vederne i dettagli
-                        </p>
+                        <h2 style={{ color: 'var(--color-primary-dark)', marginBottom: '1.5rem', fontSize: '2rem' }}>Scopri i nostri prodotti</h2>
+                        
+                        <div style={{ marginBottom: '2.5rem' }}>
+                            <button
+                                className="btn btn-outline"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '0.8rem 1.5rem', borderRadius: '50px', border: '1px solid var(--color-primary)', color: 'var(--color-primary)' }}
+                                onClick={() => navigate('/catalogo')}
+                            >
+                                <BookOpen size={20} /> Visualizza il catalogo completo
+                            </button>
+                        </div>
+
                         <InfiniteProductCarousel products={products} openProduct={openProduct} onCenterProductChange={setCenterProductName} />
                         {centerProductName && (
                             <div className="animate-fade-in" style={{ marginTop: '-1.5rem', marginBottom: '1rem' }}>
