@@ -82,7 +82,7 @@ const Header = ({ isReviewsPage = false }) => {
 
             <h1 className="brand-logo">Muse Catering</h1>
 
-            {(isReviewsPage || location.pathname === '/quote') && (
+            {(isReviewsPage || location.pathname === '/quote' || location.pathname === '/catalogo') && (
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
                     <button 
                         onClick={() => navigate('/')}
@@ -103,7 +103,7 @@ const Header = ({ isReviewsPage = false }) => {
                 </div>
             )}
             
-            {!(isReviewsPage || location.pathname === '/quote') && (
+            {!(isReviewsPage || location.pathname === '/quote' || location.pathname === '/catalogo') && (
                 <>
                     <div className="header-description"
                         dangerouslySetInnerHTML={{ __html: formatCustomText(headerText) }}

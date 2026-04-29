@@ -40,34 +40,41 @@ const Catalog = () => {
         <div className="container fade-in" style={{ paddingBottom: '5rem' }}>
             <Header />
             
-            <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <button 
-                    className="btn btn-outline" 
-                    onClick={() => navigate(-1)}
-                    style={{ padding: '0.5rem', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >
-                    <ChevronLeft size={24} />
-                </button>
-                <h1 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>Catalogo Prodotti</h1>
+            <div className="section-header" style={{ marginBottom: '3rem', textAlign: 'center', maxWidth: 'none' }}>
+                <h1 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', color: 'var(--color-primary-dark)' }}>
+                    Catalogo Prodotti
+                </h1>
             </div>
 
-            <div style={{ position: 'relative', marginBottom: '3rem' }}>
-                <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} size={20} />
-                <input
-                    type="text"
-                    placeholder="Cerca un prodotto..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{
-                        width: '100%',
-                        padding: '1rem 1rem 1rem 3rem',
-                        borderRadius: '15px',
-                        border: '1px solid var(--color-border)',
-                        fontSize: '1rem',
-                        outline: 'none',
-                        boxShadow: 'var(--shadow-sm)'
-                    }}
-                />
+            <div style={{ 
+                position: 'sticky', 
+                top: '0', 
+                zIndex: 100, 
+                backgroundColor: 'rgba(255, 255, 255, 0.8)', 
+                backdropFilter: 'blur(10px)',
+                padding: '1rem 0',
+                marginBottom: '2rem',
+                borderBottom: '1px solid rgba(0,0,0,0.05)'
+            }}>
+                <div style={{ position: 'relative', maxWidth: '800px', margin: '0 auto' }}>
+                    <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} size={20} />
+                    <input
+                        type="text"
+                        placeholder="Cerca un prodotto..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '1rem 1rem 1rem 3rem',
+                            borderRadius: '50px',
+                            border: '1px solid var(--color-border)',
+                            fontSize: '1rem',
+                            outline: 'none',
+                            boxShadow: 'var(--shadow-sm)',
+                            backgroundColor: 'white'
+                        }}
+                    />
+                </div>
             </div>
 
             {isLoading ? (
@@ -92,7 +99,10 @@ const Catalog = () => {
                                 <h3 style={{ margin: '0 0 0.5rem 0' }}>{product.name}</h3>
                                 {showProductPrices && (
                                     <div style={{ color: 'var(--color-primary)', fontWeight: 'bold', fontSize: '1.2rem' }}>
-                                        € {product.price} <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>/{product.is_sold_by_piece ? 'pz' : 'kg'}</span>
+                                        € {product.is_sold_by_piece ? product.price_per_piece : product.price_per_kg} 
+                                        <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                                            /{product.is_sold_by_piece ? 'pz' : 'kg'}
+                                        </span>
                                     </div>
                                 )}
                             </div>
