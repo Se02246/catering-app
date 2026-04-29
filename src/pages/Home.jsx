@@ -936,15 +936,7 @@ const Home = () => {
                             </div>
                         </div>
 
-                        <div style={{ marginTop: '2rem', marginBottom: '1.5rem' }}>
-                            <button
-                                className="btn btn-outline"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '0.8rem 1.5rem', borderRadius: '50px', border: '1px solid var(--color-primary)', color: 'var(--color-primary)' }}
-                                onClick={() => navigate('/catalogo')}
-                            >
-                                <BookOpen size={20} /> Visualizza il catalogo completo
-                            </button>
-                        </div>
+                        <div style={{ marginTop: '2rem' }}></div>
 
                         <InfiniteProductCarousel products={products} openProduct={openProduct} onCenterProductChange={setCenterProductName} />
                         {centerProductName && (
