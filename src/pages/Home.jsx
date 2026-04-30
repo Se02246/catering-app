@@ -635,20 +635,30 @@ const Home = () => {
 
     const sortedReviews = React.useMemo(() => {
         if (!reviews) return [];
-        return [...reviews].sort((a, b) => {
-            const helpfulScoreA = (a.helpful_count || 0) * 2 - (a.unhelpful_count || 0);
-            const helpfulScoreB = (b.helpful_count || 0) * 2 - (b.unhelpful_count || 0);
+        
+        // 1. Ordina per numero di voti utili netti (più utili prima)
+        // A parità di voti, ordina per data (più recenti prima)
+        const byHelpful = [...reviews].sort((a, b) => {
+            const netA = (a.helpful_count || 0) - (a.unhelpful_count || 0);
+            const netB = (b.helpful_count || 0) - (b.unhelpful_count || 0);
+            
+            if (netB !== netA) {
+                return netB - netA;
+            }
             
             const timeA = new Date(a.created_at).getTime();
             const timeB = new Date(b.created_at).getTime();
-            
-            const daysA = timeA / (1000 * 60 * 60 * 24);
-            const daysB = timeB / (1000 * 60 * 60 * 24);
-            
-            const scoreA = daysA + (helpfulScoreA * 5);
-            const scoreB = daysB + (helpfulScoreB * 5);
-            
-            return scoreB - scoreA;
+            return timeB - timeA;
+        });
+
+        // 2. Prendi le 20 recensioni migliori
+        const top20 = byHelpful.slice(0, 20);
+
+        // 3. Ordinale cronologicamente (dalla più recente alla più vecchia)
+        return top20.sort((a, b) => {
+            const timeA = new Date(a.created_at).getTime();
+            const timeB = new Date(b.created_at).getTime();
+            return timeB - timeA;
         });
     }, [reviews]);
 
