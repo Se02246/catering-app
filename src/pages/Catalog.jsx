@@ -115,10 +115,15 @@ const Catalog = () => {
                                 <h3 style={{ margin: '0 0 0.5rem 0' }}>{product.name}</h3>
                                 {showProductPrices && (
                                     <div style={{ color: 'var(--color-primary)', fontWeight: 'bold', fontSize: '1.2rem' }}>
-                                        € {product.is_sold_by_piece ? product.price_per_piece : product.price_per_kg} 
+                                        € {Number(product.is_sold_by_piece ? product.price_per_piece : product.price_per_kg).toFixed(2)} 
                                         <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
                                             /{product.is_sold_by_piece ? 'pz' : 'kg'}
                                         </span>
+                                        {product.show_servings && product.servings_per_unit && (
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.2rem', fontWeight: 'normal' }}>
+                                                Sazia circa {product.servings_per_unit} persone
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

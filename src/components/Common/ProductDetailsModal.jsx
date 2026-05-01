@@ -280,12 +280,19 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing, isMenuM
                                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: '0.2rem', textTransform: 'uppercase', fontWeight: 700 }}>
                                             Prezzo
                                         </span>
-                                        <span style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--color-primary)' }}>
-                                            {product.is_sold_by_piece
-                                                ? `€ ${product.price_per_piece} / pz`
-                                                : `€ ${product.price_per_kg} / kg`
-                                            }
-                                        </span>
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <span style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--color-primary)' }}>
+                                                {product.is_sold_by_piece
+                                                    ? `€ ${Number(product.price_per_piece || 0).toFixed(2)} / pz`
+                                                    : `€ ${Number(product.price_per_kg || 0).toFixed(2)} / kg`
+                                                }
+                                            </span>
+                                            {product.show_servings && product.servings_per_unit && (
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
+                                                    ca. € {(Number(product.is_sold_by_piece ? product.price_per_piece : product.price_per_kg) / Number(product.servings_per_unit)).toFixed(2)} / pers
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                                 {product.pieces_per_kg && !product.is_sold_by_piece && (

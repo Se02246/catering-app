@@ -438,6 +438,11 @@ const QuoteBuilder = () => {
                                             p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`
                                         ) : null}
                                     </p>
+                                    {p.show_servings && p.servings_per_unit && (
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.1rem' }}>
+                                            Sazia circa {p.servings_per_unit} persone {p.is_sold_by_piece ? 'a pezzo' : 'al kg'}
+                                        </p>
+                                    )}
                                 </div>
                                 <button
                                     className={`btn ${isInCart && !p.allow_multiple ? 'btn-primary' : 'btn-outline'}`}
@@ -500,10 +505,17 @@ const QuoteBuilder = () => {
                                             <div style={{ fontWeight: '800', color: 'var(--color-text)' }}>€ {calculateItemPrice(item).toFixed(2)}</div>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
-                                                {!item.hide_unit_price ? (
-                                                    item.is_sold_by_piece ? `${item.price_per_piece.toFixed(2)}€/pz` : `${item.price_per_kg.toFixed(2)}€/kg`
-                                                ) : null}
+                                            <div>
+                                                <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                                    {!item.hide_unit_price ? (
+                                                        item.is_sold_by_piece ? `${item.price_per_piece.toFixed(2)}€/pz` : `${item.price_per_kg.toFixed(2)}€/kg`
+                                                    ) : null}
+                                                </div>
+                                                {item.show_servings && item.servings_per_unit && (
+                                                    <div style={{ fontSize: '0.75rem', color: 'var(--color-primary)', marginTop: '2px' }}>
+                                                        ({(Number(item.servings_per_unit) * Number(item.quantity)).toFixed(0)} persone)
+                                                    </div>
+                                                )}
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', background: 'var(--color-bg)', padding: '0.3rem 0.6rem', borderRadius: 'var(--radius-md)' }}>
                                                 {/* Minus / Remove Button */}
