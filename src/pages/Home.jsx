@@ -544,7 +544,6 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
             <div 
                 ref={carouselRef}
                 className="product-marquee-container"
-                onScroll={handleScroll}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleInteractionEnd}
