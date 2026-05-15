@@ -82,8 +82,8 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing, isMenuM
 
     const validImages = React.useMemo(() => {
         // Always prioritize the images gallery from the product catalog
-        if (product.images && product.images.length > 0) {
-            return product.images.filter(img => img && img.trim() !== '');
+        if (Array.isArray(product.images) && product.images.length > 0) {
+            return product.images.filter(img => img && typeof img === 'string' && img.trim() !== '');
         }
         // Fallback to single image_url if array is missing or empty
         return product.image_url && product.image_url.trim() !== '' ? [product.image_url] : [];

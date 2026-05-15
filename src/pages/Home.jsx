@@ -303,8 +303,8 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
         return products.filter(p => p.image_url && !p.hidden_in_menu && !p.hide_in_menu);
     }, [products]);
 
-    // Use 20 sets to create a huge buffer.
-    const MULTIPLIER = 20;
+    // Use 7 sets to create a manageable buffer (20 is too high for iOS GPU).
+    const MULTIPLIER = 7;
     const repeatedProducts = React.useMemo(() => {
         if (displayProducts.length === 0) return [];
         return Array(MULTIPLIER).fill(displayProducts).flat();
@@ -328,8 +328,8 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
         const initScroll = () => {
             const setWidth = getSetWidth();
             if (setWidth > 0) {
-                // Jump to the 10th set (middle of 20 sets)
-                carouselRef.current.scrollLeft = setWidth * 10;
+                // Jump to the 3rd set (middle of 7 sets)
+                carouselRef.current.scrollLeft = setWidth * 3;
                 return true;
             }
             return false;
@@ -389,7 +389,18 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
 
                 for (let i = 0; i < children.length; i++) {
                     const child = children[i];
-                    const childCenter = containerOffsetLeft + child.offsetLeft + child.offsetWidth / 2;
+                    const childLeftPos = child.offsetLeft;
+                    
+                    // Optimization: skip off-screen elements to save CPU/GPU on mobile
+                    if (childLeftPos + child.offsetWidth < scrollLeft - 500 || childLeftPos > scrollLeft + containerRect.width + 500) {
+                        const baseRotate = child.dataset.rotate || 0;
+                        const baseTranslateY = parseFloat(child.dataset.translatey || 0);
+                        transforms.push(`translateY(${baseTranslateY}px) rotate(${baseRotate}deg)`);
+                        zIndices.push(child.dataset.zindex || 0);
+                        continue;
+                    }
+
+                    const childCenter = containerOffsetLeft + childLeftPos + child.offsetWidth / 2;
                     
                     const dist = childCenter - centerOfViewport;
                     const absDist = Math.abs(dist);
@@ -460,13 +471,13 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
         const currentScroll = container.scrollLeft;
 
         // Seamless loop jump
-        // If scrolled before set 5, jump forward by 10 sets
-        if (currentScroll < setWidth * 5) {
-            container.scrollLeft += setWidth * 10;
+        // If scrolled before set 2, jump forward by 3 sets
+        if (currentScroll < setWidth * 2) {
+            container.scrollLeft += setWidth * 3;
         }
-        // If scrolled past set 15, jump backward by 10 sets
-        else if (currentScroll > setWidth * 15) {
-            container.scrollLeft -= setWidth * 10;
+        // If scrolled past set 5, jump backward by 3 sets
+        else if (currentScroll > setWidth * 5) {
+            container.scrollLeft -= setWidth * 3;
         }
     };
 
@@ -485,11 +496,13 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
     };
 
     const handleTouchStart = (e) => {
+        if (!e.touches || !e.touches[0]) return;
         touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
         isTouchScrollingRef.current = false;
     };
 
     const handleTouchMove = (e) => {
+        if (!e.touches || !e.touches[0]) return;
         if (isTouchScrollingRef.current) {
             handleInteractionStart();
             return;
@@ -536,10 +549,6 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     margin: 0 -10px; /* Reduced negative margin to spread images slightly */
                     cursor: pointer;
                     position: relative;
-                    will-change: transform, z-index;
-                    transform: translateZ(0);
-                    /* Use hardware acceleration for better performance */
-                    backface-visibility: hidden;
                 }
                 .product-marquee-item:hover,
                 .product-marquee-item.is-center {
@@ -552,12 +561,10 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     object-fit: cover;
                     box-shadow: 0 6px 16px rgba(0,0,0,0.2);
                     transition: transform 0.3s ease, box-shadow 0.3s ease;
-                    will-change: transform, box-shadow;
-                    transform: translateZ(0);
                 }
                 .product-marquee-item:hover img,
                 .product-marquee-item.is-center img {
-                    transform: scale(1.15) translateZ(0);
+                    transform: scale(1.15);
                     box-shadow: 0 12px 24px rgba(0,0,0,0.4);
                 }
                 @media (max-width: 768px) {
