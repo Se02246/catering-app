@@ -20,7 +20,10 @@ const Catalog = () => {
     const showProductPrices = !isPricesLoading && showPricesSetting?.value !== 'false';
     const isLoading = isProductsLoading || isPricesLoading;
 
-    const visibleProducts = products?.filter(p => !p.hidden_in_menu && !p.hide_in_menu) || [];
+    const visibleProducts = products?.filter(p => {
+        const isExpired = p.hide_at && new Date(p.hide_at) < new Date();
+        return p.is_visible !== false && !isExpired && !p.hide_in_menu;
+    }) || [];
     
     const filteredProducts = visibleProducts.filter(p => 
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -96,36 +99,77 @@ const Catalog = () => {
             {isLoading ? (
                 <div style={{ textAlign: 'center', padding: '5rem' }}>Caricamento catalogo...</div>
             ) : (
-                <div className="grid-responsive">
+                <div className="grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
                     {filteredProducts.map((product) => (
                         <div 
                             key={product.id} 
                             className="premium-card fade-in" 
                             onClick={() => openProduct(product)}
-                            style={{ cursor: 'pointer', overflow: 'hidden' }}
+                            style={{ 
+                                cursor: 'pointer', 
+                                overflow: 'hidden', 
+                                flexDirection: 'row', 
+                                alignItems: 'center',
+                                padding: '1rem',
+                                gap: '1.25rem',
+                                minHeight: '140px'
+                            }}
                         >
-                            <div style={{ height: '200px', overflow: 'hidden' }}>
+                            <div style={{ 
+                                width: '100px', 
+                                height: '100px', 
+                                borderRadius: '15px', 
+                                overflow: 'hidden', 
+                                flexShrink: 0,
+                                boxShadow: 'var(--shadow-sm)',
+                                border: '1px solid rgba(155, 57, 61, 0.05)'
+                            }}>
                                 <img 
                                     src={product.image_url} 
                                     alt={product.name} 
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
                             </div>
-                            <div style={{ padding: '1.5rem' }}>
-                                <h3 style={{ margin: '0 0 0.5rem 0' }}>{product.name}</h3>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                <div className="dietary-badges" style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                    {product.is_gluten_free && (
+                                        <span className="badge-elegant badge-elegant-gf" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>GF</span>
+                                    )}
+                                    {product.is_lactose_free && (
+                                        <span className="badge-elegant badge-elegant-lf" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>LF</span>
+                                    )}
+                                </div>
+                                <h3 style={{ 
+                                    margin: '0 0 0.4rem 0', 
+                                    fontSize: '1.15rem', 
+                                    lineHeight: '1.2',
+                                    color: 'var(--color-primary-dark)'
+                                }}>
+                                    {product.name}
+                                </h3>
                                 {showProductPrices && (
-                                    <div style={{ color: 'var(--color-primary)', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                                    <div style={{ 
+                                        color: 'var(--color-primary)', 
+                                        fontWeight: '800', 
+                                        fontSize: '1.1rem',
+                                        display: 'flex',
+                                        alignItems: 'baseline',
+                                        gap: '0.2rem'
+                                    }}>
                                         € {Number(product.is_sold_by_piece ? product.price_per_piece : product.price_per_kg).toFixed(2)} 
-                                        <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: '600' }}>
                                             /{product.is_sold_by_piece ? 'pz' : 'kg'}
                                         </span>
-                                        {product.show_servings && product.servings_per_unit && (
-                                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.2rem', fontWeight: 'normal' }}>
-                                                Sazia circa {product.servings_per_unit} persone
-                                            </div>
-                                        )}
                                     </div>
                                 )}
+                                {product.show_servings && product.servings_per_unit && (
+                                    <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
+                                        Sazia circa {product.servings_per_unit} persone
+                                    </div>
+                                )}
+                            </div>
+                            <div style={{ color: 'var(--color-accent-light)', display: 'flex', alignItems: 'center' }}>
+                                <ChevronLeft style={{ transform: 'rotate(180deg)' }} size={20} />
                             </div>
                         </div>
                     ))}

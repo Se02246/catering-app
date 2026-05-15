@@ -300,7 +300,10 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
 
     const displayProducts = React.useMemo(() => {
         if (!products) return [];
-        return products.filter(p => p.image_url && !p.hidden_in_menu && !p.hide_in_menu);
+        return products.filter(p => {
+            const isExpired = p.hide_at && new Date(p.hide_at) < new Date();
+            return p.image_url && p.is_visible !== false && !isExpired && !p.hide_in_menu;
+        });
     }, [products]);
 
     // Use 7 sets to create a manageable buffer (20 is too high for iOS GPU).
