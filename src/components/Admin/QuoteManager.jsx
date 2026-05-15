@@ -97,7 +97,14 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         if (currentQuote && currentQuote.items) {
             currentQuote.items.forEach(item => {
                 const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : 'kg'}` : "";
-                text += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
+                let dietary = [];
+                if (item.is_gluten_free) dietary.push("SG");
+                if (item.is_lactose_free) dietary.push("SL");
+                if (item.is_vegetarian) dietary.push("VGT");
+                if (item.is_vegan) dietary.push("VEG");
+                const dietaryStr = dietary.length > 0 ? ` [${dietary.join(', ')}]` : "";
+                
+                text += `- ${item.name}${dietaryStr}${qty ? ` (${qty})` : ''}\n`;
             });
         }
         
@@ -416,11 +423,19 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         }
     };
 
-    const toggleGlobalFlag = (field, value) => {
-        const updatedQuote = { ...currentQuote, [field]: value };
+    const toggleGlobalFlag = (flag, value) => {
+        let updatedQuote = { ...currentQuote, [flag]: value };
+
+        // Logical dependency: if Vegan is activated, deactivate Vegetarian and Lactose-Free
+        if (flag === 'is_vegan' && value === true) {
+            updatedQuote.is_vegetarian = false;
+            updatedQuote.is_lactose_free = false;
+        }
+
         setCurrentQuote(updatedQuote);
         autoSave(updatedQuote);
     };
+
 
     const updateItemDetails = () => {
         const updatedItems = currentQuote.items.map(it => it.instanceId === editingItemId ? editingItemData : it);
@@ -657,7 +672,19 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                     Vegetariano
                                                 </label>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#388E3C', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                                                    <input type="checkbox" checked={editingItemData.is_vegan || false} onChange={e => setEditingItemData({...editingItemData, is_vegan: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    <input type="checkbox" checked={editingItemData.is_vegan || false} onChange={e => {
+                                                        const isChecked = e.target.checked;
+                                                        if (isChecked) {
+                                                            setEditingItemData({
+                                                                ...editingItemData,
+                                                                is_vegan: true,
+                                                                is_vegetarian: false,
+                                                                is_lactose_free: false
+                                                            });
+                                                        } else {
+                                                            setEditingItemData({...editingItemData, is_vegan: false});
+                                                        }
+                                                    }} style={{ width: '16px', height: '16px' }} />
                                                     Vegano
                                                 </label>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#666', fontSize: '0.9rem', fontWeight: 'bold' }}>
@@ -796,8 +823,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                     {p.name} 
                                     {p.is_gluten_free && ' [SG]'}
                                     {p.is_lactose_free && ' [SL]'}
-                                    {p.is_vegetarian && ' [V]'}
-                                    {p.is_vegan && ' [VG]'}
+                                    {p.is_vegetarian && ' [VGT]'}
+                                    {p.is_vegan && ' [VEG]'}
                                     {` (€ ${(Number(p.is_sold_by_piece ? p.price_per_piece : p.price_per_kg) || 0).toFixed(2)})`}
                                 </option>
                             ))}

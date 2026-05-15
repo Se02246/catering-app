@@ -445,7 +445,12 @@ const PackageBuilder = () => {
                                                 <input type="checkbox" checked={newPackage.is_vegetarian || false} readOnly style={{ marginRight: '0.5rem', width: '18px', height: '18px' }} />
                                                 <label style={{ fontWeight: 'bold', color: '#8BC34A', cursor: 'pointer' }}>Vegetariano!</label>
                                             </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setNewPackage({ ...newPackage, is_vegan: !newPackage.is_vegan })}>
+                                            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setNewPackage({ 
+                                                ...newPackage, 
+                                                is_vegan: !newPackage.is_vegan,
+                                                is_vegetarian: !newPackage.is_vegan ? false : newPackage.is_vegetarian,
+                                                is_lactose_free: !newPackage.is_vegan ? false : newPackage.is_lactose_free
+                                            })}>
                                                 <input type="checkbox" checked={newPackage.is_vegan || false} readOnly style={{ marginRight: '0.5rem', width: '18px', height: '18px' }} />
                                                 <label style={{ fontWeight: 'bold', color: '#388E3C', cursor: 'pointer' }}>Vegano!</label>
                                             </div>
@@ -507,11 +512,26 @@ const PackageBuilder = () => {
                                                                             Senza Lattosio
                                                                         </label>
                                                                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: '#8BC34A', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                                                            <input type="checkbox" checked={editingItemData.is_vegetarian || false} onChange={e => setEditingItemData({...editingItemData, is_vegetarian: e.target.checked})} style={{ width: '14px', height: '14px' }} />
+                                                                            <input type="checkbox" checked={editingItemData.is_vegetarian || false} onChange={e => {
+                                                                                const isChecked = e.target.checked;
+                                                                                setEditingItemData({...editingItemData, is_vegetarian: isChecked});
+                                                                            }} style={{ width: '14px', height: '14px' }} />
                                                                             Vegetariano
                                                                         </label>
                                                                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: '#388E3C', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                                                            <input type="checkbox" checked={editingItemData.is_vegan || false} onChange={e => setEditingItemData({...editingItemData, is_vegan: e.target.checked})} style={{ width: '14px', height: '14px' }} />
+                                                                            <input type="checkbox" checked={editingItemData.is_vegan || false} onChange={e => {
+                                                                                const isChecked = e.target.checked;
+                                                                                if (isChecked) {
+                                                                                    setEditingItemData({
+                                                                                        ...editingItemData,
+                                                                                        is_vegan: true,
+                                                                                        is_vegetarian: false,
+                                                                                        is_lactose_free: false
+                                                                                    });
+                                                                                } else {
+                                                                                    setEditingItemData({...editingItemData, is_vegan: false});
+                                                                                }
+                                                                            }} style={{ width: '14px', height: '14px' }} />
                                                                             Vegano
                                                                         </label>
                                                                     </div>
@@ -542,10 +562,10 @@ const PackageBuilder = () => {
                                                                                     <span style={{ color: '#03A9F4', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>LF</span>
                                                                                 )}
                                                                                 {(item.is_vegetarian ?? product?.is_vegetarian) && (
-                                                                                    <span style={{ color: '#8BC34A', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>V</span>
+                                                                                    <span style={{ color: '#8BC34A', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>VGT</span>
                                                                                 )}
                                                                                 {(item.is_vegan ?? product?.is_vegan) && (
-                                                                                    <span style={{ color: '#388E3C', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>VG</span>
+                                                                                    <span style={{ color: '#388E3C', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>VEG</span>
                                                                                 )}
                                                                             </div>
                                                                         </div>
@@ -710,8 +730,8 @@ const PackageBuilder = () => {
                                 <div className="dietary-badges" style={{ marginBottom: '0.75rem', display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
                                     {pkg.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>GF</span>}
                                     {pkg.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>LF</span>}
-                                    {pkg.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>V</span>}
-                                    {pkg.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>VG</span>}
+                                    {pkg.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>VGT</span>}
+                                    {pkg.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>VEG</span>}
                                 </div>
                                 
                                 <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.2rem', fontSize: '0.9rem', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>

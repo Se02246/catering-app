@@ -479,7 +479,19 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                                                 type="checkbox"
                                                 id="is_vegan"
                                                 checked={currentProduct.is_vegan || false}
-                                                onChange={e => setCurrentProduct({ ...currentProduct, is_vegan: e.target.checked })}
+                                                onChange={e => {
+                                                    const isChecked = e.target.checked;
+                                                    if (isChecked) {
+                                                        setCurrentProduct({ 
+                                                            ...currentProduct, 
+                                                            is_vegan: true,
+                                                            is_vegetarian: false,
+                                                            is_lactose_free: false
+                                                        });
+                                                    } else {
+                                                        setCurrentProduct({ ...currentProduct, is_vegan: false });
+                                                    }
+                                                }}
                                                 style={{ marginRight: '0.75rem', width: '18px', height: '18px' }}
                                             />
                                             <label htmlFor="is_vegan" style={{ fontWeight: 'bold', color: '#388E3C', cursor: 'pointer' }}>Vegano!</label>

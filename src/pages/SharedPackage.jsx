@@ -360,6 +360,16 @@ const SharedPackage = () => {
                                                         Senza Lattosio
                                                     </span>
                                                 )}
+                                                {item.is_vegetarian && !pkg.is_vegetarian && (
+                                                    <span style={{ color: '#8BC34A', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        Vegetariano
+                                                    </span>
+                                                )}
+                                                {item.is_vegan && !pkg.is_vegan && (
+                                                    <span style={{ color: '#388E3C', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        Vegano
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', margin: 0 }}>

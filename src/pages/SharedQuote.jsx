@@ -606,6 +606,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                                     </span>
                                                 )}
                                             </span>
+
                                         </p>
                                         {!isMenuMode && (
                                             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>

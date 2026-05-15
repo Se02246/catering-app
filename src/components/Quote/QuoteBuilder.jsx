@@ -432,8 +432,9 @@ const QuoteBuilder = () => {
                                     <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.3rem', flexWrap: 'wrap' }}>
                                         {p.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Glutine</span>}
                                         {p.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Lattosio</span>}
-                                        {p.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>V</span>}
-                                        {p.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VG</span>}
+                                        {p.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VGT</span>}
+                                        {p.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VEG</span>}
+
                                     </div>
 
                                     <p style={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.85rem' }}>
@@ -501,10 +502,10 @@ const QuoteBuilder = () => {
                                             <div>
                                                 <div style={{ fontWeight: '700', fontSize: '1rem', color: 'var(--color-primary-dark)', marginBottom: '0.2rem' }}>{item.name}</div>
                                                 <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.3rem', flexWrap: 'wrap' }}>
-                                                    {p.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Glutine</span>}
-                                                    {p.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Lattosio</span>}
-                                                    {p.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>V</span>}
-                                                    {p.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VG</span>}
+                                                    {item.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Glutine</span>}
+                                                    {item.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Lattosio</span>}
+                                                    {item.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VGT</span>}
+                                                    {item.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VEG</span>}
                                                 </div>
 
                                             </div>
