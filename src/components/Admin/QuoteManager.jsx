@@ -66,6 +66,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 total_price: updatedQuote.total_price,
                 is_gluten_free: updatedQuote.is_gluten_free,
                 is_lactose_free: updatedQuote.is_lactose_free,
+                is_vegetarian: updatedQuote.is_vegetarian,
+                is_vegan: updatedQuote.is_vegan,
                 notes: updatedQuote.notes,
                 menu_notes: updatedQuote.menu_notes,
                 client_name: updatedQuote.client_name,
@@ -526,6 +528,16 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                             Senza Lattosio
                                         </span>
                                     )}
+                                    {(currentQuote.is_vegetarian || (currentQuote.items.length > 0 && currentQuote.items.every(i => i.is_vegetarian))) && (
+                                        <span style={{ color: '#8BC34A', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                            Vegetariano
+                                        </span>
+                                    )}
+                                    {(currentQuote.is_vegan || (currentQuote.items.length > 0 && currentQuote.items.every(i => i.is_vegan))) && (
+                                        <span style={{ color: '#388E3C', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                            Vegano
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -576,6 +588,24 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 />
                                 Tutto Senza Lattosio
                             </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#8BC34A', fontWeight: 'bold' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={currentQuote.is_vegetarian || false} 
+                                    onChange={e => toggleGlobalFlag('is_vegetarian', e.target.checked)}
+                                    style={{ width: '18px', height: '18px' }}
+                                />
+                                Tutto Vegetariano
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#388E3C', fontWeight: 'bold' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={currentQuote.is_vegan || false} 
+                                    onChange={e => toggleGlobalFlag('is_vegan', e.target.checked)}
+                                    style={{ width: '18px', height: '18px' }}
+                                />
+                                Tutto Vegano
+                            </label>
                         </div>
                     </div>
 
@@ -622,6 +652,14 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                     <input type="checkbox" checked={editingItemData.is_lactose_free || false} onChange={e => setEditingItemData({...editingItemData, is_lactose_free: e.target.checked})} style={{ width: '16px', height: '16px' }} />
                                                     Senza Lattosio
                                                 </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#8BC34A', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input type="checkbox" checked={editingItemData.is_vegetarian || false} onChange={e => setEditingItemData({...editingItemData, is_vegetarian: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    Vegetariano
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#388E3C', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input type="checkbox" checked={editingItemData.is_vegan || false} onChange={e => setEditingItemData({...editingItemData, is_vegan: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    Vegano
+                                                </label>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#666', fontSize: '0.9rem', fontWeight: 'bold' }}>
                                                     <input type="checkbox" checked={editingItemData.hide_in_menu || false} onChange={e => setEditingItemData({...editingItemData, hide_in_menu: e.target.checked})} style={{ width: '16px', height: '16px' }} />
                                                     Nascondi nel menù
@@ -651,6 +689,16 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                 {(currentQuote.is_lactose_free || item.is_lactose_free) && (
                                                     <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
                                                         Senza Lattosio
+                                                    </span>
+                                                )}
+                                                {(currentQuote.is_vegetarian || item.is_vegetarian) && (
+                                                    <span style={{ color: '#8BC34A', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        Vegetariano
+                                                    </span>
+                                                )}
+                                                {(currentQuote.is_vegan || item.is_vegan) && (
+                                                    <span style={{ color: '#388E3C', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        Vegano
                                                     </span>
                                                 )}
                                             </div>
@@ -748,6 +796,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                     {p.name} 
                                     {p.is_gluten_free && ' [SG]'}
                                     {p.is_lactose_free && ' [SL]'}
+                                    {p.is_vegetarian && ' [V]'}
+                                    {p.is_vegan && ' [VG]'}
                                     {` (€ ${(Number(p.is_sold_by_piece ? p.price_per_piece : p.price_per_kg) || 0).toFixed(2)})`}
                                 </option>
                             ))}

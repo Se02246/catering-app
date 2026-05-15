@@ -429,10 +429,13 @@ const QuoteBuilder = () => {
                                 </div>
                                 <div style={{ flex: 1 }}>
                                     <h4 style={{ fontSize: '0.95rem', marginBottom: '0.2rem' }}>{p.name}</h4>
-                                    <div className="dietary-badges" style={{ marginBottom: '0.4rem', gap: '0.3rem' }}>
+                                    <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.3rem', flexWrap: 'wrap' }}>
                                         {p.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Glutine</span>}
                                         {p.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Lattosio</span>}
+                                        {p.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>V</span>}
+                                        {p.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VG</span>}
                                     </div>
+
                                     <p style={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '0.85rem' }}>
                                         {!p.hide_unit_price ? (
                                             p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`
@@ -497,10 +500,13 @@ const QuoteBuilder = () => {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
                                             <div>
                                                 <div style={{ fontWeight: '700', fontSize: '1rem', color: 'var(--color-primary-dark)', marginBottom: '0.2rem' }}>{item.name}</div>
-                                                <div className="dietary-badges" style={{ gap: '0.3rem' }}>
-                                                    {item.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Glutine</span>}
-                                                    {item.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Lattosio</span>}
+                                                <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.3rem', flexWrap: 'wrap' }}>
+                                                    {p.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Glutine</span>}
+                                                    {p.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Lattosio</span>}
+                                                    {p.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>V</span>}
+                                                    {p.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VG</span>}
                                                 </div>
+
                                             </div>
                                             <div style={{ fontWeight: '800', color: 'var(--color-text)' }}>€ {calculateItemPrice(item).toFixed(2)}</div>
                                         </div>

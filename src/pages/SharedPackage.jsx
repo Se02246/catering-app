@@ -117,13 +117,18 @@ const SharedPackage = () => {
         let globalSubtitle = "";
         const isPkgGlutenFree = pkg.is_gluten_free || (pkg.items.length > 0 && pkg.items.every(item => item.is_gluten_free));
         const isPkgLactoseFree = pkg.is_lactose_free || (pkg.items.length > 0 && pkg.items.every(item => item.is_lactose_free));
+        const isPkgVegetarian = pkg.is_vegetarian || (pkg.items.length > 0 && pkg.items.every(item => item.is_vegetarian));
+        const isPkgVegan = pkg.is_vegan || (pkg.items.length > 0 && pkg.items.every(item => item.is_vegan));
 
-        if (isPkgGlutenFree && isPkgLactoseFree) {
-            globalSubtitle = "Menù gluten free e senza lattosio";
-        } else if (isPkgGlutenFree) {
-            globalSubtitle = "Menù gluten free";
-        } else if (isPkgLactoseFree) {
-            globalSubtitle = "Menù senza lattosio";
+        const labels = [];
+        if (isPkgVegan) labels.push("vegano");
+        else if (isPkgVegetarian) labels.push("vegetariano");
+        
+        if (isPkgGlutenFree) labels.push("gluten free");
+        if (isPkgLactoseFree) labels.push("senza lattosio");
+
+        if (labels.length > 0) {
+            globalSubtitle = "Menù " + labels.join(" e ");
         }
 
         if (globalSubtitle) {
@@ -206,6 +211,8 @@ const SharedPackage = () => {
             let labels = [];
             if (item.is_gluten_free && !isPkgGlutenFree) labels.push("Gluten Free");
             if (item.is_lactose_free && !isPkgLactoseFree) labels.push("Senza Lattosio");
+            if (item.is_vegetarian && !isPkgVegetarian) labels.push("Vegetariano");
+            if (item.is_vegan && !isPkgVegan) labels.push("Vegano");
             
             if (labels.length > 0) {
                 doc.setFontSize(10);
@@ -277,7 +284,7 @@ const SharedPackage = () => {
                     <div style={{ marginBottom: '2rem' }}>
                         <h1 style={{ color: 'var(--color-primary-dark)', marginBottom: '0.5rem' }}>
                             {pkg.name}
-                            <span style={{ marginLeft: '1rem', display: 'inline-flex', gap: '0.5rem', verticalAlign: 'middle' }}>
+                            <span style={{ marginLeft: '1rem', display: 'inline-flex', gap: '0.5rem', verticalAlign: 'middle', flexWrap: 'wrap' }}>
                                 {pkg.is_gluten_free && (
                                     <span style={{ color: '#FF9800', fontSize: '0.9rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '4px 10px', borderRadius: '6px' }}>
                                         Senza Glutine
@@ -286,6 +293,16 @@ const SharedPackage = () => {
                                 {pkg.is_lactose_free && (
                                     <span style={{ color: '#03A9F4', fontSize: '0.9rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '4px 10px', borderRadius: '6px' }}>
                                         Senza Lattosio
+                                    </span>
+                                )}
+                                {pkg.is_vegetarian && (
+                                    <span style={{ color: '#8BC34A', fontSize: '0.9rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '4px 10px', borderRadius: '6px' }}>
+                                        Vegetariano
+                                    </span>
+                                )}
+                                {pkg.is_vegan && (
+                                    <span style={{ color: '#388E3C', fontSize: '0.9rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '4px 10px', borderRadius: '6px' }}>
+                                        Vegano
                                     </span>
                                 )}
                             </span>

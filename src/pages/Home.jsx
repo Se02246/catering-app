@@ -98,9 +98,11 @@ const PackageCard = ({ pkg, index, openPackage, showProductPrices }) => {
             </div>
 
             <div className="card-body">
-                <div className="dietary-badges" style={{ marginBottom: '1rem' }}>
+                <div className="dietary-badges" style={{ marginBottom: '1rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                     {pkg.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
                     {pkg.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
+                    {pkg.is_vegetarian && <span className="badge-elegant badge-elegant-v">Vegetariano</span>}
+                    {pkg.is_vegan && <span className="badge-elegant badge-elegant-vg">Vegano</span>}
                 </div>
 
                 <h3 className="card-title">{pkg.name}</h3>
@@ -1331,9 +1333,11 @@ const Home = () => {
                                 <div className="package-modal-content-side" style={{ width: '100%', background: 'var(--color-bg)' }}>
                                     <div style={{ padding: window.innerWidth > 768 ? '2.5rem' : '1.5rem' }}>
                                         <div style={{ marginBottom: '2rem' }}>
-                                            <div className="dietary-badges" style={{ marginBottom: '0.75rem' }}>
+                                            <div className="dietary-badges" style={{ marginBottom: '0.75rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                                                 {selectedPackage.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
                                                 {selectedPackage.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
+                                                {selectedPackage.is_vegetarian && <span className="badge-elegant badge-elegant-v">Vegetariano</span>}
+                                                {selectedPackage.is_vegan && <span className="badge-elegant badge-elegant-vg">Vegano</span>}
                                             </div>
                                             <h2 style={{ fontSize: window.innerWidth > 768 ? '2.2rem' : '1.8rem', color: 'var(--color-primary-dark)', marginBottom: '1.2rem', lineHeight: '1.1' }}>
                                                 {selectedPackage.name}
@@ -1388,6 +1392,16 @@ const Home = () => {
                                                                 {item.is_lactose_free && !selectedPackage.is_lactose_free && (
                                                                     <span style={{ color: '#03A9F4', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
                                                                         Senza Lattosio
+                                                                    </span>
+                                                                )}
+                                                                {item.is_vegetarian && !selectedPackage.is_vegetarian && (
+                                                                    <span style={{ color: '#8BC34A', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                                                        Vegetariano
+                                                                    </span>
+                                                                )}
+                                                                {item.is_vegan && !selectedPackage.is_vegan && (
+                                                                    <span style={{ color: '#388E3C', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                                                        Vegano
                                                                     </span>
                                                                 )}
                                                             </div>

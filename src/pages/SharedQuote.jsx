@@ -147,6 +147,8 @@ const SharedQuote = ({ isMenuMode = false }) => {
 
     const isQuoteGlutenFree = quote.is_gluten_free || (quote.items.length > 0 && quote.items.every(item => item.is_gluten_free));
     const isQuoteLactoseFree = quote.is_lactose_free || (quote.items.length > 0 && quote.items.every(item => item.is_lactose_free));
+    const isQuoteVegetarian = quote.is_vegetarian || (quote.items.length > 0 && quote.items.every(item => item.is_vegetarian));
+    const isQuoteVegan = quote.is_vegan || (quote.items.length > 0 && quote.items.every(item => item.is_vegan));
 
     const suggestedTotal = quote.items.reduce((sum, item) => {
         const price = item.is_sold_by_piece 
@@ -199,13 +201,12 @@ const SharedQuote = ({ isMenuMode = false }) => {
         yPos += 10;
 
         let globalSubtitle = "";
-        if (isQuoteGlutenFree && isQuoteLactoseFree) {
-            globalSubtitle = "Menù gluten free e senza lattosio";
-        } else if (isQuoteGlutenFree) {
-            globalSubtitle = "Menù gluten free";
-        } else if (isQuoteLactoseFree) {
-            globalSubtitle = "Menù senza lattosio";
-        }
+        const labels = [];
+        if (isQuoteVegan) labels.push("vegano");
+        else if (isQuoteVegetarian) labels.push("vegetariano");
+        if (isQuoteGlutenFree) labels.push("gluten free");
+        if (isQuoteLactoseFree) labels.push("senza lattosio");
+        if (labels.length > 0) globalSubtitle = "Menù " + labels.join(" e ");
 
         if (globalSubtitle) {
             doc.setFontSize(14);
@@ -472,6 +473,16 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                         Senza Lattosio
                                     </span>
                                 )}
+                                {isQuoteVegetarian && (
+                                    <span style={{ color: '#8BC34A', fontSize: '0.8rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '4px 10px', borderRadius: '6px' }}>
+                                        Vegetariano
+                                    </span>
+                                )}
+                                {isQuoteVegan && (
+                                    <span style={{ color: '#388E3C', fontSize: '0.8rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '4px 10px', borderRadius: '6px' }}>
+                                        Vegano
+                                    </span>
+                                )}
                             </div>
                         </div>
                         {!isMenuMode && (
@@ -582,6 +593,16 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                                 {(quote.is_lactose_free || item.is_lactose_free) && (
                                                     <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
                                                         Senza Lattosio
+                                                    </span>
+                                                )}
+                                                {(quote.is_vegetarian || item.is_vegetarian) && (
+                                                    <span style={{ color: '#8BC34A', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                                        Vegetariano
+                                                    </span>
+                                                )}
+                                                {(quote.is_vegan || item.is_vegan) && (
+                                                    <span style={{ color: '#388E3C', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                                        Vegano
                                                     </span>
                                                 )}
                                             </span>

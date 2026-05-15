@@ -253,9 +253,11 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing, isMenuM
                         {/* Content Section */}
                         <div style={{ padding: window.innerWidth > 768 ? '2.5rem' : '1.5rem' }}>
                             <div style={{ marginBottom: '1.5rem' }}>
-                                <div className="dietary-badges" style={{ marginBottom: '0.5rem' }}>
+                                <div className="dietary-badges" style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                     {product.is_gluten_free && <span className="badge-dietary badge-gf">Senza Glutine</span>}
                                     {product.is_lactose_free && <span className="badge-dietary badge-lf">Senza Lattosio</span>}
+                                    {product.is_vegetarian && <span className="badge-dietary badge-v">Vegetariano</span>}
+                                    {product.is_vegan && <span className="badge-dietary badge-vg">Vegano</span>}
                                 </div>
                                 <h2 style={{ fontSize: window.innerWidth > 768 ? '2rem' : '1.6rem', color: 'var(--color-primary-dark)', margin: 0 }}>{product.name}</h2>
                             </div>

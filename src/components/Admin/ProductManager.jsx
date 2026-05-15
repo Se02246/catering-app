@@ -464,6 +464,26 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                                             />
                                             <label htmlFor="is_lactose_free" style={{ fontWeight: 'bold', color: '#03A9F4', cursor: 'pointer' }}>Senza Lattosio!</label>
                                         </div>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <input
+                                                type="checkbox"
+                                                id="is_vegetarian"
+                                                checked={currentProduct.is_vegetarian || false}
+                                                onChange={e => setCurrentProduct({ ...currentProduct, is_vegetarian: e.target.checked })}
+                                                style={{ marginRight: '0.75rem', width: '18px', height: '18px' }}
+                                            />
+                                            <label htmlFor="is_vegetarian" style={{ fontWeight: 'bold', color: '#8BC34A', cursor: 'pointer' }}>Vegetariano!</label>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <input
+                                                type="checkbox"
+                                                id="is_vegan"
+                                                checked={currentProduct.is_vegan || false}
+                                                onChange={e => setCurrentProduct({ ...currentProduct, is_vegan: e.target.checked })}
+                                                style={{ marginRight: '0.75rem', width: '18px', height: '18px' }}
+                                            />
+                                            <label htmlFor="is_vegan" style={{ fontWeight: 'bold', color: '#388E3C', cursor: 'pointer' }}>Vegano!</label>
+                                        </div>
                                     </div>
                                 </div>
                             </form>
@@ -521,6 +541,16 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                                         {p.is_lactose_free && (
                                             <span style={{ color: '#03A9F4', fontSize: '0.7rem', fontWeight: 'bold' }}>
                                                 Senza Lattosio!
+                                            </span>
+                                        )}
+                                        {p.is_vegetarian && (
+                                            <span style={{ color: '#8BC34A', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                Vegetariano!
+                                            </span>
+                                        )}
+                                        {p.is_vegan && (
+                                            <span style={{ color: '#388E3C', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                Vegano!
                                             </span>
                                         )}
                                     </div>

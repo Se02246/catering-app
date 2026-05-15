@@ -138,6 +138,12 @@ const Catalog = () => {
                                     {product.is_lactose_free && (
                                         <span className="badge-elegant badge-elegant-lf" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>LF</span>
                                     )}
+                                    {product.is_vegetarian && (
+                                        <span className="badge-elegant badge-elegant-v" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>V</span>
+                                    )}
+                                    {product.is_vegan && (
+                                        <span className="badge-elegant badge-elegant-vg" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>VG</span>
+                                    )}
                                 </div>
                                 <h3 style={{ 
                                     margin: '0 0 0.4rem 0', 

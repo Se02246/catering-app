@@ -441,6 +441,14 @@ const PackageBuilder = () => {
                                                 <input type="checkbox" checked={newPackage.is_lactose_free || false} readOnly style={{ marginRight: '0.5rem', width: '18px', height: '18px' }} />
                                                 <label style={{ fontWeight: 'bold', color: '#03A9F4', cursor: 'pointer' }}>Senza Lattosio!</label>
                                             </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setNewPackage({ ...newPackage, is_vegetarian: !newPackage.is_vegetarian })}>
+                                                <input type="checkbox" checked={newPackage.is_vegetarian || false} readOnly style={{ marginRight: '0.5rem', width: '18px', height: '18px' }} />
+                                                <label style={{ fontWeight: 'bold', color: '#8BC34A', cursor: 'pointer' }}>Vegetariano!</label>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setNewPackage({ ...newPackage, is_vegan: !newPackage.is_vegan })}>
+                                                <input type="checkbox" checked={newPackage.is_vegan || false} readOnly style={{ marginRight: '0.5rem', width: '18px', height: '18px' }} />
+                                                <label style={{ fontWeight: 'bold', color: '#388E3C', cursor: 'pointer' }}>Vegano!</label>
+                                            </div>
                                         </div>
 
                                         <div style={{ marginBottom: '1.5rem' }}>
@@ -498,6 +506,14 @@ const PackageBuilder = () => {
                                                                             <input type="checkbox" checked={editingItemData.is_lactose_free || false} onChange={e => setEditingItemData({...editingItemData, is_lactose_free: e.target.checked})} style={{ width: '14px', height: '14px' }} />
                                                                             Senza Lattosio
                                                                         </label>
+                                                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: '#8BC34A', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                                            <input type="checkbox" checked={editingItemData.is_vegetarian || false} onChange={e => setEditingItemData({...editingItemData, is_vegetarian: e.target.checked})} style={{ width: '14px', height: '14px' }} />
+                                                                            Vegetariano
+                                                                        </label>
+                                                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: '#388E3C', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                                            <input type="checkbox" checked={editingItemData.is_vegan || false} onChange={e => setEditingItemData({...editingItemData, is_vegan: e.target.checked})} style={{ width: '14px', height: '14px' }} />
+                                                                            Vegano
+                                                                        </label>
                                                                     </div>
                                                                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                                                                         <button type="button" className="btn btn-outline" style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }} onClick={() => { setEditingItemId(null); setEditingItemData(null); }}>Annulla</button>
@@ -524,6 +540,12 @@ const PackageBuilder = () => {
                                                                                 )}
                                                                                 {(item.is_lactose_free ?? product?.is_lactose_free) && (
                                                                                     <span style={{ color: '#03A9F4', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>LF</span>
+                                                                                )}
+                                                                                {(item.is_vegetarian ?? product?.is_vegetarian) && (
+                                                                                    <span style={{ color: '#8BC34A', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>V</span>
+                                                                                )}
+                                                                                {(item.is_vegan ?? product?.is_vegan) && (
+                                                                                    <span style={{ color: '#388E3C', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>VG</span>
                                                                                 )}
                                                                             </div>
                                                                         </div>
@@ -685,9 +707,11 @@ const PackageBuilder = () => {
                                     {isHidden && <span style={{ fontSize: '0.75rem', color: '#E11D48', marginLeft: '0.5rem', verticalAlign: 'middle' }}>({isExpired ? 'Scaduto' : 'Nascosto'})</span>}
                                 </h3>
                                 
-                                <div className="dietary-badges" style={{ marginBottom: '0.75rem' }}>
-                                    {pkg.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ fontSize: '0.65rem' }}>Senza Glutine</span>}
-                                    {pkg.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ fontSize: '0.65rem' }}>Senza Lattosio</span>}
+                                <div className="dietary-badges" style={{ marginBottom: '0.75rem', display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
+                                    {pkg.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>GF</span>}
+                                    {pkg.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>LF</span>}
+                                    {pkg.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>V</span>}
+                                    {pkg.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>VG</span>}
                                 </div>
                                 
                                 <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.2rem', fontSize: '0.9rem', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
