@@ -303,45 +303,23 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
         return products.filter(p => p.image_url && !p.hidden_in_menu && !p.hide_in_menu);
     }, [products]);
 
-    // Use 7 sets to create a manageable buffer (20 is too high for iOS GPU).
-    const MULTIPLIER = 7;
+    // Preload images to ensure they are cached
+    React.useEffect(() => {
+        if (!displayProducts) return;
+        displayProducts.forEach(prod => {
+            if (prod.image_url) {
+                const img = new Image();
+                img.src = prod.image_url;
+            }
+        });
+    }, [displayProducts]);
+
+    // Use MULTIPLIER = 1 as requested to minimize DOM elements and rely on image caching.
+    const MULTIPLIER = 1;
     const repeatedProducts = React.useMemo(() => {
         if (displayProducts.length === 0) return [];
         return Array(MULTIPLIER).fill(displayProducts).flat();
     }, [displayProducts]);
-
-    const getSetWidth = React.useCallback(() => {
-        if (!carouselRef.current || displayProducts.length === 0) return 0;
-        const container = carouselRef.current;
-        const firstItemSet0 = container.children[0];
-        const firstItemSet1 = container.children[displayProducts.length];
-
-        if (firstItemSet0 && firstItemSet1) {
-            return firstItemSet1.offsetLeft - firstItemSet0.offsetLeft;
-        }
-        return 0;
-    }, [displayProducts.length]);
-
-    React.useEffect(() => {
-        if (!carouselRef.current || displayProducts.length === 0) return;
-
-        const initScroll = () => {
-            const setWidth = getSetWidth();
-            if (setWidth > 0) {
-                // Jump to the 3rd set (middle of 7 sets)
-                carouselRef.current.scrollLeft = setWidth * 3;
-                return true;
-            }
-            return false;
-        };
-
-        if (!initScroll()) {
-            const interval = setInterval(() => {
-                if (initScroll()) clearInterval(interval);
-            }, 100);
-            setTimeout(() => clearInterval(interval), 2000);
-        }
-    }, [displayProducts.length, getSetWidth]);
 
     React.useEffect(() => {
         if (!carouselRef.current || displayProducts.length === 0) return;
@@ -362,6 +340,11 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     const pixelsToScroll = Math.floor(fractionalScrollRef.current);
                     container.scrollLeft += pixelsToScroll;
                     fractionalScrollRef.current -= pixelsToScroll;
+
+                    // Since MULTIPLIER=1, if we reach the end, jump back to start to simulate a loop
+                    if (container.scrollLeft >= container.scrollWidth - container.clientWidth - 1) {
+                        container.scrollLeft = 0;
+                    }
                 }
             }
 
@@ -460,26 +443,6 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
             if (animationRef.current) cancelAnimationFrame(animationRef.current);
         };
     }, [isPaused, displayProducts.length]);
-
-    const handleScroll = () => {
-        if (!carouselRef.current || displayProducts.length === 0) return;
-
-        const container = carouselRef.current;
-        const setWidth = getSetWidth();
-        if (setWidth === 0) return;
-
-        const currentScroll = container.scrollLeft;
-
-        // Seamless loop jump
-        // If scrolled before set 2, jump forward by 3 sets
-        if (currentScroll < setWidth * 2) {
-            container.scrollLeft += setWidth * 3;
-        }
-        // If scrolled past set 5, jump backward by 3 sets
-        else if (currentScroll > setWidth * 5) {
-            container.scrollLeft -= setWidth * 3;
-        }
-    };
 
     const handleInteractionStart = () => {
         isInteractingRef.current = true;
