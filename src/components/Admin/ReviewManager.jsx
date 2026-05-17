@@ -50,11 +50,11 @@ const ReviewManager = () => {
     const getSharedDynamicFontSize = (reviewText, responseText, hasImages) => {
         const totalLength = (reviewText?.length || 0) + (responseText?.length || 0);
         
-        // Reverted to original, more balanced sizes
+        // Reverting to the "perfect" balanced sizes for short reviews
         if (totalLength < 150) return hasImages ? '54px' : '60px';
         if (totalLength < 300) return '50px';
         if (totalLength < 500) return '40px';
-        if (totalLength < 800) return '30px';
+        if (totalLength < 800) return '32px';
         return '26px';
     };
 
@@ -79,7 +79,7 @@ const ReviewManager = () => {
                 const blob = await toBlob(shareTemplateRef.current, {
                     width: 1080,
                     height: 1920,
-                    pixelRatio: 2, // Moltiplicatore di risoluzione (2 = qualità Retina)
+                    pixelRatio: 2, // High quality Retina
                     cacheBust: true,
                 });
 
@@ -163,12 +163,12 @@ const ReviewManager = () => {
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center', 
-                            padding: '60px',
+                            padding: '40px', 
                             boxSizing: 'border-box',
                             position: 'relative'
                         }}
                     >
-                        {/* Title - Restored to 180px */}
+                        {/* Title */}
                         <div style={{
                             textAlign: 'center',
                             width: '100%',
@@ -190,9 +190,9 @@ const ReviewManager = () => {
                         <div style={{
                             background: 'white',
                             borderRadius: '60px',
-                            padding: '60px 60px',
-                            width: '100%',
-                            maxHeight: '1700px', // Maintain Mod 1: keep it flexible for long reviews
+                            padding: '60px 50px',
+                            width: '95%', 
+                            maxHeight: '1750px', // Use almost full height (approx 90% of 1920)
                             boxShadow: '0 40px 100px rgba(155, 57, 61, 0.15)',
                             border: '1px solid rgba(155, 57, 61, 0.1)',
                             display: 'flex',
@@ -209,10 +209,10 @@ const ReviewManager = () => {
                                         <Star key={i} size={50} fill={i < reviewToShare.rating ? '#FFD700' : 'transparent'} strokeWidth={1.5} />
                                     ))}
                                 </div>
-                                <h2 style={{ fontSize: '60px', margin: '0 0 10px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800, lineHeight: '1.1' }}>
+                                <h2 style={{ fontSize: '64px', margin: '0 0 10px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800, lineHeight: '1.1' }}>
                                     {reviewToShare.title}
                                 </h2>
-                                <p style={{ fontSize: '36px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
+                                <p style={{ fontSize: '40px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
                                     {reviewToShare.author_name || 'Utente Anonimo'}
                                 </p>
                             </div>
@@ -232,7 +232,7 @@ const ReviewManager = () => {
                                 </p>
                             </div>
 
-                            {/* Refined Image Gallery - Restored to 234px */}
+                            {/* Refined Image Gallery */}
                             {reviewToShare.images && reviewToShare.images.length > 0 && (
                                 <div style={{ 
                                     height: '280px', 
@@ -290,7 +290,7 @@ const ReviewManager = () => {
                                 }}>
                                     <span style={{ 
                                         display: 'block', 
-                                        fontSize: '28px', 
+                                        fontSize: '32px', 
                                         fontWeight: 800, 
                                         color: '#9B393D', 
                                         marginBottom: '15px',

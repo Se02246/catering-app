@@ -48,10 +48,12 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
 
     const getSharedDynamicFontSize = (reviewText, responseText, hasImages) => {
         const totalLength = (reviewText?.length || 0) + (responseText?.length || 0);
+        
+        // Reverting to the "perfect" balanced sizes for short reviews
         if (totalLength < 150) return hasImages ? '54px' : '60px';
         if (totalLength < 300) return '50px';
         if (totalLength < 500) return '40px';
-        if (totalLength < 800) return '30px';
+        if (totalLength < 800) return '32px';
         return '26px';
     };
 
@@ -76,7 +78,7 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                 const blob = await toBlob(shareTemplateRef.current, {
                     width: 1080,
                     height: 1920,
-                    pixelRatio: 2, // Moltiplicatore di risoluzione (2 = qualità Retina)
+                    pixelRatio: 2, // quality Retina
                     cacheBust: true,
                 });
 
@@ -188,19 +190,19 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
             {/* Share Template (Hidden) */}
             {showShareTemplate && (
                 <div style={{ position: 'fixed', left: '-2000px', top: '0', width: '1080px', height: '1920px', overflow: 'hidden', zIndex: -1 }}>
-                    <div ref={shareTemplateRef} style={{ width: '1080px', height: '1920px', background: '#FCFAF7', backgroundImage: 'linear-gradient(135deg, #FCFAF7 0%, #F5E6E0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px', boxSizing: 'border-box', position: 'relative' }}>
+                    <div ref={shareTemplateRef} style={{ width: '1080px', height: '1920px', background: '#FCFAF7', backgroundImage: 'linear-gradient(135deg, #FCFAF7 0%, #F5E6E0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', boxSizing: 'border-box', position: 'relative' }}>
                         <div style={{ textAlign: 'center', width: '100%', zIndex: 10, position: 'relative', marginBottom: '40px' }}>
                             <h1 style={{ fontFamily: "'Brittany Signature', cursive", fontSize: '180px', color: '#9B393D', margin: 0, fontWeight: 'normal', lineHeight: '1', textShadow: '0 10px 20px rgba(155, 57, 61, 0.1)' }}>MuseCatering</h1>
                         </div>
-                        <div style={{ background: 'white', borderRadius: '60px', padding: '60px 60px', width: '100%', maxHeight: '1700px', boxShadow: '0 40px 100px rgba(155, 57, 61, 0.15)', border: '1px solid rgba(155, 57, 61, 0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '40px', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+                        <div style={{ background: 'white', borderRadius: '60px', padding: '60px 50px', width: '95%', maxHeight: '1750px', boxShadow: '0 40px 100px rgba(155, 57, 61, 0.15)', border: '1px solid rgba(155, 57, 61, 0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '40px', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', color: '#FFD700', justifyContent: 'center' }}>
                                     {[...Array(5)].map((_, i) => (
                                         <Star key={i} size={50} fill={i < rating ? '#FFD700' : 'transparent'} strokeWidth={1.5} />
                                     ))}
                                 </div>
-                                <h2 style={{ fontSize: '60px', margin: '0 0 10px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800, lineHeight: '1.1' }}>{title}</h2>
-                                <p style={{ fontSize: '36px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>{author_name || 'Utente Anonimo'}</p>
+                                <h2 style={{ fontSize: '64px', margin: '0 0 10px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800, lineHeight: '1.1' }}>{title}</h2>
+                                <p style={{ fontSize: '40px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>{author_name || 'Utente Anonimo'}</p>
                             </div>
                             <p style={{ fontSize: unifiedFontSize, lineHeight: '1.4', color: '#2D2424', fontStyle: 'italic', margin: 0, fontFamily: 'Nunito, sans-serif', whiteSpace: 'pre-line', textAlign: 'center' }}>{comment}</p>
                             {images && images.length > 0 && (
@@ -222,7 +224,7 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                             )}
                             {review.response && (
                                 <div style={{ marginTop: '10px', padding: '40px 35px', background: 'rgba(155, 57, 61, 0.04)', borderRadius: '40px', borderLeft: '12px solid #9B393D' }}>
-                                    <span style={{ display: 'block', fontSize: '28px', fontWeight: 800, color: '#9B393D', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '4px', fontFamily: 'Outfit, sans-serif' }}>La nostra risposta:</span>
+                                    <span style={{ display: 'block', fontSize: '32px', fontWeight: 800, color: '#9B393D', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '4px', fontFamily: 'Outfit, sans-serif' }}>La nostra risposta:</span>
                                     <p style={{ fontSize: unifiedFontSize, lineHeight: '1.4', color: '#2D2424', margin: 0, fontFamily: 'Nunito, sans-serif', whiteSpace: 'pre-line' }}>{review.response}</p>
                                 </div>
                             )}
