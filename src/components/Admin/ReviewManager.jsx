@@ -47,14 +47,15 @@ const ReviewManager = () => {
         }
     };
 
-    const getSharedDynamicFontSize = (reviewText, responseText) => {
-        const totalLength = (reviewText?.length || 0) + (responseText?.length || 0);
+    const getSharedDynamicFontSize = (reviewText, responseText, hasImages) => {
+        let totalLength = (reviewText?.length || 0) + (responseText?.length || 0);
+        if (hasImages) totalLength += 200; // Offset for image space
         
         if (totalLength < 150) return '60px';
         if (totalLength < 300) return '50px';
         if (totalLength < 500) return '40px';
-        if (totalLength < 800) return '32px';
-        return '26px';
+        if (totalLength < 800) return '30px';
+        return '24px';
     };
 
     const handleShare = async (review) => {
@@ -110,7 +111,7 @@ const ReviewManager = () => {
                 setIsSharing(null);
                 setReviewToShare(null);
             }
-        }, 300);
+        }, 500); // Increased delay for images to load
     };
 
     const startResponding = (review) => {
@@ -121,7 +122,7 @@ const ReviewManager = () => {
     if (isLoading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Caricamento recensioni...</div>;
     if (isError) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-primary)' }}>Errore nel caricamento delle recensioni.</div>;
 
-    const unifiedFontSize = reviewToShare ? getSharedDynamicFontSize(reviewToShare.comment, reviewToShare.response) : '50px';
+    const unifiedFontSize = reviewToShare ? getSharedDynamicFontSize(reviewToShare.comment, reviewToShare.response, reviewToShare.images?.length > 0) : '50px';
 
     return (
         <div className="admin-section fade-in">
@@ -163,7 +164,7 @@ const ReviewManager = () => {
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            padding: '100px 80px',
+                            padding: '80px',
                             boxSizing: 'border-box',
                             position: 'relative'
                         }}
@@ -174,7 +175,7 @@ const ReviewManager = () => {
                             width: '100%',
                             zIndex: 10,
                             position: 'relative',
-                            marginBottom: '40px'
+                            marginBottom: '30px'
                         }}>
                             <h1 style={{
                                 fontFamily: "'Brittany Signature', cursive",
@@ -190,28 +191,28 @@ const ReviewManager = () => {
                         <div style={{
                             background: 'white',
                             borderRadius: '60px',
-                            padding: '80px 70px',
+                            padding: '60px 60px',
                             width: '100%',
-                            maxHeight: '1500px',
+                            maxHeight: '1600px',
                             boxShadow: '0 40px 100px rgba(155, 57, 61, 0.15)',
                             border: '1px solid rgba(155, 57, 61, 0.1)',
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '40px',
+                            gap: '30px',
                             overflow: 'hidden',
                             position: 'relative',
                             zIndex: 1
                         }}>
                             <div style={{ textAlign: 'center' }}>
-                                <div style={{ display: 'flex', gap: '12px', marginBottom: '30px', color: '#FFD700', justifyContent: 'center' }}>
+                                <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', color: '#FFD700', justifyContent: 'center' }}>
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={60} fill={i < reviewToShare.rating ? '#FFD700' : 'transparent'} strokeWidth={1.5} />
+                                        <Star key={i} size={50} fill={i < reviewToShare.rating ? '#FFD700' : 'transparent'} strokeWidth={1.5} />
                                     ))}
                                 </div>
-                                <h2 style={{ fontSize: '64px', margin: '0 0 15px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800, lineHeight: '1.1' }}>
+                                <h2 style={{ fontSize: '60px', margin: '0 0 10px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800, lineHeight: '1.1' }}>
                                     {reviewToShare.title}
                                 </h2>
-                                <p style={{ fontSize: '40px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
+                                <p style={{ fontSize: '36px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
                                     {reviewToShare.author_name || 'Utente Anonimo'}
                                 </p>
                             </div>
@@ -231,20 +232,62 @@ const ReviewManager = () => {
                                 </p>
                             </div>
 
+                            {/* Playful Image Gallery */}
+                            {reviewToShare.images && reviewToShare.images.length > 0 && (
+                                <div style={{ 
+                                    height: '350px', 
+                                    width: '100%', 
+                                    position: 'relative', 
+                                    margin: '30px 0',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}>
+                                    {reviewToShare.images.slice(0, 5).map((img, idx) => {
+                                        const rotations = [-6, 4, -3, 5, -2];
+                                        const offsets = [-150, -50, 50, 150, 250];
+                                        return (
+                                            <div 
+                                                key={idx}
+                                                style={{
+                                                    position: 'absolute',
+                                                    width: '240px',
+                                                    height: '300px',
+                                                    borderRadius: '20px',
+                                                    padding: '10px',
+                                                    background: 'white',
+                                                    boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                                                    transform: `translateX(${offsets[idx % 5]}px) rotate(${rotations[idx % 5]}deg)`,
+                                                    zIndex: 5 - idx,
+                                                    overflow: 'hidden'
+                                                }}
+                                            >
+                                                <img 
+                                                    src={img} 
+                                                    crossOrigin="anonymous"
+                                                    alt="Review detail" 
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
                             {reviewToShare.response && (
                                 <div style={{ 
-                                    marginTop: '20px', 
-                                    padding: '50px 40px', 
+                                    marginTop: '10px', 
+                                    padding: '40px 35px', 
                                     background: 'rgba(155, 57, 61, 0.04)', 
                                     borderRadius: '40px',
                                     borderLeft: '12px solid #9B393D'
                                 }}>
                                     <span style={{ 
                                         display: 'block', 
-                                        fontSize: '32px', 
+                                        fontSize: '28px', 
                                         fontWeight: 800, 
                                         color: '#9B393D', 
-                                        marginBottom: '20px',
+                                        marginBottom: '15px',
                                         textTransform: 'uppercase',
                                         letterSpacing: '4px',
                                         fontFamily: 'Outfit, sans-serif'
