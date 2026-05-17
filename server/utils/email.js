@@ -86,7 +86,7 @@ export const sendResponseNotification = async (review, response) => {
                         <p style="color: #2d2424; line-height: 1.6; font-size: 1.1rem; margin-bottom: 0;">${response}</p>
                     </div>
 
-                    <p style={{ textAlign: 'center', color: '#777', fontSize: '0.85rem', marginTop: '30px' }}>
+                    <p style="text-align: center; color: #777; font-size: 0.85rem; margin-top: 30px;">
                         Grazie per aver scelto Muse Catering.<br>
                         <a href="https://www.musecatering.ordermaster.it" style="color: #9b393d; text-decoration: none;">www.musecatering.ordermaster.it</a>
                     </p>
