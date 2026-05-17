@@ -204,7 +204,7 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                                 <h2 style={{ fontSize: '60px', margin: '0 0 10px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800, lineHeight: '1.1' }}>{title}</h2>
                                 <p style={{ fontSize: '36px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>{author_name || 'Utente Anonimo'}</p>
                             </div>
-                            <p style={{ fontSize: unifiedFontSize, lineHeight: '1.4', color: '#2D2424', fontStyle: 'italic', margin: 0, fontFamily: 'Nunito, sans-serif', whiteSpace: 'pre-line', textAlign: 'center' }}>"{comment}"</p>
+                            <p style={{ fontSize: unifiedFontSize, lineHeight: '1.4', color: '#2D2424', fontStyle: 'italic', margin: 0, fontFamily: 'Nunito, sans-serif', whiteSpace: 'pre-line', textAlign: 'center' }}>{comment}</p>
                             {images && images.length > 0 && (
                                 <div style={{ height: '280px', width: '100%', position: 'relative', margin: '30px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                     {images.slice(0, 4).map((img, idx, arr) => {
