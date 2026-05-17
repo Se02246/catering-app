@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, MessageSquare, Plus, X, Star, Save, Loader, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useReviews } from '../hooks/useData';
 import ReviewCard from '../components/Common/ReviewCard';
@@ -9,12 +9,17 @@ import ImageUpload from '../components/Common/ImageUpload';
 
 const ReviewsPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { reviews, isLoading, isError, mutate } = useReviews();
     
-    // Force scroll to top on mount
-    React.useEffect(() => {
+    // Force scroll to top on mount and check for direct review link
+    useEffect(() => {
         window.scrollTo(0, 0);
-    }, []);
+        
+        if (location.pathname === '/lascia_una_recensione') {
+            setIsModalOpen(true);
+        }
+    }, [location.pathname]);
     
     // Filters state
     const [ratingFilter, setRatingFilter] = useState('All');

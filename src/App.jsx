@@ -50,6 +50,7 @@ function AppContent() {
           <Route path="/package/:id" element={<SharedPackage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/recensioni" element={<ReviewsPage />} />
+          <Route path="/lascia_una_recensione" element={<ReviewsPage />} />
           <Route path="/catalogo" element={<Catalog />} />
         </Routes>
       </main>
