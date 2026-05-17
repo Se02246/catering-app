@@ -48,14 +48,14 @@ const ReviewManager = () => {
     };
 
     const getSharedDynamicFontSize = (reviewText, responseText, hasImages) => {
-        let totalLength = (reviewText?.length || 0) + (responseText?.length || 0);
-        if (hasImages) totalLength += 220;
+        const totalLength = (reviewText?.length || 0) + (responseText?.length || 0);
         
-        if (totalLength < 150) return '60px';
+        // Reverted to original, more balanced sizes
+        if (totalLength < 150) return hasImages ? '54px' : '60px';
         if (totalLength < 300) return '50px';
         if (totalLength < 500) return '40px';
         if (totalLength < 800) return '30px';
-        return '24px';
+        return '26px';
     };
 
     const handleShare = async (review) => {
@@ -164,13 +164,13 @@ const ReviewManager = () => {
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            justifyContent: 'center', // Vertical centering of all content
-                            padding: '80px',
+                            justifyContent: 'center', 
+                            padding: '60px',
                             boxSizing: 'border-box',
                             position: 'relative'
                         }}
                     >
-                        {/* Title - part of the centered flex group */}
+                        {/* Title - Restored to 180px */}
                         <div style={{
                             textAlign: 'center',
                             width: '100%',
@@ -194,12 +194,13 @@ const ReviewManager = () => {
                             borderRadius: '60px',
                             padding: '60px 60px',
                             width: '100%',
-                            maxHeight: '1600px',
+                            maxHeight: '1700px', // Maintain Mod 1: keep it flexible for long reviews
                             boxShadow: '0 40px 100px rgba(155, 57, 61, 0.15)',
                             border: '1px solid rgba(155, 57, 61, 0.1)',
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '30px',
+                            justifyContent: 'center',
+                            gap: '40px',
                             overflow: 'hidden',
                             position: 'relative',
                             zIndex: 1
@@ -233,13 +234,13 @@ const ReviewManager = () => {
                                 </p>
                             </div>
 
-                            {/* Refined Image Gallery */}
+                            {/* Refined Image Gallery - Restored to 234px */}
                             {reviewToShare.images && reviewToShare.images.length > 0 && (
                                 <div style={{ 
                                     height: '280px', 
                                     width: '100%', 
                                     position: 'relative', 
-                                    margin: '35px 0',
+                                    margin: '30px 0',
                                     display: 'flex',
                                     justifyContent: 'center',
                                     alignItems: 'center'
