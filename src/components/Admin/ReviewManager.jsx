@@ -232,7 +232,7 @@ const ReviewManager = () => {
                                 </p>
                             </div>
 
-                            {/* Refined Image Gallery (4 max, Square, Better Distributed) */}
+                            {/* Refined Image Gallery (No border, Square) */}
                             {reviewToShare.images && reviewToShare.images.length > 0 && (
                                 <div style={{ 
                                     height: '320px', 
@@ -245,8 +245,7 @@ const ReviewManager = () => {
                                 }}>
                                     {reviewToShare.images.slice(0, 4).map((img, idx, arr) => {
                                         const rotations = [-5, 3, -4, 4];
-                                        // Dynamic spacing based on number of images
-                                        const totalWidth = 900; // Available width inside card minus padding
+                                        const totalWidth = 900; 
                                         const imgSize = 260;
                                         const step = arr.length > 1 ? (totalWidth - imgSize) / (arr.length - 1) : 0;
                                         const startX = -(totalWidth - imgSize) / 2;
@@ -258,22 +257,20 @@ const ReviewManager = () => {
                                                 style={{
                                                     position: 'absolute',
                                                     width: `${imgSize}px`,
-                                                    height: `${imgSize}px`, // Square
-                                                    borderRadius: '20px',
-                                                    padding: '12px',
-                                                    background: 'white',
-                                                    boxShadow: '0 12px 35px rgba(0,0,0,0.12)',
+                                                    height: `${imgSize}px`,
+                                                    borderRadius: '24px',
                                                     transform: `translateX(${xPos}px) rotate(${rotations[idx % 4]}deg)`,
                                                     zIndex: idx + 1,
                                                     overflow: 'hidden',
-                                                    border: '1px solid rgba(0,0,0,0.05)'
+                                                    boxShadow: '0 15px 40px rgba(0,0,0,0.18)',
+                                                    border: '1px solid rgba(255,255,255,0.2)'
                                                 }}
                                             >
                                                 <img 
                                                     src={img} 
                                                     crossOrigin="anonymous"
                                                     alt="Review detail" 
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                 />
                                             </div>
                                         );
