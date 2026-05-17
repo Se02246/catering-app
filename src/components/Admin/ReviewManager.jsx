@@ -47,14 +47,14 @@ const ReviewManager = () => {
         }
     };
 
-    const getDynamicFontSize = (text, hasResponse) => {
-        if (!text) return '54px';
-        const length = text.length + (hasResponse ? text.length * 0.8 : 0);
-        if (length < 100) return '64px';
-        if (length < 200) return '54px';
-        if (length < 400) return '42px';
-        if (length < 600) return '34px';
-        return '28px';
+    const getSharedDynamicFontSize = (reviewText, responseText) => {
+        const totalLength = (reviewText?.length || 0) + (responseText?.length || 0);
+        
+        if (totalLength < 150) return '60px';
+        if (totalLength < 300) return '50px';
+        if (totalLength < 500) return '40px';
+        if (totalLength < 800) return '32px';
+        return '26px';
     };
 
     const handleShare = async (review) => {
@@ -120,6 +120,8 @@ const ReviewManager = () => {
 
     if (isLoading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Caricamento recensioni...</div>;
     if (isError) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-primary)' }}>Errore nel caricamento delle recensioni.</div>;
+
+    const unifiedFontSize = reviewToShare ? getSharedDynamicFontSize(reviewToShare.comment, reviewToShare.response) : '50px';
 
     return (
         <div className="admin-section fade-in">
@@ -216,7 +218,7 @@ const ReviewManager = () => {
                             
                             <div style={{ position: 'relative' }}>
                                 <p style={{ 
-                                    fontSize: getDynamicFontSize(reviewToShare.comment, !!reviewToShare.response), 
+                                    fontSize: unifiedFontSize, 
                                     lineHeight: '1.4', 
                                     color: '#2D2424', 
                                     fontStyle: 'italic', 
@@ -250,7 +252,7 @@ const ReviewManager = () => {
                                         La nostra risposta:
                                     </span>
                                     <p style={{ 
-                                        fontSize: getDynamicFontSize(reviewToShare.response, false), 
+                                        fontSize: unifiedFontSize, 
                                         lineHeight: '1.4', 
                                         color: '#2D2424', 
                                         margin: 0,
