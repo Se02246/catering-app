@@ -76,9 +76,7 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                 const blob = await toBlob(shareTemplateRef.current, {
                     width: 1080,
                     height: 1920,
-                    canvasWidth: 1080,
-                    canvasHeight: 1920,
-                    pixelRatio: 1,
+                    pixelRatio: 2, // Moltiplicatore di risoluzione (2 = qualità Retina)
                     cacheBust: true,
                 });
 
