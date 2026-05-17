@@ -49,7 +49,7 @@ const ReviewManager = () => {
 
     const getSharedDynamicFontSize = (reviewText, responseText, hasImages) => {
         let totalLength = (reviewText?.length || 0) + (responseText?.length || 0);
-        if (hasImages) totalLength += 200; // Offset for image space
+        if (hasImages) totalLength += 250; // Offset for square image space
         
         if (totalLength < 150) return '60px';
         if (totalLength < 300) return '50px';
@@ -111,7 +111,7 @@ const ReviewManager = () => {
                 setIsSharing(null);
                 setReviewToShare(null);
             }
-        }, 500); // Increased delay for images to load
+        }, 500); 
     };
 
     const startResponding = (review) => {
@@ -232,34 +232,41 @@ const ReviewManager = () => {
                                 </p>
                             </div>
 
-                            {/* Playful Image Gallery */}
+                            {/* Refined Image Gallery (4 max, Square, Better Distributed) */}
                             {reviewToShare.images && reviewToShare.images.length > 0 && (
                                 <div style={{ 
-                                    height: '350px', 
+                                    height: '320px', 
                                     width: '100%', 
                                     position: 'relative', 
-                                    margin: '30px 0',
+                                    margin: '40px 0',
                                     display: 'flex',
                                     justifyContent: 'center',
                                     alignItems: 'center'
                                 }}>
-                                    {reviewToShare.images.slice(0, 5).map((img, idx) => {
-                                        const rotations = [-6, 4, -3, 5, -2];
-                                        const offsets = [-150, -50, 50, 150, 250];
+                                    {reviewToShare.images.slice(0, 4).map((img, idx, arr) => {
+                                        const rotations = [-5, 3, -4, 4];
+                                        // Dynamic spacing based on number of images
+                                        const totalWidth = 900; // Available width inside card minus padding
+                                        const imgSize = 260;
+                                        const step = arr.length > 1 ? (totalWidth - imgSize) / (arr.length - 1) : 0;
+                                        const startX = -(totalWidth - imgSize) / 2;
+                                        const xPos = startX + (idx * step);
+
                                         return (
                                             <div 
                                                 key={idx}
                                                 style={{
                                                     position: 'absolute',
-                                                    width: '240px',
-                                                    height: '300px',
+                                                    width: `${imgSize}px`,
+                                                    height: `${imgSize}px`, // Square
                                                     borderRadius: '20px',
-                                                    padding: '10px',
+                                                    padding: '12px',
                                                     background: 'white',
-                                                    boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-                                                    transform: `translateX(${offsets[idx % 5]}px) rotate(${rotations[idx % 5]}deg)`,
-                                                    zIndex: 5 - idx,
-                                                    overflow: 'hidden'
+                                                    boxShadow: '0 12px 35px rgba(0,0,0,0.12)',
+                                                    transform: `translateX(${xPos}px) rotate(${rotations[idx % 4]}deg)`,
+                                                    zIndex: idx + 1,
+                                                    overflow: 'hidden',
+                                                    border: '1px solid rgba(0,0,0,0.05)'
                                                 }}
                                             >
                                                 <img 
