@@ -49,7 +49,7 @@ const ReviewManager = () => {
 
     const getSharedDynamicFontSize = (reviewText, responseText, hasImages) => {
         let totalLength = (reviewText?.length || 0) + (responseText?.length || 0);
-        if (hasImages) totalLength += 250; // Offset for square image space
+        if (hasImages) totalLength += 220; // Slightly reduced offset since images are smaller
         
         if (totalLength < 150) return '60px';
         if (totalLength < 300) return '50px';
@@ -232,21 +232,21 @@ const ReviewManager = () => {
                                 </p>
                             </div>
 
-                            {/* Refined Image Gallery (No border, Square) */}
+                            {/* Refined Image Gallery (Fine white border, Square, 10% smaller) */}
                             {reviewToShare.images && reviewToShare.images.length > 0 && (
                                 <div style={{ 
-                                    height: '320px', 
+                                    height: '280px', 
                                     width: '100%', 
                                     position: 'relative', 
-                                    margin: '40px 0',
+                                    margin: '35px 0',
                                     display: 'flex',
                                     justifyContent: 'center',
                                     alignItems: 'center'
                                 }}>
                                     {reviewToShare.images.slice(0, 4).map((img, idx, arr) => {
                                         const rotations = [-5, 3, -4, 4];
-                                        const totalWidth = 900; 
-                                        const imgSize = 260;
+                                        const totalWidth = 880; 
+                                        const imgSize = 234; // Reduced by 10% (from 260)
                                         const step = arr.length > 1 ? (totalWidth - imgSize) / (arr.length - 1) : 0;
                                         const startX = -(totalWidth - imgSize) / 2;
                                         const xPos = startX + (idx * step);
@@ -258,19 +258,21 @@ const ReviewManager = () => {
                                                     position: 'absolute',
                                                     width: `${imgSize}px`,
                                                     height: `${imgSize}px`,
-                                                    borderRadius: '24px',
+                                                    borderRadius: '22px',
+                                                    padding: '5px', // Slightly thinner fine border
+                                                    background: 'white',
                                                     transform: `translateX(${xPos}px) rotate(${rotations[idx % 4]}deg)`,
                                                     zIndex: idx + 1,
                                                     overflow: 'hidden',
-                                                    boxShadow: '0 15px 40px rgba(0,0,0,0.18)',
-                                                    border: '1px solid rgba(255,255,255,0.2)'
+                                                    boxShadow: '0 12px 35px rgba(0,0,0,0.16)',
+                                                    border: '1px solid rgba(0,0,0,0.05)'
                                                 }}
                                             >
                                                 <img 
                                                     src={img} 
                                                     crossOrigin="anonymous"
                                                     alt="Review detail" 
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
                                                 />
                                             </div>
                                         );
@@ -466,7 +468,7 @@ const ReviewManager = () => {
                                         <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--color-primary-dark)', display: 'block', marginBottom: '0.25rem' }}>
                                             Tua risposta:
                                         </span>
-                                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text)', whiteSpace: 'pre-line' }}>
+                                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-color)', whiteSpace: 'pre-line' }}>
                                             {review.response}
                                         </p>
                                     </div>
