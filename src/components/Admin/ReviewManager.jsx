@@ -47,14 +47,14 @@ const ReviewManager = () => {
         }
     };
 
-    const getDynamicFontSize = (text) => {
+    const getDynamicFontSize = (text, hasResponse) => {
         if (!text) return '54px';
-        const length = text.length;
+        const length = text.length + (hasResponse ? text.length * 0.8 : 0);
         if (length < 100) return '64px';
         if (length < 200) return '54px';
-        if (length < 400) return '44px';
-        if (length < 600) return '36px';
-        return '30px';
+        if (length < 400) return '42px';
+        if (length < 600) return '34px';
+        return '28px';
     };
 
     const handleShare = async (review) => {
@@ -162,13 +162,17 @@ const ReviewManager = () => {
                             flexDirection: 'column',
                             alignItems: 'center',
                             padding: '100px 80px',
-                            boxSizing: 'border-box'
+                            boxSizing: 'border-box',
+                            position: 'relative'
                         }}
                     >
+                        {/* Title in foreground */}
                         <div style={{
                             textAlign: 'center',
-                            marginBottom: '60px',
-                            width: '100%'
+                            width: '100%',
+                            zIndex: 10,
+                            position: 'relative',
+                            marginBottom: '40px'
                         }}>
                             <h1 style={{
                                 fontFamily: "'Brittany Signature', cursive",
@@ -176,50 +180,87 @@ const ReviewManager = () => {
                                 color: '#9B393D',
                                 margin: 0,
                                 fontWeight: 'normal',
-                                lineHeight: '1.2'
+                                lineHeight: '1',
+                                textShadow: '0 10px 20px rgba(155, 57, 61, 0.1)'
                             }}>MuseCatering</h1>
                         </div>
                         
                         <div style={{
                             background: 'white',
                             borderRadius: '60px',
-                            padding: '100px 80px',
+                            padding: '80px 70px',
                             width: '100%',
-                            maxHeight: '1400px', // Restrict to roughly 3/4 of the height
+                            maxHeight: '1500px',
                             boxShadow: '0 40px 100px rgba(155, 57, 61, 0.15)',
                             border: '1px solid rgba(155, 57, 61, 0.1)',
                             display: 'flex',
                             flexDirection: 'column',
-                            justifyContent: 'center',
-                            gap: '50px',
-                            overflow: 'hidden'
+                            gap: '40px',
+                            overflow: 'hidden',
+                            position: 'relative',
+                            zIndex: 1
                         }}>
                             <div style={{ textAlign: 'center' }}>
-                                <div style={{ display: 'flex', gap: '12px', marginBottom: '40px', color: '#FFD700', justifyContent: 'center' }}>
+                                <div style={{ display: 'flex', gap: '12px', marginBottom: '30px', color: '#FFD700', justifyContent: 'center' }}>
                                     {[...Array(5)].map((_, i) => (
                                         <Star key={i} size={60} fill={i < reviewToShare.rating ? '#FFD700' : 'transparent'} strokeWidth={1.5} />
                                     ))}
                                 </div>
-                                <h2 style={{ fontSize: '72px', margin: '0 0 20px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800, lineHeight: '1.1' }}>
+                                <h2 style={{ fontSize: '64px', margin: '0 0 15px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800, lineHeight: '1.1' }}>
                                     {reviewToShare.title}
                                 </h2>
-                                <p style={{ fontSize: '44px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
+                                <p style={{ fontSize: '40px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
                                     {reviewToShare.author_name || 'Utente Anonimo'}
                                 </p>
                             </div>
                             
-                            <p style={{ 
-                                fontSize: getDynamicFontSize(reviewToShare.comment), 
-                                lineHeight: '1.5', 
-                                color: '#2D2424', 
-                                fontStyle: 'italic', 
-                                margin: 0,
-                                fontFamily: 'Nunito, sans-serif',
-                                whiteSpace: 'pre-line',
-                                textAlign: 'center'
-                            }}>
-                                "{reviewToShare.comment}"
-                            </p>
+                            <div style={{ position: 'relative' }}>
+                                <p style={{ 
+                                    fontSize: getDynamicFontSize(reviewToShare.comment, !!reviewToShare.response), 
+                                    lineHeight: '1.4', 
+                                    color: '#2D2424', 
+                                    fontStyle: 'italic', 
+                                    margin: 0,
+                                    fontFamily: 'Nunito, sans-serif',
+                                    whiteSpace: 'pre-line',
+                                    textAlign: 'center'
+                                }}>
+                                    "{reviewToShare.comment}"
+                                </p>
+                            </div>
+
+                            {reviewToShare.response && (
+                                <div style={{ 
+                                    marginTop: '20px', 
+                                    padding: '50px 40px', 
+                                    background: 'rgba(155, 57, 61, 0.04)', 
+                                    borderRadius: '40px',
+                                    borderLeft: '12px solid #9B393D'
+                                }}>
+                                    <span style={{ 
+                                        display: 'block', 
+                                        fontSize: '32px', 
+                                        fontWeight: 800, 
+                                        color: '#9B393D', 
+                                        marginBottom: '20px',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '4px',
+                                        fontFamily: 'Outfit, sans-serif'
+                                    }}>
+                                        La nostra risposta:
+                                    </span>
+                                    <p style={{ 
+                                        fontSize: getDynamicFontSize(reviewToShare.response, false), 
+                                        lineHeight: '1.4', 
+                                        color: '#2D2424', 
+                                        margin: 0,
+                                        fontFamily: 'Nunito, sans-serif',
+                                        whiteSpace: 'pre-line'
+                                    }}>
+                                        {reviewToShare.response}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
