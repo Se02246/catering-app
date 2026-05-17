@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useReviews } from '../../hooks/useData';
 import { api } from '../../services/api';
-import { Trash2, Star, MessageSquare, User, Calendar, Loader } from 'lucide-react';
+import { Trash2, Star, MessageSquare, Calendar, Loader, Share2 } from 'lucide-react';
+import { toPng } from 'html-to-image';
 
 const ReviewManager = () => {
     const { reviews, isLoading, isError, mutate } = useReviews();
     const [isDeleting, setIsDeleting] = useState(null);
+    const [isSharing, setIsSharing] = useState(null);
     const [message, setMessage] = useState(null);
     const [respondingTo, setRespondingTo] = useState(null);
     const [responseText, setResponseText] = useState('');
+    const shareTemplateRef = useRef(null);
+    const [reviewToShare, setReviewToShare] = useState(null);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Sei sicuro di voler eliminare questa recensione?')) return;
@@ -43,6 +47,52 @@ const ReviewManager = () => {
         }
     };
 
+    const handleShare = async (review) => {
+        setIsSharing(review.id);
+        setReviewToShare(review);
+        
+        // Wait for the template to render
+        setTimeout(async () => {
+            if (!shareTemplateRef.current) {
+                setIsSharing(null);
+                return;
+            }
+
+            try {
+                // Pre-warm fonts or wait a bit
+                const dataUrl = await toPng(shareTemplateRef.current, {
+                    width: 1080,
+                    height: 1920,
+                    pixelRatio: 2,
+                    cacheBust: true,
+                });
+
+                const blob = await (await fetch(dataUrl)).blob();
+                const file = new File([blob], `recensione-muse-${review.id}.png`, { type: 'image/png' });
+
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Recensione Muse Catering',
+                        text: `Guarda cosa dicono di noi! #MuseCatering`
+                    });
+                } else {
+                    const link = document.createElement('a');
+                    link.download = `recensione-muse-${review.id}.png`;
+                    link.href = dataUrl;
+                    link.click();
+                    setMessage({ type: 'success', text: 'Immagine scaricata! Ora puoi condividerla.' });
+                }
+            } catch (err) {
+                console.error('Error generating image:', err);
+                setMessage({ type: 'error', text: 'Errore durante la generazione dell\'immagine.' });
+            } finally {
+                setIsSharing(null);
+                setReviewToShare(null);
+            }
+        }, 100);
+    };
+
     const startResponding = (review) => {
         setRespondingTo(review.id);
         setResponseText(review.response || '');
@@ -65,6 +115,96 @@ const ReviewManager = () => {
             {message && (
                 <div className={`message-banner ${message.type}`} style={{ marginBottom: '1.5rem' }}>
                     {message.text}
+                </div>
+            )}
+
+            {/* Hidden template for sharing */}
+            {reviewToShare && (
+                <div 
+                    ref={shareTemplateRef}
+                    style={{
+                        position: 'fixed',
+                        left: '-9999px',
+                        top: '0',
+                        width: '1080px',
+                        height: '1920px',
+                        background: 'linear-gradient(135deg, #FCFAF7 0%, #F5E6E0 100%)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '80px',
+                        boxSizing: 'border-box',
+                        zIndex: -1
+                    }}
+                >
+                    <div style={{
+                        position: 'absolute',
+                        top: '80px',
+                        left: '0',
+                        right: '0',
+                        textAlign: 'center'
+                    }}>
+                        <h1 style={{
+                            fontFamily: "'Brittany Signature', cursive",
+                            fontSize: '150px',
+                            color: '#9B393D',
+                            margin: 0,
+                            fontWeight: 'normal'
+                        }}>MuseCatering</h1>
+                    </div>
+                    
+                    <div style={{
+                        background: 'rgba(255, 255, 255, 0.85)',
+                        backdropFilter: 'blur(20px)',
+                        borderRadius: '60px',
+                        padding: '80px',
+                        width: '100%',
+                        boxShadow: '0 40px 100px rgba(155, 57, 61, 0.15)',
+                        border: '2px solid rgba(255, 255, 255, 0.5)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '40px'
+                    }}>
+                        <div>
+                            <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', color: '#FFD700' }}>
+                                {[...Array(5)].map((_, i) => (
+                                    <Star key={i} size={50} fill={i < reviewToShare.rating ? '#FFD700' : 'transparent'} strokeWidth={1.5} />
+                                ))}
+                            </div>
+                            <h2 style={{ fontSize: '64px', margin: '0 0 15px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800 }}>
+                                {reviewToShare.title}
+                            </h2>
+                            <p style={{ fontSize: '40px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
+                                {reviewToShare.author_name || 'Utente Anonimo'}
+                            </p>
+                        </div>
+                        
+                        <p style={{ 
+                            fontSize: '48px', 
+                            lineHeight: '1.5', 
+                            color: '#2D2424', 
+                            fontStyle: 'italic', 
+                            margin: 0,
+                            fontFamily: 'Nunito, sans-serif',
+                            whiteSpace: 'pre-line'
+                        }}>
+                            "{reviewToShare.comment}"
+                        </p>
+                    </div>
+                    
+                    <div style={{ 
+                        position: 'absolute',
+                        bottom: '100px',
+                        fontSize: '32px', 
+                        color: '#9B393D', 
+                        fontWeight: 800, 
+                        textTransform: 'uppercase', 
+                        letterSpacing: '8px',
+                        fontFamily: 'Outfit, sans-serif'
+                    }}>
+                        www.musecatering.it
+                    </div>
                 </div>
             )}
 
@@ -100,6 +240,25 @@ const ReviewManager = () => {
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button
+                                            onClick={() => handleShare(review)}
+                                            disabled={isSharing === review.id}
+                                            style={{ 
+                                                background: 'rgba(var(--color-accent-rgb, 197, 160, 89), 0.1)', 
+                                                color: 'var(--color-accent, #C5A059)', 
+                                                border: 'none', 
+                                                padding: '0.6rem', 
+                                                borderRadius: '8px', 
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            title="Condividi recensione"
+                                        >
+                                            {isSharing === review.id ? <Loader className="animate-spin" size={18} /> : <Share2 size={18} />}
+                                        </button>
                                         <button
                                             onClick={() => startResponding(review)}
                                             style={{ 
