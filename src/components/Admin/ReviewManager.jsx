@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useReviews } from '../../hooks/useData';
 import { api } from '../../services/api';
 import { Trash2, Star, MessageSquare, Calendar, Loader, Share2 } from 'lucide-react';
-import { toPng } from 'html-to-image';
+import { toBlob } from 'html-to-image';
 
 const ReviewManager = () => {
     const { reviews, isLoading, isError, mutate } = useReviews();
@@ -48,10 +48,12 @@ const ReviewManager = () => {
     };
 
     const handleShare = async (review) => {
+        if (isSharing) return;
         setIsSharing(review.id);
         setReviewToShare(review);
+        setMessage(null);
         
-        // Wait for the template to render
+        // Wait for the template to render in the DOM
         setTimeout(async () => {
             if (!shareTemplateRef.current) {
                 setIsSharing(null);
@@ -59,38 +61,47 @@ const ReviewManager = () => {
             }
 
             try {
-                // Pre-warm fonts or wait a bit
-                const dataUrl = await toPng(shareTemplateRef.current, {
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+
+                // Generate blob directly - more robust than dataUrl for large images
+                const blob = await toBlob(shareTemplateRef.current, {
                     width: 1080,
                     height: 1920,
-                    pixelRatio: 2,
+                    canvasWidth: 1080,
+                    canvasHeight: 1920,
+                    pixelRatio: 1, // Use 1 for stability on mobile
                     cacheBust: true,
                 });
 
-                const blob = await (await fetch(dataUrl)).blob();
+                if (!blob) throw new Error('Failed to generate image blob');
+
                 const file = new File([blob], `recensione-muse-${review.id}.png`, { type: 'image/png' });
 
-                if (navigator.share && navigator.canShare({ files: [file] })) {
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         files: [file],
                         title: 'Recensione Muse Catering',
                         text: `Guarda cosa dicono di noi! #MuseCatering`
                     });
                 } else {
+                    const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.download = `recensione-muse-${review.id}.png`;
-                    link.href = dataUrl;
+                    link.href = url;
                     link.click();
+                    URL.revokeObjectURL(url);
                     setMessage({ type: 'success', text: 'Immagine scaricata! Ora puoi condividerla.' });
                 }
             } catch (err) {
-                console.error('Error generating image:', err);
-                setMessage({ type: 'error', text: 'Errore durante la generazione dell\'immagine.' });
+                console.error('Error sharing review:', err);
+                setMessage({ type: 'error', text: 'Errore nella generazione dell\'immagine.' });
             } finally {
                 setIsSharing(null);
                 setReviewToShare(null);
             }
-        }, 100);
+        }, 300);
     };
 
     const startResponding = (review) => {
@@ -121,89 +132,97 @@ const ReviewManager = () => {
             {/* Hidden template for sharing */}
             {reviewToShare && (
                 <div 
-                    ref={shareTemplateRef}
                     style={{
                         position: 'fixed',
-                        left: '-9999px',
+                        left: '-2000px',
                         top: '0',
                         width: '1080px',
                         height: '1920px',
-                        background: 'linear-gradient(135deg, #FCFAF7 0%, #F5E6E0 100%)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '80px',
-                        boxSizing: 'border-box',
+                        overflow: 'hidden',
                         zIndex: -1
                     }}
                 >
-                    <div style={{
-                        position: 'absolute',
-                        top: '80px',
-                        left: '0',
-                        right: '0',
-                        textAlign: 'center'
-                    }}>
-                        <h1 style={{
-                            fontFamily: "'Brittany Signature', cursive",
-                            fontSize: '150px',
-                            color: '#9B393D',
-                            margin: 0,
-                            fontWeight: 'normal'
-                        }}>MuseCatering</h1>
-                    </div>
-                    
-                    <div style={{
-                        background: 'rgba(255, 255, 255, 0.85)',
-                        backdropFilter: 'blur(20px)',
-                        borderRadius: '60px',
-                        padding: '80px',
-                        width: '100%',
-                        boxShadow: '0 40px 100px rgba(155, 57, 61, 0.15)',
-                        border: '2px solid rgba(255, 255, 255, 0.5)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '40px'
-                    }}>
-                        <div>
-                            <div style={{ display: 'flex', gap: '10px', marginBottom: '30px', color: '#FFD700' }}>
-                                {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={50} fill={i < reviewToShare.rating ? '#FFD700' : 'transparent'} strokeWidth={1.5} />
-                                ))}
+                    <div 
+                        ref={shareTemplateRef}
+                        style={{
+                            width: '1080px',
+                            height: '1920px',
+                            background: '#FCFAF7',
+                            backgroundImage: 'linear-gradient(135deg, #FCFAF7 0%, #F5E6E0 100%)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '80px',
+                            boxSizing: 'border-box'
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            top: '120px',
+                            left: '0',
+                            right: '0',
+                            textAlign: 'center'
+                        }}>
+                            <h1 style={{
+                                fontFamily: "'Brittany Signature', cursive",
+                                fontSize: '180px',
+                                color: '#9B393D',
+                                margin: 0,
+                                fontWeight: 'normal'
+                            }}>MuseCatering</h1>
+                        </div>
+                        
+                        <div style={{
+                            background: 'white',
+                            borderRadius: '60px',
+                            padding: '100px 80px',
+                            width: '100%',
+                            boxShadow: '0 40px 100px rgba(155, 57, 61, 0.15)',
+                            border: '1px solid rgba(155, 57, 61, 0.1)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '50px'
+                        }}>
+                            <div>
+                                <div style={{ display: 'flex', gap: '12px', marginBottom: '40px', color: '#FFD700' }}>
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star key={i} size={60} fill={i < reviewToShare.rating ? '#FFD700' : 'transparent'} strokeWidth={1.5} />
+                                    ))}
+                                </div>
+                                <h2 style={{ fontSize: '72px', margin: '0 0 20px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800 }}>
+                                    {reviewToShare.title}
+                                </h2>
+                                <p style={{ fontSize: '44px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
+                                    {reviewToShare.author_name || 'Utente Anonimo'}
+                                </p>
                             </div>
-                            <h2 style={{ fontSize: '64px', margin: '0 0 15px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800 }}>
-                                {reviewToShare.title}
-                            </h2>
-                            <p style={{ fontSize: '40px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
-                                {reviewToShare.author_name || 'Utente Anonimo'}
+                            
+                            <p style={{ 
+                                fontSize: '54px', 
+                                lineHeight: '1.6', 
+                                color: '#2D2424', 
+                                fontStyle: 'italic', 
+                                margin: 0,
+                                fontFamily: 'Nunito, sans-serif',
+                                whiteSpace: 'pre-line'
+                            }}>
+                                "{reviewToShare.comment}"
                             </p>
                         </div>
                         
-                        <p style={{ 
-                            fontSize: '48px', 
-                            lineHeight: '1.5', 
-                            color: '#2D2424', 
-                            fontStyle: 'italic', 
-                            margin: 0,
-                            fontFamily: 'Nunito, sans-serif',
-                            whiteSpace: 'pre-line'
+                        <div style={{ 
+                            position: 'absolute',
+                            bottom: '120px',
+                            fontSize: '36px', 
+                            color: '#9B393D', 
+                            fontWeight: 800, 
+                            textTransform: 'uppercase', 
+                            letterSpacing: '10px',
+                            fontFamily: 'Outfit, sans-serif'
                         }}>
-                            "{reviewToShare.comment}"
-                        </p>
-                    </div>
-                    
-                    <div style={{ 
-                        position: 'absolute',
-                        bottom: '100px',
-                        fontSize: '32px', 
-                        color: '#9B393D', 
-                        fontWeight: 800, 
-                        textTransform: 'uppercase', 
-                        letterSpacing: '8px',
-                        fontFamily: 'Outfit, sans-serif'
-                    }}>
-                        www.musecatering.it
+                            www.musecatering.it
+                        </div>
                     </div>
                 </div>
             )}
