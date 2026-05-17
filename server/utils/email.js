@@ -59,3 +59,44 @@ export const sendReviewNotification = async (review, frontendUrl) => {
         console.error('Error sending review notification email:', error);
     }
 };
+
+export const sendResponseNotification = async (review, response) => {
+    try {
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !review.author_email) {
+            return;
+        }
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: review.author_email,
+            subject: 'Muse Catering - Risposta alla tua recensione',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="font-family: 'Brittany Signature', cursive; color: #9b393d; font-size: 42px; margin: 0; font-weight: normal;">Muse Catering</h1>
+                    </div>
+                    
+                    <h2 style="color: #333; margin-bottom: 20px;">Ciao ${review.author_name || 'Utente'}, abbiamo risposto alla tua recensione!</h2>
+                    
+                    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #9b393d;">
+                        <p style="margin-top: 0; color: #777; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">La tua recensione:</p>
+                        <p style="font-style: italic; color: #555; margin-bottom: 20px;">"${review.comment || review.title}"</p>
+                        
+                        <p style="margin-top: 20px; color: #9b393d; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">La nostra risposta:</p>
+                        <p style="color: #2d2424; line-height: 1.6; font-size: 1.1rem; margin-bottom: 0;">${response}</p>
+                    </div>
+
+                    <p style="text-align: center; color: #777; font-size: 0.85rem; margin-top: 30px;">
+                        Grazie per aver scelto Muse Catering.<br>
+                        <a href="https://www.musecatering.it" style="color: #9b393d; text-decoration: none;">www.musecatering.it</a>
+                    </p>
+                </div>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Response notification email sent:', info.messageId);
+    } catch (error) {
+        console.error('Error sending response notification email:', error);
+    }
+};

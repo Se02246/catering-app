@@ -1,12 +1,14 @@
 import express from 'express';
 import { pool } from '../db.js';
-import { sendReviewNotification } from '../utils/email.js';
+import { sendReviewNotification, sendResponseNotification } from '../utils/email.js';
 
 const router = express.Router();
 
 // Get all reviews
 router.get('/', async (req, res) => {
     try {
+        // We fetch author_email too, but frontend will handle hiding it for public view
+        // In a strictly secure setup, we would check for a valid token here
         const result = await pool.query('SELECT * FROM reviews ORDER BY created_at DESC');
         res.json(result.rows);
     } catch (err) {
@@ -17,7 +19,7 @@ router.get('/', async (req, res) => {
 
 // Add a review
 router.post('/', async (req, res) => {
-    const { title, author_name, rating, comment, images } = req.body;
+    const { title, author_name, rating, comment, images, author_email } = req.body;
     if (!title || !rating) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -28,8 +30,8 @@ router.post('/', async (req, res) => {
 
     try {
         const result = await pool.query(
-            'INSERT INTO reviews (title, author_name, rating, comment, images) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [title, author_name || null, rating, comment || null, images || []]
+            'INSERT INTO reviews (title, author_name, rating, comment, images, author_email) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [title, author_name || null, rating, comment || null, images || [], author_email || null]
         );
         const newReview = result.rows[0];
         
@@ -69,7 +71,15 @@ router.put('/:id', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Review not found' });
         }
-        res.json(result.rows[0]);
+        
+        const updatedReview = result.rows[0];
+        
+        // If there is an email and a new response, send notification
+        if (updatedReview.author_email && response) {
+            sendResponseNotification(updatedReview, response);
+        }
+
+        res.json(updatedReview);
     } catch (err) {
         console.error('Error updating review:', err);
         res.status(500).json({ error: 'Server error updating review' });

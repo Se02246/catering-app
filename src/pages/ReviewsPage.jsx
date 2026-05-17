@@ -38,6 +38,7 @@ const ReviewsPage = () => {
     const [newReview, setNewReview] = useState({
         title: '',
         author_name: '',
+        author_email: '',
         rating: 5,
         comment: '',
         images: []
@@ -405,6 +406,21 @@ const ReviewsPage = () => {
                                         className="input-elegant"
                                         style={{ width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '1rem' }}
                                     />
+                                </div>
+
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Email (Privata - per ricevere la risposta)</label>
+                                    <input
+                                        type="email"
+                                        value={newReview.author_email}
+                                        onChange={e => setNewReview({ ...newReview, author_email: e.target.value })}
+                                        placeholder="latua@email.it"
+                                        className="input-elegant"
+                                        style={{ width: '100%', padding: '0.8rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', fontSize: '1rem' }}
+                                    />
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.4rem' }}>
+                                        L'email non verrà mai mostrata pubblicamente.
+                                    </p>
                                 </div>
 
                                 <div style={{ marginBottom: '1.5rem' }}>

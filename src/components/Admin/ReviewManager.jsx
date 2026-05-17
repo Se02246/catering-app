@@ -334,6 +334,11 @@ const ReviewManager = () => {
                                         <div style={{ fontSize: '0.9rem', color: 'var(--color-text)', marginTop: '0.2rem', fontWeight: 500 }}>
                                             {review.author_name || 'Utente Anonimo'}
                                         </div>
+                                        {review.author_email && (
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--color-primary)', marginTop: '4px', fontWeight: 'bold' }}>
+                                                📧 Email per risposta: {review.author_email}
+                                            </div>
+                                        )}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.2rem' }}>
                                             <div style={{ display: 'flex', gap: '2px' }}>
                                                 {[...Array(5)].map((_, i) => (
