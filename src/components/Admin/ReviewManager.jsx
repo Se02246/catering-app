@@ -47,6 +47,16 @@ const ReviewManager = () => {
         }
     };
 
+    const getDynamicFontSize = (text) => {
+        if (!text) return '54px';
+        const length = text.length;
+        if (length < 100) return '64px';
+        if (length < 200) return '54px';
+        if (length < 400) return '44px';
+        if (length < 600) return '36px';
+        return '30px';
+    };
+
     const handleShare = async (review) => {
         if (isSharing) return;
         setIsSharing(review.id);
@@ -65,13 +75,12 @@ const ReviewManager = () => {
                     await document.fonts.ready;
                 }
 
-                // Generate blob directly - more robust than dataUrl for large images
                 const blob = await toBlob(shareTemplateRef.current, {
                     width: 1080,
                     height: 1920,
                     canvasWidth: 1080,
                     canvasHeight: 1920,
-                    pixelRatio: 1, // Use 1 for stability on mobile
+                    pixelRatio: 1,
                     cacheBust: true,
                 });
 
@@ -152,24 +161,22 @@ const ReviewManager = () => {
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '80px',
+                            padding: '100px 80px',
                             boxSizing: 'border-box'
                         }}
                     >
                         <div style={{
-                            position: 'absolute',
-                            top: '120px',
-                            left: '0',
-                            right: '0',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            marginBottom: '60px',
+                            width: '100%'
                         }}>
                             <h1 style={{
                                 fontFamily: "'Brittany Signature', cursive",
                                 fontSize: '180px',
                                 color: '#9B393D',
                                 margin: 0,
-                                fontWeight: 'normal'
+                                fontWeight: 'normal',
+                                lineHeight: '1.2'
                             }}>MuseCatering</h1>
                         </div>
                         
@@ -178,19 +185,22 @@ const ReviewManager = () => {
                             borderRadius: '60px',
                             padding: '100px 80px',
                             width: '100%',
+                            maxHeight: '1400px', // Restrict to roughly 3/4 of the height
                             boxShadow: '0 40px 100px rgba(155, 57, 61, 0.15)',
                             border: '1px solid rgba(155, 57, 61, 0.1)',
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '50px'
+                            justifyContent: 'center',
+                            gap: '50px',
+                            overflow: 'hidden'
                         }}>
-                            <div>
-                                <div style={{ display: 'flex', gap: '12px', marginBottom: '40px', color: '#FFD700' }}>
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{ display: 'flex', gap: '12px', marginBottom: '40px', color: '#FFD700', justifyContent: 'center' }}>
                                     {[...Array(5)].map((_, i) => (
                                         <Star key={i} size={60} fill={i < reviewToShare.rating ? '#FFD700' : 'transparent'} strokeWidth={1.5} />
                                     ))}
                                 </div>
-                                <h2 style={{ fontSize: '72px', margin: '0 0 20px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800 }}>
+                                <h2 style={{ fontSize: '72px', margin: '0 0 20px 0', color: '#7A2D30', fontFamily: 'Outfit, sans-serif', fontWeight: 800, lineHeight: '1.1' }}>
                                     {reviewToShare.title}
                                 </h2>
                                 <p style={{ fontSize: '44px', margin: 0, color: '#6B5E5E', fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
@@ -199,29 +209,17 @@ const ReviewManager = () => {
                             </div>
                             
                             <p style={{ 
-                                fontSize: '54px', 
-                                lineHeight: '1.6', 
+                                fontSize: getDynamicFontSize(reviewToShare.comment), 
+                                lineHeight: '1.5', 
                                 color: '#2D2424', 
                                 fontStyle: 'italic', 
                                 margin: 0,
                                 fontFamily: 'Nunito, sans-serif',
-                                whiteSpace: 'pre-line'
+                                whiteSpace: 'pre-line',
+                                textAlign: 'center'
                             }}>
                                 "{reviewToShare.comment}"
                             </p>
-                        </div>
-                        
-                        <div style={{ 
-                            position: 'absolute',
-                            bottom: '120px',
-                            fontSize: '36px', 
-                            color: '#9B393D', 
-                            fontWeight: 800, 
-                            textTransform: 'uppercase', 
-                            letterSpacing: '10px',
-                            fontFamily: 'Outfit, sans-serif'
-                        }}>
-                            www.musecatering.it
                         </div>
                     </div>
                 </div>
