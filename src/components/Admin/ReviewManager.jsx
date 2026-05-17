@@ -49,7 +49,7 @@ const ReviewManager = () => {
 
     const getSharedDynamicFontSize = (reviewText, responseText, hasImages) => {
         let totalLength = (reviewText?.length || 0) + (responseText?.length || 0);
-        if (hasImages) totalLength += 220; // Slightly reduced offset since images are smaller
+        if (hasImages) totalLength += 220;
         
         if (totalLength < 150) return '60px';
         if (totalLength < 300) return '50px';
@@ -164,18 +164,19 @@ const ReviewManager = () => {
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
+                            justifyContent: 'center', // Vertical centering of all content
                             padding: '80px',
                             boxSizing: 'border-box',
                             position: 'relative'
                         }}
                     >
-                        {/* Title in foreground */}
+                        {/* Title - part of the centered flex group */}
                         <div style={{
                             textAlign: 'center',
                             width: '100%',
                             zIndex: 10,
                             position: 'relative',
-                            marginBottom: '30px'
+                            marginBottom: '40px'
                         }}>
                             <h1 style={{
                                 fontFamily: "'Brittany Signature', cursive",
@@ -232,7 +233,7 @@ const ReviewManager = () => {
                                 </p>
                             </div>
 
-                            {/* Refined Image Gallery (Fine white border, Square, 10% smaller) */}
+                            {/* Refined Image Gallery */}
                             {reviewToShare.images && reviewToShare.images.length > 0 && (
                                 <div style={{ 
                                     height: '280px', 
@@ -246,7 +247,7 @@ const ReviewManager = () => {
                                     {reviewToShare.images.slice(0, 4).map((img, idx, arr) => {
                                         const rotations = [-5, 3, -4, 4];
                                         const totalWidth = 880; 
-                                        const imgSize = 234; // Reduced by 10% (from 260)
+                                        const imgSize = 234; 
                                         const step = arr.length > 1 ? (totalWidth - imgSize) / (arr.length - 1) : 0;
                                         const startX = -(totalWidth - imgSize) / 2;
                                         const xPos = startX + (idx * step);
@@ -259,7 +260,7 @@ const ReviewManager = () => {
                                                     width: `${imgSize}px`,
                                                     height: `${imgSize}px`,
                                                     borderRadius: '22px',
-                                                    padding: '5px', // Slightly thinner fine border
+                                                    padding: '5px', 
                                                     background: 'white',
                                                     transform: `translateX(${xPos}px) rotate(${rotations[idx % 4]}deg)`,
                                                     zIndex: idx + 1,
@@ -468,7 +469,7 @@ const ReviewManager = () => {
                                         <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--color-primary-dark)', display: 'block', marginBottom: '0.25rem' }}>
                                             Tua risposta:
                                         </span>
-                                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-color)', whiteSpace: 'pre-line' }}>
+                                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text)', whiteSpace: 'pre-line' }}>
                                             {review.response}
                                         </p>
                                     </div>
