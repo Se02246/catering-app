@@ -230,7 +230,7 @@ const ReviewManager = () => {
                                     whiteSpace: 'pre-line',
                                     textAlign: 'center'
                                 }}>
-                                    "{reviewToShare.comment}"
+                                    {reviewToShare.comment}
                                 </p>
                             </div>
 
