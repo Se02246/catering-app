@@ -284,7 +284,7 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                     flexGrow: 1,
                     whiteSpace: 'pre-line'
                 }}>
-                    "{comment}"
+                    {comment}
                 </p>
             )}
 

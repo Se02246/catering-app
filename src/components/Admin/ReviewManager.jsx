@@ -416,7 +416,7 @@ const ReviewManager = () => {
                                     </div>
                                 </div>
                                 <p style={{ margin: '0.5rem 0 1rem', color: 'var(--color-text)', fontSize: '0.95rem', lineHeight: '1.5', fontStyle: 'italic', whiteSpace: 'pre-line' }}>
-                                    "{review.comment}"
+                                    {review.comment}
                                 </p>
                                 
                                 {review.images && review.images.length > 0 && (
