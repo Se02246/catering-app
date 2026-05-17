@@ -35,6 +35,7 @@ const ReviewsPage = () => {
             container.scrollLeft = currentPhotoIndex * width;
         }
     }, [isGalleryOpen]);
+
     const [newReview, setNewReview] = useState({
         title: '',
         author_name: '',
@@ -43,6 +44,8 @@ const ReviewsPage = () => {
         comment: '',
         images: []
     });
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
+    const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
     const [toast, setToast] = useState(null);
 
     const showToast = (message, type) => {
@@ -118,6 +121,12 @@ const ReviewsPage = () => {
             return;
         }
 
+        // Validate privacy acceptance if email is provided
+        if (newReview.author_email && !privacyAccepted) {
+            showToast('Devi accettare i termini e le condizioni per procedere.', 'error');
+            return;
+        }
+
         setIsSaving(true);
 
         try {
@@ -126,7 +135,8 @@ const ReviewsPage = () => {
             
             // Chiudi il modale immediatamente
             setIsModalOpen(false);
-            setNewReview({ title: '', author_name: '', rating: 5, comment: '', images: [] });
+            setNewReview({ title: '', author_name: '', author_email: '', rating: 5, comment: '', images: [] });
+            setPrivacyAccepted(false);
             
             // Mostra toast di successo
             showToast('Recensione aggiunta correttamente', 'success');
@@ -423,6 +433,21 @@ const ReviewsPage = () => {
                                     </p>
                                 </div>
 
+                                {newReview.author_email && (
+                                    <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '1rem', background: 'rgba(var(--color-primary-rgb), 0.03)', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
+                                        <input
+                                            type="checkbox"
+                                            id="privacy-check"
+                                            checked={privacyAccepted}
+                                            onChange={e => setPrivacyAccepted(e.target.checked)}
+                                            style={{ marginTop: '0.2rem', cursor: 'pointer', width: '18px', height: '18px' }}
+                                        />
+                                        <label htmlFor="privacy-check" style={{ fontSize: '0.9rem', color: 'var(--color-text)', cursor: 'pointer', lineHeight: '1.4' }}>
+                                            Accetto i <button type="button" onClick={() => setIsPrivacyModalOpen(true)} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--color-primary)', fontWeight: 'bold', textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>termini e le condizioni</button> sul trattamento dei dati.
+                                        </label>
+                                    </div>
+                                )}
+
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-text)' }}>Valutazione *</label>
                                     <div style={{ display: 'flex', gap: '0.6rem', padding: '0.5rem 0' }}>
@@ -593,9 +618,43 @@ const ReviewsPage = () => {
                     {toast.message}
                 </div>
             )}
+
+            {/* Privacy Policy Modal */}
+            {isPrivacyModalOpen && (
+                <div className="modal-overlay" onClick={() => setIsPrivacyModalOpen(false)} style={{ zIndex: 3000 }}>
+                    <div 
+                        className="modal-content fade-in" 
+                        onClick={e => e.stopPropagation()} 
+                        style={{ maxWidth: '500px', width: '90%', padding: '2rem' }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>Informativa Privacy</h3>
+                            <button onClick={() => setIsPrivacyModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+                        </div>
+                        <div style={{ color: 'var(--color-text)', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                            <p>Gentile utente, inserendo la tua email acconsenti al trattamento dei dati personali per le seguenti finalità:</p>
+                            <ul style={{ paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                                <li>Ricevere una notifica automatica quando un amministratore risponde alla tua recensione.</li>
+                                <li>Il tuo indirizzo email verrà archiviato in modo sicuro nel nostro database.</li>
+                                <li><strong>L'indirizzo email non sarà mai reso pubblico</strong> né ceduto a terze parti.</li>
+                                <li>Verrà utilizzato esclusivamente per questa specifica comunicazione.</li>
+                            </ul>
+                            <p style={{ fontStyle: 'italic', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                Puoi richiedere la cancellazione dei tuoi dati in qualsiasi momento contattando il supporto di Muse Catering.
+                            </p>
+                        </div>
+                        <button 
+                            className="btn btn-primary" 
+                            style={{ width: '100%', marginTop: '2rem' }}
+                            onClick={() => setIsPrivacyModalOpen(false)}
+                        >
+                            Ho capito
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
 export default ReviewsPage;
-
