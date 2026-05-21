@@ -1,14 +1,102 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Loader, RefreshCw, X, Check, TrendingUp } from 'lucide-react';
+import { Save, Loader, RefreshCw, X, Check, TrendingUp, Sparkles, Copy } from 'lucide-react';
 import { useSetting, useProducts, useCaterings } from '../../hooks/useData';
 import { api } from '../../services/api';
+
+const generateAIPrompt = (products, caterings) => {
+    let prompt = `Sei un consulente aziendale esperto di finanza e di prezzi nel settore della ristorazione, del catering e del banqueting in Italia.
+Il gestore di una piattaforma di catering ti fornisce i dati di tutti i prodotti a catalogo e i pacchetti di offerta definiti.
+
+L'obiettivo è adeguare i prezzi all'inflazione e all'andamento attuale del costo del carrello della spesa in Italia.
+
+ANALIZZA I DATI DI SEGUITO ED ELABORA LE SEGUENTI RICHIESTE:
+1. Analizza brevemente lo scenario dell'inflazione alimentare e dei costi operativi in Italia (materie prime, energia, trasporti).
+2. Proponi la percentuale globale ottimale di aumento da applicare ai PRODOTTI (per la funzione "Ricalcola prezzi prodotti" del pannello amministratore).
+3. Proponi la percentuale globale ottimale di aumento da applicare ai PACCHETTI (per la funzione "Ricalcola prezzi pacchetti" del pannello amministratore).
+4. Fornisci l'elenco dei singoli prezzi modificati consigliati per OGNI PRODOTTO e OGNI PACCHETTO. Fai un arrotondamento intelligente (ad es. per i prodotti a step di 0.10€ o 0.50€, per i pacchetti all'euro intero) e spiega brevemente il motivo per i rincari maggiori (es. prodotti che contengono ingredienti sensibili ad alta inflazione, o prodotti per intolleranze alimentari come senza glutine/senza lattosio che hanno costi di produzione più elevati).
+
+DATI PRODOTTI CORRENTI:
+=========================================
+`;
+
+    products.forEach((p, index) => {
+        const allergeni = [];
+        if (p.is_gluten_free) allergeni.push("Senza Glutine");
+        if (p.is_lactose_free) allergeni.push("Senza Lattosio");
+        if (p.is_vegetarian) allergeni.push("Vegetariano");
+        if (p.is_vegan) allergeni.push("Vegano");
+
+        const tags = allergeni.length > 0 ? allergeni.join(", ") : "Nessuno";
+
+        prompt += `Prodotto #${index + 1}:
+- Nome: ${p.name}
+- Descrizione/Ingredienti: ${p.description || "Non specificata"}
+- Descrizione Menu: ${p.menu_description || "Non specificata"}
+- Modalità di vendita: ${p.is_sold_by_piece ? "Venduto al Pezzo" : "Venduto al Kg"}
+- Prezzo al Kg: € ${p.price_per_kg ? parseFloat(p.price_per_kg).toFixed(2) : "0.00"}
+- Pezzi per Kg: ${p.pieces_per_kg || "N/A"}
+- Prezzo al Pezzo: € ${p.price_per_piece ? parseFloat(p.price_per_piece).toFixed(2) : "N/A"}
+- Caratteristiche: ${tags}
+- Stato visibilità: ${p.is_visible !== false ? "Visibile" : "Nascosto"}
+-----------------------------------------
+`;
+    });
+
+    prompt += `\nDATI PACCHETTI CORRENTI:
+=========================================
+`;
+
+    caterings.forEach((c, index) => {
+        const allergeni = [];
+        if (c.is_gluten_free) allergeni.push("Senza Glutine");
+        if (c.is_lactose_free) allergeni.push("Senza Lattosio");
+        if (c.is_vegetarian) allergeni.push("Vegetariano");
+        if (c.is_vegan) allergeni.push("Vegano");
+
+        const tags = allergeni.length > 0 ? allergeni.join(", ") : "Nessuno";
+        const price = parseFloat(c.total_price || 0);
+        const discount = parseFloat(c.discount_percentage || 0);
+        const discountedPrice = discount > 0 ? (price * (1 - discount / 100)) : price;
+
+        prompt += `Pacchetto #${index + 1}:
+- Nome: ${c.name}
+- Descrizione: ${c.description || "Non specificata"}
+- Prezzo Base: € ${price.toFixed(2)}
+- Sconto: ${discount}% ${discount > 0 ? `(Prezzo scontato corrente: € ${discountedPrice.toFixed(2)})` : ""}
+- Caratteristiche: ${tags}
+- Elementi inclusi nel pacchetto:
+`;
+
+        if (c.items && c.items.length > 0) {
+            c.items.forEach(item => {
+                const p = products.find(prod => prod.id === item.product_id);
+                const itemName = item.name || p?.name || "Prodotto sconosciuto";
+                const isPiece = item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : p?.is_sold_by_piece;
+                const itemPrice = isPiece
+                    ? (item.price_per_piece || p?.price_per_piece || 0)
+                    : (item.price_per_kg || p?.price_per_kg || 0);
+
+                prompt += `  * Quantità: ${item.quantity} ${isPiece ? "pz" : "kg"} | Prodotto: ${itemName} | Prezzo unitario nel pacchetto: € ${parseFloat(itemPrice).toFixed(2)} / ${isPiece ? "pz" : "kg"}\n`;
+            });
+        } else {
+            prompt += `  * Nessun prodotto incluso\n`;
+        }
+
+        prompt += `-----------------------------------------
+`;
+    });
+
+    prompt += `\nGenera la risposta strutturando in modo ordinato e in lingua italiana, fornendo tabelle leggibili per il confronto dei prezzi prima/dopo per agevolare la copia e l'inserimento dei valori nel sistema.`;
+
+    return prompt;
+};
 
 const SettingsManager = () => {
     const { setting: headerSetting, isLoading: isHeaderLoading, mutate: mutateHeader } = useSetting('header_text');
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading, mutate: mutateQuoteSetting } = useSetting('show_quote_builder');
     const { setting: showPricesSetting, isLoading: isPricesSettingLoading, mutate: mutatePricesSetting } = useSetting('show_product_prices');
-    const { products, mutate: mutateProducts } = useProducts();
-    const { caterings, mutate: mutateCaterings } = useCaterings();
+    const { products, isLoading: isProductsLoading, mutate: mutateProducts } = useProducts();
+    const { caterings, isLoading: isCateringsLoading, mutate: mutateCaterings } = useCaterings();
     
     const [headerText, setHeaderText] = useState('');
     const [showQuoteBuilder, setShowQuoteBuilder] = useState(true);
@@ -22,6 +110,10 @@ const SettingsManager = () => {
     const [previewType, setPreviewType] = useState(null); // 'products' or 'packages'
     const [previewData, setPreviewData] = useState([]);
     const [isRecalculating, setIsRecalculating] = useState(false);
+
+    // Prompt states
+    const [generatedPrompt, setGeneratedPrompt] = useState('');
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         if (headerSetting) {
@@ -165,6 +257,22 @@ const SettingsManager = () => {
             setMessage({ type: 'error', text: 'Errore durante il ricalcolo dei prezzi' });
         } finally {
             setIsRecalculating(false);
+        }
+    };
+
+    const handleGeneratePrompt = () => {
+        const promptText = generateAIPrompt(products, caterings);
+        setGeneratedPrompt(promptText);
+        setCopied(false);
+    };
+
+    const handleCopyPrompt = () => {
+        try {
+            navigator.clipboard.writeText(generatedPrompt);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
         }
     };
 
@@ -369,6 +477,96 @@ const SettingsManager = () => {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* AI Price Optimization Prompt Generator */}
+            <div className="card" style={{
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(245, 247, 250, 0.9))',
+                border: '1px solid rgba(156, 39, 176, 0.2)',
+                boxShadow: '0 8px 32px 0 rgba(156, 39, 176, 0.08)'
+            }}>
+                <h2 style={{ marginBottom: '1rem', color: '#9c27b0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Sparkles size={24} className="animate-sparkle" style={{ color: '#9c27b0' }} />
+                    Consulente Prezzi con Intelligenza Artificiale
+                </h2>
+                <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+                    Genera un prompt personalizzato contenente tutti i dettagli di prodotti e pacchetti (prezzi attuali, ingredienti, pesi, opzioni alimentari) da dare in pasto a una IA esterna (es. ChatGPT, Claude o Gemini).
+                    L'IA analizzerà l'inflazione e l'andamento del carrello della spesa in Italia per suggerire i ricarichi ideali e i nuovi prezzi per ogni singolo elemento.
+                </p>
+
+                <button
+                    onClick={handleGeneratePrompt}
+                    disabled={isProductsLoading || isCateringsLoading}
+                    className="btn btn-primary"
+                    style={{
+                        background: 'linear-gradient(45deg, #9c27b0, var(--color-primary))',
+                        border: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.75rem 1.5rem',
+                        fontWeight: 'bold',
+                        color: 'white',
+                        boxShadow: '0 4px 15px rgba(156, 39, 176, 0.3)',
+                        opacity: (isProductsLoading || isCateringsLoading) ? 0.7 : 1,
+                        cursor: (isProductsLoading || isCateringsLoading) ? 'not-allowed' : 'pointer'
+                    }}
+                >
+                    {(isProductsLoading || isCateringsLoading) ? (
+                        <>
+                            <Loader className="animate-spin" size={18} />
+                            Caricamento dati...
+                        </>
+                    ) : (
+                        <>
+                            <Sparkles size={18} />
+                            Genera Prompt per IA
+                        </>
+                    )}
+                </button>
+
+                {generatedPrompt && (
+                    <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }} className="bounce-in">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--color-text)' }}>Prompt Generato:</span>
+                            <button
+                                onClick={handleCopyPrompt}
+                                className="btn btn-outline"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.4rem 0.8rem',
+                                    fontSize: '0.85rem',
+                                    borderColor: copied ? '#4CAF50' : 'var(--color-border)',
+                                    color: copied ? '#4CAF50' : 'var(--color-text)',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                {copied ? <Check size={16} /> : <Copy size={16} />}
+                                {copied ? 'Copiato!' : 'Copia Prompt'}
+                            </button>
+                        </div>
+                        <textarea
+                            readOnly
+                            value={generatedPrompt}
+                            onClick={(e) => e.target.select()}
+                            style={{
+                                width: '100%',
+                                height: '250px',
+                                padding: '1rem',
+                                borderRadius: '8px',
+                                border: '1px solid var(--color-border)',
+                                fontFamily: 'monospace',
+                                fontSize: '0.85rem',
+                                backgroundColor: '#f9f9f9',
+                                color: '#333',
+                                resize: 'vertical',
+                                whiteSpace: 'pre-wrap'
+                            }}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Preview Modal */}
