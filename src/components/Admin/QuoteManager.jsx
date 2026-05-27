@@ -643,9 +643,29 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                     return (
                                         <div key={item.instanceId} style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid var(--color-primary)' }}>
                                             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                                <div style={{ flex: 2, minWidth: '200px' }}>
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Nome Prodotto</label>
                                                     <input type="text" value={editingItemData.name || ''} onChange={e => setEditingItemData({...editingItemData, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                                                </div>
+                                                <div style={{ flex: 1, minWidth: '120px' }}>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Prezzo pz (€)</label>
+                                                    <input 
+                                                        type="number" 
+                                                        step="0.01" 
+                                                        value={editingItemData.price_per_piece !== null && editingItemData.price_per_piece !== undefined ? editingItemData.price_per_piece : ''} 
+                                                        onChange={e => setEditingItemData({...editingItemData, price_per_piece: e.target.value === '' ? null : parseFloat(e.target.value)})} 
+                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} 
+                                                    />
+                                                </div>
+                                                <div style={{ flex: 1, minWidth: '120px' }}>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Prezzo kg (€)</label>
+                                                    <input 
+                                                        type="number" 
+                                                        step="0.01" 
+                                                        value={editingItemData.price_per_kg !== null && editingItemData.price_per_kg !== undefined ? editingItemData.price_per_kg : ''} 
+                                                        onChange={e => setEditingItemData({...editingItemData, price_per_kg: e.target.value === '' ? null : parseFloat(e.target.value)})} 
+                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} 
+                                                    />
                                                 </div>
                                             </div>
                                             <div style={{ marginBottom: '1rem' }}>
@@ -686,6 +706,22 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                         }
                                                     }} style={{ width: '16px', height: '16px' }} />
                                                     Vegano
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--color-primary)', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={editingItemData.is_sold_by_piece || false} 
+                                                        onChange={e => {
+                                                            const val = e.target.checked;
+                                                            setEditingItemData({
+                                                                ...editingItemData,
+                                                                is_sold_by_piece: val,
+                                                                quantity: !val ? Math.ceil(editingItemData.quantity) : editingItemData.quantity
+                                                            });
+                                                        }} 
+                                                        style={{ width: '16px', height: '16px' }} 
+                                                    />
+                                                    Venduto a Pezzi (pz)
                                                 </label>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#666', fontSize: '0.9rem', fontWeight: 'bold' }}>
                                                     <input type="checkbox" checked={editingItemData.hide_in_menu || false} onChange={e => setEditingItemData({...editingItemData, hide_in_menu: e.target.checked})} style={{ width: '16px', height: '16px' }} />
