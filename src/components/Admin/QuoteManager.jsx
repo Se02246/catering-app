@@ -740,13 +740,20 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 <div key={item.instanceId} style={{ display: 'flex', flexDirection: 'column', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--color-border)', gap: '1rem' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flex: 1 }}>
-                                            <div style={{ width: '50px', height: '50px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
-                                                <img 
-                                                    src={item.image_url || (item.images && item.images[0]) || 'https://placehold.co/50x50?text=Food'} 
-                                                    alt={item.name} 
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                                />
-                                            </div>
+                                            {(() => {
+                                                const liveProduct = products.find(p => p.id === item.id) || products.find(p => p.name?.trim().toLowerCase() === item.name?.trim().toLowerCase());
+                                                const imgUrl = liveProduct?.image_url || item.image_url || (item.images && item.images[0]) || 'https://placehold.co/50x50?text=Food';
+                                                return (
+                                                    <div style={{ width: '50px', height: '50px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                                        <img 
+                                                            src={imgUrl} 
+                                                            alt={item.name} 
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50?text=No+Img'; }}
+                                                        />
+                                                    </div>
+                                                );
+                                            })()}
                                             <div>
                                                 <p style={{ fontWeight: 'bold', margin: 0, fontSize: '1rem' }}>
                                                     {item.name}
