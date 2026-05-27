@@ -3,12 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { ShoppingBag, Calendar, ArrowLeft, Send, Copy, Check, Download, Eye, QrCode, ExternalLink, Share2, Star, User } from 'lucide-react';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
+import { useProducts } from '../hooks/useData';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 
 const SharedQuote = ({ isMenuMode = false }) => {
     const { id, menuId } = useParams();
     const navigate = useNavigate();
+    const { products } = useProducts();
     const [quote, setQuote] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -578,9 +580,20 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                 }}
                             >
                                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                    {item.image_url && (
-                                        <img src={item.image_url} alt={item.name} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
-                                    )}
+                                    {(() => {
+                                        const liveProduct = products.find(p => p.id === item.id) || products.find(p => p.name?.trim().toLowerCase() === item.name?.trim().toLowerCase());
+                                        const imgUrl = liveProduct?.image_url || item.image_url || (item.images && item.images[0]) || 'https://placehold.co/50x50?text=Food';
+                                        return (
+                                            <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                                <img 
+                                                    src={imgUrl} 
+                                                    alt={item.name} 
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50?text=No+Img'; }}
+                                                />
+                                            </div>
+                                        );
+                                    })()}
                                     <div>
                                         <p style={{ fontWeight: 'bold', margin: 0 }}>
                                             {item.name}
