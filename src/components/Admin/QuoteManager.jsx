@@ -739,35 +739,44 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 return (
                                 <div key={item.instanceId} style={{ display: 'flex', flexDirection: 'column', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--color-border)', gap: '1rem' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <div style={{ flex: 1 }}>
-                                            <p style={{ fontWeight: 'bold', margin: 0, fontSize: '1rem' }}>
-                                                {item.name}
-                                            </p>
-                                            <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.25rem' }}>
-                                                {(currentQuote.is_gluten_free || item.is_gluten_free) && (
-                                                    <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                        Senza Glutine
-                                                    </span>
-                                                )}
-                                                {(currentQuote.is_lactose_free || item.is_lactose_free) && (
-                                                    <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                        Senza Lattosio
-                                                    </span>
-                                                )}
-                                                {(currentQuote.is_vegetarian || item.is_vegetarian) && (
-                                                    <span style={{ color: '#8BC34A', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                        Vegetariano
-                                                    </span>
-                                                )}
-                                                {(currentQuote.is_vegan || item.is_vegan) && (
-                                                    <span style={{ color: '#388E3C', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                        Vegano
-                                                    </span>
-                                                )}
+                                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flex: 1 }}>
+                                            <div style={{ width: '50px', height: '50px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                                <img 
+                                                    src={item.image_url || (item.images && item.images[0]) || 'https://placehold.co/50x50?text=Food'} 
+                                                    alt={item.name} 
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                                />
                                             </div>
-                                            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: '0.25rem 0 0 0' }}>
-                                                Unitario: € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)}
-                                            </p>
+                                            <div>
+                                                <p style={{ fontWeight: 'bold', margin: 0, fontSize: '1rem' }}>
+                                                    {item.name}
+                                                </p>
+                                                <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
+                                                    {(currentQuote.is_gluten_free || item.is_gluten_free) && (
+                                                        <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                            Senza Glutine
+                                                        </span>
+                                                    )}
+                                                    {(currentQuote.is_lactose_free || item.is_lactose_free) && (
+                                                        <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                            Senza Lattosio
+                                                        </span>
+                                                    )}
+                                                    {(currentQuote.is_vegetarian || item.is_vegetarian) && (
+                                                        <span style={{ color: '#8BC34A', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                            Vegetariano
+                                                        </span>
+                                                    )}
+                                                    {(currentQuote.is_vegan || item.is_vegan) && (
+                                                        <span style={{ color: '#388E3C', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                            Vegano
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: '0.25rem 0 0 0' }}>
+                                                    Unitario: € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)}
+                                                </p>
+                                            </div>
                                         </div>
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                                             <button className="btn btn-outline" style={{ padding: '0.4rem', border: 'none', color: 'var(--color-primary)' }} onClick={() => { setEditingItemId(item.instanceId); setEditingItemData({ ...item }); }}>
