@@ -584,8 +584,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
                     <div style={{ marginBottom: '2rem' }}>
                         <h4 style={{ marginBottom: '1rem' }}>Opzioni Dietetiche Globali</h4>
-                        <div style={{ display: 'flex', gap: '2rem', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontWeight: 'bold' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontWeight: 'bold', flexWrap: 'wrap' }}>
                                 <input 
                                     type="checkbox" 
                                     checked={currentQuote.is_gluten_free || false} 
@@ -594,7 +594,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 />
                                 Tutto Senza Glutine
                             </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#03A9F4', fontWeight: 'bold' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#03A9F4', fontWeight: 'bold', flexWrap: 'wrap' }}>
                                 <input 
                                     type="checkbox" 
                                     checked={currentQuote.is_lactose_free || false} 
@@ -603,7 +603,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 />
                                 Tutto Senza Lattosio
                             </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#8BC34A', fontWeight: 'bold' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#8BC34A', fontWeight: 'bold', flexWrap: 'wrap' }}>
                                 <input 
                                     type="checkbox" 
                                     checked={currentQuote.is_vegetarian || false} 
@@ -612,7 +612,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 />
                                 Tutto Vegetariano
                             </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#388E3C', fontWeight: 'bold' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#388E3C', fontWeight: 'bold', flexWrap: 'wrap' }}>
                                 <input 
                                     type="checkbox" 
                                     checked={currentQuote.is_vegan || false} 
