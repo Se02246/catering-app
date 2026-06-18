@@ -48,19 +48,54 @@ const SharedEvent = () => {
         const container = productsContainerRef.current;
         if (!container || !event?.products || event.products.length <= 1) return;
 
+        const getSnapPosition = (container, child, index, total) => {
+            const X = child.offsetLeft;
+            const w = child.offsetWidth;
+            const W = container.clientWidth;
+            
+            if (index === 0) {
+                return 0; // Align to start
+            } else if (index === total - 1) {
+                return container.scrollWidth - W; // Align to end
+            } else {
+                return X + (w / 2) - (W / 2); // Align to center
+            }
+        };
+
+        const getCurrentIndex = (container) => {
+            const childrenArr = Array.from(container.children);
+            const total = childrenArr.length;
+            if (total === 0) return 0;
+            
+            let closestIndex = 0;
+            let minDiff = Infinity;
+            
+            childrenArr.forEach((child, index) => {
+                const snapPos = getSnapPosition(container, child, index, total);
+                const diff = Math.abs(container.scrollLeft - snapPos);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestIndex = index;
+                }
+            });
+            
+            return closestIndex;
+        };
+
         const interval = setInterval(() => {
             if (isProductsPaused) return;
 
-            const cardWidth = container.firstChild?.offsetWidth || 240;
-            const gap = 24; // 1.5rem gap is 24px
-            const scrollStep = cardWidth + gap;
+            const childrenArr = Array.from(container.children);
+            const total = childrenArr.length;
+            if (total <= 1) return;
 
-            const maxScrollLeft = container.scrollWidth - container.clientWidth;
-            if (container.scrollLeft >= maxScrollLeft - 10) {
-                container.scrollTo({ left: 0, behavior: 'smooth' });
-            } else {
-                container.scrollBy({ left: scrollStep, behavior: 'smooth' });
-            }
+            const currentIndex = getCurrentIndex(container);
+            const nextIndex = (currentIndex + 1) % total;
+
+            const targetChild = childrenArr[nextIndex];
+            const targetScrollLeft = getSnapPosition(container, targetChild, nextIndex, total);
+
+            container.scrollTo({ left: targetScrollLeft, behavior: 'smooth' });
         }, 3000);
 
         return () => clearInterval(interval);
@@ -95,16 +130,31 @@ const SharedEvent = () => {
 
     return (
         <div className="container" style={{ maxWidth: '800px', padding: '2rem 1rem', position: 'relative' }}>
-            <h1 className="brand-logo" style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', fontSize: '1.4rem', margin: 0, zIndex: 10 }}>Muse Catering</h1>
-            
-            {showHomeButton && (
-                <button 
-                    onClick={() => navigate('/')}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', marginBottom: '2rem', fontSize: '1rem', fontWeight: 'bold' }}
-                >
-                    <ArrowLeft size={20} /> Torna alla Home
-                </button>
-            )}
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: showHomeButton ? 'space-between' : 'center', 
+                alignItems: 'center', 
+                marginBottom: '2rem',
+                flexWrap: 'wrap',
+                gap: '1rem',
+                width: '100%'
+            }}>
+                {showHomeButton && (
+                    <button 
+                        onClick={() => navigate('/')}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold' }}
+                    >
+                        <ArrowLeft size={20} /> Torna alla Home
+                    </button>
+                )}
+                <h1 className="brand-logo" style={{ 
+                    fontSize: showHomeButton ? '1.4rem' : '2.2rem', 
+                    margin: 0,
+                    textAlign: 'center'
+                }}>
+                    Muse Catering
+                </h1>
+            </div>
 
             {/* Event Header */}
             <div style={{ textAlign: 'center', marginBottom: '3rem', padding: '0 1rem' }}>

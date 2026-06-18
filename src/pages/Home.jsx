@@ -139,6 +139,40 @@ const EventCardsCarousel = ({ event, children }) => {
     const [isPaused, setIsPaused] = React.useState(false);
     const pauseTimeoutRef = React.useRef(null);
 
+    const getSnapPosition = (container, child, index, total) => {
+        const X = child.offsetLeft;
+        const w = child.offsetWidth;
+        const W = container.clientWidth;
+        
+        if (index === 0) {
+            return 0; // Align to start
+        } else if (index === total - 1) {
+            return container.scrollWidth - W; // Align to end
+        } else {
+            return X + (w / 2) - (W / 2); // Align to center
+        }
+    };
+
+    const getCurrentIndex = (container) => {
+        const childrenArr = Array.from(container.children);
+        const total = childrenArr.length;
+        if (total === 0) return 0;
+        
+        let closestIndex = 0;
+        let minDiff = Infinity;
+        
+        childrenArr.forEach((child, index) => {
+            const snapPos = getSnapPosition(container, child, index, total);
+            const diff = Math.abs(container.scrollLeft - snapPos);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestIndex = index;
+            }
+        });
+        
+        return closestIndex;
+    };
+
     React.useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -146,16 +180,17 @@ const EventCardsCarousel = ({ event, children }) => {
         const interval = setInterval(() => {
             if (isPaused) return;
 
-            const cardWidth = container.firstChild?.offsetWidth || 300;
-            const gap = 24; // 1.5rem gap is 24px
-            const scrollStep = cardWidth + gap;
+            const childrenArr = Array.from(container.children);
+            const total = childrenArr.length;
+            if (total <= 1) return;
 
-            const maxScrollLeft = container.scrollWidth - container.clientWidth;
-            if (container.scrollLeft >= maxScrollLeft - 10) {
-                container.scrollTo({ left: 0, behavior: 'smooth' });
-            } else {
-                container.scrollBy({ left: scrollStep, behavior: 'smooth' });
-            }
+            const currentIndex = getCurrentIndex(container);
+            const nextIndex = (currentIndex + 1) % total;
+
+            const targetChild = childrenArr[nextIndex];
+            const targetScrollLeft = getSnapPosition(container, targetChild, nextIndex, total);
+
+            container.scrollTo({ left: targetScrollLeft, behavior: 'smooth' });
         }, 3000);
 
         return () => clearInterval(interval);
