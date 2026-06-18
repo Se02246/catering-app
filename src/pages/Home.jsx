@@ -1055,7 +1055,7 @@ const Home = () => {
             {processedEvents.length > 0 && (
                 <section id="eventi" style={{ marginTop: '3rem', marginBottom: '3rem' }}>
                     <div className="section-header">
-                        <h2>EVENTI</h2>
+                        <h2>Eventi</h2>
                         <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>
                             Scopri dove saremo e i nostri eventi in programma!
                         </p>
