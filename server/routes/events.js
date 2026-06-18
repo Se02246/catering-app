@@ -145,7 +145,7 @@ router.get('/slug/:slug', async (req, res) => {
 // Create event
 router.post('/', async (req, res) => {
     const {
-        name, date_text, is_visible,
+        name, date_text, is_visible, hide_at,
         where_title, where_image_url, where_link, where_description,
         products_title, products_description,
         info_title, info_description,
@@ -165,13 +165,13 @@ router.post('/', async (req, res) => {
 
         const eventResult = await client.query(
             `INSERT INTO events (
-                slug, name, date_text, is_visible,
+                slug, name, date_text, is_visible, hide_at,
                 where_title, where_image_url, where_link, where_description,
                 products_title, products_description,
                 info_title, info_description
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
             [
-                slug, name, date_text, is_visible !== undefined ? is_visible : true,
+                slug, name, date_text, is_visible !== undefined ? is_visible : true, hide_at || null,
                 where_title || 'Quando e Dove saremo', where_image_url || null, where_link || null, where_description || null,
                 products_title || 'I prodotti che porteremo', products_description || null,
                 info_title || 'Altre informazioni', info_description || null
