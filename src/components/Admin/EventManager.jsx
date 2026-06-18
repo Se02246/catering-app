@@ -16,6 +16,7 @@ const EventManager = () => {
         name: '',
         date_text: '',
         is_visible: true,
+        hide_at: '',
         where_title: 'Dove saremo',
         where_image_url: '',
         where_link: '',
@@ -50,6 +51,7 @@ const EventManager = () => {
                 name: '',
                 date_text: '',
                 is_visible: true,
+                hide_at: '',
                 where_title: 'Dove saremo',
                 where_image_url: '',
                 where_link: '',
@@ -67,12 +69,27 @@ const EventManager = () => {
         }
     };
 
+    const formatDateForInput = (dateStr) => {
+        if (!dateStr) return '';
+        try {
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return '';
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        } catch (e) {
+            return '';
+        }
+    };
+
     const handleEdit = (event) => {
         setEditingId(event.id);
         setNewEvent({
             name: event.name,
             date_text: event.date_text,
             is_visible: event.is_visible !== undefined ? event.is_visible : true,
+            hide_at: event.hide_at ? formatDateForInput(event.hide_at) : '',
             where_title: event.where_title || 'Dove saremo',
             where_image_url: event.where_image_url || '',
             where_link: event.where_link || '',
@@ -169,6 +186,7 @@ const EventManager = () => {
                         name: '',
                         date_text: '',
                         is_visible: true,
+                        hide_at: '',
                         where_title: 'Dove saremo',
                         where_image_url: '',
                         where_link: '',
@@ -335,9 +353,22 @@ const EventManager = () => {
                                                 />
                                             </div>
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setNewEvent({ ...newEvent, is_visible: !newEvent.is_visible })}>
-                                            <input type="checkbox" checked={newEvent.is_visible} readOnly style={{ marginRight: '0.5rem', width: '18px', height: '18px' }} />
-                                            <label style={{ fontWeight: 'bold', cursor: 'pointer', margin: 0 }}>Attivo / Visibile</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setNewEvent({ ...newEvent, is_visible: !newEvent.is_visible })}>
+                                                <input type="checkbox" checked={newEvent.is_visible} readOnly style={{ marginRight: '0.5rem', width: '18px', height: '18px' }} />
+                                                <label style={{ fontWeight: 'bold', cursor: 'pointer', margin: 0 }}>Attivo / Visibile</label>
+                                            </div>
+                                            
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <label style={{ fontWeight: 'bold', fontSize: '0.9rem', margin: 0 }}>nascondi il...</label>
+                                                <input
+                                                    type="date"
+                                                    className="form-control"
+                                                    style={{ padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.9rem', cursor: 'pointer' }}
+                                                    value={newEvent.hide_at || ''}
+                                                    onChange={e => setNewEvent({ ...newEvent, hide_at: e.target.value })}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 

@@ -24,8 +24,24 @@ const SharedEvent = () => {
             try {
                 const found = await api.getEventBySlug(slug);
                 if (found) {
-                    setEvent(found);
-                    setError(null);
+                    const isVisible = found.is_visible !== false;
+                    let isExpired = false;
+                    if (found.hide_at) {
+                        const hideDate = new Date(found.hide_at);
+                        const today = new Date();
+                        const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                        const hideDateOnly = new Date(hideDate.getFullYear(), hideDate.getMonth(), hideDate.getDate());
+                        if (todayDateOnly >= hideDateOnly) {
+                            isExpired = true;
+                        }
+                    }
+
+                    if (isVisible && !isExpired) {
+                        setEvent(found);
+                        setError(null);
+                    } else {
+                        setError('Questo evento non è più disponibile.');
+                    }
                 } else {
                     setError('Evento non trovato.');
                 }

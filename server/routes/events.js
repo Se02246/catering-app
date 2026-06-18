@@ -234,7 +234,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const {
-        name, date_text, is_visible,
+        name, date_text, is_visible, hide_at,
         where_title, where_image_url, where_link, where_description,
         products_title, products_description,
         info_title, info_description,
@@ -263,13 +263,13 @@ router.put('/:id', async (req, res) => {
 
         const eventResult = await client.query(
             `UPDATE events SET 
-                slug = $1, name = $2, date_text = $3, is_visible = $4,
-                where_title = $5, where_image_url = $6, where_link = $7, where_description = $8,
-                products_title = $9, products_description = $10,
-                info_title = $11, info_description = $12
-            WHERE id = $13 RETURNING *`,
+                slug = $1, name = $2, date_text = $3, is_visible = $4, hide_at = $5,
+                where_title = $6, where_image_url = $7, where_link = $8, where_description = $9,
+                products_title = $10, products_description = $11,
+                info_title = $12, info_description = $13
+            WHERE id = $14 RETURNING *`,
             [
-                slug, name, date_text, is_visible !== undefined ? is_visible : true,
+                slug, name, date_text, is_visible !== undefined ? is_visible : true, hide_at || null,
                 where_title, where_image_url, where_link, where_description,
                 products_title, products_description,
                 info_title, info_description,

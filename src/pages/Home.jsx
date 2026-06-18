@@ -48,7 +48,7 @@ const PackageCard = ({ pkg, index, openPackage, showProductPrices }) => {
                         return (prev + 1) % pkg.images.length;
                     });
                 }, 2000);
-            }, 2000);
+            }, 1300);
         } else {
             setPrevImgIndex(null);
             setCurrentImgIndex(0);
@@ -859,6 +859,17 @@ const Home = () => {
         if (!events) return [];
         return events.filter(event => {
             if (event.is_visible === false) return false;
+
+            if (event.hide_at) {
+                const hideDate = new Date(event.hide_at);
+                const today = new Date();
+                const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const hideDateOnly = new Date(hideDate.getFullYear(), hideDate.getMonth(), hideDate.getDate());
+                if (todayDateOnly >= hideDateOnly) {
+                    return false;
+                }
+            }
+
             const hasWhere = !!(event.where_description || event.where_image_url);
             const hasProducts = !!(event.products_description || (event.products && event.products.length > 0));
             const hasInfo = !!event.info_description;
