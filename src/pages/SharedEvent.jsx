@@ -227,14 +227,14 @@ const SharedEvent = () => {
                             paddingLeft: '0.25rem'
                         }}
                     >
-                        {event.products.map(prod => (
+                        {event.products.map((prod, index) => (
                             <div 
                                 key={prod.id} 
                                 onClick={() => setSelectedProduct(prod)}
                                 className="premium-card hover-lift"
                                 style={{ 
                                     flex: '0 0 240px',
-                                    scrollSnapAlign: 'start',
+                                    scrollSnapAlign: index === 0 ? 'start' : (index === event.products.length - 1 ? 'end' : 'center'),
                                     cursor: 'pointer',
                                     display: 'flex',
                                     flexDirection: 'column',

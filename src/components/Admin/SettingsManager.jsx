@@ -121,25 +121,25 @@ const SettingsManager = () => {
         if (headerSetting) {
             setHeaderText(headerSetting.value);
         }
-    }, [headerSetting]);
+    }, [headerSetting?.value]);
 
     useEffect(() => {
         if (showQuoteSetting) {
             setShowQuoteBuilder(showQuoteSetting.value !== 'false');
         }
-    }, [showQuoteSetting]);
+    }, [showQuoteSetting?.value]);
 
     useEffect(() => {
         if (showPricesSetting) {
             setShowProductPrices(showPricesSetting.value !== 'false');
         }
-    }, [showPricesSetting]);
+    }, [showPricesSetting?.value]);
 
     useEffect(() => {
         if (hideEventHomeSetting) {
             setHideEventHomeButton(hideEventHomeSetting.value === 'true');
         }
-    }, [hideEventHomeSetting]);
+    }, [hideEventHomeSetting?.value]);
 
     const handleSave = async () => {
         setSaving(true);

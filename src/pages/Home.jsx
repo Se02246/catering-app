@@ -169,6 +169,9 @@ const EventCardsCarousel = ({ event, children }) => {
         }, 5000);
     };
 
+    // Filter valid children to determine correct start/center/end snapping
+    const validChildren = React.Children.toArray(children).filter(Boolean);
+
     return (
         <div 
             ref={containerRef}
@@ -187,7 +190,20 @@ const EventCardsCarousel = ({ event, children }) => {
                 WebkitOverflowScrolling: 'touch'
             }}
         >
-            {children}
+            {validChildren.map((child, index) => {
+                let align = 'center';
+                if (index === 0) {
+                    align = 'start';
+                } else if (index === validChildren.length - 1) {
+                    align = 'end';
+                }
+                return React.cloneElement(child, {
+                    style: {
+                        ...child.props.style,
+                        scrollSnapAlign: align
+                    }
+                });
+            })}
         </div>
     );
 };
