@@ -285,6 +285,7 @@ const SharedEvent = () => {
                                 style={{ 
                                     flex: '0 0 240px',
                                     scrollSnapAlign: index === 0 ? 'start' : (index === event.products.length - 1 ? 'end' : 'center'),
+                                    scrollSnapStop: 'always',
                                     cursor: 'pointer',
                                     display: 'flex',
                                     flexDirection: 'column',

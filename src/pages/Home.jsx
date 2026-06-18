@@ -235,7 +235,8 @@ const EventCardsCarousel = ({ event, children }) => {
                 return React.cloneElement(child, {
                     style: {
                         ...child.props.style,
-                        scrollSnapAlign: align
+                        scrollSnapAlign: align,
+                        scrollSnapStop: 'always'
                     }
                 });
             })}
