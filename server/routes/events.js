@@ -230,6 +230,30 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Reorder events
+router.put('/reorder', async (req, res) => {
+    const { events } = req.body; // Array of { id, sort_order }
+    if (!events || !Array.isArray(events)) {
+        return res.status(400).json({ error: 'Invalid input' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        for (const ev of events) {
+            await client.query('UPDATE events SET sort_order = $1 WHERE id = $2', [ev.sort_order, ev.id]);
+        }
+        await client.query('COMMIT');
+        res.json({ message: 'Events reordered successfully' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    } finally {
+        client.release();
+    }
+});
+
 // Update event
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
@@ -341,30 +365,6 @@ router.delete('/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// Reorder events
-router.put('/reorder', async (req, res) => {
-    const { events } = req.body; // Array of { id, sort_order }
-    if (!events || !Array.isArray(events)) {
-        return res.status(400).json({ error: 'Invalid input' });
-    }
-
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
-        for (const ev of events) {
-            await client.query('UPDATE events SET sort_order = $1 WHERE id = $2', [ev.sort_order, ev.id]);
-        }
-        await client.query('COMMIT');
-        res.json({ message: 'Events reordered successfully' });
-    } catch (err) {
-        await client.query('ROLLBACK');
-        console.error(err);
-        res.status(500).json({ error: 'Server error' });
-    } finally {
-        client.release();
     }
 });
 
