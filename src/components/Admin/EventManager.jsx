@@ -16,7 +16,7 @@ const EventManager = () => {
         name: '',
         date_text: '',
         is_visible: true,
-        where_title: 'Quando e Dove saremo',
+        where_title: 'Dove saremo',
         where_image_url: '',
         where_link: '',
         where_description: '',
@@ -50,7 +50,7 @@ const EventManager = () => {
                 name: '',
                 date_text: '',
                 is_visible: true,
-                where_title: 'Quando e Dove saremo',
+                where_title: 'Dove saremo',
                 where_image_url: '',
                 where_link: '',
                 where_description: '',
@@ -73,7 +73,7 @@ const EventManager = () => {
             name: event.name,
             date_text: event.date_text,
             is_visible: event.is_visible !== undefined ? event.is_visible : true,
-            where_title: event.where_title || 'Quando e Dove saremo',
+            where_title: event.where_title || 'Dove saremo',
             where_image_url: event.where_image_url || '',
             where_link: event.where_link || '',
             where_description: event.where_description || '',
@@ -169,7 +169,7 @@ const EventManager = () => {
                         name: '',
                         date_text: '',
                         is_visible: true,
-                        where_title: 'Quando e Dove saremo',
+                        where_title: 'Dove saremo',
                         where_image_url: '',
                         where_link: '',
                         where_description: '',
@@ -341,9 +341,9 @@ const EventManager = () => {
                                         </div>
                                     </div>
 
-                                    {/* Card 1: Quando e Dove saremo */}
+                                    {/* Card 1: Dove saremo */}
                                     <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)' }}>
-                                        <h4 style={{ marginBottom: '1.2rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.4rem', color: 'var(--color-primary-dark)' }}>Card 1: Quando e Dove saremo</h4>
+                                        <h4 style={{ marginBottom: '1.2rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.4rem', color: 'var(--color-primary-dark)' }}>Card 1: Dove saremo</h4>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                             <div>
                                                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '0.4rem' }}>Titolo Card</label>
@@ -352,7 +352,7 @@ const EventManager = () => {
                                                     style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
                                                     value={newEvent.where_title}
                                                     onChange={e => setNewEvent({ ...newEvent, where_title: e.target.value })}
-                                                    placeholder="Es. Quando e Dove saremo"
+                                                    placeholder="Es. Dove saremo"
                                                 />
                                             </div>
                                             <div>

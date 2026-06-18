@@ -36,6 +36,40 @@ const SharedEvent = () => {
         fetchEvent();
     }, [slug]);
 
+    const productsContainerRef = React.useRef(null);
+    const [isProductsPaused, setIsProductsPaused] = useState(false);
+    const productsPauseTimeoutRef = React.useRef(null);
+
+    useEffect(() => {
+        const container = productsContainerRef.current;
+        if (!container || !event?.products || event.products.length <= 1) return;
+
+        const interval = setInterval(() => {
+            if (isProductsPaused) return;
+
+            const cardWidth = container.firstChild?.offsetWidth || 240;
+            const gap = 24; // 1.5rem gap is 24px
+            const scrollStep = cardWidth + gap;
+
+            const maxScrollLeft = container.scrollWidth - container.clientWidth;
+            if (container.scrollLeft >= maxScrollLeft - 10) {
+                container.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                container.scrollBy({ left: scrollStep, behavior: 'smooth' });
+            }
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [isProductsPaused, event?.products]);
+
+    const handleProductsInteraction = () => {
+        setIsProductsPaused(true);
+        if (productsPauseTimeoutRef.current) clearTimeout(productsPauseTimeoutRef.current);
+        productsPauseTimeoutRef.current = setTimeout(() => {
+            setIsProductsPaused(false);
+        }, 5000);
+    };
+
     if (loading) return (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '1rem' }}>
             <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid var(--color-primary)', borderTopColor: 'transparent', borderRadius: '50%' }}></div>
@@ -90,17 +124,6 @@ const SharedEvent = () => {
             {/* Section 1: Dove saremo */}
             {hasWhere && (
                 <section style={{ marginBottom: '3.5rem' }}>
-                    <h2 style={{ 
-                        color: 'var(--color-primary-dark)', 
-                        fontSize: '1.7rem', 
-                        marginBottom: '1.5rem',
-                        fontWeight: '700',
-                        borderBottom: '1px solid var(--color-border)',
-                        paddingBottom: '0.5rem'
-                    }}>
-                        Dove saremo
-                    </h2>
-                    
                     <a 
                         href={event.where_link || '#'} 
                         target={event.where_link ? "_blank" : undefined}
@@ -134,7 +157,7 @@ const SharedEvent = () => {
                             <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-primary-dark)' }}>
                                     <MapPin size={28} />
-                                    <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 'bold' }}>{event.where_title || 'Quando e Dove saremo'}</h3>
+                                    <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 'bold' }}>{event.where_title || 'Dove saremo'}</h3>
                                 </div>
                                 <p 
                                     style={{ color: 'var(--color-text-muted)', lineHeight: '1.6', fontSize: '1.05rem' }}
@@ -180,15 +203,24 @@ const SharedEvent = () => {
                         />
                     )}
 
-                    <div style={{ 
-                        display: 'flex', 
-                        gap: '1.5rem', 
-                        overflowX: 'auto', 
-                        paddingBottom: '1.5rem',
-                        scrollSnapType: 'x mandatory',
-                        WebkitOverflowScrolling: 'touch',
-                        paddingLeft: '0.25rem'
-                    }}>
+                    <div 
+                        ref={productsContainerRef}
+                        onTouchStart={handleProductsInteraction}
+                        onMouseDown={handleProductsInteraction}
+                        onWheel={handleProductsInteraction}
+                        style={{ 
+                            display: 'flex', 
+                            gap: '1.5rem', 
+                            overflowX: 'auto', 
+                            paddingTop: '15px',
+                            marginTop: '-15px',
+                            paddingBottom: '1.5rem',
+                            marginBottom: '-0.5rem',
+                            scrollSnapType: 'x mandatory',
+                            WebkitOverflowScrolling: 'touch',
+                            paddingLeft: '0.25rem'
+                        }}
+                    >
                         {event.products.map(prod => (
                             <div 
                                 key={prod.id} 
@@ -212,6 +244,11 @@ const SharedEvent = () => {
                                 )}
                                 <div style={{ padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', flex: 1 }}>
                                     <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--color-text)', fontWeight: 'bold' }}>{prod.name}</h4>
+                                    <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--color-primary)', fontWeight: '700' }}>
+                                        {prod.is_sold_by_piece 
+                                            ? `€ ${Number(prod.price_per_piece || 0).toFixed(2)} / pz` 
+                                            : `€ ${Number(prod.price_per_kg || 0).toFixed(2)} / kg`}
+                                    </p>
                                     <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: 'auto' }}>
                                         {prod.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ fontSize: '0.6rem', padding: '1px 5px' }}>GF</span>}
                                         {prod.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ fontSize: '0.6rem', padding: '1px 5px' }}>LF</span>}
@@ -228,16 +265,7 @@ const SharedEvent = () => {
             {/* Section 3: Altre informazioni */}
             {hasInfo && (
                 <section style={{ marginBottom: '3.5rem' }}>
-                    <h2 style={{ 
-                        color: 'var(--color-primary-dark)', 
-                        fontSize: '1.7rem', 
-                        marginBottom: '1.5rem',
-                        fontWeight: '700',
-                        borderBottom: '1px solid var(--color-border)',
-                        paddingBottom: '0.5rem'
-                    }}>
-                        Altre informazioni
-                    </h2>
+                    <div style={{ borderTop: '1px solid var(--color-border)', marginBottom: '1.5rem' }}></div>
                     
                     <div className="premium-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid rgba(0,0,0,0.05)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-primary-dark)' }}>
@@ -256,6 +284,7 @@ const SharedEvent = () => {
             {selectedProduct && (
                 <ProductDetailsModal 
                     product={selectedProduct} 
+                    alwaysShowPrices={true}
                     onClose={() => {
                         setIsClosing(true);
                         setTimeout(() => {

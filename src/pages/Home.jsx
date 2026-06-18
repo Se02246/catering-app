@@ -134,6 +134,64 @@ const PackageCard = ({ pkg, index, openPackage, showProductPrices }) => {
     );
 };
 
+const EventCardsCarousel = ({ event, children }) => {
+    const containerRef = React.useRef(null);
+    const [isPaused, setIsPaused] = React.useState(false);
+    const pauseTimeoutRef = React.useRef(null);
+
+    React.useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const interval = setInterval(() => {
+            if (isPaused) return;
+
+            const cardWidth = container.firstChild?.offsetWidth || 300;
+            const gap = 24; // 1.5rem gap is 24px
+            const scrollStep = cardWidth + gap;
+
+            const maxScrollLeft = container.scrollWidth - container.clientWidth;
+            if (container.scrollLeft >= maxScrollLeft - 10) {
+                container.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                container.scrollBy({ left: scrollStep, behavior: 'smooth' });
+            }
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [isPaused]);
+
+    const handleInteraction = () => {
+        setIsPaused(true);
+        if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+        pauseTimeoutRef.current = setTimeout(() => {
+            setIsPaused(false);
+        }, 5000);
+    };
+
+    return (
+        <div 
+            ref={containerRef}
+            onTouchStart={handleInteraction}
+            onMouseDown={handleInteraction}
+            onWheel={handleInteraction}
+            style={{ 
+                display: 'flex', 
+                gap: '1.5rem', 
+                overflowX: 'auto', 
+                paddingTop: '15px',
+                marginTop: '-15px',
+                paddingBottom: '1.5rem',
+                marginBottom: '-0.5rem',
+                scrollSnapType: 'x mandatory',
+                WebkitOverflowScrolling: 'touch'
+            }}
+        >
+            {children}
+        </div>
+    );
+};
+
 const EventWhereCard = ({ event, onClickDiscover }) => {
     return (
         <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', width: '300px', flexShrink: 0 }}>
@@ -151,7 +209,7 @@ const EventWhereCard = ({ event, onClickDiscover }) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)' }}>
                     <MapPin size={22} />
                     <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>
-                        {event.where_title || 'Quando e Dove saremo'}
+                        {event.where_title || 'Dove saremo'}
                     </h4>
                 </div>
                 <p 
@@ -1005,18 +1063,11 @@ const Home = () => {
                                         <span style={{ fontSize: '1.1rem', color: 'var(--color-primary)', fontWeight: '700' }}>{event.date_text}</span>
                                     </div>
                                     
-                                    <div style={{ 
-                                        display: 'flex', 
-                                        gap: '1.5rem', 
-                                        overflowX: 'auto', 
-                                        paddingBottom: '1rem',
-                                        scrollSnapType: 'x mandatory',
-                                        WebkitOverflowScrolling: 'touch'
-                                    }}>
+                                    <EventCardsCarousel event={event}>
                                         {hasWhere && <EventWhereCard event={event} onClickDiscover={handleDiscover} />}
                                         {hasProducts && <EventProductCard event={event} onClickDiscover={handleDiscover} />}
                                         {hasInfo && <EventInfoCard event={event} onClickDiscover={handleDiscover} />}
-                                    </div>
+                                    </EventCardsCarousel>
                                 </div>
                             );
                         })}
