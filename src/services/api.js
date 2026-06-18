@@ -304,5 +304,69 @@ export const api = {
         });
         if (!res.ok) throw new Error('Failed to batch update caterings');
         return res.json();
+    },
+
+    // Events
+    getEvents: async () => {
+        const res = await fetch(`${API_URL}/events`);
+        if (!res.ok) throw new Error('Failed to fetch events');
+        return res.json();
+    },
+
+    getEventBySlug: async (slug) => {
+        const res = await fetch(`${API_URL}/events/slug/${slug}`);
+        if (!res.ok) throw new Error('Failed to fetch event');
+        return res.json();
+    },
+
+    createEvent: async (event) => {
+        const res = await fetch(`${API_URL}/events`, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(event)
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to create event' }));
+            throw new Error(error.error || 'Failed to create event');
+        }
+        return res.json();
+    },
+
+    updateEvent: async (id, event) => {
+        const res = await fetch(`${API_URL}/events/${id}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify(event)
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to update event' }));
+            throw new Error(error.error || 'Failed to update event');
+        }
+        return res.json();
+    },
+
+    deleteEvent: async (id) => {
+        const res = await fetch(`${API_URL}/events/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to delete event' }));
+            throw new Error(error.error || 'Failed to delete event');
+        }
+        return res.json();
+    },
+
+    reorderEvents: async (events) => {
+        const res = await fetch(`${API_URL}/events/reorder`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify({ events })
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to reorder events' }));
+            throw new Error(error.error || 'Failed to reorder events');
+        }
+        return res.json();
     }
 };

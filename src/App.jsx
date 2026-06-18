@@ -6,6 +6,7 @@ import CreateQuote from './pages/CreateQuote';
 import Login from './pages/Login';
 import SharedQuote from './pages/SharedQuote';
 import SharedPackage from './pages/SharedPackage';
+import SharedEvent from './pages/SharedEvent';
 import ReviewsPage from './pages/ReviewsPage';
 import Catalog from './pages/Catalog';
 import { Lock } from 'lucide-react';
@@ -48,6 +49,7 @@ function AppContent() {
           <Route path="/quote/:id" element={<SharedQuote />} />
           <Route path="/menu/:menuId" element={<SharedQuote isMenuMode={true} />} />
           <Route path="/package/:id" element={<SharedPackage />} />
+          <Route path="/event/:slug" element={<SharedEvent />} />
           <Route path="/login" element={<Login />} />
           <Route path="/recensioni" element={<ReviewsPage />} />
           <Route path="/lascia_una_recensione" element={<ReviewsPage />} />

@@ -6,6 +6,7 @@ const fetcher = (url) => {
     if (url === '/products') return api.getProducts();
     if (url === '/caterings') return api.getCaterings();
     if (url === '/reviews') return api.getReviews();
+    if (url === '/events') return api.getEvents();
     if (url.startsWith('/settings/')) {
         const key = url.split('/')[2];
         return api.getSetting(key);
@@ -67,6 +68,21 @@ export const useSetting = (key) => {
 
     return {
         setting: data || { value: '' },
+        isLoading,
+        isError: error,
+        mutate
+    };
+};
+
+export const useEvents = () => {
+    const { data, error, mutate, isLoading } = useSWR('/events', fetcher, {
+        revalidateOnFocus: true,
+        refreshInterval: 5000,
+        dedupingInterval: 2000,
+    });
+
+    return {
+        events: data || [],
         isLoading,
         isError: error,
         mutate

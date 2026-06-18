@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCaterings, useSetting, useReviews, useProducts } from '../hooks/useData';
+import { useCaterings, useSetting, useReviews, useProducts, useEvents } from '../hooks/useData';
 import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import ReviewCard from '../components/Common/ReviewCard';
@@ -130,6 +130,112 @@ const PackageCard = ({ pkg, index, openPackage, showProductPrices }) => {
                     </button>
                 </div>
             </div>
+        </div>
+    );
+};
+
+const EventWhereCard = ({ event, onClickDiscover }) => {
+    return (
+        <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', width: '300px', flexShrink: 0 }}>
+            {event.where_image_url && (
+                <div style={{ height: '180px', overflow: 'hidden' }}>
+                    <img
+                        src={event.where_image_url}
+                        alt={event.where_title || 'Dove saremo'}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
+                        className="card-hover-img"
+                    />
+                </div>
+            )}
+            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                    <MapPin size={22} />
+                    <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                        {event.where_title || 'Quando e Dove saremo'}
+                    </h4>
+                </div>
+                <p 
+                    style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.5', flex: 1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical' }}
+                    dangerouslySetInnerHTML={{ __html: formatCustomText(event.where_description) }}
+                />
+                <button className="btn btn-primary" onClick={onClickDiscover} style={{ width: '100%', marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
+                    Scopri di più <ArrowRight size={16} />
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const EventProductCard = ({ event, onClickDiscover }) => {
+    const [currentImgIndex, setCurrentImgIndex] = React.useState(0);
+    const productImages = event.products?.map(p => p.image_url).filter(Boolean) || [];
+    const imagesToUse = productImages.length > 0 ? productImages : ['https://placehold.co/600x400?text=Muse+Catering'];
+
+    React.useEffect(() => {
+        if (imagesToUse.length <= 1) return;
+        const interval = setInterval(() => {
+            setCurrentImgIndex(prev => (prev + 1) % imagesToUse.length);
+        }, 2000);
+        return () => clearInterval(interval);
+    }, [imagesToUse.length]);
+
+    return (
+        <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', width: '300px', flexShrink: 0 }}>
+            <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
+                {imagesToUse.map((img, i) => (
+                    <img
+                        key={i}
+                        src={img}
+                        alt="Prodotto evento"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transition: 'opacity 1s ease-in-out',
+                            opacity: currentImgIndex === i ? 1 : 0,
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            zIndex: currentImgIndex === i ? 2 : 1
+                        }}
+                    />
+                ))}
+            </div>
+            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                    <ShoppingBag size={22} />
+                    <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                        {event.products_title || 'I prodotti che porteremo'}
+                    </h4>
+                </div>
+                <p 
+                    style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.5', flex: 1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical' }}
+                    dangerouslySetInnerHTML={{ __html: formatCustomText(event.products_description) }}
+                />
+                <button className="btn btn-primary" onClick={onClickDiscover} style={{ width: '100%', marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
+                    Scopri di più <ArrowRight size={16} />
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const EventInfoCard = ({ event, onClickDiscover }) => {
+    return (
+        <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', width: '300px', flexShrink: 0, padding: '1.5rem', border: '1px solid rgba(0,0,0,0.05)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)', marginBottom: '0.75rem' }}>
+                <Info size={22} />
+                <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                    {event.info_title || 'Altre informazioni'}
+                </h4>
+            </div>
+            <p 
+                style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.5', flex: 1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'vertical' }}
+                dangerouslySetInnerHTML={{ __html: formatCustomText(event.info_description) }}
+            />
+            <button className="btn btn-primary" onClick={onClickDiscover} style={{ width: '100%', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
+                Scopri di più <ArrowRight size={16} />
+            </button>
         </div>
     );
 };
@@ -634,9 +740,21 @@ const Home = () => {
     const { setting: showPricesSetting, isLoading: isPricesSettingLoading } = useSetting('show_product_prices');
     const { reviews, isLoading: isReviewsLoading } = useReviews();
     const { products } = useProducts();
+    const { events } = useEvents();
     const [centerProductName, setCenterProductName] = useState('');
 
     const [homeAiPrompt, setHomeAiPrompt] = useState('');
+
+    const processedEvents = React.useMemo(() => {
+        if (!events) return [];
+        return events.filter(event => {
+            if (event.is_visible === false) return false;
+            const hasWhere = !!(event.where_description || event.where_image_url);
+            const hasProducts = !!(event.products_description || (event.products && event.products.length > 0));
+            const hasInfo = !!event.info_description;
+            return hasWhere || hasProducts || hasInfo;
+        });
+    }, [events]);
 
     const showProductPrices = !isPricesSettingLoading && showPricesSetting?.value !== 'false';
     const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false' && showProductPrices;
@@ -859,6 +977,52 @@ const Home = () => {
     return (
         <div className="container fade-in" style={{ paddingBottom: '5rem' }}>
             <Header />
+
+            {processedEvents.length > 0 && (
+                <section id="eventi" style={{ marginTop: '3rem', marginBottom: '3rem' }}>
+                    <div className="section-header">
+                        <h2>EVENTI</h2>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>
+                            Scopri dove saremo e i nostri eventi in programma!
+                        </p>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem', marginTop: '2rem' }}>
+                        {processedEvents.map((event) => {
+                            const hasWhere = !!(event.where_description || event.where_image_url);
+                            const hasProducts = !!(event.products_description || (event.products && event.products.length > 0));
+                            const hasInfo = !!event.info_description;
+                            
+                            const handleDiscover = () => {
+                                navigate(`/event/${event.slug}`);
+                                window.scrollTo(0, 0);
+                            };
+
+                            return (
+                                <div key={event.id} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', borderLeft: '4px solid var(--color-primary)', paddingLeft: '1rem' }}>
+                                        <h3 style={{ margin: 0, fontSize: '1.6rem', color: 'var(--color-primary-dark)', fontWeight: '800' }}>{event.name}</h3>
+                                        <span style={{ fontSize: '1.1rem', color: 'var(--color-primary)', fontWeight: '700' }}>{event.date_text}</span>
+                                    </div>
+                                    
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        gap: '1.5rem', 
+                                        overflowX: 'auto', 
+                                        paddingBottom: '1rem',
+                                        scrollSnapType: 'x mandatory',
+                                        WebkitOverflowScrolling: 'touch'
+                                    }}>
+                                        {hasWhere && <EventWhereCard event={event} onClickDiscover={handleDiscover} />}
+                                        {hasProducts && <EventProductCard event={event} onClickDiscover={handleDiscover} />}
+                                        {hasInfo && <EventInfoCard event={event} onClickDiscover={handleDiscover} />}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
+            )}
 
             <section id="packages">
                 <div className="section-header">

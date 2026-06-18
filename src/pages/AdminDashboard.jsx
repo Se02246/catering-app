@@ -5,6 +5,7 @@ import PackageBuilder from '../components/Admin/PackageBuilder';
 import SettingsManager from '../components/Admin/SettingsManager';
 import QuoteManager from '../components/Admin/QuoteManager';
 import ReviewManager from '../components/Admin/ReviewManager';
+import EventManager from '../components/Admin/EventManager';
 import { Settings, MessageSquare } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -84,6 +85,13 @@ const AdminDashboard = () => {
                     Pacchetti
                 </button>
                 <button
+                    className={`btn ${activeTab === 'events' ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setActiveTab('events')}
+                    style={tabBtnStyle}
+                >
+                    Eventi
+                </button>
+                <button
                     className={`btn ${activeTab === 'reviews' ? 'btn-primary' : 'btn-outline'}`}
                     onClick={() => setActiveTab('reviews')}
                     style={tabBtnStyle}
@@ -109,6 +117,7 @@ const AdminDashboard = () => {
             )}
             {activeTab === 'products' && <ProductManager onCreateQuoteClick={handleNewQuoteRequest} />}
             {activeTab === 'packages' && <PackageBuilder />}
+            {activeTab === 'events' && <EventManager />}
             {activeTab === 'reviews' && <ReviewManager />}
             {activeTab === 'settings' && <SettingsManager />}
 

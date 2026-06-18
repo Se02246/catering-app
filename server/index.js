@@ -46,6 +46,7 @@ import cateringRoutes from './routes/caterings.js';
 import settingsRoutes from './routes/settings.js';
 import quoteRoutes from './routes/quotes.js';
 import reviewRoutes from './routes/reviews.js';
+import eventRoutes from './routes/events.js';
 
 app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/products', '/products'], productRoutes);
@@ -53,6 +54,7 @@ app.use(['/api/caterings', '/caterings'], cateringRoutes);
 app.use(['/api/settings', '/settings'], settingsRoutes);
 app.use(['/api/quotes', '/quotes'], quoteRoutes);
 app.use(['/api/reviews', '/reviews'], reviewRoutes);
+app.use(['/api/events', '/events'], eventRoutes);
 
 
 // Serve static files from the React app
