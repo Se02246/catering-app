@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { useSetting } from '../hooks/useData';
 import { ArrowLeft, MapPin, Info, ShoppingBag } from 'lucide-react';
 import { formatCustomText } from '../utils/textFormatting';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
@@ -13,6 +14,9 @@ const SharedEvent = () => {
     const [error, setError] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isClosing, setIsClosing] = useState(false);
+    
+    const { setting: hideHomeBtnSetting } = useSetting('hide_event_home_button');
+    const showHomeButton = hideHomeBtnSetting?.value !== 'true';
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -93,12 +97,14 @@ const SharedEvent = () => {
         <div className="container" style={{ maxWidth: '800px', padding: '2rem 1rem', position: 'relative' }}>
             <h1 className="brand-logo" style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', fontSize: '1.4rem', margin: 0, zIndex: 10 }}>Muse Catering</h1>
             
-            <button 
-                onClick={() => navigate('/')}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', marginBottom: '2rem', fontSize: '1rem', fontWeight: 'bold' }}
-            >
-                <ArrowLeft size={20} /> Torna alla Home
-            </button>
+            {showHomeButton && (
+                <button 
+                    onClick={() => navigate('/')}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', marginBottom: '2rem', fontSize: '1rem', fontWeight: 'bold' }}
+                >
+                    <ArrowLeft size={20} /> Torna alla Home
+                </button>
+            )}
 
             {/* Event Header */}
             <div style={{ textAlign: 'center', marginBottom: '3rem', padding: '0 1rem' }}>

@@ -95,12 +95,14 @@ const SettingsManager = () => {
     const { setting: headerSetting, isLoading: isHeaderLoading, mutate: mutateHeader } = useSetting('header_text');
     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading, mutate: mutateQuoteSetting } = useSetting('show_quote_builder');
     const { setting: showPricesSetting, isLoading: isPricesSettingLoading, mutate: mutatePricesSetting } = useSetting('show_product_prices');
+    const { setting: hideEventHomeSetting, isLoading: isHideEventHomeLoading, mutate: mutateHideEventHome } = useSetting('hide_event_home_button');
     const { products, isLoading: isProductsLoading, mutate: mutateProducts } = useProducts();
     const { caterings, isLoading: isCateringsLoading, mutate: mutateCaterings } = useCaterings();
     
     const [headerText, setHeaderText] = useState('');
     const [showQuoteBuilder, setShowQuoteBuilder] = useState(true);
     const [showProductPrices, setShowProductPrices] = useState(true);
+    const [hideEventHomeButton, setHideEventHomeButton] = useState(false);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState(null);
 
@@ -133,6 +135,12 @@ const SettingsManager = () => {
         }
     }, [showPricesSetting]);
 
+    useEffect(() => {
+        if (hideEventHomeSetting) {
+            setHideEventHomeButton(hideEventHomeSetting.value === 'true');
+        }
+    }, [hideEventHomeSetting]);
+
     const handleSave = async () => {
         setSaving(true);
         setMessage(null);
@@ -140,11 +148,13 @@ const SettingsManager = () => {
             await Promise.all([
                 api.updateSetting('header_text', headerText),
                 api.updateSetting('show_quote_builder', (showProductPrices ? showQuoteBuilder : false).toString()),
-                api.updateSetting('show_product_prices', showProductPrices.toString())
+                api.updateSetting('show_product_prices', showProductPrices.toString()),
+                api.updateSetting('hide_event_home_button', hideEventHomeButton.toString())
             ]);
             mutateHeader();
             mutateQuoteSetting();
             mutatePricesSetting();
+            mutateHideEventHome();
             setMessage({ type: 'success', text: 'Impostazioni salvate con successo' });
         } catch (error) {
             console.error('Error saving settings:', error);
@@ -276,7 +286,7 @@ const SettingsManager = () => {
         }
     };
 
-    if (isHeaderLoading || isQuoteSettingLoading) {
+    if (isHeaderLoading || isQuoteSettingLoading || isPricesSettingLoading || isHideEventHomeLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
                 <Loader className="animate-spin" />
@@ -400,6 +410,37 @@ const SettingsManager = () => {
                             </label>
                         </div>
                     )}
+                </div>
+
+                <div className="form-group" style={{ marginTop: '1.5rem', padding: '1.5rem', backgroundColor: 'rgba(175, 68, 72, 0.05)', borderRadius: '12px', border: '1px solid rgba(175, 68, 72, 0.2)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                                Nascondi tasto "Torna alla Home" negli Eventi
+                            </label>
+                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                Se attivato, il pulsante per tornare alla Home Page sarà nascosto nella pagina di condivisione pubblica degli eventi.
+                            </p>
+                        </div>
+                        <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
+                            <input 
+                                type="checkbox" 
+                                checked={hideEventHomeButton}
+                                onChange={(e) => setHideEventHomeButton(e.target.checked)}
+                                style={{ opacity: 0, width: 0, height: 0 }}
+                            />
+                            <span style={{
+                                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                                backgroundColor: hideEventHomeButton ? 'var(--color-primary)' : '#ccc',
+                                transition: '.4s', borderRadius: '24px'
+                            }}>
+                                <span style={{
+                                    position: 'absolute', content: '""', height: '18px', width: '18px', left: hideEventHomeButton ? '28px' : '4px', bottom: '3px',
+                                    backgroundColor: 'white', transition: '.4s', borderRadius: '50%'
+                                }}></span>
+                            </span>
+                        </label>
+                    </div>
                 </div>
 
                 <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
