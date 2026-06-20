@@ -490,9 +490,9 @@ const SharedEvent = () => {
                 {showHomeButton && (
                     <button 
                         onClick={() => navigate('/')}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontSize: '1.2rem', fontWeight: 'bold' }}
                     >
-                        <ArrowLeft size={20} /> Vai al sito
+                        <ArrowLeft size={24} /> Visita il sito
                     </button>
                 )}
                 <h1 className="brand-logo" style={{ 
@@ -713,13 +713,34 @@ const SharedEvent = () => {
                             style={{ 
                                 display: 'inline-flex', 
                                 alignItems: 'center', 
-                                gap: '0.5rem', 
-                                padding: '0.6rem 2rem', 
-                                fontSize: '0.95rem' 
+                                gap: '0.6rem', 
+                                padding: '0.8rem 2.5rem', 
+                                fontSize: '1.1rem',
+                                fontWeight: 'bold'
                             }}
                         >
-                            Vai al sito
+                            Visita il sito
                         </button>
+                    </div>
+
+                    {/* Dove Siamo */}
+                    <div className="premium-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--color-white)', borderRadius: '24px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                            <MapPin size={22} />
+                            <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 'bold' }}>Dove Siamo</h4>
+                        </div>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+                            Specializzati in <strong>catering a domicilio</strong> in tutta la provincia di Nuoro e oltre. Portiamo il servizio direttamente a casa tua!
+                        </p>
+                        <a 
+                            href="https://www.google.com/maps/place/08020+Irgoli+NU/@40.4106048,9.6310529,15z/data=!3m1!4b1!4m6!3m5!1s0x12deede3d3e26b93:0x7986762e93de8660!8m2!3d40.4088282!4d9.6302764!16zL20vMGdxdm1j!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDQyMi4wIKXMDSoASAFQAw%3D%3D"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-outline"
+                            style={{ padding: '0.4rem 1rem', fontSize: '0.8rem', marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: 'var(--radius-md)' }}
+                        >
+                            Apri Mappa &rarr;
+                        </a>
                     </div>
 
                     {/* Packages Carousel */}
@@ -859,53 +880,30 @@ const SharedEvent = () => {
                         </div>
                     )}
 
-                    {/* Dove Siamo & Contatti Cards */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', marginTop: '0.5rem' }}>
-                        {/* Dove Siamo */}
-                        <div className="premium-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--color-white)', borderRadius: '24px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)' }}>
-                                <MapPin size={22} />
-                                <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 'bold' }}>Dove Siamo</h4>
-                            </div>
-                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
-                                Specializzati in <strong>catering a domicilio</strong> in tutta la provincia di Nuoro e oltre. Portiamo il servizio direttamente a casa tua!
-                            </p>
-                            <a 
-                                href="https://www.google.com/maps/place/08020+Irgoli+NU/@40.4106048,9.6310529,15z/data=!3m1!4b1!4m6!3m5!1s0x12deede3d3e26b93:0x7986762e93de8660!8m2!3d40.4088282!4d9.6302764!16zL20vMGdxdm1j!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDQyMi4wIKXMDSoASAFQAw%3D%3D"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="btn btn-outline"
-                                style={{ padding: '0.4rem 1rem', fontSize: '0.8rem', marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: 'var(--radius-md)' }}
-                            >
-                                Apri Mappa &rarr;
-                            </a>
+                    {/* Contatti */}
+                    <div className="premium-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--color-white)', borderRadius: '24px', marginTop: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                            <MessageSquare size={22} />
+                            <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 'bold' }}>Contatti</h4>
                         </div>
-
-                        {/* Contatti */}
-                        <div className="premium-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--color-white)', borderRadius: '24px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)' }}>
-                                <MessageSquare size={22} />
-                                <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 'bold' }}>Contatti</h4>
-                            </div>
-                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
-                                Siamo a disposizione per organizzare il tuo prossimo evento perfetto. Contattaci!
-                            </p>
-                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto' }}>
-                                <button 
-                                    onClick={contactWhatsApp}
-                                    className="btn btn-primary"
-                                    style={{ flex: 1, padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: 'var(--radius-md)' }}
-                                >
-                                    <MessageCircle size={14} /> WhatsApp
-                                </button>
-                                <button 
-                                    onClick={() => window.open('https://www.instagram.com/muse_catering_?igsh=amNwajZrcW5kczAx', '_blank')}
-                                    className="btn btn-outline"
-                                    style={{ flex: 1, padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: 'var(--radius-md)' }}
-                                >
-                                    <Instagram size={14} /> Instagram
-                                </button>
-                            </div>
+                        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+                            Siamo a disposizione per organizzare il tuo prossimo evento perfetto. Contattaci!
+                        </p>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto' }}>
+                            <button 
+                                onClick={contactWhatsApp}
+                                className="btn btn-primary"
+                                style={{ flex: 1, padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: 'var(--radius-md)' }}
+                            >
+                                <MessageCircle size={14} /> WhatsApp
+                            </button>
+                            <button 
+                                onClick={() => window.open('https://www.instagram.com/muse_catering_?igsh=amNwajZrcW5kczAx', '_blank')}
+                                className="btn btn-outline"
+                                style={{ flex: 1, padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: 'var(--radius-md)' }}
+                            >
+                                <Instagram size={14} /> Instagram
+                            </button>
                         </div>
                     </div>
                 </div>
