@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { useSetting } from '../hooks/useData';
-import { ArrowLeft, MapPin, Info, ShoppingBag } from 'lucide-react';
+import { useSetting, useCaterings, useReviews } from '../hooks/useData';
+import { ArrowLeft, MapPin, Info, ShoppingBag, MessageSquare, MessageCircle, Instagram, Star } from 'lucide-react';
 import { formatCustomText } from '../utils/textFormatting';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
+import ReviewCard from '../components/Common/ReviewCard';
 
 const SharedEvent = () => {
     const { slug } = useParams();
@@ -15,8 +16,48 @@ const SharedEvent = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isClosing, setIsClosing] = useState(false);
     
-    const { setting: hideHomeBtnSetting } = useSetting('hide_event_home_button');
-    const showHomeButton = hideHomeBtnSetting?.value !== 'true';
+     const { setting: hideHomeBtnSetting } = useSetting('hide_event_home_button');
+     const showHomeButton = hideHomeBtnSetting?.value !== 'true';
+ 
+     const { setting: showQuoteSetting } = useSetting('show_quote_builder');
+     const { setting: showPricesSetting } = useSetting('show_product_prices');
+ 
+     const showProductPrices = showPricesSetting?.value !== 'false';
+     const showQuoteBuilder = showQuoteSetting?.value !== 'false' && showProductPrices;
+ 
+     const { caterings } = useCaterings();
+     const { reviews } = useReviews();
+ 
+     const processedCaterings = React.useMemo(() => {
+         const now = new Date();
+         return (caterings || [])
+             .filter(pkg => {
+                 const isVisible = pkg.is_visible !== false;
+                 const isNotExpired = !pkg.hide_at || new Date(pkg.hide_at) > now;
+                 return isVisible && isNotExpired;
+             })
+             .map(pkg => ({
+                 ...pkg,
+                 images: pkg.images || (pkg.image_url ? [pkg.image_url] : [])
+             }));
+     }, [caterings]);
+ 
+     const sortedReviews = React.useMemo(() => {
+         if (!reviews) return [];
+         const byHelpful = [...reviews].sort((a, b) => {
+             const netA = (a.helpful_count || 0) - (a.unhelpful_count || 0);
+             const netB = (b.helpful_count || 0) - (b.unhelpful_count || 0);
+             if (netB !== netA) return netB - netA;
+             return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+         });
+         return byHelpful.slice(0, 10);
+     }, [reviews]);
+ 
+     const contactWhatsApp = () => {
+         const phoneNumber = "393495416637";
+         const message = "Ciao Barbara, vorrei avere maggiori informazioni sui vostri servizi di catering.";
+         window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+     };
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -160,7 +201,7 @@ const SharedEvent = () => {
                         onClick={() => navigate('/')}
                         style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold' }}
                     >
-                        <ArrowLeft size={20} /> Torna alla Home
+                        <ArrowLeft size={20} /> Vai al sito
                     </button>
                 )}
                 <h1 className="brand-logo" style={{ 
@@ -351,6 +392,200 @@ const SharedEvent = () => {
                         />
                     </div>
                 </section>
+            )}
+
+            {/* Section 4: Scopri Muse Catering */}
+            {showHomeButton && (
+                <div className="premium-card fade-in" style={{ 
+                    padding: '2rem', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '2rem', 
+                    marginTop: '4rem', 
+                    border: '1px solid rgba(155, 57, 61, 0.1)',
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(253, 250, 247, 0.95) 100%)',
+                    boxShadow: 'var(--shadow-lg)',
+                    borderRadius: 'var(--radius-xl)'
+                }}>
+                    <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                        <h2 style={{ fontSize: '2.2rem', margin: 0, color: 'var(--color-primary-dark)', fontFamily: 'var(--font-heading)', fontWeight: '800' }}>
+                            Scopri Muse Catering
+                        </h2>
+                        <button 
+                            className="btn btn-primary" 
+                            onClick={() => { navigate('/'); window.scrollTo(0, 0); }} 
+                            style={{ 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '0.5rem', 
+                                padding: '0.6rem 2rem', 
+                                fontSize: '0.95rem' 
+                            }}
+                        >
+                            Vai al sito
+                        </button>
+                    </div>
+
+                    {/* Packages Carousel */}
+                    {processedCaterings.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--color-primary-dark)', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.4rem', fontWeight: 'bold' }}>
+                                I Nostri Pacchetti
+                            </h3>
+                            <div style={{ 
+                                display: 'flex', 
+                                gap: '1.2rem', 
+                                overflowX: 'auto', 
+                                paddingBottom: '1rem',
+                                scrollSnapType: 'x mandatory',
+                                WebkitOverflowScrolling: 'touch'
+                            }}>
+                                {processedCaterings.map(pkg => (
+                                    <div key={pkg.id} style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always', flexShrink: 0 }}>
+                                        <div 
+                                            onClick={() => { navigate(`/package/${pkg.id}`); window.scrollTo(0, 0); }}
+                                            className="premium-card hover-lift"
+                                            style={{
+                                                width: '240px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                overflow: 'hidden',
+                                                border: '1px solid rgba(0,0,0,0.05)',
+                                                transition: 'all 0.3s ease',
+                                                background: 'var(--color-white)',
+                                                borderRadius: 'var(--radius-md)'
+                                            }}
+                                        >
+                                            <div style={{ height: '120px', width: '100%', overflow: 'hidden', position: 'relative' }}>
+                                                <img src={pkg.images?.[0] || pkg.image_url || 'https://placehold.co/600x400?text=Muse+Catering'} alt={pkg.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                {pkg.discount_percentage > 0 && (
+                                                    <span style={{ position: 'absolute', top: '8px', right: '8px', background: '#E11D48', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                        -{pkg.discount_percentage}%
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div style={{ padding: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
+                                                <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--color-primary-dark)', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {pkg.name}
+                                                </h4>
+                                                <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                                                    {pkg.is_gluten_free && <span className="badge-elegant badge-elegant-gf" style={{ fontSize: '0.5rem', padding: '1px 3px' }}>GF</span>}
+                                                    {pkg.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ fontSize: '0.5rem', padding: '1px 3px' }}>LF</span>}
+                                                    {pkg.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ fontSize: '0.5rem', padding: '1px 3px' }}>VGT</span>}
+                                                    {pkg.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ fontSize: '0.5rem', padding: '1px 3px' }}>VEG</span>}
+                                                </div>
+                                                <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.4rem', borderTop: '1px dashed rgba(0,0,0,0.05)' }}>
+                                                    <span style={{ fontWeight: '800', fontSize: '1.05rem', color: 'var(--color-primary-dark)' }}>
+                                                        € {pkg.discount_percentage > 0 
+                                                            ? (pkg.total_price * (1 - pkg.discount_percentage / 100)).toFixed(2)
+                                                            : parseFloat(pkg.total_price).toFixed(2)}
+                                                    </span>
+                                                    <span style={{ fontSize: '0.75rem', color: 'var(--color-primary)', fontWeight: 'bold' }}>
+                                                        Scopri &rarr;
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Crea Preventivo Button */}
+                    {showQuoteBuilder && (
+                        <div style={{ display: 'flex', justifyContent: 'center', margin: '0.5rem 0' }}>
+                            <button 
+                                className="btn btn-outline"
+                                onClick={() => { navigate('/quote'); window.scrollTo(0, 0); }}
+                                style={{ 
+                                    width: '100%', 
+                                    maxWidth: '300px', 
+                                    padding: '0.75rem 1.5rem', 
+                                    fontSize: '0.95rem',
+                                    borderRadius: 'var(--radius-full)'
+                                }}
+                            >
+                                Crea Preventivo
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Reviews Carousel */}
+                    {sortedReviews.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--color-primary-dark)', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.4rem', fontWeight: 'bold' }}>
+                                Dicono di Noi
+                            </h3>
+                            <div style={{ 
+                                display: 'flex', 
+                                gap: '1.2rem', 
+                                overflowX: 'auto', 
+                                paddingBottom: '1rem',
+                                scrollSnapType: 'x mandatory',
+                                WebkitOverflowScrolling: 'touch',
+                                alignItems: 'stretch'
+                            }}>
+                                {sortedReviews.map(review => (
+                                    <div key={review.id} style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always', flexShrink: 0, display: 'flex' }}>
+                                        <ReviewCard review={review} layout="carousel" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Dove Siamo & Contatti Cards */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', marginTop: '0.5rem' }}>
+                        {/* Dove Siamo */}
+                        <div className="premium-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--color-white)', borderRadius: 'var(--radius-md)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                                <MapPin size={22} />
+                                <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 'bold' }}>Dove Siamo</h4>
+                            </div>
+                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+                                Specializzati in <strong>catering a domicilio</strong> in tutta la provincia di Nuoro e oltre. Portiamo il servizio direttamente a casa tua!
+                            </p>
+                            <a 
+                                href="https://www.google.com/maps/place/08020+Irgoli+NU/@40.4106048,9.6310529,15z/data=!3m1!4b1!4m6!3m5!1s0x12deede3d3e26b93:0x7986762e93de8660!8m2!3d40.4088282!4d9.6302764!16zL20vMGdxdm1j!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDQyMi4wIKXMDSoASAFQAw%3D%3D"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-outline"
+                                style={{ padding: '0.4rem 1rem', fontSize: '0.8rem', marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: 'var(--radius-md)' }}
+                            >
+                                Apri Mappa &rarr;
+                            </a>
+                        </div>
+
+                        {/* Contatti */}
+                        <div className="premium-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--color-white)', borderRadius: 'var(--radius-md)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)' }}>
+                                <MessageSquare size={22} />
+                                <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 'bold' }}>Contatti</h4>
+                            </div>
+                            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+                                Siamo a disposizione per organizzare il tuo prossimo evento perfetto. Contattaci!
+                            </p>
+                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto' }}>
+                                <button 
+                                    onClick={contactWhatsApp}
+                                    className="btn btn-primary"
+                                    style={{ flex: 1, padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: 'var(--radius-md)' }}
+                                >
+                                    <MessageCircle size={14} /> WhatsApp
+                                </button>
+                                <button 
+                                    onClick={() => window.open('https://www.instagram.com/muse_catering_?igsh=amNwajZrcW5kczAx', '_blank')}
+                                    className="btn btn-outline"
+                                    style={{ flex: 1, padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', borderRadius: 'var(--radius-md)' }}
+                                >
+                                    <Instagram size={14} /> Instagram
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Product Details Modal */}
