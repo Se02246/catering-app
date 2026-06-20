@@ -246,7 +246,11 @@ const EventCardsCarousel = ({ event, children }) => {
 
 const EventWhereCard = ({ event, onClickDiscover }) => {
     return (
-        <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', width: '300px', flexShrink: 0 }}>
+        <div 
+            className="premium-card fade-in hover-lift" 
+            onClick={onClickDiscover}
+            style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', width: '300px', flexShrink: 0, cursor: 'pointer' }}
+        >
             {event.where_image_url && (
                 <div style={{ height: '180px', overflow: 'hidden' }}>
                     <img
@@ -268,7 +272,11 @@ const EventWhereCard = ({ event, onClickDiscover }) => {
                     style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.5', flex: 1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical' }}
                     dangerouslySetInnerHTML={{ __html: formatCustomText(event.where_description) }}
                 />
-                <button className="btn btn-primary" onClick={onClickDiscover} style={{ width: '100%', marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
+                <button 
+                    className="btn btn-outline" 
+                    onClick={(e) => { e.stopPropagation(); onClickDiscover(); }} 
+                    style={{ width: '100%', marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                >
                     Scopri di più <ArrowRight size={16} />
                 </button>
             </div>
@@ -290,7 +298,11 @@ const EventProductCard = ({ event, onClickDiscover }) => {
     }, [imagesToUse.length]);
 
     return (
-        <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', width: '300px', flexShrink: 0 }}>
+        <div 
+            className="premium-card fade-in hover-lift" 
+            onClick={onClickDiscover}
+            style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', width: '300px', flexShrink: 0, cursor: 'pointer' }}
+        >
             <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
                 {imagesToUse.map((img, i) => (
                     <img
@@ -322,7 +334,11 @@ const EventProductCard = ({ event, onClickDiscover }) => {
                     style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.5', flex: 1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical' }}
                     dangerouslySetInnerHTML={{ __html: formatCustomText(event.products_description) }}
                 />
-                <button className="btn btn-primary" onClick={onClickDiscover} style={{ width: '100%', marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
+                <button 
+                    className="btn btn-outline" 
+                    onClick={(e) => { e.stopPropagation(); onClickDiscover(); }} 
+                    style={{ width: '100%', marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                >
                     Scopri di più <ArrowRight size={16} />
                 </button>
             </div>
@@ -332,7 +348,11 @@ const EventProductCard = ({ event, onClickDiscover }) => {
 
 const EventInfoCard = ({ event, onClickDiscover }) => {
     return (
-        <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', width: '300px', flexShrink: 0, padding: '1.5rem', border: '1px solid rgba(0,0,0,0.05)' }}>
+        <div 
+            className="premium-card fade-in hover-lift" 
+            onClick={onClickDiscover}
+            style={{ display: 'flex', flexDirection: 'column', width: '300px', flexShrink: 0, padding: '1.5rem', border: '1px solid rgba(0,0,0,0.05)', cursor: 'pointer' }}
+        >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)', marginBottom: '0.75rem' }}>
                 <Info size={22} />
                 <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>
@@ -343,7 +363,11 @@ const EventInfoCard = ({ event, onClickDiscover }) => {
                 style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.5', flex: 1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'vertical' }}
                 dangerouslySetInnerHTML={{ __html: formatCustomText(event.info_description) }}
             />
-            <button className="btn btn-primary" onClick={onClickDiscover} style={{ width: '100%', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
+            <button 
+                className="btn btn-outline" 
+                onClick={(e) => { e.stopPropagation(); onClickDiscover(); }} 
+                style={{ width: '100%', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+            >
                 Scopri di più <ArrowRight size={16} />
             </button>
         </div>
