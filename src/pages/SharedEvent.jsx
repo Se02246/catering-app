@@ -51,6 +51,23 @@ const CompactReviewCard = ({ review }) => {
                     ))}
                 </div>
             </div>
+            {review.comment && (
+                <p style={{
+                    margin: '0.25rem 0 0',
+                    color: 'var(--color-text-muted)',
+                    fontSize: '0.85rem',
+                    lineHeight: '1.4',
+                    fontStyle: 'italic',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    flexGrow: 1
+                }}>
+                    {review.comment}
+                </p>
+            )}
             <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', display: 'block', marginTop: '0.5rem' }}>
                 {formattedDate}
             </span>
@@ -79,14 +96,14 @@ const SharedEvent = () => {
      const packageTouchStartX = React.useRef(0);
      const packageScrollAreaRef = React.useRef(null);
  
-     const { setting: hideHomeBtnSetting } = useSetting('hide_event_home_button');
-     const showHomeButton = hideHomeBtnSetting?.value !== 'true';
+     const { setting: hideHomeBtnSetting, isLoading: isHideHomeLoading } = useSetting('hide_event_home_button');
+     const showHomeButton = !isHideHomeLoading && hideHomeBtnSetting?.value !== 'true';
  
-     const { setting: showQuoteSetting } = useSetting('show_quote_builder');
-     const { setting: showPricesSetting } = useSetting('show_product_prices');
+     const { setting: showQuoteSetting, isLoading: isQuoteSettingLoading } = useSetting('show_quote_builder');
+     const { setting: showPricesSetting, isLoading: isPricesSettingLoading } = useSetting('show_product_prices');
  
-     const showProductPrices = showPricesSetting?.value !== 'false';
-     const showQuoteBuilder = showQuoteSetting?.value !== 'false' && showProductPrices;
+     const showProductPrices = !isPricesSettingLoading && showPricesSetting?.value !== 'false';
+     const showQuoteBuilder = !isQuoteSettingLoading && showQuoteSetting?.value !== 'false' && showProductPrices;
  
      const { caterings } = useCaterings();
      const { reviews } = useReviews();
@@ -225,6 +242,120 @@ const SharedEvent = () => {
              document.body.style.overflow = 'unset';
          };
      }, [selectedPackage, selectedProduct]);
+ 
+     const packagesContainerRef = React.useRef(null);
+     const [isPackagesPaused, setIsPackagesPaused] = useState(false);
+     const packagesPauseTimeoutRef = React.useRef(null);
+ 
+     const reviewsContainerRef = React.useRef(null);
+     const [isReviewsPaused, setIsReviewsPaused] = useState(false);
+     const reviewsPauseTimeoutRef = React.useRef(null);
+ 
+     const handlePackagesInteraction = () => {
+         setIsPackagesPaused(true);
+         if (packagesPauseTimeoutRef.current) clearTimeout(packagesPauseTimeoutRef.current);
+         packagesPauseTimeoutRef.current = setTimeout(() => {
+             setIsPackagesPaused(false);
+         }, 5000);
+     };
+ 
+     const handleReviewsInteraction = () => {
+         setIsReviewsPaused(true);
+         if (reviewsPauseTimeoutRef.current) clearTimeout(reviewsPauseTimeoutRef.current);
+         reviewsPauseTimeoutRef.current = setTimeout(() => {
+             setIsReviewsPaused(false);
+         }, 5000);
+     };
+ 
+     useEffect(() => {
+         const container = packagesContainerRef.current;
+         if (!container || !processedCaterings || processedCaterings.length <= 1) return;
+ 
+         const getSnapPosition = (container, child, index, total) => {
+             const X = child.offsetLeft;
+             const w = child.offsetWidth;
+             const W = container.clientWidth;
+             if (index === 0) return 0;
+             if (index === total - 1) return container.scrollWidth - W;
+             return X + (w / 2) - (W / 2);
+         };
+ 
+         const getCurrentIndex = (container) => {
+             const childrenArr = Array.from(container.children);
+             const total = childrenArr.length;
+             if (total === 0) return 0;
+             let closestIndex = 0;
+             let minDiff = Infinity;
+             childrenArr.forEach((child, index) => {
+                 const snapPos = getSnapPosition(container, child, index, total);
+                 const diff = Math.abs(container.scrollLeft - snapPos);
+                 if (diff < minDiff) {
+                     minDiff = diff;
+                     closestIndex = index;
+                 }
+             });
+             return closestIndex;
+         };
+ 
+         const interval = setInterval(() => {
+             if (isPackagesPaused) return;
+             const childrenArr = Array.from(container.children);
+             const total = childrenArr.length;
+             if (total <= 1) return;
+             const currentIndex = getCurrentIndex(container);
+             const nextIndex = (currentIndex + 1) % total;
+             const targetChild = childrenArr[nextIndex];
+             const targetScrollLeft = getSnapPosition(container, targetChild, nextIndex, total);
+             container.scrollTo({ left: targetScrollLeft, behavior: 'smooth' });
+         }, 3000);
+ 
+         return () => clearInterval(interval);
+     }, [isPackagesPaused, processedCaterings]);
+ 
+     useEffect(() => {
+         const container = reviewsContainerRef.current;
+         if (!container || !sortedReviews || sortedReviews.length <= 1) return;
+ 
+         const getSnapPosition = (container, child, index, total) => {
+             const X = child.offsetLeft;
+             const w = child.offsetWidth;
+             const W = container.clientWidth;
+             if (index === 0) return 0;
+             if (index === total - 1) return container.scrollWidth - W;
+             return X + (w / 2) - (W / 2);
+         };
+ 
+         const getCurrentIndex = (container) => {
+             const childrenArr = Array.from(container.children);
+             const total = childrenArr.length;
+             if (total === 0) return 0;
+             let closestIndex = 0;
+             let minDiff = Infinity;
+             childrenArr.forEach((child, index) => {
+                 const snapPos = getSnapPosition(container, child, index, total);
+                 const diff = Math.abs(container.scrollLeft - snapPos);
+                 if (diff < minDiff) {
+                     minDiff = diff;
+                     closestIndex = index;
+                 }
+             });
+             return closestIndex;
+         };
+ 
+         const interval = setInterval(() => {
+             if (isReviewsPaused) return;
+             const childrenArr = Array.from(container.children);
+             const total = childrenArr.length;
+             if (total <= 1) return;
+             const currentIndex = getCurrentIndex(container);
+             const nextIndex = (currentIndex + 1) % total;
+             const targetChild = childrenArr[nextIndex];
+             const targetScrollLeft = getSnapPosition(container, targetChild, nextIndex, total);
+             container.scrollTo({ left: targetScrollLeft, behavior: 'smooth' });
+         }, 3000);
+ 
+         return () => clearInterval(interval);
+     }, [isReviewsPaused, sortedReviews]);
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -604,14 +735,23 @@ const SharedEvent = () => {
                             <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--color-primary-dark)', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.4rem', fontWeight: 'bold' }}>
                                 I Nostri Pacchetti
                             </h3>
-                            <div style={{ 
-                                display: 'flex', 
-                                gap: '1.2rem', 
-                                overflowX: 'auto', 
-                                paddingBottom: '1rem',
-                                scrollSnapType: 'x mandatory',
-                                WebkitOverflowScrolling: 'touch'
-                            }}>
+                            <div 
+                                ref={packagesContainerRef}
+                                onTouchStart={handlePackagesInteraction}
+                                onMouseDown={handlePackagesInteraction}
+                                onWheel={handlePackagesInteraction}
+                                style={{ 
+                                    display: 'flex', 
+                                    gap: '1.2rem', 
+                                    overflowX: 'auto', 
+                                    paddingTop: '15px',
+                                    marginTop: '-15px',
+                                    paddingBottom: '1.5rem',
+                                    marginBottom: '-0.5rem',
+                                    scrollSnapType: 'x mandatory',
+                                    WebkitOverflowScrolling: 'touch'
+                                }}
+                            >
                                 {processedCaterings.map(pkg => (
                                     <div key={pkg.id} style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always', flexShrink: 0 }}>
                                         <div 
@@ -690,21 +830,39 @@ const SharedEvent = () => {
                             <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--color-primary-dark)', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.4rem', fontWeight: 'bold' }}>
                                 Dicono di Noi
                             </h3>
-                            <div style={{ 
-                                display: 'flex', 
-                                gap: '1.2rem', 
-                                overflowX: 'auto', 
-                                paddingBottom: '1rem',
-                                scrollSnapType: 'x mandatory',
-                                WebkitOverflowScrolling: 'touch',
-                                alignItems: 'stretch'
-                            }}>
-                                {sortedReviews.map(review => (
-                                    <div key={review.id} style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always', flexShrink: 0, display: 'flex' }}>
-                                        <CompactReviewCard review={review} />
-                                    </div>
-                                ))}
-                            </div>
+                             <div 
+                                 ref={reviewsContainerRef}
+                                 onTouchStart={handleReviewsInteraction}
+                                 onMouseDown={handleReviewsInteraction}
+                                 onWheel={handleReviewsInteraction}
+                                 style={{ 
+                                     display: 'flex', 
+                                     gap: '1.2rem', 
+                                     overflowX: 'auto', 
+                                     paddingTop: '15px',
+                                     marginTop: '-15px',
+                                     paddingBottom: '1.5rem',
+                                     marginBottom: '-0.5rem',
+                                     scrollSnapType: 'x mandatory',
+                                     WebkitOverflowScrolling: 'touch',
+                                     alignItems: 'stretch'
+                                 }}
+                             >
+                                 {sortedReviews.map(review => (
+                                     <div key={review.id} style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always', flexShrink: 0, display: 'flex' }}>
+                                         <CompactReviewCard review={review} />
+                                     </div>
+                                 ))}
+                             </div>
+                             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
+                                 <button
+                                     className="btn btn-outline"
+                                     onClick={() => { navigate('/recensioni'); window.scrollTo(0, 0); }}
+                                     style={{ padding: '0.6rem 1.5rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                 >
+                                     <Star size={16} /> Vedi tutte le recensioni
+                                 </button>
+                             </div>
                         </div>
                     )}
 
@@ -1036,7 +1194,7 @@ const SharedEvent = () => {
             {selectedProduct && (
                 <ProductDetailsModal 
                     product={selectedProduct} 
-                    alwaysShowPrices={true}
+                    alwaysShowPrices={showProductPrices}
                     onClose={() => {
                         setIsClosing(true);
                         setTimeout(() => {

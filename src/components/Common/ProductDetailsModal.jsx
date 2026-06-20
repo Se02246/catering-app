@@ -3,9 +3,11 @@ import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
 import { ChevronLeft, Calendar, Info, ShoppingCart } from 'lucide-react';
 
-const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing, isMenuMode = false, alwaysShowPrices = false }) => {
+const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing, isMenuMode = false, alwaysShowPrices }) => {
     const { setting: showPricesSetting, isLoading: isSettingLoading } = useSetting('show_product_prices');
-    const showPrice = alwaysShowPrices || (!isSettingLoading && showPricesSetting?.value !== 'false');
+    const showPrice = alwaysShowPrices !== undefined
+        ? alwaysShowPrices
+        : (!isSettingLoading && showPricesSetting?.value !== 'false');
     const [activeImageIndex, setActiveImageIndex] = React.useState(0);
     const scrollAreaRef = React.useRef(null);
     const [dragY, setDragY] = React.useState(0);
