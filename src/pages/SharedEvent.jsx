@@ -33,7 +33,19 @@ const CompactReviewCard = ({ review }) => {
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                 <div style={{ overflow: 'hidden', flex: 1 }}>
-                    <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--color-primary-dark)', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <h4 style={{ 
+                        margin: 0, 
+                        fontSize: '1rem', 
+                        color: 'var(--color-primary-dark)', 
+                        fontWeight: 'bold', 
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        lineHeight: '1.4',
+                        minHeight: '2.8rem'
+                    }}>
                         {review.title}
                     </h4>
                     <span style={{ fontSize: '0.85rem', color: 'var(--color-text)', display: 'block', marginTop: '2px', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -51,23 +63,6 @@ const CompactReviewCard = ({ review }) => {
                     ))}
                 </div>
             </div>
-            {review.comment && (
-                <p style={{
-                    margin: '0.25rem 0 0',
-                    color: 'var(--color-text-muted)',
-                    fontSize: '0.85rem',
-                    lineHeight: '1.4',
-                    fontStyle: 'italic',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    flexGrow: 1
-                }}>
-                    {review.comment}
-                </p>
-            )}
             <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', display: 'block', marginTop: '0.5rem' }}>
                 {formattedDate}
             </span>
@@ -273,11 +268,10 @@ const SharedEvent = () => {
  
          const getSnapPosition = (container, child, index, total) => {
              const X = child.offsetLeft;
-             const w = child.offsetWidth;
              const W = container.clientWidth;
              if (index === 0) return 0;
-             if (index === total - 1) return container.scrollWidth - W;
-             return X + (w / 2) - (W / 2);
+             if (index === total - 1) return Math.min(X, container.scrollWidth - W);
+             return X;
          };
  
          const getCurrentIndex = (container) => {
@@ -310,7 +304,7 @@ const SharedEvent = () => {
          }, 3000);
  
          return () => clearInterval(interval);
-     }, [isPackagesPaused, processedCaterings]);
+     }, [isPackagesPaused, processedCaterings.length]);
  
      useEffect(() => {
          const container = reviewsContainerRef.current;
@@ -318,11 +312,10 @@ const SharedEvent = () => {
  
          const getSnapPosition = (container, child, index, total) => {
              const X = child.offsetLeft;
-             const w = child.offsetWidth;
              const W = container.clientWidth;
              if (index === 0) return 0;
-             if (index === total - 1) return container.scrollWidth - W;
-             return X + (w / 2) - (W / 2);
+             if (index === total - 1) return Math.min(X, container.scrollWidth - W);
+             return X;
          };
  
          const getCurrentIndex = (container) => {
@@ -355,7 +348,7 @@ const SharedEvent = () => {
          }, 3000);
  
          return () => clearInterval(interval);
-     }, [isReviewsPaused, sortedReviews]);
+     }, [isReviewsPaused, sortedReviews.length]);
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -454,7 +447,7 @@ const SharedEvent = () => {
         }, 3000);
 
         return () => clearInterval(interval);
-    }, [isProductsPaused, event?.products]);
+    }, [isProductsPaused, event?.products?.length]);
 
     const handleProductsInteraction = () => {
         setIsProductsPaused(true);
