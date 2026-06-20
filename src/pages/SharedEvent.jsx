@@ -2,10 +2,61 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useSetting, useCaterings, useReviews } from '../hooks/useData';
-import { ArrowLeft, MapPin, Info, ShoppingBag, MessageSquare, MessageCircle, Instagram, Star } from 'lucide-react';
+import { ArrowLeft, MapPin, Info, ShoppingBag, MessageSquare, MessageCircle, Instagram, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatCustomText } from '../utils/textFormatting';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
-import ReviewCard from '../components/Common/ReviewCard';
+
+const CompactReviewCard = ({ review }) => {
+    const formattedDate = new Date(review.created_at).toLocaleDateString('it-IT', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    return (
+        <div 
+            className="glass-panel" 
+            style={{ 
+                padding: '1.2rem', 
+                borderRadius: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                minWidth: '260px',
+                maxWidth: '260px',
+                background: 'var(--color-white)',
+                border: '1px solid rgba(155, 57, 61, 0.05)',
+                boxShadow: 'var(--shadow-sm)',
+                height: '100%',
+                justifyContent: 'space-between'
+            }}
+        >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <div style={{ overflow: 'hidden', flex: 1 }}>
+                    <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--color-primary-dark)', fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {review.title}
+                    </h4>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--color-text)', display: 'block', marginTop: '2px', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {review.author_name || 'Utente Anonimo'}
+                    </span>
+                </div>
+                <div style={{ display: 'flex', gap: '1px', color: '#FFD700', flexShrink: 0 }}>
+                    {[...Array(5)].map((_, i) => (
+                        <Star 
+                            key={i} 
+                            size={14} 
+                            fill={i < review.rating ? '#FFD700' : 'transparent'} 
+                            color={i < review.rating ? '#FFD700' : 'var(--color-border)'} 
+                        />
+                    ))}
+                </div>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', display: 'block', marginTop: '0.5rem' }}>
+                {formattedDate}
+            </span>
+        </div>
+    );
+};
 
 const SharedEvent = () => {
     const { slug } = useParams();
@@ -13,9 +64,21 @@ const SharedEvent = () => {
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedProduct, setSelectedProduct] = useState(null);
-    const [isClosing, setIsClosing] = useState(false);
-    
+     const [selectedProduct, setSelectedProduct] = useState(null);
+     const [isClosing, setIsClosing] = useState(false);
+     
+     const [selectedPackage, setSelectedPackage] = useState(null);
+     const [isPackageClosing, setIsPackageClosing] = useState(false);
+     const [activeImageIndex, setActiveImageIndex] = useState(0);
+ 
+     // Swipe-to-close states for Package Modal on mobile
+     const [packageDragY, setPackageDragY] = useState(0);
+     const [isPackageDragging, setIsPackageDragging] = useState(false);
+     const [isPackageSwipingOut, setIsPackageSwipingOut] = useState(false);
+     const packageTouchStartY = React.useRef(0);
+     const packageTouchStartX = React.useRef(0);
+     const packageScrollAreaRef = React.useRef(null);
+ 
      const { setting: hideHomeBtnSetting } = useSetting('hide_event_home_button');
      const showHomeButton = hideHomeBtnSetting?.value !== 'true';
  
@@ -58,6 +121,110 @@ const SharedEvent = () => {
          const message = "Ciao Barbara, vorrei avere maggiori informazioni sui vostri servizi di catering.";
          window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
      };
+ 
+     const openPackage = (pkg) => {
+         setPackageDragY(0);
+         setIsPackageDragging(false);
+         setIsPackageSwipingOut(false);
+         window.history.pushState({ modal: 'package' }, '');
+         setSelectedPackage(pkg);
+     };
+ 
+     const closePackage = () => {
+         window.history.back();
+     };
+ 
+     const handlePackageTouchStart = (e) => {
+         if (packageScrollAreaRef.current && packageScrollAreaRef.current.scrollTop <= 0) {
+             packageTouchStartY.current = e.touches[0].clientY;
+             packageTouchStartX.current = e.touches[0].clientX;
+         }
+     };
+ 
+     const handlePackageTouchMove = (e) => {
+         const currentY = e.touches[0].clientY;
+         const currentX = e.touches[0].clientX;
+         const deltaY = currentY - packageTouchStartY.current;
+         const deltaX = Math.abs(currentX - packageTouchStartX.current);
+ 
+         if (!isPackageDragging) {
+             if (deltaY > 10 && deltaY > deltaX && packageScrollAreaRef.current && packageScrollAreaRef.current.scrollTop <= 0) {
+                 setIsPackageDragging(true);
+             }
+             return;
+         }
+ 
+         if (deltaY > 0) {
+             setPackageDragY(deltaY);
+             if (e.cancelable) e.preventDefault();
+         } else {
+             setPackageDragY(0);
+             setIsPackageDragging(false);
+         }
+     };
+ 
+     const handlePackageTouchEnd = () => {
+         if (!isPackageDragging) return;
+         if (packageDragY > 150) {
+             setIsPackageSwipingOut(true);
+             setPackageDragY(window.innerHeight);
+             setTimeout(() => {
+                 setSelectedPackage(null);
+                 setIsPackageClosing(false);
+                 setIsPackageSwipingOut(false);
+             }, 300);
+         } else {
+             setPackageDragY(0);
+         }
+         setIsPackageDragging(false);
+     };
+ 
+     const handleGalleryScroll = (e) => {
+         const scrollPosition = e.target.scrollLeft;
+         const width = e.target.offsetWidth;
+         const newIndex = Math.round(scrollPosition / width);
+         if (newIndex !== activeImageIndex) {
+             setActiveImageIndex(newIndex);
+         }
+     };
+ 
+     useEffect(() => {
+         if (!selectedPackage) setActiveImageIndex(0);
+     }, [selectedPackage]);
+ 
+     useEffect(() => {
+         const handlePopState = () => {
+             if (selectedPackage) {
+                 setIsPackageClosing(true);
+                 setTimeout(() => {
+                     setSelectedPackage(null);
+                     setIsPackageClosing(false);
+                     setIsPackageSwipingOut(false);
+                 }, 500);
+             }
+         };
+ 
+         window.addEventListener('popstate', handlePopState);
+         return () => window.removeEventListener('popstate', handlePopState);
+     }, [selectedPackage]);
+ 
+     const handleBookPackage = async (pkg) => {
+         const url = `${window.location.origin}/package/${pkg.id}`;
+         const phoneNumber = "393495416637";
+         const message = `Ciao Barbara, sono interessato al pacchetto "${pkg.name}". Puoi vedere i dettagli qui:\n\n${url}`;
+         window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+     };
+ 
+     useEffect(() => {
+         if (selectedPackage || selectedProduct) {
+             document.body.style.overflow = 'hidden';
+         } else {
+             document.body.style.overflow = 'unset';
+         }
+         return () => {
+             document.body.style.overflow = 'unset';
+         };
+     }, [selectedPackage, selectedProduct]);
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -394,6 +561,11 @@ const SharedEvent = () => {
                 </section>
             )}
 
+            {/* Linea separatrice per far capire il cambio di sezione */}
+            {showHomeButton && (
+                <div style={{ borderTop: '2px solid var(--color-border)', margin: '4rem 0' }}></div>
+            )}
+
             {/* Section 4: Scopri Muse Catering */}
             {showHomeButton && (
                 <div className="premium-card fade-in" style={{ 
@@ -401,7 +573,7 @@ const SharedEvent = () => {
                     display: 'flex', 
                     flexDirection: 'column', 
                     gap: '2rem', 
-                    marginTop: '4rem', 
+                    marginTop: '2rem', 
                     border: '1px solid rgba(155, 57, 61, 0.1)',
                     background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(253, 250, 247, 0.95) 100%)',
                     boxShadow: 'var(--shadow-lg)',
@@ -443,7 +615,7 @@ const SharedEvent = () => {
                                 {processedCaterings.map(pkg => (
                                     <div key={pkg.id} style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always', flexShrink: 0 }}>
                                         <div 
-                                            onClick={() => { navigate(`/package/${pkg.id}`); window.scrollTo(0, 0); }}
+                                            onClick={() => openPackage(pkg)}
                                             className="premium-card hover-lift"
                                             style={{
                                                 width: '240px',
@@ -454,7 +626,7 @@ const SharedEvent = () => {
                                                 border: '1px solid rgba(0,0,0,0.05)',
                                                 transition: 'all 0.3s ease',
                                                 background: 'var(--color-white)',
-                                                borderRadius: 'var(--radius-md)'
+                                                borderRadius: '24px' // Arrotondati di più
                                             }}
                                         >
                                             <div style={{ height: '120px', width: '100%', overflow: 'hidden', position: 'relative' }}>
@@ -529,7 +701,7 @@ const SharedEvent = () => {
                             }}>
                                 {sortedReviews.map(review => (
                                     <div key={review.id} style={{ scrollSnapAlign: 'start', scrollSnapStop: 'always', flexShrink: 0, display: 'flex' }}>
-                                        <ReviewCard review={review} layout="carousel" />
+                                        <CompactReviewCard review={review} />
                                     </div>
                                 ))}
                             </div>
@@ -539,7 +711,7 @@ const SharedEvent = () => {
                     {/* Dove Siamo & Contatti Cards */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', marginTop: '0.5rem' }}>
                         {/* Dove Siamo */}
-                        <div className="premium-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--color-white)', borderRadius: 'var(--radius-md)' }}>
+                        <div className="premium-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--color-white)', borderRadius: '24px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)' }}>
                                 <MapPin size={22} />
                                 <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 'bold' }}>Dove Siamo</h4>
@@ -559,7 +731,7 @@ const SharedEvent = () => {
                         </div>
 
                         {/* Contatti */}
-                        <div className="premium-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--color-white)', borderRadius: 'var(--radius-md)' }}>
+                        <div className="premium-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--color-white)', borderRadius: '24px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary-dark)' }}>
                                 <MessageSquare size={22} />
                                 <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 'bold' }}>Contatti</h4>
@@ -582,6 +754,278 @@ const SharedEvent = () => {
                                 >
                                     <Instagram size={14} /> Instagram
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Package Details Modal */}
+            {selectedPackage && (
+                <div
+                    className={`modal-overlay ${isPackageClosing ? 'closing' : ''}`}
+                    onClick={closePackage}
+                    style={{ zIndex: 3000 }}
+                >
+                    <div
+                        style={{
+                            position: 'relative',
+                            width: '100%',
+                            maxWidth: '800px',
+                            margin: 'auto',
+                            touchAction: 'none'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {selectedPackage.hide_at && (
+                            <div
+                                className={`package-badge ${isPackageClosing ? 'closing' : ''}`}
+                                style={{
+                                    top: '-12px',
+                                    right: '-5px',
+                                    zIndex: 3010,
+                                    position: 'absolute',
+                                    opacity: isPackageDragging ? 1 - (packageDragY / 200) : (isPackageClosing ? 0 : 1),
+                                    transform: packageDragY > 0 ? `translate3d(0, ${packageDragY}px, 0)` : 'none'
+                                }}
+                            >
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                    Disponibile fino al {new Date(selectedPackage.hide_at).toLocaleDateString('it-IT')}
+                                </span>
+                            </div>
+                        )}
+
+                        <div
+                            className={`modal-content ${isPackageClosing && !isPackageSwipingOut ? 'closing' : ''}`}
+                            style={{
+                                width: '100%',
+                                maxWidth: '800px',
+                                padding: '0',
+                                overflow: 'hidden',
+                                transform: packageDragY > 0 ? `translate3d(0, ${packageDragY}px, 0)` : '',
+                                transition: isPackageDragging ? 'none' : 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease',
+                                animation: isPackageDragging || packageDragY > 0 || isPackageSwipingOut ? 'none' : undefined,
+                                opacity: isPackageSwipingOut ? 0 : 1
+                            }}
+                            onTouchStart={handlePackageTouchStart}
+                            onTouchMove={handlePackageTouchMove}
+                            onTouchEnd={handlePackageTouchEnd}
+                        >
+                            {/* Floating Back Button */}
+                            <button
+                                onClick={closePackage}
+                                style={{
+                                    position: 'absolute', top: '1rem', left: '1rem',
+                                    background: 'rgba(255,255,255,0.9)', border: 'none',
+                                    width: '40px', height: '40px', borderRadius: '50%',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', zIndex: 100, boxShadow: 'var(--shadow-md)',
+                                    backdropFilter: 'blur(4px)',
+                                    opacity: isPackageDragging ? 1 - (packageDragY / 200) : 1
+                                }}
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+
+                            <div
+                                ref={packageScrollAreaRef}
+                                className="modal-scroll-area"
+                            >
+                                {/* Image Gallery */}
+                                <div className="package-modal-image-side" style={{ width: '100%', position: 'relative' }}>
+                                    <div
+                                        onScroll={handleGalleryScroll}
+                                        style={{
+                                            display: 'flex',
+                                            overflowX: 'auto',
+                                            scrollSnapType: 'x mandatory',
+                                            width: '100%',
+                                            height: '100%',
+                                            scrollbarWidth: 'none',
+                                            WebkitOverflowScrolling: 'touch'
+                                        }}
+                                    >
+                                        {selectedPackage.images && selectedPackage.images.length > 0 ? (
+                                            selectedPackage.images.map((img, idx) => (
+                                                <div key={idx} style={{
+                                                    minWidth: '100%',
+                                                    height: '100%',
+                                                    scrollSnapAlign: 'start',
+                                                    scrollSnapStop: 'always'
+                                                }}>
+                                                    <img
+                                                        src={img}
+                                                        alt={`${selectedPackage.name} ${idx + 1}`}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            objectFit: 'cover',
+                                                            display: 'block'
+                                                        }}
+                                                    />
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div style={{ width: '100%', height: '100%' }}>
+                                                <img
+                                                    src={selectedPackage.image_url || 'https://placehold.co/600x400?text=Muse+Catering'}
+                                                    alt={selectedPackage.name}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Pagination Dots */}
+                                    {selectedPackage.images?.length > 1 && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '1rem',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            display: 'flex',
+                                            gap: '6px',
+                                            zIndex: 5,
+                                            padding: '6px 10px',
+                                            background: 'rgba(0,0,0,0.3)',
+                                            borderRadius: '20px',
+                                            backdropFilter: 'blur(4px)'
+                                        }}>
+                                            {selectedPackage.images.map((_, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    style={{
+                                                        width: activeImageIndex === idx ? '8px' : '6px',
+                                                        height: activeImageIndex === idx ? '8px' : '6px',
+                                                        borderRadius: '50%',
+                                                        background: activeImageIndex === idx ? 'white' : 'rgba(255,255,255,0.5)',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Content Side */}
+                                <div className="package-modal-content-side" style={{ width: '100%', background: 'var(--color-bg)' }}>
+                                    <div style={{ padding: window.innerWidth > 768 ? '2.5rem' : '1.5rem' }}>
+                                        <div style={{ marginBottom: '2rem' }}>
+                                            <div className="dietary-badges" style={{ marginBottom: '0.75rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                                {selectedPackage.is_gluten_free && <span className="badge-elegant badge-elegant-gf">Senza Glutine</span>}
+                                                {selectedPackage.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
+                                                {selectedPackage.is_vegetarian && <span className="badge-elegant badge-elegant-v">Vegetariano</span>}
+                                                {selectedPackage.is_vegan && <span className="badge-elegant badge-elegant-vg">Vegano</span>}
+                                            </div>
+                                            <h2 style={{ fontSize: window.innerWidth > 768 ? '2.2rem' : '1.8rem', color: 'var(--color-primary-dark)', marginBottom: '1.2rem', lineHeight: '1.1' }}>
+                                                {selectedPackage.name}
+                                            </h2>
+                                            <div
+                                                style={{ fontSize: '1.05rem', lineHeight: '1.7', color: 'var(--color-text-muted)' }}
+                                                dangerouslySetInnerHTML={{ __html: formatCustomText(selectedPackage.description) }}
+                                            />
+                                        </div>
+
+                                        <h3 style={{ fontSize: '1.3rem', marginBottom: '1.2rem', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <div style={{ width: '25px', height: '2px', background: 'var(--color-accent)' }}></div>
+                                            Incluso nel pacchetto
+                                        </h3>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '2.5rem' }}>
+                                            {selectedPackage.items && selectedPackage.items.map((item, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="glass-panel"
+                                                    style={{
+                                                        padding: '1.2rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '1.2rem',
+                                                        cursor: 'pointer',
+                                                        borderRadius: 'var(--radius-md)',
+                                                        border: '1px solid rgba(155, 57, 61, 0.05)',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedProduct(item);
+                                                    }}
+                                                >
+                                                    <div style={{ width: '64px', height: '64px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                                        <img
+                                                            src={item.image_url || item.images?.[0] || 'https://placehold.co/100x100?text=Food'}
+                                                            alt={item.name}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        />
+                                                    </div>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                            <div style={{ fontWeight: '700', fontSize: '1.05rem', color: 'var(--color-text)' }}>{item.name}</div>
+                                                            <div style={{ display: 'flex', gap: '0.3rem' }}>
+                                                                {item.is_gluten_free && !selectedPackage.is_gluten_free && (
+                                                                    <span style={{ color: '#FF9800', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                                                        Senza Glutine
+                                                                    </span>
+                                                                )}
+                                                                {item.is_lactose_free && !selectedPackage.is_lactose_free && (
+                                                                    <span style={{ color: '#03A9F4', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                                                        Senza Lattosio
+                                                                    </span>
+                                                                )}
+                                                                {item.is_vegetarian && !selectedPackage.is_vegetarian && (
+                                                                    <span style={{ color: '#8BC34A', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                                                        Vegetariano
+                                                                    </span>
+                                                                )}
+                                                                {item.is_vegan && !selectedPackage.is_vegan && (
+                                                                    <span style={{ color: '#388E3C', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                                                        Vegano
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 800, marginTop: '0.2rem' }}>
+                                                            {item.is_sold_by_piece
+                                                                ? `${parseFloat(item.quantity)} pz`
+                                                                : `${parseFloat(item.quantity)} kg`
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <ChevronRight size={20} color="var(--color-accent-light)" />
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div style={{
+                                            padding: '2rem 0 0.5rem',
+                                            borderTop: '1px solid rgba(155, 57, 61, 0.1)',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '1.2rem'
+                                        }}>
+                                            <div className="price-container" style={{ textAlign: 'center' }}>
+                                                <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>Totale Esperienza</span>
+                                                {selectedPackage.discount_percentage > 0 ? (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <span style={{ textDecoration: 'line-through', color: 'var(--color-text-muted)', fontSize: '1.2rem' }}>€ {selectedPackage.total_price}</span>
+                                                        <span className="price-main price-discount" style={{ fontSize: '2.4rem' }}>
+                                                            € {(selectedPackage.total_price * (1 - selectedPackage.discount_percentage / 100)).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="price-main" style={{ fontSize: '2.4rem' }}>€ {selectedPackage.total_price}</span>
+                                                )}
+                                            </div>
+                                            <button
+                                                className="btn btn-primary"
+                                                style={{ padding: '1.2rem', fontSize: '1.1rem' }}
+                                                onClick={() => handleBookPackage(selectedPackage)}
+                                            >
+                                                Prenota Ora
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
