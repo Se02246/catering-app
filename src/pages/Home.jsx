@@ -546,6 +546,9 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
         childLefts: [],
         childWidths: [],
         childCenters: [],
+        childRotates: [],
+        childTranslateYs: [],
+        childZIndices: [],
         setWidth: 0,
         initialized: false
     });
@@ -581,6 +584,9 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
         const childLefts = [];
         const childWidths = [];
         const childCenters = [];
+        const childRotates = [];
+        const childTranslateYs = [];
+        const childZIndices = [];
 
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
@@ -589,6 +595,9 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
             childLefts.push(left);
             childWidths.push(width);
             childCenters.push(left + width / 2);
+            childRotates.push(child.dataset.rotate || 0);
+            childTranslateYs.push(parseFloat(child.dataset.translatey || 0));
+            childZIndices.push(parseInt(child.dataset.zindex || 0));
         }
 
         let setWidth = 0;
@@ -603,6 +612,9 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
             childLefts,
             childWidths,
             childCenters,
+            childRotates,
+            childTranslateYs,
+            childZIndices,
             setWidth,
             initialized: true
         };
@@ -615,26 +627,32 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
         };
     }, [displayProducts.length]);
 
-    // ResizeObserver to detect container dimensions or window resize
+    // Handle image loaded event
+    const handleImageLoad = React.useCallback(() => {
+        measureLayout();
+    }, [measureLayout]);
+
+    // Window resize event listener instead of ResizeObserver to prevent layout loops
     React.useEffect(() => {
         if (!carouselRef.current || displayProducts.length === 0) return;
-        const container = carouselRef.current;
 
-        const observer = new ResizeObserver(() => {
+        const handleResize = () => {
             measureLayout();
-        });
+        };
 
-        observer.observe(container);
+        window.addEventListener('resize', handleResize);
 
         // Run measurement immediately and with slight delays to make sure children are laid out
         measureLayout();
         const t1 = setTimeout(measureLayout, 100);
         const t2 = setTimeout(measureLayout, 500);
+        const t3 = setTimeout(measureLayout, 1000);
 
         return () => {
-            observer.disconnect();
+            window.removeEventListener('resize', handleResize);
             clearTimeout(t1);
             clearTimeout(t2);
+            clearTimeout(t3);
         };
     }, [displayProducts.length, measureLayout]);
 
@@ -714,11 +732,10 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     
                     // Optimization: skip off-screen elements to save CPU/GPU on mobile
                     if (childLeftPos + childWidth < scrollLeft - 500 || childLeftPos > scrollLeft + containerWidth + 500) {
-                        const child = children[i];
-                        const baseRotate = child.dataset.rotate || 0;
-                        const baseTranslateY = parseFloat(child.dataset.translatey || 0);
+                        const baseRotate = measurements.childRotates[i];
+                        const baseTranslateY = measurements.childTranslateYs[i];
                         transforms.push(`translateY(${baseTranslateY}px) rotate(${baseRotate}deg)`);
-                        zIndices.push(child.dataset.zindex || 0);
+                        zIndices.push(measurements.childZIndices[i]);
                         continue;
                     }
 
@@ -738,10 +755,9 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     
                     const translateX = Math.sin(nd * Math.PI / 2) * maxPush;
 
-                    const child = children[i];
-                    const baseRotate = child.dataset.rotate || 0;
-                    const baseTranslateY = parseFloat(child.dataset.translatey || 0);
-                    const baseZIndex = parseInt(child.dataset.zindex || 0);
+                    const baseRotate = measurements.childRotates[i];
+                    const baseTranslateY = measurements.childTranslateYs[i];
+                    const baseZIndex = measurements.childZIndices[i];
 
                     const zIndex = baseZIndex + Math.round(100 * scaleFactor);
 
@@ -958,7 +974,7 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                             data-zindex={baseZIndex}
                             onClick={() => openProduct(prod)}
                         >
-                            <img src={prod.image_url} alt={prod.name} />
+                            <img src={prod.image_url} alt={prod.name} onLoad={handleImageLoad} />
                         </div>
                     );
                 })}
