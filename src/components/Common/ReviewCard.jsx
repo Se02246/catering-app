@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Star, ThumbsUp, ThumbsDown, Share2, Loader } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Star, ThumbsUp, ThumbsDown, Share2, Loader, X } from 'lucide-react';
 import { api } from '../../services/api';
 import { toBlob } from 'html-to-image';
 
 const ReviewCard = ({ review, layout = 'vertical' }) => {
     const { id, title, author_name, rating, comment, images = [], created_at } = review;
-    const [activeImg, setActiveImg] = useState(0);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [activeLightboxImg, setActiveLightboxImg] = useState(0);
+    const lightboxRef = useRef(null);
     const [helpfulCount, setHelpfulCount] = useState(review.helpful_count || 0);
     const [unhelpfulCount, setUnhelpfulCount] = useState(review.unhelpful_count || 0);
     const [userVote, setUserVote] = useState(null); // 'helpful', 'unhelpful', or null
@@ -36,13 +39,31 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
     });
 
     const isCarousel = layout === 'carousel';
+    const maxFrames = isCarousel ? 3 : 4;
+    const visibleImages = images ? images.slice(0, maxFrames) : [];
+    const remainingCount = (images ? images.length : 0) - maxFrames;
 
-    const handleScroll = (e) => {
+    useEffect(() => {
+        if (lightboxOpen && lightboxRef.current) {
+            // Scroll to the active image when lightbox opens
+            lightboxRef.current.scrollLeft = lightboxRef.current.offsetWidth * activeLightboxImg;
+        }
+        
+        // Prevent body scrolling when lightbox is open
+        if (lightboxOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [lightboxOpen]);
+
+    const handleLightboxScroll = (e) => {
         const scrollPosition = e.target.scrollLeft;
         const width = e.target.offsetWidth;
         const newIndex = Math.round(scrollPosition / width);
-        if (newIndex !== activeImg) {
-            setActiveImg(newIndex);
+        if (newIndex !== activeLightboxImg) {
+            setActiveLightboxImg(newIndex);
         }
     };
 
@@ -289,9 +310,59 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
             )}
 
             {images && images.length > 0 && (
-                <div style={{ position: 'relative', marginTop: '0.5rem', borderRadius: '12px', overflow: 'hidden', aspectRatio: '4/5' }}>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '0.5rem', width: '100%' }}>
+                    {visibleImages.map((img, idx) => {
+                        const isLast = idx === maxFrames - 1;
+                        const showOverlay = isLast && remainingCount > 0;
+                        return (
+                            <div 
+                                key={idx} 
+                                onClick={() => { setActiveLightboxImg(idx); setLightboxOpen(true); }}
+                                style={{ 
+                                    flex: 1, 
+                                    aspectRatio: visibleImages.length === 1 ? '4/5' : '1', 
+                                    borderRadius: '8px', 
+                                    overflow: 'hidden', 
+                                    cursor: 'pointer',
+                                    position: 'relative'
+                                }}
+                            >
+                                <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={`Servizio Muse Catering ${idx + 1}`} />
+                                {showOverlay && (
+                                    <div style={{
+                                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                                        backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+                                        alignItems: 'center', justifyContent: 'center',
+                                        color: 'white', fontSize: '1.2rem', fontWeight: 'bold'
+                                    }}>
+                                        +{remainingCount}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+            
+            {lightboxOpen && createPortal(
+                <div 
+                    style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 99999,
+                        display: 'flex', flexDirection: 'column'
+                    }}
+                    onClick={() => setLightboxOpen(false)}
+                >
+                    <button 
+                        style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '8px', borderRadius: '50%', cursor: 'pointer', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }}
+                        onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                    >
+                        <X size={24} />
+                    </button>
                     <div 
-                        onScroll={handleScroll}
+                        ref={lightboxRef}
                         style={{
                             display: 'flex',
                             overflowX: 'auto',
@@ -300,27 +371,30 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                             width: '100%',
                             height: '100%',
                             scrollbarWidth: 'none',
-                            WebkitOverflowScrolling: 'touch'
+                            WebkitOverflowScrolling: 'touch',
+                            alignItems: 'center'
                         }}
                         className="no-scrollbar"
+                        onClick={(e) => e.stopPropagation()} 
+                        onScroll={handleLightboxScroll}
                     >
                         {images.map((img, idx) => (
-                            <div key={idx} style={{ minWidth: '100%', height: '100%', scrollSnapAlign: 'start', scrollSnapStop: 'always' }}>
+                            <div key={idx} style={{ minWidth: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', scrollSnapAlign: 'start', scrollSnapStop: 'always', padding: '10px' }}>
                                 <img 
                                     src={img} 
-                                    alt={`Servizio Muse Catering ${idx + 1}`}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    alt={`Fullscreen ${idx + 1}`}
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                                 />
                             </div>
                         ))}
                     </div>
-
                     {images.length > 1 && (
-                        <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.3)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '0.7rem', pointerEvents: 'none' }}>
-                            {activeImg + 1} / {images.length}
+                        <div style={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', color: 'white', padding: '6px 16px', borderRadius: '20px', fontSize: '0.9rem', fontWeight: '500', pointerEvents: 'none' }}>
+                            {activeLightboxImg + 1} / {images.length}
                         </div>
                     )}
-                </div>
+                </div>,
+                document.body
             )}
             {review.response && (
                 <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
