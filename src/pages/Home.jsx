@@ -540,6 +540,22 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
     const touchStartPos = React.useRef({ x: 0, y: 0 });
     const isTouchScrollingRef = React.useRef(false);
 
+    // Refs for caching layout values and style states
+    const measurementsRef = React.useRef({
+        containerWidth: 0,
+        childLefts: [],
+        childWidths: [],
+        childCenters: [],
+        setWidth: 0,
+        initialized: false
+    });
+
+    const prevStylesRef = React.useRef({
+        transforms: [],
+        zIndices: [],
+        centerIdx: -1
+    });
+
     const displayProducts = React.useMemo(() => {
         if (!products) return [];
         return products.filter(p => {
@@ -555,23 +571,79 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
         return Array(MULTIPLIER).fill(displayProducts).flat();
     }, [displayProducts]);
 
-    const getSetWidth = React.useCallback(() => {
-        if (!carouselRef.current || displayProducts.length === 0) return 0;
+    const measureLayout = React.useCallback(() => {
+        if (!carouselRef.current) return;
         const container = carouselRef.current;
-        const firstItemSet0 = container.children[0];
-        const firstItemSet1 = container.children[displayProducts.length];
+        const children = container.children;
+        if (children.length === 0) return;
 
-        if (firstItemSet0 && firstItemSet1) {
-            return firstItemSet1.offsetLeft - firstItemSet0.offsetLeft;
+        const containerWidth = container.getBoundingClientRect().width;
+        const childLefts = [];
+        const childWidths = [];
+        const childCenters = [];
+
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            const left = child.offsetLeft;
+            const width = child.offsetWidth;
+            childLefts.push(left);
+            childWidths.push(width);
+            childCenters.push(left + width / 2);
         }
-        return 0;
+
+        let setWidth = 0;
+        const firstItemSet0 = children[0];
+        const firstItemSet1 = children[displayProducts.length];
+        if (firstItemSet0 && firstItemSet1) {
+            setWidth = firstItemSet1.offsetLeft - firstItemSet0.offsetLeft;
+        }
+
+        measurementsRef.current = {
+            containerWidth,
+            childLefts,
+            childWidths,
+            childCenters,
+            setWidth,
+            initialized: true
+        };
+
+        // Reset style cache to force write after measurement
+        prevStylesRef.current = {
+            transforms: [],
+            zIndices: [],
+            centerIdx: -1
+        };
     }, [displayProducts.length]);
+
+    // ResizeObserver to detect container dimensions or window resize
+    React.useEffect(() => {
+        if (!carouselRef.current || displayProducts.length === 0) return;
+        const container = carouselRef.current;
+
+        const observer = new ResizeObserver(() => {
+            measureLayout();
+        });
+
+        observer.observe(container);
+
+        // Run measurement immediately and with slight delays to make sure children are laid out
+        measureLayout();
+        const t1 = setTimeout(measureLayout, 100);
+        const t2 = setTimeout(measureLayout, 500);
+
+        return () => {
+            observer.disconnect();
+            clearTimeout(t1);
+            clearTimeout(t2);
+        };
+    }, [displayProducts.length, measureLayout]);
 
     React.useEffect(() => {
         if (!carouselRef.current || displayProducts.length === 0) return;
 
         const initScroll = () => {
-            const setWidth = getSetWidth();
+            measureLayout();
+            const setWidth = measurementsRef.current.setWidth;
             if (setWidth > 0) {
                 // Jump to the 3rd set (middle of 7 sets)
                 carouselRef.current.scrollLeft = setWidth * 3;
@@ -586,7 +658,7 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
             }, 100);
             setTimeout(() => clearInterval(interval), 2000);
         }
-    }, [displayProducts.length, getSetWidth]);
+    }, [displayProducts.length, measureLayout]);
 
     React.useEffect(() => {
         if (!carouselRef.current || displayProducts.length === 0) return;
@@ -598,9 +670,14 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
             const deltaTime = time - lastTime;
             lastTime = time;
 
-            if (!isPaused && !isInteractingRef.current && carouselRef.current) {
-                const container = carouselRef.current;
+            if (!carouselRef.current) {
+                animationRef.current = requestAnimationFrame(animateScroll);
+                return;
+            }
 
+            const container = carouselRef.current;
+
+            if (!isPaused && !isInteractingRef.current) {
                 fractionalScrollRef.current += (pixelsPerSecond * deltaTime) / 1000;
 
                 if (fractionalScrollRef.current >= 1) {
@@ -611,12 +688,11 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
             }
 
             // 3D Depth Effect
-            if (carouselRef.current) {
-                const container = carouselRef.current;
-                const containerRect = container.getBoundingClientRect();
-                const centerOfViewport = containerRect.left + containerRect.width / 2;
+            const measurements = measurementsRef.current;
+            if (measurements.initialized && measurements.childLefts.length === container.children.length) {
                 const scrollLeft = container.scrollLeft;
-                const containerOffsetLeft = containerRect.left - scrollLeft;
+                const containerWidth = measurements.containerWidth;
+                const centerOfViewport = scrollLeft + containerWidth / 2;
 
                 const children = container.children;
                 const transforms = [];
@@ -633,11 +709,12 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                 const maxPush = isMobile ? 70 : 120; 
 
                 for (let i = 0; i < children.length; i++) {
-                    const child = children[i];
-                    const childLeftPos = child.offsetLeft;
+                    const childLeftPos = measurements.childLefts[i];
+                    const childWidth = measurements.childWidths[i];
                     
                     // Optimization: skip off-screen elements to save CPU/GPU on mobile
-                    if (childLeftPos + child.offsetWidth < scrollLeft - 500 || childLeftPos > scrollLeft + containerRect.width + 500) {
+                    if (childLeftPos + childWidth < scrollLeft - 500 || childLeftPos > scrollLeft + containerWidth + 500) {
+                        const child = children[i];
                         const baseRotate = child.dataset.rotate || 0;
                         const baseTranslateY = parseFloat(child.dataset.translatey || 0);
                         transforms.push(`translateY(${baseTranslateY}px) rotate(${baseRotate}deg)`);
@@ -645,7 +722,7 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                         continue;
                     }
 
-                    const childCenter = containerOffsetLeft + childLeftPos + child.offsetWidth / 2;
+                    const childCenter = measurements.childCenters[i];
                     
                     const dist = childCenter - centerOfViewport;
                     const absDist = Math.abs(dist);
@@ -661,6 +738,7 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     
                     const translateX = Math.sin(nd * Math.PI / 2) * maxPush;
 
+                    const child = children[i];
                     const baseRotate = child.dataset.rotate || 0;
                     const baseTranslateY = parseFloat(child.dataset.translatey || 0);
                     const baseZIndex = parseInt(child.dataset.zindex || 0);
@@ -677,16 +755,36 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                     zIndices.push(zIndex);
                 }
 
+                const prevStyles = prevStylesRef.current;
+
+                // Batch DOM writes
                 for (let i = 0; i < children.length; i++) {
-                    children[i].style.transform = transforms[i];
-                    children[i].style.zIndex = zIndices[i];
+                    const child = children[i];
+                    const trans = transforms[i];
+                    const z = zIndices[i];
+
+                    if (prevStyles.transforms[i] !== trans) {
+                        child.style.transform = trans;
+                        prevStyles.transforms[i] = trans;
+                    }
+                    if (prevStyles.zIndices[i] !== z) {
+                        child.style.zIndex = z;
+                        prevStyles.zIndices[i] = z;
+                    }
+
                     if (i === closestIdx) {
-                        children[i].classList.add('is-center');
+                        if (prevStyles.centerIdx !== closestIdx) {
+                            child.classList.add('is-center');
+                        }
                     } else {
-                        children[i].classList.remove('is-center');
+                        if (prevStyles.centerIdx === i || child.classList.contains('is-center')) {
+                            child.classList.remove('is-center');
+                        }
                     }
                 }
                 
+                prevStyles.centerIdx = closestIdx;
+
                 if (closestIdx !== -1 && onCenterProductChange) {
                     const currentName = repeatedProducts[closestIdx]?.name || '';
                     if (currentName !== lastReportedNameRef.current) {
@@ -694,6 +792,8 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
                         onCenterProductChange(currentName);
                     }
                 }
+            } else {
+                measureLayout();
             }
 
             animationRef.current = requestAnimationFrame(animateScroll);
@@ -704,14 +804,14 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
         return () => {
             if (animationRef.current) cancelAnimationFrame(animationRef.current);
         };
-    }, [isPaused, displayProducts.length]);
+    }, [isPaused, displayProducts.length, measureLayout]);
 
     const handleScroll = () => {
         if (!carouselRef.current || displayProducts.length === 0) return;
 
         const container = carouselRef.current;
-        const setWidth = getSetWidth();
-        if (setWidth === 0) return;
+        const setWidth = measurementsRef.current.setWidth;
+        if (!setWidth) return;
 
         const currentScroll = container.scrollLeft;
 
