@@ -34,12 +34,38 @@ const ReviewsPage = () => {
 
     // Effect to scroll to correct image when gallery opens
     React.useEffect(() => {
+        const handlePopState = () => {
+            setIsGalleryOpen(false);
+        };
+
         if (isGalleryOpen && galleryScrollRef.current) {
             const container = galleryScrollRef.current;
             const width = container.offsetWidth;
             container.scrollLeft = currentPhotoIndex * width;
         }
+
+        if (isGalleryOpen) {
+            document.body.style.overflow = 'hidden';
+            window.history.pushState({ lightbox: 'gallery' }, '');
+            window.addEventListener('popstate', handlePopState);
+        } else {
+            document.body.style.overflow = 'unset';
+            window.removeEventListener('popstate', handlePopState);
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+            window.removeEventListener('popstate', handlePopState);
+        };
     }, [isGalleryOpen]);
+
+    const handleCloseGallery = (e) => {
+        if (e) e.stopPropagation();
+        setIsGalleryOpen(false);
+        if (window.history.state && window.history.state.lightbox === 'gallery') {
+            window.history.back();
+        }
+    };
 
     const [newReview, setNewReview] = useState({
         title: '',
@@ -537,9 +563,9 @@ const ReviewsPage = () => {
             )}
             {/* Gallery Modal */}
             {isGalleryOpen && (
-                <div className="modal-overlay" onClick={() => setIsGalleryOpen(false)} style={{ zIndex: 3000, backgroundColor: 'rgba(0,0,0,0.9)' }}>
+                <div className="modal-overlay" onClick={handleCloseGallery} style={{ zIndex: 3000, backgroundColor: 'rgba(0,0,0,0.9)' }}>
                     <button 
-                        onClick={() => setIsGalleryOpen(false)}
+                        onClick={handleCloseGallery}
                         style={{ position: 'absolute', top: '2rem', right: '2rem', background: 'none', border: 'none', color: 'white', cursor: 'pointer', zIndex: 3100 }}
                     >
                         <X size={40} />

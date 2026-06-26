@@ -44,19 +44,37 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
     const remainingCount = (images ? images.length : 0) - maxFrames;
 
     useEffect(() => {
+        const handlePopState = () => {
+            setLightboxOpen(false);
+        };
+
         if (lightboxOpen && lightboxRef.current) {
             // Scroll to the active image when lightbox opens
             lightboxRef.current.scrollLeft = lightboxRef.current.offsetWidth * activeLightboxImg;
         }
         
-        // Prevent body scrolling when lightbox is open
+        // Prevent body scrolling when lightbox is open and handle history
         if (lightboxOpen) {
             document.body.style.overflow = 'hidden';
+            window.history.pushState({ lightbox: 'review' }, '');
+            window.addEventListener('popstate', handlePopState);
         } else {
             document.body.style.overflow = 'unset';
+            window.removeEventListener('popstate', handlePopState);
         }
-        return () => { document.body.style.overflow = 'unset'; };
+        return () => { 
+            document.body.style.overflow = 'unset'; 
+            window.removeEventListener('popstate', handlePopState);
+        };
     }, [lightboxOpen]);
+
+    const handleCloseLightbox = (e) => {
+        if (e) e.stopPropagation();
+        setLightboxOpen(false);
+        if (window.history.state && window.history.state.lightbox === 'review') {
+            window.history.back();
+        }
+    };
 
     const handleLightboxScroll = (e) => {
         const scrollPosition = e.target.scrollLeft;
@@ -310,10 +328,13 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
             )}
 
             {images && images.length > 0 && (
-                <div style={{ display: 'flex', gap: '8px', marginTop: '0.5rem', width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem', marginBottom: '0.5rem', width: '100%', padding: '0.5rem' }}>
                     {visibleImages.map((img, idx) => {
                         const isLast = idx === maxFrames - 1;
                         const showOverlay = isLast && remainingCount > 0;
+                        const rotations = [-6, 4, -4, 5];
+                        const rotation = visibleImages.length > 1 ? rotations[idx % 4] : 0;
+                        
                         return (
                             <div 
                                 key={idx} 
@@ -321,19 +342,37 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                                 style={{ 
                                     flex: 1, 
                                     aspectRatio: visibleImages.length === 1 ? '4/5' : '1', 
-                                    borderRadius: '8px', 
+                                    borderRadius: '12px', 
                                     overflow: 'hidden', 
                                     cursor: 'pointer',
-                                    position: 'relative'
+                                    position: 'relative',
+                                    zIndex: idx,
+                                    transform: `rotate(${rotation}deg)`,
+                                    marginLeft: idx > 0 ? '-12%' : '0',
+                                    border: visibleImages.length > 1 ? '3px solid white' : 'none',
+                                    boxShadow: visibleImages.length > 1 ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+                                    transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (visibleImages.length > 1) {
+                                        e.currentTarget.style.transform = `rotate(0deg) scale(1.1) translateY(-4px)`;
+                                        e.currentTarget.style.zIndex = 10;
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (visibleImages.length > 1) {
+                                        e.currentTarget.style.transform = `rotate(${rotation}deg)`;
+                                        e.currentTarget.style.zIndex = idx;
+                                    }
                                 }}
                             >
                                 <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={`Servizio Muse Catering ${idx + 1}`} />
                                 {showOverlay && (
                                     <div style={{
                                         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                                        backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+                                        backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex',
                                         alignItems: 'center', justifyContent: 'center',
-                                        color: 'white', fontSize: '1.2rem', fontWeight: 'bold'
+                                        color: 'white', fontSize: '1.5rem', fontWeight: 'bold'
                                     }}>
                                         +{remainingCount}
                                     </div>
@@ -351,11 +390,11 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                         backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 99999,
                         display: 'flex', flexDirection: 'column'
                     }}
-                    onClick={() => setLightboxOpen(false)}
+                    onClick={handleCloseLightbox}
                 >
                     <button 
                         style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '8px', borderRadius: '50%', cursor: 'pointer', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }}
-                        onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
+                        onClick={handleCloseLightbox}
                         onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
                     >

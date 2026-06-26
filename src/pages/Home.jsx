@@ -1374,10 +1374,21 @@ const Home = () => {
                         <div style={{ textAlign: 'center', marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                             <button
                                 className="btn btn-outline"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.8rem 1.5rem', width: 'fit-content' }}
+                                style={{ 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    gap: '0.8rem', 
+                                    padding: '1.2rem 2.5rem', 
+                                    width: 'fit-content',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 'bold',
+                                    color: 'var(--color-accent)',
+                                    borderColor: 'var(--color-accent)',
+                                    boxShadow: '0 4px 15px rgba(197, 160, 89, 0.15)'
+                                }}
                                 onClick={() => navigate('/recensioni')}
                             >
-                                <Star size={18} /> Leggi tutte le recensioni
+                                <Star size={22} /> Leggi tutte le recensioni
                             </button>
                         </div>
                     </>
