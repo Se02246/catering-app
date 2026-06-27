@@ -280,37 +280,85 @@ const SharedLottery = () => {
                         <div className="animate-float" style={{ marginTop: '2.5rem', textAlign: 'center' }}>
                             <h3 style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem', fontSize: '1.3rem' }}>I vincitori:</h3>
                             
-                            {winnerNames.length === 1 ? (
+                            {winnerNames.length === 1 ? (() => {
+                                const prod = prizeProducts[0];
+                                return (
                                 <div style={{ 
-                                    display: 'inline-block',
+                                    display: 'inline-flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
                                     padding: '1.5rem 3rem', 
                                     background: 'linear-gradient(45deg, #FFD700, #FDB931, #FFD700)', 
                                     borderRadius: 'var(--radius-lg)', 
                                     color: '#5a4604', 
-                                    fontWeight: '900', 
-                                    fontSize: '2.5rem',
                                     boxShadow: '0 10px 25px rgba(253, 185, 49, 0.4)',
                                     border: '2px solid rgba(255,255,255,0.5)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '2px'
                                 }}>
-                                    {winnerNames[0]}
+                                    <div style={{ fontWeight: '900', fontSize: '2.5rem', textTransform: 'uppercase', letterSpacing: '2px' }}>
+                                        {winnerNames[0]}
+                                    </div>
+                                    {prod && (
+                                        <button 
+                                            onClick={() => setSelectedProduct(prod)}
+                                            style={{
+                                                marginTop: '1rem',
+                                                padding: '0.5rem 1rem',
+                                                background: 'rgba(255,255,255,0.8)',
+                                                border: 'none',
+                                                borderRadius: '20px',
+                                                color: '#5a4604',
+                                                fontWeight: 'bold',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.5rem',
+                                                fontSize: '0.95rem'
+                                            }}
+                                        >
+                                            <Gift size={18} /> Vedi premio
+                                        </button>
+                                    )}
                                 </div>
-                            ) : (
+                                );
+                            })() : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
                                     {winnerNames.map((name, idx) => {
-                                        const prizeName = prizeIds[idx] ? products?.find(p => p.id === prizeIds[idx])?.name : 'Premio';
+                                        const prod = prizeProducts[idx];
+                                        const prizeName = prod ? prod.name : 'Premio';
+                                        
+                                        let bgGradient, textColor, shadowColor;
+                                        if (idx === 0) { // Oro
+                                            bgGradient = 'linear-gradient(45deg, #FFD700, #FDB931, #FFD700)';
+                                            textColor = '#5a4604';
+                                            shadowColor = 'rgba(253, 185, 49, 0.4)';
+                                        } else if (idx === 1) { // Argento
+                                            bgGradient = 'linear-gradient(45deg, #E0E0E0, #BDBDBD, #E0E0E0)';
+                                            textColor = '#424242';
+                                            shadowColor = 'rgba(189, 189, 189, 0.4)';
+                                        } else if (idx === 2) { // Bronzo
+                                            bgGradient = 'linear-gradient(45deg, #CD7F32, #A0522D, #CD7F32)';
+                                            textColor = '#4a2c11';
+                                            shadowColor = 'rgba(205, 127, 50, 0.4)';
+                                        } else { // Oro Rosa
+                                            bgGradient = 'linear-gradient(45deg, #e4a0b7, #f3b7cb, #e4a0b7)';
+                                            textColor = '#6d3f4f';
+                                            shadowColor = 'rgba(228, 160, 183, 0.4)';
+                                        }
+
                                         return (
                                             <div key={idx} style={{ 
                                                 width: '100%',
                                                 maxWidth: '500px',
                                                 padding: '1.5rem', 
-                                                background: 'linear-gradient(45deg, #FFD700, #FDB931, #FFD700)', 
+                                                background: bgGradient, 
                                                 borderRadius: 'var(--radius-lg)', 
-                                                color: '#5a4604', 
-                                                boxShadow: '0 10px 25px rgba(253, 185, 49, 0.4)',
+                                                color: textColor, 
+                                                boxShadow: `0 10px 25px ${shadowColor}`,
                                                 border: '2px solid rgba(255,255,255,0.5)',
-                                                textAlign: 'center'
+                                                textAlign: 'center',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center'
                                             }}>
                                                 <div style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.5rem', opacity: 0.9 }}>
                                                     {idx + 1}° Premio ({prizeName})
@@ -318,6 +366,27 @@ const SharedLottery = () => {
                                                 <div style={{ fontWeight: '900', fontSize: '2.2rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                                     {name}
                                                 </div>
+                                                {prod && (
+                                                    <button 
+                                                        onClick={() => setSelectedProduct(prod)}
+                                                        style={{
+                                                            marginTop: '1rem',
+                                                            padding: '0.5rem 1rem',
+                                                            background: 'rgba(255,255,255,0.8)',
+                                                            border: 'none',
+                                                            borderRadius: '20px',
+                                                            color: textColor,
+                                                            fontWeight: 'bold',
+                                                            cursor: 'pointer',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '0.5rem',
+                                                            fontSize: '0.9rem'
+                                                        }}
+                                                    >
+                                                        <Gift size={16} /> Vedi premio
+                                                    </button>
+                                                )}
                                             </div>
                                         );
                                     })}

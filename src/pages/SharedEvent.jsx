@@ -173,26 +173,7 @@ const SharedEventLotteryCard = ({ event, navigate }) => {
                         <span dangerouslySetInnerHTML={{ __html: formatCustomText(displayDesc) }} />
                     </p>
 
-                    {activeStep === 3 && winnerNames.length > 0 && (
-                        <div style={{ marginTop: '0.5rem', padding: '0.8rem', backgroundColor: 'rgba(197, 160, 89, 0.1)', borderRadius: 'var(--radius-sm)', color: 'var(--color-accent)' }}>
-                            {winnerNames.length === 1 ? (
-                                <div style={{ fontWeight: 'bold', textAlign: 'center', fontSize: '1.1rem' }}>Vincitore: {winnerNames[0]}</div>
-                            ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                    <div style={{ fontWeight: 'bold', textAlign: 'center', fontSize: '1rem', marginBottom: '0.2rem' }}>Vincitori:</div>
-                                    {winnerNames.map((name, idx) => {
-                                        const prizeName = prizeIds[idx] ? products?.find(p => p.id === prizeIds[idx])?.name : 'Premio';
-                                        return (
-                                            <div key={idx} style={{ fontSize: '0.95rem', borderBottom: idx < winnerNames.length - 1 ? '1px dashed rgba(197,160,89,0.3)' : 'none', paddingBottom: idx < winnerNames.length - 1 ? '0.4rem' : 0 }}>
-                                                <strong>{idx + 1}° Premio ({prizeName}):</strong><br/>
-                                                <span style={{ fontWeight: 'bold', color: '#b58500' }}>{name}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    )}
+
 
                     <button 
                         className="btn btn-outline" 
