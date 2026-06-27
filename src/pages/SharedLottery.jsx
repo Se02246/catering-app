@@ -197,18 +197,13 @@ const SharedLottery = () => {
         <div style={{ minHeight: '100vh', background: 'var(--color-bg)', paddingBottom: '4rem', position: 'relative' }}>
             {activeStep === 3 && <Confetti />}
 
-            {/* Navbar Pinned to Top */}
+            {/* Back Button */}
             <div style={{ 
-                position: 'sticky', 
-                top: 0, 
-                backgroundColor: 'rgba(255, 253, 240, 0.9)', 
-                backdropFilter: 'blur(8px)', 
+                position: 'absolute', 
+                top: 0,
+                left: 0,
                 zIndex: 100, 
-                padding: '1rem',
-                borderBottom: '1px solid rgba(197, 160, 89, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+                padding: '1rem'
             }}>
                 <button 
                     onClick={() => navigate(`/event/${event.slug}`)}
