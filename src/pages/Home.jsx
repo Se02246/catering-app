@@ -376,6 +376,9 @@ const EventInfoCard = ({ event, onClickDiscover }) => {
 
 const EventLotteryCard = ({ event, onClickDiscover }) => {
     const config = event.lottery_config;
+    const { products } = useProducts();
+    const [currentImgIndex, setCurrentImgIndex] = React.useState(0);
+    
     if (!config || !config.is_enabled) return null;
 
     let displayTitle = config.step1?.title || 'Lotteria dell\'Evento';
@@ -395,35 +398,102 @@ const EventLotteryCard = ({ event, onClickDiscover }) => {
         displayTitle = config.step3?.title || 'Abbiamo un Vincitore!';
         displayDesc = config.step3?.description || 'Grazie per aver partecipato!';
     }
+    
+    // Gestione premi
+    const prizeIds = config.prize_product_ids || [];
+    const showPrizes = activeStep > 1 || config.show_prizes_step1;
+    
+    const prizeImages = prizeIds
+        .map(id => products.find(p => p.id === id)?.image_url)
+        .filter(Boolean);
+        
+    React.useEffect(() => {
+        if (!showPrizes || prizeImages.length <= 1) return;
+        const interval = setInterval(() => {
+            setCurrentImgIndex(prev => (prev + 1) % prizeImages.length);
+        }, 2000);
+        return () => clearInterval(interval);
+    }, [showPrizes, prizeImages.length]);
+
+    // Fallback migration check per vecchi dati
+    const winnerNames = config.step3?.winner_names && config.step3.winner_names.length > 0 
+        ? config.step3.winner_names 
+        : (config.step3?.winner_name ? [config.step3.winner_name] : []);
 
     return (
         <div 
             className="premium-card fade-in hover-lift" 
             onClick={(e) => { e.stopPropagation(); onClickDiscover(); }}
-            style={{ display: 'flex', flexDirection: 'column', width: '300px', flexShrink: 0, padding: '1.5rem', border: '1px solid rgba(197, 160, 89, 0.3)', cursor: 'pointer', background: 'linear-gradient(135deg, rgba(255,253,240,1) 0%, rgba(255,255,255,1) 100%)' }}
+            style={{ display: 'flex', flexDirection: 'column', width: '300px', flexShrink: 0, border: '1px solid rgba(197, 160, 89, 0.3)', cursor: 'pointer', background: 'linear-gradient(135deg, rgba(255,253,240,1) 0%, rgba(255,255,255,1) 100%)', overflow: 'hidden' }}
         >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>
-                <Gift size={22} />
-                <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>
-                    {displayTitle}
-                </h4>
-            </div>
-            <p 
-                style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.5', flex: 1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'vertical' }}
-                dangerouslySetInnerHTML={{ __html: formatCustomText(displayDesc) }}
-            />
-            {activeStep === 3 && config.step3?.winner_name && (
-                <div style={{ marginTop: '1rem', padding: '0.5rem', backgroundColor: 'rgba(197, 160, 89, 0.1)', borderRadius: 'var(--radius-sm)', textAlign: 'center', fontWeight: 'bold', color: 'var(--color-accent)' }}>
-                    Vincitore: {config.step3.winner_name}
+            {showPrizes && prizeImages.length > 0 && (
+                <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
+                    {prizeImages.map((img, i) => (
+                        <img
+                            key={i}
+                            src={img}
+                            alt="Premio Lotteria"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                transition: 'opacity 1s ease-in-out',
+                                opacity: currentImgIndex === i ? 1 : 0,
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                zIndex: currentImgIndex === i ? 2 : 1
+                            }}
+                        />
+                    ))}
                 </div>
             )}
-            <button 
-                className="btn btn-outline" 
-                onClick={(e) => { e.stopPropagation(); onClickDiscover(); }} 
-                style={{ width: '100%', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem', borderColor: 'var(--color-accent)', color: 'var(--color-accent)' }}
-            >
-                Scopri di più <ArrowRight size={16} />
-            </button>
+            
+            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-accent)', marginBottom: '0.2rem' }}>
+                    <Gift size={24} />
+                    <h3 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        LOTTERIA
+                    </h3>
+                </div>
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold', color: 'var(--color-primary-dark)', marginBottom: '0.75rem' }}>
+                    {displayTitle}
+                </h4>
+                
+                <p 
+                    style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.5', flex: 1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'vertical' }}
+                    dangerouslySetInnerHTML={{ __html: formatCustomText(displayDesc) }}
+                />
+                
+                {activeStep === 3 && winnerNames.length > 0 && (
+                    <div style={{ marginTop: '1rem', padding: '0.5rem', backgroundColor: 'rgba(197, 160, 89, 0.1)', borderRadius: 'var(--radius-sm)', color: 'var(--color-accent)' }}>
+                        {winnerNames.length === 1 ? (
+                            <div style={{ fontWeight: 'bold', textAlign: 'center' }}>Vincitore: {winnerNames[0]}</div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                <div style={{ fontWeight: 'bold', textAlign: 'center', fontSize: '0.9rem', marginBottom: '0.2rem' }}>Vincitori:</div>
+                                {winnerNames.map((name, idx) => {
+                                    const prizeName = prizeIds[idx] ? products.find(p => p.id === prizeIds[idx])?.name : 'Premio';
+                                    return (
+                                        <div key={idx} style={{ fontSize: '0.85rem', borderBottom: idx < winnerNames.length - 1 ? '1px dashed rgba(197,160,89,0.3)' : 'none', paddingBottom: idx < winnerNames.length - 1 ? '0.3rem' : 0 }}>
+                                            <strong>{idx + 1}° Premio ({prizeName}):</strong><br/>
+                                            <span style={{ fontWeight: 'bold', color: '#b58500' }}>{name}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                )}
+                
+                <button 
+                    className="btn btn-outline" 
+                    onClick={(e) => { e.stopPropagation(); onClickDiscover(); }} 
+                    style={{ width: '100%', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem', borderColor: 'var(--color-accent)', color: 'var(--color-accent)' }}
+                >
+                    Scopri di più <ArrowRight size={16} />
+                </button>
+            </div>
         </div>
     );
 };

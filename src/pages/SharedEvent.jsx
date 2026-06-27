@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { useSetting, useCaterings, useReviews } from '../hooks/useData';
+import { useSetting, useCaterings, useReviews, useProducts } from '../hooks/useData';
 import { ArrowLeft, MapPin, Info, ShoppingBag, MessageSquare, MessageCircle, Instagram, Star, ChevronLeft, ChevronRight, Gift, ArrowRight } from 'lucide-react';
 import { formatCustomText } from '../utils/textFormatting';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
@@ -67,6 +67,152 @@ const CompactReviewCard = ({ review }) => {
                 {formattedDate}
             </span>
         </div>
+    );
+};
+
+const SharedEventLotteryCard = ({ event, navigate }) => {
+    const config = event.lottery_config;
+    const { products } = useProducts();
+    const [currentImgIndex, setCurrentImgIndex] = React.useState(0);
+    
+    if (!config || !config.is_enabled) return null;
+
+    let displayTitle = config.step1?.title || 'Lotteria dell\'Evento';
+    let displayDesc = config.step1?.description || 'Partecipa alla nostra lotteria!';
+    let activeStep = config.active_step || 1;
+
+    if (activeStep === 1 && config.step2?.activation_date) {
+        if (new Date() >= new Date(config.step2.activation_date)) {
+            activeStep = 2;
+        }
+    }
+
+    if (activeStep === 2) {
+        displayTitle = config.step2?.title || 'Lotteria Attiva!';
+        displayDesc = config.step2?.description || 'Scopri come partecipare.';
+    } else if (activeStep === 3) {
+        displayTitle = config.step3?.title || 'Abbiamo un Vincitore!';
+        displayDesc = config.step3?.description || 'Grazie per aver partecipato!';
+    }
+    
+    // Gestione premi
+    const prizeIds = config.prize_product_ids || [];
+    const showPrizes = activeStep > 1 || config.show_prizes_step1;
+    
+    const prizeImages = prizeIds
+        .map(id => products?.find(p => p.id === id)?.image_url)
+        .filter(Boolean);
+        
+    React.useEffect(() => {
+        if (!showPrizes || prizeImages.length <= 1) return;
+        const interval = setInterval(() => {
+            setCurrentImgIndex(prev => (prev + 1) % prizeImages.length);
+        }, 2000);
+        return () => clearInterval(interval);
+    }, [showPrizes, prizeImages.length]);
+
+    // Fallback migration check
+    const winnerNames = config.step3?.winner_names && config.step3.winner_names.length > 0 
+        ? config.step3.winner_names 
+        : (config.step3?.winner_name ? [config.step3.winner_name] : []);
+
+    return (
+        <section style={{ marginBottom: '3.5rem' }}>
+            <div style={{ borderTop: '1px solid var(--color-border)', marginBottom: '1.5rem' }}></div>
+            
+            <div className="premium-card fade-in hover-lift" 
+                onClick={() => {
+                    navigate(`/event/${event.slug}/lotteria`);
+                    window.scrollTo(0, 0);
+                }}
+                style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    border: '1px solid rgba(197, 160, 89, 0.3)', 
+                    background: 'linear-gradient(135deg, rgba(255,253,240,1) 0%, rgba(255,255,255,1) 100%)',
+                    cursor: 'pointer',
+                    overflow: 'hidden'
+                }}
+            >
+                {showPrizes && prizeImages.length > 0 && (
+                    <div style={{ position: 'relative', height: '220px', overflow: 'hidden' }}>
+                        {prizeImages.map((img, i) => (
+                            <img
+                                key={i}
+                                src={img}
+                                alt="Premio Lotteria"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    transition: 'opacity 1s ease-in-out',
+                                    opacity: currentImgIndex === i ? 1 : 0,
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    zIndex: currentImgIndex === i ? 2 : 1
+                                }}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-accent)' }}>
+                        <Gift size={28} />
+                        <h3 style={{ margin: 0, fontSize: '1.8rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            LOTTERIA
+                        </h3>
+                    </div>
+                    <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary-dark)' }}>
+                        {displayTitle}
+                    </h4>
+
+                    <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '1.05rem', margin: 0 }}>
+                        <span dangerouslySetInnerHTML={{ __html: formatCustomText(displayDesc) }} />
+                    </p>
+
+                    {activeStep === 3 && winnerNames.length > 0 && (
+                        <div style={{ marginTop: '0.5rem', padding: '0.8rem', backgroundColor: 'rgba(197, 160, 89, 0.1)', borderRadius: 'var(--radius-sm)', color: 'var(--color-accent)' }}>
+                            {winnerNames.length === 1 ? (
+                                <div style={{ fontWeight: 'bold', textAlign: 'center', fontSize: '1.1rem' }}>Vincitore: {winnerNames[0]}</div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                    <div style={{ fontWeight: 'bold', textAlign: 'center', fontSize: '1rem', marginBottom: '0.2rem' }}>Vincitori:</div>
+                                    {winnerNames.map((name, idx) => {
+                                        const prizeName = prizeIds[idx] ? products?.find(p => p.id === prizeIds[idx])?.name : 'Premio';
+                                        return (
+                                            <div key={idx} style={{ fontSize: '0.95rem', borderBottom: idx < winnerNames.length - 1 ? '1px dashed rgba(197,160,89,0.3)' : 'none', paddingBottom: idx < winnerNames.length - 1 ? '0.4rem' : 0 }}>
+                                                <strong>{idx + 1}° Premio ({prizeName}):</strong><br/>
+                                                <span style={{ fontWeight: 'bold', color: '#b58500' }}>{name}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <button 
+                        className="btn btn-outline" 
+                        style={{ 
+                            width: '100%', 
+                            marginTop: '1rem', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            gap: '0.4rem', 
+                            padding: '0.8rem 1rem', 
+                            fontSize: '1rem', 
+                            borderColor: 'var(--color-accent)', 
+                            color: 'var(--color-accent)' 
+                        }}
+                    >
+                        Scopri di più <ArrowRight size={18} />
+                    </button>
+                </div>
+            </div>
+        </section>
     );
 };
 
@@ -668,85 +814,7 @@ const SharedEvent = () => {
             )}
 
             {/* Section: Lotteria */}
-            {event.lottery_config?.is_enabled && (
-                <section style={{ marginBottom: '3.5rem' }}>
-                    <div style={{ borderTop: '1px solid var(--color-border)', marginBottom: '1.5rem' }}></div>
-                    
-                    <div className="premium-card fade-in hover-lift" 
-                        onClick={() => {
-                            navigate(`/event/${event.slug}/lotteria`);
-                            window.scrollTo(0, 0);
-                        }}
-                        style={{ 
-                            padding: '2rem', 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            gap: '1rem', 
-                            border: '1px solid rgba(197, 160, 89, 0.3)', 
-                            background: 'linear-gradient(135deg, rgba(255,253,240,1) 0%, rgba(255,255,255,1) 100%)',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-accent)' }}>
-                            <Gift size={28} />
-                            <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 'bold' }}>
-                                {(() => {
-                                    let active = event.lottery_config.active_step || 1;
-                                    if (active === 1 && event.lottery_config.step2?.activation_date) {
-                                        if (new Date() >= new Date(event.lottery_config.step2.activation_date)) active = 2;
-                                    }
-                                    return active === 3 ? (event.lottery_config.step3?.title || 'Abbiamo un Vincitore!') : 
-                                           active === 2 ? (event.lottery_config.step2?.title || 'Lotteria Attiva!') :
-                                           (event.lottery_config.step1?.title || 'Lotteria dell\'Evento');
-                                })()}
-                            </h3>
-                        </div>
-                        <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '1.05rem', margin: 0 }}>
-                            {(() => {
-                                let active = event.lottery_config.active_step || 1;
-                                if (active === 1 && event.lottery_config.step2?.activation_date) {
-                                    if (new Date() >= new Date(event.lottery_config.step2.activation_date)) active = 2;
-                                }
-                                const desc = active === 3 ? (event.lottery_config.step3?.description || 'Grazie per aver partecipato!') : 
-                                       active === 2 ? (event.lottery_config.step2?.description || 'Scopri come partecipare.') :
-                                       (event.lottery_config.step1?.description || 'Partecipa alla nostra lotteria!');
-                                return <span dangerouslySetInnerHTML={{ __html: formatCustomText(desc) }} />;
-                            })()}
-                        </p>
-                        {(() => {
-                            let active = event.lottery_config.active_step || 1;
-                            if (active === 1 && event.lottery_config.step2?.activation_date) {
-                                if (new Date() >= new Date(event.lottery_config.step2.activation_date)) active = 2;
-                            }
-                            if (active === 3 && event.lottery_config.step3?.winner_name) {
-                                return (
-                                    <div style={{ marginTop: '0.5rem', padding: '0.8rem', backgroundColor: 'rgba(197, 160, 89, 0.1)', borderRadius: 'var(--radius-sm)', textAlign: 'center', fontWeight: 'bold', color: 'var(--color-accent)', fontSize: '1.1rem' }}>
-                                        Vincitore: {event.lottery_config.step3.winner_name}
-                                    </div>
-                                );
-                            }
-                            return null;
-                        })()}
-                        <button 
-                            className="btn btn-outline" 
-                            style={{ 
-                                width: '100%', 
-                                marginTop: '1rem', 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'center', 
-                                gap: '0.4rem', 
-                                padding: '0.8rem 1rem', 
-                                fontSize: '1rem', 
-                                borderColor: 'var(--color-accent)', 
-                                color: 'var(--color-accent)' 
-                            }}
-                        >
-                            Scopri di più <ArrowRight size={18} />
-                        </button>
-                    </div>
-                </section>
-            )}
+            <SharedEventLotteryCard event={event} navigate={navigate} />
 
             {/* Section 3: Altre informazioni */}
             {hasInfo && (

@@ -7,9 +7,11 @@ import ImageUpload from '../Common/ImageUpload';
 const defaultLotteryConfig = {
     is_enabled: false,
     active_step: 1,
+    prize_product_ids: [],
+    show_prizes_step1: false,
     step1: { title: '', description: '', start_date: '' },
     step2: { title: '', description: '', activation_date: '', show_map: false, show_contacts: false },
-    step3: { title: '', description: '', winner_name: '' }
+    step3: { title: '', description: '', winner_names: [] }
 };
 
 const EventManager = () => {
@@ -51,8 +53,16 @@ const EventManager = () => {
         
         // Valida la lotteria se attiva
         if (newEvent.lottery_config?.is_enabled && newEvent.lottery_config?.active_step === 3) {
-            if (!newEvent.lottery_config.step3.winner_name || newEvent.lottery_config.step3.winner_name.trim() === '') {
-                alert('Attenzione: Devi inserire il nome del vincitore per attivare lo Step 3 della lotteria.');
+            const prizesCount = Math.max(1, newEvent.lottery_config.prize_product_ids?.length || 1);
+            const names = newEvent.lottery_config.step3.winner_names || [];
+            let isValid = true;
+            for (let i = 0; i < prizesCount; i++) {
+                if (!names[i] || names[i].trim() === '') {
+                    isValid = false;
+                }
+            }
+            if (!isValid) {
+                alert('Attenzione: Devi inserire tutti i nomi dei vincitori per attivare lo Step 3 della lotteria.');
                 return;
             }
         }
@@ -118,7 +128,13 @@ const EventManager = () => {
             info_title: event.info_title || 'Altre informazioni',
             info_description: event.info_description || '',
             product_ids: event.products ? event.products.map(p => p.id) : [],
-            lottery_config: event.lottery_config ? { ...defaultLotteryConfig, ...event.lottery_config } : JSON.parse(JSON.stringify(defaultLotteryConfig))
+            lottery_config: (() => {
+                let config = event.lottery_config ? { ...defaultLotteryConfig, ...event.lottery_config } : JSON.parse(JSON.stringify(defaultLotteryConfig));
+                if (config.step3?.winner_name && (!config.step3.winner_names || config.step3.winner_names.length === 0)) {
+                    config.step3.winner_names = [config.step3.winner_name];
+                }
+                return config;
+            })()
         });
         setIsCreating(true);
     };
@@ -193,6 +209,38 @@ const EventManager = () => {
                 product_ids: [...selected, prodId]
             });
         }
+    };
+
+    const togglePrizeSelection = (prodId) => {
+        const selected = [...(newEvent.lottery_config?.prize_product_ids || [])];
+        let newSelected;
+        if (selected.includes(prodId)) {
+            newSelected = selected.filter(id => id !== prodId);
+        } else {
+            newSelected = [...selected, prodId];
+        }
+        setNewEvent({
+            ...newEvent,
+            lottery_config: { ...newEvent.lottery_config, prize_product_ids: newSelected }
+        });
+    };
+
+    const movePrizeUp = (index) => {
+        if (index === 0) return;
+        const selected = [...(newEvent.lottery_config?.prize_product_ids || [])];
+        const temp = selected[index];
+        selected[index] = selected[index - 1];
+        selected[index - 1] = temp;
+        setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, prize_product_ids: selected }});
+    };
+
+    const movePrizeDown = (index) => {
+        const selected = [...(newEvent.lottery_config?.prize_product_ids || [])];
+        if (index === selected.length - 1) return;
+        const temp = selected[index];
+        selected[index] = selected[index + 1];
+        selected[index + 1] = temp;
+        setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, prize_product_ids: selected }});
     };
 
     return (
@@ -528,6 +576,17 @@ const EventManager = () => {
                                                     </div>
                                                 </div>
 
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={newEvent.lottery_config.show_prizes_step1 || false}
+                                                            onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, show_prizes_step1: e.target.checked } })}
+                                                        />
+                                                        Mostra Immagini dei Premi fin dallo Step 1
+                                                    </label>
+                                                </div>
+
                                                 {/* Step 1 */}
                                                 <div style={{ padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
                                                     <h5 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--color-text)' }}>Dettagli Step 1 (Info)</h5>
@@ -619,13 +678,41 @@ const EventManager = () => {
                                                             value={newEvent.lottery_config.step3.description}
                                                             onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step3: { ...newEvent.lottery_config.step3, description: e.target.value } } })}
                                                         />
-                                                        <input
-                                                            className="form-control"
-                                                            placeholder="Nome/Numero del Vincitore"
-                                                            style={{ borderColor: 'gold', backgroundColor: '#fffdf0', fontWeight: 'bold' }}
-                                                            value={newEvent.lottery_config.step3.winner_name}
-                                                            onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step3: { ...newEvent.lottery_config.step3, winner_name: e.target.value } } })}
-                                                        />
+                                                        
+                                                        {(() => {
+                                                            const prizes = newEvent.lottery_config.prize_product_ids || [];
+                                                            const count = Math.max(1, prizes.length);
+                                                            const names = newEvent.lottery_config.step3.winner_names || [];
+                                                            return Array.from({ length: count }).map((_, idx) => {
+                                                                const prizeProd = prizes[idx] ? products.find(p => p.id === prizes[idx]) : null;
+                                                                const label = prizes.length > 1 
+                                                                    ? `Vincitore ${idx + 1}° Premio ${prizeProd ? `(${prizeProd.name})` : ''}`
+                                                                    : 'Nome/Numero del Vincitore';
+                                                                
+                                                                return (
+                                                                    <div key={idx} style={{ marginTop: '0.5rem' }}>
+                                                                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.3rem', color: 'var(--color-primary-dark)' }}>{label}</label>
+                                                                        <input
+                                                                            className="form-control"
+                                                                            placeholder={label}
+                                                                            style={{ borderColor: 'gold', backgroundColor: '#fffdf0', fontWeight: 'bold' }}
+                                                                            value={names[idx] || ''}
+                                                                            onChange={e => {
+                                                                                const newNames = [...names];
+                                                                                newNames[idx] = e.target.value;
+                                                                                setNewEvent({ 
+                                                                                    ...newEvent, 
+                                                                                    lottery_config: { 
+                                                                                        ...newEvent.lottery_config, 
+                                                                                        step3: { ...newEvent.lottery_config.step3, winner_names: newNames } 
+                                                                                    } 
+                                                                                });
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                );
+                                                            });
+                                                        })()}
                                                     </div>
                                                 </div>
                                             </div>
@@ -702,6 +789,70 @@ const EventManager = () => {
                                             </span>
                                         </div>
                                     </div>
+
+                                    {/* Right Side: Associated Prizes Picker */}
+                                    {newEvent.lottery_config?.is_enabled && (
+                                        <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', flex: 1, display: 'flex', flexDirection: 'column', marginTop: '1rem' }}>
+                                            <h4 style={{ marginBottom: '1rem', color: 'var(--color-primary-dark)' }}>Seleziona Premi Lotteria</h4>
+                                            
+                                            <div style={{ flex: 1, overflowY: 'auto', maxHeight: '550px', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.25rem' }}>
+                                                {products.filter(p => p.name.toLowerCase().includes((searchTerm || '').toLowerCase())).map(p => {
+                                                    const selectedPrizes = newEvent.lottery_config.prize_product_ids || [];
+                                                    const isSelected = selectedPrizes.includes(p.id);
+                                                    const selectedIndex = selectedPrizes.indexOf(p.id);
+                                                    
+                                                    return (
+                                                        <div 
+                                                            key={`prize-${p.id}`} 
+                                                            style={{
+                                                                padding: '0.75rem', 
+                                                                borderRadius: '8px',
+                                                                border: isSelected ? '2px solid gold' : '1px solid var(--color-border)',
+                                                                backgroundColor: isSelected ? 'rgba(255, 215, 0, 0.05)' : 'white',
+                                                                display: 'flex', 
+                                                                alignItems: 'center', 
+                                                                gap: '1rem',
+                                                                transition: 'all 0.2s'
+                                                            }}
+                                                        >
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                                <button type="button" onClick={() => movePrizeUp(selectedIndex)} style={{ background: 'none', border: 'none', cursor: isSelected && selectedIndex > 0 ? 'pointer' : 'default', padding: '0', opacity: isSelected && selectedIndex > 0 ? 1 : 0.2 }}><ChevronUp size={16} /></button>
+                                                                <button type="button" onClick={() => movePrizeDown(selectedIndex)} style={{ background: 'none', border: 'none', cursor: isSelected && selectedIndex < selectedPrizes.length - 1 ? 'pointer' : 'default', padding: '0', opacity: isSelected && selectedIndex < selectedPrizes.length - 1 ? 1 : 0.2 }}><ChevronDown size={16} /></button>
+                                                            </div>
+
+                                                            <div onClick={() => togglePrizeSelection(p.id)} style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, cursor: 'pointer' }}>
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={isSelected} 
+                                                                    readOnly 
+                                                                    style={{ width: '16px', height: '16px', cursor: 'pointer' }} 
+                                                                />
+                                                                {p.image_url && (
+                                                                    <img
+                                                                        src={p.image_url}
+                                                                        alt={p.name}
+                                                                        style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }}
+                                                                    />
+                                                                )}
+                                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                                    <h5 style={{ margin: 0, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                        {isSelected && <span style={{ color: '#d4af37', marginRight: '0.5rem', fontWeight: 'bold' }}>{selectedIndex + 1}°</span>}
+                                                                        {p.name}
+                                                                    </h5>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    {(newEvent.lottery_config.prize_product_ids || []).length} premi selezionati
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </form>
                         </div>
