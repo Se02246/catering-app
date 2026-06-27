@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useSetting, useCaterings, useReviews } from '../hooks/useData';
-import { ArrowLeft, MapPin, Info, ShoppingBag, MessageSquare, MessageCircle, Instagram, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, MapPin, Info, ShoppingBag, MessageSquare, MessageCircle, Instagram, Star, ChevronLeft, ChevronRight, Gift, ArrowRight } from 'lucide-react';
 import { formatCustomText } from '../utils/textFormatting';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 
@@ -663,6 +663,87 @@ const SharedEvent = () => {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </section>
+            )}
+
+            {/* Section: Lotteria */}
+            {event.lottery_config?.is_enabled && (
+                <section style={{ marginBottom: '3.5rem' }}>
+                    <div style={{ borderTop: '1px solid var(--color-border)', marginBottom: '1.5rem' }}></div>
+                    
+                    <div className="premium-card fade-in hover-lift" 
+                        onClick={() => {
+                            navigate(`/event/${event.slug}/lotteria`);
+                            window.scrollTo(0, 0);
+                        }}
+                        style={{ 
+                            padding: '2rem', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            gap: '1rem', 
+                            border: '1px solid rgba(197, 160, 89, 0.3)', 
+                            background: 'linear-gradient(135deg, rgba(255,253,240,1) 0%, rgba(255,255,255,1) 100%)',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-accent)' }}>
+                            <Gift size={28} />
+                            <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 'bold' }}>
+                                {(() => {
+                                    let active = event.lottery_config.active_step || 1;
+                                    if (active === 1 && event.lottery_config.step2?.activation_date) {
+                                        if (new Date() >= new Date(event.lottery_config.step2.activation_date)) active = 2;
+                                    }
+                                    return active === 3 ? (event.lottery_config.step3?.title || 'Abbiamo un Vincitore!') : 
+                                           active === 2 ? (event.lottery_config.step2?.title || 'Lotteria Attiva!') :
+                                           (event.lottery_config.step1?.title || 'Lotteria dell\'Evento');
+                                })()}
+                            </h3>
+                        </div>
+                        <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '1.05rem', margin: 0 }}>
+                            {(() => {
+                                let active = event.lottery_config.active_step || 1;
+                                if (active === 1 && event.lottery_config.step2?.activation_date) {
+                                    if (new Date() >= new Date(event.lottery_config.step2.activation_date)) active = 2;
+                                }
+                                const desc = active === 3 ? (event.lottery_config.step3?.description || 'Grazie per aver partecipato!') : 
+                                       active === 2 ? (event.lottery_config.step2?.description || 'Scopri come partecipare.') :
+                                       (event.lottery_config.step1?.description || 'Partecipa alla nostra lotteria!');
+                                return <span dangerouslySetInnerHTML={{ __html: formatCustomText(desc) }} />;
+                            })()}
+                        </p>
+                        {(() => {
+                            let active = event.lottery_config.active_step || 1;
+                            if (active === 1 && event.lottery_config.step2?.activation_date) {
+                                if (new Date() >= new Date(event.lottery_config.step2.activation_date)) active = 2;
+                            }
+                            if (active === 3 && event.lottery_config.step3?.winner_name) {
+                                return (
+                                    <div style={{ marginTop: '0.5rem', padding: '0.8rem', backgroundColor: 'rgba(197, 160, 89, 0.1)', borderRadius: 'var(--radius-sm)', textAlign: 'center', fontWeight: 'bold', color: 'var(--color-accent)', fontSize: '1.1rem' }}>
+                                        Vincitore: {event.lottery_config.step3.winner_name}
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+                        <button 
+                            className="btn btn-outline" 
+                            style={{ 
+                                width: '100%', 
+                                marginTop: '1rem', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                gap: '0.4rem', 
+                                padding: '0.8rem 1rem', 
+                                fontSize: '1rem', 
+                                borderColor: 'var(--color-accent)', 
+                                color: 'var(--color-accent)' 
+                            }}
+                        >
+                            Scopri di più <ArrowRight size={18} />
+                        </button>
                     </div>
                 </section>
             )}

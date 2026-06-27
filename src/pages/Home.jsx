@@ -5,7 +5,7 @@ import Header from '../components/Layout/Header';
 import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import ReviewCard from '../components/Common/ReviewCard';
 import { formatCustomText } from '../utils/textFormatting';
-import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star, MapPin, Send, Sparkles, Instagram, MessageCircle, BookOpen, ShoppingBag } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Calendar, Info, ArrowRight, FileText, MessageSquare, Star, MapPin, Send, Sparkles, Instagram, MessageCircle, BookOpen, ShoppingBag, Gift } from 'lucide-react';
 
 const PackageCard = ({ pkg, index, openPackage, showProductPrices }) => {
     const cardRef = React.useRef(null);
@@ -367,6 +367,60 @@ const EventInfoCard = ({ event, onClickDiscover }) => {
                 className="btn btn-outline" 
                 onClick={(e) => { e.stopPropagation(); onClickDiscover(); }} 
                 style={{ width: '100%', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+            >
+                Scopri di più <ArrowRight size={16} />
+            </button>
+        </div>
+    );
+};
+
+const EventLotteryCard = ({ event, onClickDiscover }) => {
+    const config = event.lottery_config;
+    if (!config || !config.is_enabled) return null;
+
+    let displayTitle = config.step1?.title || 'Lotteria dell\'Evento';
+    let displayDesc = config.step1?.description || 'Partecipa alla nostra lotteria!';
+    let activeStep = config.active_step || 1;
+
+    if (activeStep === 1 && config.step2?.activation_date) {
+        if (new Date() >= new Date(config.step2.activation_date)) {
+            activeStep = 2;
+        }
+    }
+
+    if (activeStep === 2) {
+        displayTitle = config.step2?.title || 'Lotteria Attiva!';
+        displayDesc = config.step2?.description || 'Scopri come partecipare.';
+    } else if (activeStep === 3) {
+        displayTitle = config.step3?.title || 'Abbiamo un Vincitore!';
+        displayDesc = config.step3?.description || 'Grazie per aver partecipato!';
+    }
+
+    return (
+        <div 
+            className="premium-card fade-in hover-lift" 
+            onClick={(e) => { e.stopPropagation(); onClickDiscover(); }}
+            style={{ display: 'flex', flexDirection: 'column', width: '300px', flexShrink: 0, padding: '1.5rem', border: '1px solid rgba(197, 160, 89, 0.3)', cursor: 'pointer', background: 'linear-gradient(135deg, rgba(255,253,240,1) 0%, rgba(255,255,255,1) 100%)' }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>
+                <Gift size={22} />
+                <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                    {displayTitle}
+                </h4>
+            </div>
+            <p 
+                style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.5', flex: 1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'vertical' }}
+                dangerouslySetInnerHTML={{ __html: formatCustomText(displayDesc) }}
+            />
+            {activeStep === 3 && config.step3?.winner_name && (
+                <div style={{ marginTop: '1rem', padding: '0.5rem', backgroundColor: 'rgba(197, 160, 89, 0.1)', borderRadius: 'var(--radius-sm)', textAlign: 'center', fontWeight: 'bold', color: 'var(--color-accent)' }}>
+                    Vincitore: {config.step3.winner_name}
+                </div>
+            )}
+            <button 
+                className="btn btn-outline" 
+                onClick={(e) => { e.stopPropagation(); onClickDiscover(); }} 
+                style={{ width: '100%', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.9rem', borderColor: 'var(--color-accent)', color: 'var(--color-accent)' }}
             >
                 Scopri di più <ArrowRight size={16} />
             </button>
@@ -1269,6 +1323,12 @@ const Home = () => {
                                     <EventCardsCarousel event={event}>
                                         {hasWhere && <EventWhereCard event={event} onClickDiscover={handleDiscover} />}
                                         {hasProducts && <EventProductCard event={event} onClickDiscover={handleDiscover} />}
+                                        {event.lottery_config?.is_enabled && (
+                                            <EventLotteryCard event={event} onClickDiscover={() => {
+                                                navigate(`/event/${event.slug}/lotteria`);
+                                                window.scrollTo(0, 0);
+                                            }} />
+                                        )}
                                         {hasInfo && <EventInfoCard event={event} onClickDiscover={handleDiscover} />}
                                     </EventCardsCarousel>
                                 </div>

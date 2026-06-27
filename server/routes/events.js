@@ -149,7 +149,7 @@ router.post('/', async (req, res) => {
         where_title, where_image_url, where_link, where_description,
         products_title, products_description,
         info_title, info_description,
-        product_ids
+        product_ids, lottery_config
     } = req.body;
 
     if (!name || !date_text) {
@@ -168,13 +168,14 @@ router.post('/', async (req, res) => {
                 slug, name, date_text, is_visible, hide_at,
                 where_title, where_image_url, where_link, where_description,
                 products_title, products_description,
-                info_title, info_description
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+                info_title, info_description, lottery_config
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
             [
                 slug, name, date_text, is_visible !== undefined ? is_visible : true, hide_at || null,
                 where_title || 'Quando e Dove saremo', where_image_url || null, where_link || null, where_description || null,
                 products_title || 'I prodotti che porteremo', products_description || null,
-                info_title || 'Altre informazioni', info_description || null
+                info_title || 'Altre informazioni', info_description || null,
+                lottery_config ? JSON.stringify(lottery_config) : null
             ]
         );
         const eventId = eventResult.rows[0].id;
@@ -262,7 +263,7 @@ router.put('/:id', async (req, res) => {
         where_title, where_image_url, where_link, where_description,
         products_title, products_description,
         info_title, info_description,
-        product_ids
+        product_ids, lottery_config
     } = req.body;
 
     if (!name || !date_text) {
@@ -290,13 +291,15 @@ router.put('/:id', async (req, res) => {
                 slug = $1, name = $2, date_text = $3, is_visible = $4, hide_at = $5,
                 where_title = $6, where_image_url = $7, where_link = $8, where_description = $9,
                 products_title = $10, products_description = $11,
-                info_title = $12, info_description = $13
-            WHERE id = $14 RETURNING *`,
+                info_title = $12, info_description = $13,
+                lottery_config = $14
+            WHERE id = $15 RETURNING *`,
             [
                 slug, name, date_text, is_visible !== undefined ? is_visible : true, hide_at || null,
                 where_title, where_image_url, where_link, where_description,
                 products_title, products_description,
                 info_title, info_description,
+                lottery_config ? JSON.stringify(lottery_config) : null,
                 id
             ]
         );

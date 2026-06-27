@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts, useEvents } from '../../hooks/useData';
-import { Trash2, Plus, Save, Pencil, Eye, EyeOff, X, Search, ChevronUp, ChevronDown } from 'lucide-react';
+import { Trash2, Plus, Save, Pencil, Eye, EyeOff, X, Search, ChevronUp, ChevronDown, Gift } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
+
+const defaultLotteryConfig = {
+    is_enabled: false,
+    active_step: 1,
+    step1: { title: '', description: '', start_date: '' },
+    step2: { title: '', description: '', activation_date: '', show_map: false, show_contacts: false },
+    step3: { title: '', description: '', winner_name: '' }
+};
 
 const EventManager = () => {
     const { events, mutate: mutateEvents } = useEvents();
@@ -25,7 +33,8 @@ const EventManager = () => {
         products_description: '',
         info_title: 'Altre informazioni',
         info_description: '',
-        product_ids: [] // Array of product IDs associated with the event
+        product_ids: [],
+        lottery_config: JSON.parse(JSON.stringify(defaultLotteryConfig))
     });
 
     useEffect(() => {
@@ -39,6 +48,15 @@ const EventManager = () => {
 
     const handleSave = async (e) => {
         e.preventDefault();
+        
+        // Valida la lotteria se attiva
+        if (newEvent.lottery_config?.is_enabled && newEvent.lottery_config?.active_step === 3) {
+            if (!newEvent.lottery_config.step3.winner_name || newEvent.lottery_config.step3.winner_name.trim() === '') {
+                alert('Attenzione: Devi inserire il nome del vincitore per attivare lo Step 3 della lotteria.');
+                return;
+            }
+        }
+
         try {
             if (editingId) {
                 await api.updateEvent(editingId, newEvent);
@@ -60,7 +78,8 @@ const EventManager = () => {
                 products_description: '',
                 info_title: 'Altre informazioni',
                 info_description: '',
-                product_ids: []
+                product_ids: [],
+                lottery_config: JSON.parse(JSON.stringify(defaultLotteryConfig))
             });
             mutateEvents();
         } catch (err) {
@@ -98,7 +117,8 @@ const EventManager = () => {
             products_description: event.products_description || '',
             info_title: event.info_title || 'Altre informazioni',
             info_description: event.info_description || '',
-            product_ids: event.products ? event.products.map(p => p.id) : []
+            product_ids: event.products ? event.products.map(p => p.id) : [],
+            lottery_config: event.lottery_config ? { ...defaultLotteryConfig, ...event.lottery_config } : JSON.parse(JSON.stringify(defaultLotteryConfig))
         });
         setIsCreating(true);
     };
@@ -195,7 +215,8 @@ const EventManager = () => {
                         products_description: '',
                         info_title: 'Altre informazioni',
                         info_description: '',
-                        product_ids: []
+                        product_ids: [],
+                        lottery_config: JSON.parse(JSON.stringify(defaultLotteryConfig))
                     });
                 }}>
                     <Plus size={18} style={{ marginRight: '8px' }} />
@@ -469,6 +490,148 @@ const EventManager = () => {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Configurazione Lotteria */}
+                                    <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.2rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.4rem' }}>
+                                            <h4 style={{ color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                                                <Gift size={20} /> Configurazione Lotteria
+                                            </h4>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                <span>Abilita</span>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={newEvent.lottery_config?.is_enabled || false}
+                                                    onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, is_enabled: e.target.checked } })}
+                                                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                                />
+                                            </label>
+                                        </div>
+
+                                        {newEvent.lottery_config?.is_enabled && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                                {/* Selettore Step Attivo */}
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Forza Step Attivo</label>
+                                                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                                        {[1, 2, 3].map(step => (
+                                                            <label key={step} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.5rem 1rem', border: newEvent.lottery_config.active_step === step ? '2px solid var(--color-primary)' : '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', backgroundColor: newEvent.lottery_config.active_step === step ? 'rgba(155,57,61,0.05)' : 'white' }}>
+                                                                <input
+                                                                    type="radio"
+                                                                    name="active_step"
+                                                                    checked={newEvent.lottery_config.active_step === step}
+                                                                    onChange={() => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, active_step: step } })}
+                                                                />
+                                                                Step {step}
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Step 1 */}
+                                                <div style={{ padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
+                                                    <h5 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--color-text)' }}>Dettagli Step 1 (Info)</h5>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                                        <input
+                                                            className="form-control"
+                                                            placeholder="Titolo (Es: Lotteria di Capodanno)"
+                                                            value={newEvent.lottery_config.step1.title}
+                                                            onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step1: { ...newEvent.lottery_config.step1, title: e.target.value } } })}
+                                                        />
+                                                        <textarea
+                                                            className="form-control"
+                                                            placeholder="Descrizione breve..."
+                                                            rows="2"
+                                                            value={newEvent.lottery_config.step1.description}
+                                                            onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step1: { ...newEvent.lottery_config.step1, description: e.target.value } } })}
+                                                        />
+                                                        <input
+                                                            type="datetime-local"
+                                                            className="form-control"
+                                                            value={newEvent.lottery_config.step1.start_date}
+                                                            onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step1: { ...newEvent.lottery_config.step1, start_date: e.target.value } } })}
+                                                            title="Data di Inizio Lotteria (Testo informativo)"
+                                                        />
+                                                        <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>*Questa data verrà mostrata come: "La lotteria inizia il [Data]"</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Step 2 */}
+                                                <div style={{ padding: '1rem', backgroundColor: '#f9f9f9', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
+                                                    <h5 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--color-text)' }}>Dettagli Step 2 (Programmazione)</h5>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                                        <input
+                                                            className="form-control"
+                                                            placeholder="Titolo (Es: Lotteria Attiva!)"
+                                                            value={newEvent.lottery_config.step2.title}
+                                                            onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step2: { ...newEvent.lottery_config.step2, title: e.target.value } } })}
+                                                        />
+                                                        <textarea
+                                                            className="form-control"
+                                                            placeholder="Descrizione su come partecipare..."
+                                                            rows="2"
+                                                            value={newEvent.lottery_config.step2.description}
+                                                            onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step2: { ...newEvent.lottery_config.step2, description: e.target.value } } })}
+                                                        />
+                                                        <input
+                                                            type="datetime-local"
+                                                            className="form-control"
+                                                            value={newEvent.lottery_config.step2.activation_date}
+                                                            onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step2: { ...newEvent.lottery_config.step2, activation_date: e.target.value } } })}
+                                                            title="Data di Attivazione Automatica Step 2"
+                                                        />
+                                                        <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>*Se impostata, lo Step 2 diventerà attivo automaticamente al raggiungimento di questa data.</span>
+                                                        <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                                                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={newEvent.lottery_config.step2.show_map}
+                                                                    onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step2: { ...newEvent.lottery_config.step2, show_map: e.target.checked } } })}
+                                                                />
+                                                                Mostra Mappa su Share Page
+                                                            </label>
+                                                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={newEvent.lottery_config.step2.show_contacts}
+                                                                    onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step2: { ...newEvent.lottery_config.step2, show_contacts: e.target.checked } } })}
+                                                                />
+                                                                Mostra Contatti su Share Page
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Step 3 */}
+                                                <div style={{ padding: '1rem', backgroundColor: '#fff5f5', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-primary)' }}>
+                                                    <h5 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--color-primary-dark)' }}>Dettagli Step 3 (Vincitore)</h5>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                                        <input
+                                                            className="form-control"
+                                                            placeholder="Titolo (Es: Abbiamo un Vincitore!)"
+                                                            value={newEvent.lottery_config.step3.title}
+                                                            onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step3: { ...newEvent.lottery_config.step3, title: e.target.value } } })}
+                                                        />
+                                                        <textarea
+                                                            className="form-control"
+                                                            placeholder="Descrizione di ringraziamento..."
+                                                            rows="2"
+                                                            value={newEvent.lottery_config.step3.description}
+                                                            onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step3: { ...newEvent.lottery_config.step3, description: e.target.value } } })}
+                                                        />
+                                                        <input
+                                                            className="form-control"
+                                                            placeholder="Nome/Numero del Vincitore"
+                                                            style={{ borderColor: 'gold', backgroundColor: '#fffdf0', fontWeight: 'bold' }}
+                                                            value={newEvent.lottery_config.step3.winner_name}
+                                                            onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step3: { ...newEvent.lottery_config.step3, winner_name: e.target.value } } })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
                                 </div>
 
                                 {/* Right Side: Associated Products Picker */}
