@@ -400,7 +400,7 @@ const SharedLottery = () => {
                 {showPrizes && prizeProducts.length > 0 && (
                     <div style={{ marginBottom: '2rem' }}>
                         <h3 style={{ color: 'var(--color-primary-dark)', fontSize: '1.4rem', marginBottom: '1rem', marginLeft: '0.5rem' }}>I premi in palio</h3>
-                        <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingBottom: '1rem' }}>
                             {prizeProducts.map((prod, idx) => (
                                 <div 
                                     key={idx}
@@ -408,7 +408,7 @@ const SharedLottery = () => {
                                     style={{ 
                                         display: 'flex', 
                                         alignItems: 'center', 
-                                        minWidth: '280px',
+                                        width: '100%',
                                         backgroundColor: 'white', 
                                         borderRadius: 'var(--radius-md)', 
                                         border: '1px solid var(--color-border)',
