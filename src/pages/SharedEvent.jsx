@@ -75,29 +75,17 @@ const SharedEventLotteryCard = ({ event, navigate }) => {
     const { products } = useProducts();
     const [currentImgIndex, setCurrentImgIndex] = React.useState(0);
     
-    if (!config || !config.is_enabled) return null;
+    let activeStep = config?.active_step || 1;
 
-    let displayTitle = config.step1?.title || 'Lotteria dell\'Evento';
-    let displayDesc = config.step1?.description || 'Partecipa alla nostra lotteria!';
-    let activeStep = config.active_step || 1;
-
-    if (activeStep === 1 && config.step2?.activation_date) {
+    if (activeStep === 1 && config?.step2?.activation_date) {
         if (new Date() >= new Date(config.step2.activation_date)) {
             activeStep = 2;
         }
     }
-
-    if (activeStep === 2) {
-        displayTitle = config.step2?.title || 'Lotteria Attiva!';
-        displayDesc = config.step2?.description || 'Scopri come partecipare.';
-    } else if (activeStep === 3) {
-        displayTitle = config.step3?.title || 'Abbiamo un Vincitore!';
-        displayDesc = config.step3?.description || 'Grazie per aver partecipato!';
-    }
     
     // Gestione premi
-    const prizeIds = config.prize_product_ids || [];
-    const showPrizes = activeStep > 1 || config.show_prizes_step1;
+    const prizeIds = config?.prize_product_ids || [];
+    const showPrizes = activeStep > 1 || config?.show_prizes_step1;
     
     const prizeImages = prizeIds
         .map(id => products?.find(p => p.id === id)?.image_url)
@@ -111,6 +99,19 @@ const SharedEventLotteryCard = ({ event, navigate }) => {
         return () => clearInterval(interval);
     }, [showPrizes, prizeImages.length]);
 
+    if (!config || !config.is_enabled) return null;
+
+    let displayTitle = config.step1?.title || 'Lotteria dell\'Evento';
+    let displayDesc = config.step1?.description || 'Partecipa alla nostra lotteria!';
+
+    if (activeStep === 2) {
+        displayTitle = config.step2?.title || 'Lotteria Attiva!';
+        displayDesc = config.step2?.description || 'Scopri come partecipare.';
+    } else if (activeStep === 3) {
+        displayTitle = config.step3?.title || 'Abbiamo un Vincitore!';
+        displayDesc = config.step3?.description || 'Grazie per aver partecipato!';
+    }
+    
     // Fallback migration check
     const winnerNames = config.step3?.winner_names && config.step3.winner_names.length > 0 
         ? config.step3.winner_names 

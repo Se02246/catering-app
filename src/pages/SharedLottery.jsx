@@ -114,6 +114,30 @@ const SharedLottery = () => {
         fetchEvent();
     }, [slug]);
 
+    const config = event?.lottery_config;
+    let activeStep = config?.active_step || 1;
+
+    if (activeStep === 1 && config?.step2?.activation_date) {
+        if (new Date() >= new Date(config.step2.activation_date)) {
+            activeStep = 2;
+        }
+    }
+
+    const prizeIds = config?.prize_product_ids || [];
+    const showPrizes = activeStep > 1 || config?.show_prizes_step1;
+    
+    const prizeImages = prizeIds
+        .map(id => products?.find(p => p.id === id)?.image_url)
+        .filter(Boolean);
+        
+    useEffect(() => {
+        if (!showPrizes || prizeImages.length <= 1) return;
+        const interval = setInterval(() => {
+            setCurrentImgIndex(prev => (prev + 1) % prizeImages.length);
+        }, 2000);
+        return () => clearInterval(interval);
+    }, [showPrizes, prizeImages.length]);
+
     if (loading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--color-bg)' }}>
@@ -131,30 +155,6 @@ const SharedLottery = () => {
             </div>
         );
     }
-
-    const config = event.lottery_config;
-    let activeStep = config.active_step || 1;
-
-    if (activeStep === 1 && config.step2?.activation_date) {
-        if (new Date() >= new Date(config.step2.activation_date)) {
-            activeStep = 2;
-        }
-    }
-
-    const prizeIds = config.prize_product_ids || [];
-    const showPrizes = activeStep > 1 || config.show_prizes_step1;
-    
-    const prizeImages = prizeIds
-        .map(id => products?.find(p => p.id === id)?.image_url)
-        .filter(Boolean);
-        
-    useEffect(() => {
-        if (!showPrizes || prizeImages.length <= 1) return;
-        const interval = setInterval(() => {
-            setCurrentImgIndex(prev => (prev + 1) % prizeImages.length);
-        }, 2000);
-        return () => clearInterval(interval);
-    }, [showPrizes, prizeImages.length]);
 
     const winnerNames = config.step3?.winner_names && config.step3.winner_names.length > 0 
         ? config.step3.winner_names 
@@ -315,7 +315,7 @@ const SharedLottery = () => {
                     </div>
                 </div>
 
-                {activeStep === 2 && config.step2?.show_map && event.where_image_url && (
+                {((activeStep === 2 && config.step2?.show_map) || (activeStep === 3 && config.step3?.show_map)) && event.where_image_url && (
                     <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)', marginBottom: '2rem' }}>
                         <div style={{ height: '250px' }}>
                             <img src={event.where_image_url} alt="Location" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -332,7 +332,7 @@ const SharedLottery = () => {
                     </div>
                 )}
 
-                {activeStep === 2 && config.step2?.show_contacts && (
+                {((activeStep === 2 && config.step2?.show_contacts) || (activeStep === 3 && config.step3?.show_contacts)) && (
                     <div className="premium-card fade-in" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid rgba(0,0,0,0.05)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--color-primary-dark)' }}>
                             <MessageSquare size={28} />

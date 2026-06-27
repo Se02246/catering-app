@@ -679,6 +679,25 @@ const EventManager = () => {
                                                             onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step3: { ...newEvent.lottery_config.step3, description: e.target.value } } })}
                                                         />
                                                         
+                                                        <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                                                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={newEvent.lottery_config.step3.show_map || false}
+                                                                    onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step3: { ...newEvent.lottery_config.step3, show_map: e.target.checked } } })}
+                                                                />
+                                                                Mostra Mappa su Share Page
+                                                            </label>
+                                                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={newEvent.lottery_config.step3.show_contacts || false}
+                                                                    onChange={e => setNewEvent({ ...newEvent, lottery_config: { ...newEvent.lottery_config, step3: { ...newEvent.lottery_config.step3, show_contacts: e.target.checked } } })}
+                                                                />
+                                                                Mostra Contatti su Share Page
+                                                            </label>
+                                                        </div>
+
                                                         {(() => {
                                                             const prizes = newEvent.lottery_config.prize_product_ids || [];
                                                             const count = Math.max(1, prizes.length);
