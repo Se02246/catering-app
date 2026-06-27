@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { useProducts } from '../hooks/useData';
 import { ArrowLeft, Gift, MapPin, MessageSquare, Instagram, MessageCircle, Calendar } from 'lucide-react';
 import { formatCustomText } from '../utils/textFormatting';
+import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 
 const Confetti = () => {
     const canvasRef = useRef(null);
@@ -32,8 +33,13 @@ const Confetti = () => {
             });
         }
 
+        let startTime = Date.now();
         let animationFrameId;
         const render = () => {
+            const elapsed = Date.now() - startTime;
+            const shouldReset = elapsed < 5000;
+            let activePieces = 0;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             pieces.forEach(p => {
                 p.y += p.speedY;
@@ -41,18 +47,25 @@ const Confetti = () => {
                 p.rotation += p.rotationSpeed;
 
                 if (p.y > canvas.height) {
-                    p.y = -20;
-                    p.x = Math.random() * canvas.width;
+                    if (shouldReset) {
+                        p.y = -20;
+                        p.x = Math.random() * canvas.width;
+                    }
                 }
 
-                ctx.save();
-                ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
-                ctx.rotate(p.rotation * Math.PI / 180);
-                ctx.fillStyle = p.color;
-                ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-                ctx.restore();
+                if (p.y <= canvas.height) {
+                    activePieces++;
+                    ctx.save();
+                    ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
+                    ctx.rotate(p.rotation * Math.PI / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                    ctx.restore();
+                }
             });
-            animationFrameId = requestAnimationFrame(render);
+            if (activePieces > 0) {
+                animationFrameId = requestAnimationFrame(render);
+            }
         };
 
         render();
@@ -93,6 +106,7 @@ const SharedLottery = () => {
     const [error, setError] = useState(null);
     const { products } = useProducts();
     const [currentImgIndex, setCurrentImgIndex] = useState(0);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -126,9 +140,8 @@ const SharedLottery = () => {
     const prizeIds = config?.prize_product_ids || [];
     const showPrizes = activeStep > 1 || config?.show_prizes_step1;
     
-    const prizeImages = prizeIds
-        .map(id => products?.find(p => p.id === id)?.image_url)
-        .filter(Boolean);
+    const prizeProducts = prizeIds.map(id => products?.find(p => p.id === id)).filter(Boolean);
+    const prizeImages = prizeProducts.map(p => p.image_url).filter(Boolean);
         
     useEffect(() => {
         if (!showPrizes || prizeImages.length <= 1) return;
@@ -315,6 +328,48 @@ const SharedLottery = () => {
                     </div>
                 </div>
 
+                {showPrizes && prizeProducts.length > 0 && (
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h3 style={{ color: 'var(--color-primary-dark)', fontSize: '1.4rem', marginBottom: '1rem', marginLeft: '0.5rem' }}>I premi in palio</h3>
+                        <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+                            {prizeProducts.map((prod, idx) => (
+                                <div 
+                                    key={idx}
+                                    onClick={() => setSelectedProduct(prod)}
+                                    style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        minWidth: '280px',
+                                        backgroundColor: 'white', 
+                                        borderRadius: 'var(--radius-md)', 
+                                        border: '1px solid var(--color-border)',
+                                        boxShadow: '0 4px 10px rgba(0,0,0,0.03)',
+                                        cursor: 'pointer',
+                                        overflow: 'hidden',
+                                        transition: 'transform 0.2s',
+                                    }}
+                                    onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                    onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+                                >
+                                    <div style={{ width: '90px', height: '90px', flexShrink: 0, backgroundColor: '#f5f5f5' }}>
+                                        {prod.image_url ? (
+                                            <img src={prod.image_url} alt={prod.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        ) : (
+                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <Gift color="#ccc" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div style={{ padding: '1rem', flex: 1 }}>
+                                        <div style={{ fontSize: '0.85rem', color: 'var(--color-accent)', fontWeight: 'bold', marginBottom: '0.25rem' }}>{idx + 1}° Premio</div>
+                                        <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prod.name}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {((activeStep === 2 && config.step2?.show_map) || (activeStep === 3 && config.step3?.show_map)) && event.where_image_url && (
                     <div className="premium-card fade-in" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)', marginBottom: '2rem' }}>
                         <div style={{ height: '250px' }}>
@@ -351,6 +406,14 @@ const SharedLottery = () => {
                 )}
 
             </div>
+
+            {selectedProduct && (
+                <ProductDetailsModal 
+                    product={selectedProduct} 
+                    onClose={() => setSelectedProduct(null)} 
+                    alwaysShowPrices={false} 
+                />
+            )}
         </div>
     );
 };
