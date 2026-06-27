@@ -176,15 +176,21 @@ const ProductManager = ({ onCreateQuoteClick }) => {
     };
 
     const toggleQuoteVisibility = async (product) => {
-        try {
-            await api.updateProduct(product.id, {
-                ...product,
-                hide_from_quotes: !product.hide_from_quotes
-            });
-            mutate();
-        } catch (err) {
-            console.error('Failed to update quote visibility', err);
-            alert('Errore durante l\'aggiornamento della visibilità nei preventivi');
+        const actionText = product.hide_from_quotes 
+            ? "MOSTRARE questo prodotto nei preventivi" 
+            : "NASCONDERE questo prodotto dai preventivi";
+            
+        if (window.confirm(`Sei sicuro di voler ${actionText}?`)) {
+            try {
+                await api.updateProduct(product.id, {
+                    ...product,
+                    hide_from_quotes: !product.hide_from_quotes
+                });
+                mutate();
+            } catch (err) {
+                console.error('Failed to update quote visibility', err);
+                alert('Errore durante l\'aggiornamento della visibilità nei preventivi');
+            }
         }
     };
 
