@@ -18,15 +18,15 @@ router.get('/', async (req, res) => {
 
 // Add a product
 router.post('/', async (req, res) => {
-    const { name, description, menu_description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment, show_servings, servings_per_unit, is_visible, hide_at, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_sold_by_piece, price_per_piece, hide_quantity, hide_unit_price, hide_in_menu } = req.body;
+    const { name, description, menu_description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment, show_servings, servings_per_unit, is_visible, hide_at, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_sold_by_piece, price_per_piece, hide_quantity, hide_unit_price, hide_in_menu, hide_from_quotes } = req.body;
     try {
         // Ensure images array is populated, fallback to image_url if needed
         const imagesArray = images || (image_url ? [image_url] : []);
         const mainImage = imagesArray.length > 0 ? imagesArray[0] : image_url;
 
         const result = await pool.query(
-            'INSERT INTO products (name, description, menu_description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment, show_servings, servings_per_unit, is_visible, hide_at, allow_multiple, max_order_quantity, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_sold_by_piece, price_per_piece, hide_quantity, hide_unit_price, hide_in_menu) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *',
-            [name, description, menu_description || null, price_per_kg, mainImage, pieces_per_kg, min_order_quantity || 1, (order_increment !== undefined && order_increment !== null) ? order_increment : 1, show_servings || false, servings_per_unit, is_visible !== undefined ? is_visible : true, hide_at || null, req.body.allow_multiple || false, req.body.max_order_quantity || null, imagesArray, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_sold_by_piece || false, price_per_piece || null, hide_quantity || false, hide_unit_price || false, hide_in_menu || false]
+            'INSERT INTO products (name, description, menu_description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment, show_servings, servings_per_unit, is_visible, hide_at, allow_multiple, max_order_quantity, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_sold_by_piece, price_per_piece, hide_quantity, hide_unit_price, hide_in_menu, hide_from_quotes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25) RETURNING *',
+            [name, description, menu_description || null, price_per_kg, mainImage, pieces_per_kg, min_order_quantity || 1, (order_increment !== undefined && order_increment !== null) ? order_increment : 1, show_servings || false, servings_per_unit, is_visible !== undefined ? is_visible : true, hide_at || null, req.body.allow_multiple || false, req.body.max_order_quantity || null, imagesArray, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_sold_by_piece || false, price_per_piece || null, hide_quantity || false, hide_unit_price || false, hide_in_menu || false, hide_from_quotes || false]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -38,14 +38,14 @@ router.post('/', async (req, res) => {
 // Update a product
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, description, menu_description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment, show_servings, servings_per_unit, is_visible, hide_at, allow_multiple, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_sold_by_piece, price_per_piece, hide_quantity, hide_unit_price, hide_in_menu } = req.body;
+    const { name, description, menu_description, price_per_kg, image_url, pieces_per_kg, min_order_quantity, order_increment, show_servings, servings_per_unit, is_visible, hide_at, allow_multiple, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_sold_by_piece, price_per_piece, hide_quantity, hide_unit_price, hide_in_menu, hide_from_quotes } = req.body;
     try {
         const imagesArray = images || (image_url ? [image_url] : []);
         const mainImage = imagesArray.length > 0 ? imagesArray[0] : image_url;
 
         const result = await pool.query(
-            'UPDATE products SET name = $1, description = $2, menu_description = $3, price_per_kg = $4, image_url = $5, pieces_per_kg = $6, min_order_quantity = $7, order_increment = $8, show_servings = $9, servings_per_unit = $10, is_visible = $11, hide_at = $12, allow_multiple = $13, max_order_quantity = $14, images = $15, is_gluten_free = $16, is_lactose_free = $17, is_vegetarian = $18, is_vegan = $19, is_sold_by_piece = $20, price_per_piece = $21, hide_quantity = $22, hide_unit_price = $23, hide_in_menu = $24 WHERE id = $25 RETURNING *',
-            [name, description, menu_description || null, price_per_kg, mainImage, pieces_per_kg, min_order_quantity || 1, (order_increment !== undefined && order_increment !== null) ? order_increment : 1, show_servings || false, servings_per_unit, is_visible !== undefined ? is_visible : true, hide_at || null, allow_multiple || false, req.body.max_order_quantity || null, imagesArray, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_sold_by_piece || false, price_per_piece || null, hide_quantity || false, hide_unit_price || false, hide_in_menu || false, id]
+            'UPDATE products SET name = $1, description = $2, menu_description = $3, price_per_kg = $4, image_url = $5, pieces_per_kg = $6, min_order_quantity = $7, order_increment = $8, show_servings = $9, servings_per_unit = $10, is_visible = $11, hide_at = $12, allow_multiple = $13, max_order_quantity = $14, images = $15, is_gluten_free = $16, is_lactose_free = $17, is_vegetarian = $18, is_vegan = $19, is_sold_by_piece = $20, price_per_piece = $21, hide_quantity = $22, hide_unit_price = $23, hide_in_menu = $24, hide_from_quotes = $25 WHERE id = $26 RETURNING *',
+            [name, description, menu_description || null, price_per_kg, mainImage, pieces_per_kg, min_order_quantity || 1, (order_increment !== undefined && order_increment !== null) ? order_increment : 1, show_servings || false, servings_per_unit, is_visible !== undefined ? is_visible : true, hide_at || null, allow_multiple || false, req.body.max_order_quantity || null, imagesArray, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_sold_by_piece || false, price_per_piece || null, hide_quantity || false, hide_unit_price || false, hide_in_menu || false, hide_from_quotes !== undefined ? hide_from_quotes : false, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Product not found' });

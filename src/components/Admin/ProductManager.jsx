@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText, Minus, Search, Send, Scale, Hash, ChevronUp, ChevronDown } from 'lucide-react';
+import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText, Minus, Search, Send, Scale, Hash, ChevronUp, ChevronDown, FileMinus } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 import HideModal from '../Common/HideModal';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +17,7 @@ const ProductManager = ({ onCreateQuoteClick }) => {
         name: '', description: '', menu_description: '', price_per_kg: '', image_url: '', images: [], 
         is_visible: true, hide_at: null, allow_multiple: false, order_increment: '', 
         max_order_quantity: '', is_sold_by_piece: false, price_per_piece: '',
-        hide_quantity: false, hide_unit_price: false, hide_in_menu: false
+        hide_quantity: false, hide_unit_price: false, hide_in_menu: false, hide_from_quotes: false
     });
 
 
@@ -39,7 +39,7 @@ const ProductManager = ({ onCreateQuoteClick }) => {
             pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
             show_servings: false, servings_per_unit: '', is_visible: true, hide_at: null, allow_multiple: false,
             is_gluten_free: false, is_lactose_free: false, is_sold_by_piece: false, price_per_piece: '',
-            hide_quantity: false, hide_unit_price: false, hide_in_menu: false
+            hide_quantity: false, hide_unit_price: false, hide_in_menu: false, hide_from_quotes: false
         });
         setCalcError('');
     };
@@ -127,7 +127,8 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                 price_per_piece: currentProduct.price_per_piece ? parseFloat(currentProduct.price_per_piece) : null,
                 hide_quantity: currentProduct.hide_quantity || false,
                 hide_unit_price: currentProduct.hide_unit_price || false,
-                hide_in_menu: currentProduct.hide_in_menu || false
+                hide_in_menu: currentProduct.hide_in_menu || false,
+                hide_from_quotes: currentProduct.hide_from_quotes || false
             };
 
             if (currentProduct.id) {
@@ -171,6 +172,19 @@ const ProductManager = ({ onCreateQuoteClick }) => {
         } catch (err) {
             console.error('Failed to update visibility', err);
             alert('Errore durante l\'aggiornamento della visibilità');
+        }
+    };
+
+    const toggleQuoteVisibility = async (product) => {
+        try {
+            await api.updateProduct(product.id, {
+                ...product,
+                hide_from_quotes: !product.hide_from_quotes
+            });
+            mutate();
+        } catch (err) {
+            console.error('Failed to update quote visibility', err);
+            alert('Errore durante l\'aggiornamento della visibilità nei preventivi');
         }
     };
 
@@ -439,7 +453,19 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                                         />
                                         <label htmlFor="hide_in_menu" style={{ fontWeight: 'bold', cursor: 'pointer' }}>Nascondi nel menù</label>
                                     </div>
-                                    <small style={{ color: '#666' }}>Nasconde questo prodotto dal menù digitale e dal PDF del menù.</small>
+                                    <small style={{ color: '#666', display: 'block' }}>Nasconde questo prodotto dal menù digitale e dal PDF del menù.</small>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', marginTop: '1rem', marginBottom: '0.5rem' }}>
+                                        <input
+                                            type="checkbox"
+                                            id="hide_from_quotes"
+                                            checked={currentProduct.hide_from_quotes || false}
+                                            onChange={e => setCurrentProduct({ ...currentProduct, hide_from_quotes: e.target.checked })}
+                                            style={{ marginRight: '0.75rem', width: '18px', height: '18px' }}
+                                        />
+                                        <label htmlFor="hide_from_quotes" style={{ fontWeight: 'bold', cursor: 'pointer' }}>Nascondi dai Preventivi</label>
+                                    </div>
+                                    <small style={{ color: '#666', display: 'block' }}>Rende il prodotto non selezionabile durante la creazione dei preventivi.</small>
                                 </div>
 
                                 <div style={{ marginBottom: '1.5rem', padding: '1.2rem', backgroundColor: 'rgba(155, 57, 61, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(155, 57, 61, 0.1)' }}>
@@ -584,6 +610,14 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                                     title={!isHidden ? "Nascondi" : "Mostra"}
                                 >
                                     {!isHidden ? <Eye size={18} /> : <EyeOff size={18} />}
+                                </button>
+                                <button 
+                                    className="btn btn-outline" 
+                                    style={{ padding: '0.6rem', color: p.hide_from_quotes ? '#999' : 'var(--color-primary)' }} 
+                                    onClick={() => toggleQuoteVisibility(p)} 
+                                    title={p.hide_from_quotes ? "Mostra nei preventivi" : "Nascondi dai preventivi"}
+                                >
+                                    {p.hide_from_quotes ? <FileMinus size={18} /> : <FileText size={18} />}
                                 </button>
                                 <button className="btn btn-outline" style={{ padding: '0.6rem' }} onClick={() => { setCurrentProduct(p); setIsEditing(true); }}>
                                     <Edit size={18} />

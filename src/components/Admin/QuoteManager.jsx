@@ -870,7 +870,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             }}
                         >
                             <option value="">-- Seleziona un prodotto da aggiungere --</option>
-                            {products.map(p => (
+                            {products
+                                .filter(p => !p.hide_from_quotes)
+                                .map(p => (
                                 <option key={p.id} value={p.id}>
                                     {p.name} 
                                     {p.is_gluten_free && ' [SG]'}
