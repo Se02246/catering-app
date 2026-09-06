@@ -5,41 +5,41 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const router = express.Router();
 
 const MODEL_WATERFALL = [
-  'gemini-flash',
-  'gemini-pro'
+    'gemini-flash',
+    'gemini-pro'
 ];
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || "");
 
 async function generateWithFallback(modelIndex, prompt, imageParts = []) {
-  if (modelIndex >= MODEL_WATERFALL.length) {
-    throw new Error("Tutti i modelli AI sono momentaneamente non disponibili (Quota esaurita o Errore server).");
-  }
-
-  const currentModelName = MODEL_WATERFALL[modelIndex];
-  console.log(`🤖 Tentativo AI con modello: ${currentModelName} (Priorità ${modelIndex + 1}/${MODEL_WATERFALL.length})`);
-
-  try {
-    const model = genAI.getGenerativeModel({ model: currentModelName });
-    const result = await model.generateContent([prompt, ...imageParts]);
-    return result;
-  } catch (error) {
-    const errorMsg = error.message || '';
-    if (
-      errorMsg.includes('429') ||
-      errorMsg.includes('503') ||
-      errorMsg.includes('quota') ||
-      errorMsg.includes('exhausted') ||
-      errorMsg.includes('not found') ||
-      errorMsg.includes('not supported') ||
-      errorMsg.includes('500')
-    ) {
-      console.warn(`⚠️ Modello ${currentModelName} fallito (${errorMsg}). Passaggio al modello successivo...`);
-      return generateWithFallback(modelIndex + 1, prompt, imageParts);
+    if (modelIndex >= MODEL_WATERFALL.length) {
+        throw new Error("Tutti i modelli AI sono momentaneamente non disponibili (Quota esaurita o Errore server).");
     }
-    console.error(`❌ Errore fatale non recuperabile con ${currentModelName}:`, errorMsg);
-    throw error;
-  }
+
+    const currentModelName = MODEL_WATERFALL[modelIndex];
+    console.log(`🤖 Tentativo AI con modello: ${currentModelName} (Priorità ${modelIndex + 1}/${MODEL_WATERFALL.length})`);
+
+    try {
+        const model = genAI.getGenerativeModel({ model: currentModelName });
+        const result = await model.generateContent([prompt, ...imageParts]);
+        return result;
+    } catch (error) {
+        const errorMsg = error.message || '';
+        if (
+            errorMsg.includes('429') ||
+            errorMsg.includes('503') ||
+            errorMsg.includes('quota') ||
+            errorMsg.includes('exhausted') ||
+            errorMsg.includes('not found') ||
+            errorMsg.includes('not supported') ||
+            errorMsg.includes('500')
+        ) {
+            console.warn(`⚠️ Modello ${currentModelName} fallito (${errorMsg}). Passaggio al modello successivo...`);
+            return generateWithFallback(modelIndex + 1, prompt, imageParts);
+        }
+        console.error(`❌ Errore fatale non recuperabile con ${currentModelName}:`, errorMsg);
+        throw error;
+    }
 }
 
 // Generate 10 AI thoughts/steps for real-time feedback
@@ -84,7 +84,7 @@ router.post('/ai-generate', async (req, res) => {
         if (!isAdmin) {
             query += ' WHERE is_visible = true AND (hide_at IS NULL OR hide_at > NOW())';
         }
-        
+
         const productsResult = await pool.query(query);
         const productsList = productsResult.rows.map(p => ({
             id: p.id,
@@ -153,15 +153,15 @@ ${!isAdmin ? "- RISPETTA TASSATIVAMENTE il valore di \"is_sold_by_piece\" che tr
         const responseText = result.response.text();
         let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
         const parsedData = JSON.parse(jsonStr);
-        
+
         let total = 0;
         if (parsedData.items) {
-           parsedData.items.forEach(item => {
-               const price = item.is_sold_by_piece ? Number(item.price_per_piece) : Number(item.price_per_kg);
-               total += (price || 0) * (Number(item.quantity) || 0);
-           });
+            parsedData.items.forEach(item => {
+                const price = item.is_sold_by_piece ? Number(item.price_per_piece) : Number(item.price_per_kg);
+                total += (price || 0) * (Number(item.quantity) || 0);
+            });
         }
-        
+
         if (parsedData.manual_total_price !== undefined && parsedData.manual_total_price !== null) {
             parsedData.total_price = Number(parsedData.manual_total_price);
         } else {
@@ -202,7 +202,7 @@ router.get('/menu/:menuId', async (req, res) => {
         if (!uuidRegex.test(menuId)) {
             return res.status(400).json({ error: 'Invalid menu ID format' });
         }
-        
+
         const result = await pool.query('SELECT * FROM quotes WHERE menu_id = $1', [menuId]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Menu not found' });
@@ -410,28 +410,57 @@ Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato:
     return null;
 }
 
-// Helper to get current average petrol price in Italy
+// Helper to get current average petrol price in Italy via AI (senza stime preimpostate o numeri suggeriti)
 async function getCurrentFuelPrice() {
     try {
-        const prompt = `Qual è il prezzo medio attuale stimato della benzina self-service in Italia al litro in euro (€/L)?
-Fornisci una stima accurata e realistica attuale (es. tra 1.70 e 1.90 €/L).
-Rispondi ESCLUSIVAMENTE con un JSON nel formato:
-{"fuel_price": 1.82}`;
+        const currentDate = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+        const prompt = `Qual è il prezzo medio della benzina in Italia oggi (${currentDate}) al self service in euro al litro?
+Fornisci il dato attuale più recente. Non basarti su valori preimpostati o stime fittizie.
+
+Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato, senza markdown e senza alcun altro testo:
+{
+  "fuel_price": <prezzo_in_euro_al_litro>
+}`;
+
+        console.log(`🤖 Interrogazione AI per prezzo medio benzina (${currentDate})...`);
         const res = await generateWithFallback(0, prompt);
         const text = res.response.text();
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        console.log('🤖 Risposta grezza AI per carburante:', text);
+
+        // 1. Prova estrazione da JSON
+        const jsonMatch = text.match(/\{[\s\S]*?\}/);
         if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            const price = parseFloat(parsed.fuel_price || parsed.price_per_liter);
-            if (!isNaN(price) && price >= 1.20 && price <= 2.80) {
+            try {
+                const parsed = JSON.parse(jsonMatch[0]);
+                const price = parseFloat(parsed.fuel_price || parsed.price || parsed.prezzo || parsed.price_per_liter);
+                if (!isNaN(price) && price > 0.5 && price < 5.0) {
+                    console.log(`✅ Prezzo benzina rilevato dall'IA (da JSON): ${price} €/L`);
+                    return parseFloat(price.toFixed(3));
+                }
+            } catch (e) {
+                // fall-through to regex
+            }
+        }
+
+        // 2. Estrazione diretta del valore numerico dal testo (es. "2.05" o "2,05 euro")
+        const numberMatch = text.match(/(\d+[.,]\d{2,3})/);
+        if (numberMatch) {
+            const rawVal = numberMatch[1].replace(',', '.');
+            const price = parseFloat(rawVal);
+            if (!isNaN(price) && price > 0.5 && price < 5.0) {
+                console.log(`✅ Prezzo benzina rilevato dall'IA (da testo): ${price} €/L`);
                 return parseFloat(price.toFixed(3));
             }
         }
     } catch (err) {
-        console.warn('Failed to detect fuel price via AI, using default:', err.message);
+        console.warn('⚠️ Impossibile rilevare prezzo carburante via AI, errore:', err.message);
     }
-    return 1.82; // Fallback price
+
+    // Fallback di sicurezza solo in caso di indisponibilità o errore di rete dell'AI
+    return 2.00;
 }
+
+
 
 // Calculate delivery cost based on destination, car consumption and fuel price
 router.post('/calculate-delivery', async (req, res) => {
