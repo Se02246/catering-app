@@ -3,7 +3,7 @@ import { api } from '../../services/api';
 import { X, MapPin, Navigation, Car, Fuel, Loader2, Check, RotateCcw, Clock, ShieldCheck, Plus, Minus } from 'lucide-react';
 
 const DEFAULT_ORIGIN = 'Piazza san giuseppe, Irgoli 08020 Sardegna, Italia';
-const DEFAULT_CONSUMPTION = 15.5; // Valore di default standard richiesto: 18 km/l
+const DEFAULT_CONSUMPTION = 18.0; // Valore di default standard richiesto: 18 km/l
 
 const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination = '' }) => {
     const [destination, setDestination] = useState(initialDestination);
@@ -111,7 +111,6 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                 padding: '1.5rem 1rem',
                 overflowY: 'auto'
             }}
-            onClick={onClose}
         >
             <div
                 className="bounce-in"
@@ -127,7 +126,6 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                     overflow: 'hidden',
                     margin: 'auto'
                 }}
-                onClick={e => e.stopPropagation()}
             >
                 {/* Header (Fisso in alto) */}
                 <div style={{
