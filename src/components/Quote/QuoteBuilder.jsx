@@ -5,6 +5,85 @@ import { useProducts } from '../../hooks/useData';
 import { Plus, Minus, Trash2, Send, Check, ShoppingCart, Search, Calendar, Wand2, Sparkles, Loader2, Info, User, X } from 'lucide-react';
 import ProductDetailsModal from '../Common/ProductDetailsModal';
 
+const DigitReel = ({ digit, delay = 0 }) => {
+    const isNum = !isNaN(parseInt(digit, 10));
+    if (!isNum) {
+        return <span style={{ display: 'inline-block', minWidth: '0.3em', textAlign: 'center' }}>{digit}</span>;
+    }
+    const num = parseInt(digit, 10);
+    return (
+        <span
+            style={{
+                display: 'inline-block',
+                height: '1.25em',
+                lineHeight: '1.25em',
+                overflow: 'hidden',
+                verticalAlign: 'bottom',
+                position: 'relative',
+                width: '0.62em',
+                textAlign: 'center'
+            }}
+        >
+            <span
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transform: `translateY(-${num * 10}%)`,
+                    transition: `transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
+                    willChange: 'transform'
+                }}
+            >
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+                    <span
+                        key={n}
+                        style={{
+                            height: '1.25em',
+                            lineHeight: '1.25em',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        {n}
+                    </span>
+                ))}
+            </span>
+        </span>
+    );
+};
+
+const SlotRollingPrice = ({ value, prefix = '€ ' }) => {
+    const str = Number(value || 0).toFixed(2);
+    const chars = str.split('');
+    const totalLen = chars.length;
+
+    return (
+        <span
+            style={{
+                display: 'inline-flex',
+                alignItems: 'baseline',
+                fontVariantNumeric: 'tabular-nums',
+                letterSpacing: '-0.02em',
+                overflow: 'hidden',
+                lineHeight: '1.25em'
+            }}
+        >
+            {prefix && <span style={{ marginRight: '3px' }}>{prefix}</span>}
+            {chars.map((char, index) => {
+                const posFromRight = totalLen - 1 - index;
+                const delay = index * 30;
+                return (
+                    <DigitReel
+                        key={`pos-${posFromRight}`}
+                        digit={char}
+                        delay={delay}
+                    />
+                );
+            })}
+        </span>
+    );
+};
+
 const QuoteBuilder = () => {
     const location = useLocation();
     const { products: rawProducts, isLoading } = useProducts();
@@ -786,7 +865,9 @@ const QuoteBuilder = () => {
                             <div style={{ borderTop: '2px solid var(--color-bg)', paddingTop: '1.5rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                                     <span style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--color-text-muted)' }}>Totale Indicativo</span>
-                                    <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>€ {calculateTotal().toFixed(2)}</span>
+                                    <span style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--color-primary-dark)' }}>
+                                        <SlotRollingPrice value={calculateTotal()} />
+                                    </span>
                                 </div>
                                 <button className="btn btn-primary" style={{ width: '100%', padding: '1.2rem' }} onClick={handleShareQuote} disabled={isSaving}>
                                     <Send size={18} style={{ marginRight: '0.8rem' }} /> {isSaving ? 'Invio in corso...' : 'Invia su WhatsApp'}
@@ -804,7 +885,6 @@ const QuoteBuilder = () => {
             {cart.length > 0 && (
                 <button
                     id="mobile-cart-fab"
-                    className="animate-float"
                     onClick={() => document.getElementById('quote-summary').scrollIntoView({ behavior: 'smooth' })}
                     aria-label={`Carrello: ${cart.length} elementi, totale € ${calculateTotal().toFixed(2)}`}
                     style={{
@@ -863,7 +943,7 @@ const QuoteBuilder = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: '1.1' }}>
                         <span style={{ fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.85, fontWeight: '700' }}>Totale</span>
                         <span style={{ fontSize: '1.05rem', fontWeight: '800', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
-                            € {calculateTotal().toFixed(2)}
+                            <SlotRollingPrice value={calculateTotal()} />
                         </span>
                     </div>
                 </button>
