@@ -320,7 +320,6 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                     fontSize: '0.95rem', 
                     lineHeight: '1.6',
                     fontStyle: 'italic',
-                    flexGrow: 1,
                     whiteSpace: 'pre-line'
                 }}>
                     {comment}
@@ -328,7 +327,7 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
             )}
 
             {images && images.length > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem', marginBottom: '0.5rem', width: '100%', padding: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0.25rem 0', width: '100%', padding: '0.5rem' }}>
                     {visibleImages.map((img, idx) => {
                         const isLast = idx === maxFrames - 1;
                         const showOverlay = isLast && remainingCount > 0;
