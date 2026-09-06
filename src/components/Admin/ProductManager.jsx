@@ -41,7 +41,7 @@ const ProductManager = ({ onCreateQuoteClick }) => {
             name: '', description: '', menu_description: '', price_per_kg: '', image_url: '', images: [],
             pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
             show_servings: false, servings_per_unit: '', is_visible: true, hide_at: null, allow_multiple: false,
-            is_gluten_free: false, is_lactose_free: false, is_vegetarian: false, is_vegan: false, is_traditional: false, is_sold_by_piece: false, price_per_piece: '',
+            is_gluten_free: false, is_lactose_free: false, is_vegetarian: false, is_vegan: false, is_traditional: false, is_savory: false, is_sweet: false, is_sold_by_piece: false, price_per_piece: '',
             hide_quantity: false, hide_unit_price: false, hide_in_menu: false, hide_from_quotes: false
         });
         setCalcError('');
@@ -129,6 +129,8 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                 is_vegetarian: currentProduct.is_vegetarian || false,
                 is_vegan: currentProduct.is_vegan || false,
                 is_traditional: currentProduct.is_traditional || false,
+                is_savory: currentProduct.is_savory || false,
+                is_sweet: currentProduct.is_sweet || false,
                 is_sold_by_piece: currentProduct.is_sold_by_piece || false,
                 price_per_piece: currentProduct.price_per_piece ? parseFloat(currentProduct.price_per_piece) : null,
                 hide_quantity: currentProduct.hide_quantity || false,
@@ -223,6 +225,8 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                 is_vegetarian: product.is_vegetarian || false,
                 is_vegan: product.is_vegan || false,
                 is_traditional: product.is_traditional || false,
+                is_savory: product.is_savory || false,
+                is_sweet: product.is_sweet || false,
                 is_sold_by_piece: product.is_sold_by_piece || false,
                 price_per_piece: (product.price_per_piece !== '' && product.price_per_piece !== null && product.price_per_piece !== undefined) ? parseFloat(product.price_per_piece) : null,
                 hide_quantity: product.hide_quantity || false,
@@ -266,6 +270,8 @@ const ProductManager = ({ onCreateQuoteClick }) => {
         { key: 'vegetarian', label: 'Vegetariano', color: '#8BC34A', bg: 'rgba(139, 195, 74, 0.12)' },
         { key: 'vegan', label: 'Vegano', color: '#388E3C', bg: 'rgba(56, 142, 60, 0.12)' },
         { key: 'traditional', label: 'Tradizionale', color: '#B45309', bg: 'rgba(180, 83, 9, 0.12)' },
+        { key: 'salato', label: 'Salato', color: '#0D9488', bg: 'rgba(13, 148, 136, 0.12)' },
+        { key: 'dolce', label: 'Dolce', color: '#EC4899', bg: 'rgba(236, 72, 153, 0.12)' },
         { key: 'hide_from_quotes', label: 'Nascosti nei preventivi', icon: FileMinus, color: 'var(--color-primary)', bg: 'rgba(155, 57, 61, 0.12)' },
     ];
 
@@ -284,6 +290,8 @@ const ProductManager = ({ onCreateQuoteClick }) => {
         if (selectedDietaryFilters.includes('vegetarian') && (!p.is_vegetarian && !p.is_vegan)) return false;
         if (selectedDietaryFilters.includes('vegan') && !p.is_vegan) return false;
         if (selectedDietaryFilters.includes('traditional') && !p.is_traditional) return false;
+        if (selectedDietaryFilters.includes('salato') && !p.is_savory) return false;
+        if (selectedDietaryFilters.includes('dolce') && !p.is_sweet) return false;
         if (selectedDietaryFilters.includes('hide_from_quotes') && !p.hide_from_quotes) return false;
 
         // Search text filter
@@ -799,6 +807,26 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                                                 style={{ marginRight: '0.75rem', width: '18px', height: '18px' }}
                                             />
                                             <label htmlFor="is_traditional" style={{ fontWeight: 'bold', color: '#B45309', cursor: 'pointer' }}>Tradizionale!</label>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <input
+                                                type="checkbox"
+                                                id="is_savory"
+                                                checked={currentProduct.is_savory || false}
+                                                onChange={e => setCurrentProduct({ ...currentProduct, is_savory: e.target.checked })}
+                                                style={{ marginRight: '0.75rem', width: '18px', height: '18px' }}
+                                            />
+                                            <label htmlFor="is_savory" style={{ fontWeight: 'bold', color: '#0D9488', cursor: 'pointer' }}>Salato!</label>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <input
+                                                type="checkbox"
+                                                id="is_sweet"
+                                                checked={currentProduct.is_sweet || false}
+                                                onChange={e => setCurrentProduct({ ...currentProduct, is_sweet: e.target.checked })}
+                                                style={{ marginRight: '0.75rem', width: '18px', height: '18px' }}
+                                            />
+                                            <label htmlFor="is_sweet" style={{ fontWeight: 'bold', color: '#EC4899', cursor: 'pointer' }}>Dolce!</label>
                                         </div>
                                     </div>
                                 </div>

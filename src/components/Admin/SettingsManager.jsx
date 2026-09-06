@@ -26,6 +26,8 @@ DATI PRODOTTI CORRENTI:
         if (p.is_vegetarian) allergeni.push("Vegetariano");
         if (p.is_vegan) allergeni.push("Vegano");
         if (p.is_traditional) allergeni.push("Tradizionale");
+        if (p.is_savory) allergeni.push("Salato");
+        if (p.is_sweet) allergeni.push("Dolce");
 
         const tags = allergeni.length > 0 ? allergeni.join(", ") : "Nessuno";
 

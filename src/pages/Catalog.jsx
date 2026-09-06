@@ -38,6 +38,8 @@ const Catalog = () => {
         { key: 'vegetarian', label: 'Vegetariano', badge: 'VGT', color: '#8BC34A', bg: 'rgba(139, 195, 74, 0.12)' },
         { key: 'vegan', label: 'Vegano', badge: 'VEG', color: '#388E3C', bg: 'rgba(56, 142, 60, 0.12)' },
         { key: 'traditional', label: 'Tradizionale', badge: 'TRAD', color: '#B45309', bg: 'rgba(180, 83, 9, 0.12)' },
+        { key: 'salato', label: 'Salato', color: '#0D9488', bg: 'rgba(13, 148, 136, 0.12)' },
+        { key: 'dolce', label: 'Dolce', color: '#EC4899', bg: 'rgba(236, 72, 153, 0.12)' },
     ];
 
     const hasActiveFilters = searchTerm.trim() !== '' || selectedDietaryFilters.length > 0;
@@ -54,6 +56,8 @@ const Catalog = () => {
         if (selectedDietaryFilters.includes('vegetarian') && (!p.is_vegetarian && !p.is_vegan)) return false;
         if (selectedDietaryFilters.includes('vegan') && !p.is_vegan) return false;
         if (selectedDietaryFilters.includes('traditional') && !p.is_traditional) return false;
+        if (selectedDietaryFilters.includes('salato') && !p.is_savory) return false;
+        if (selectedDietaryFilters.includes('dolce') && !p.is_sweet) return false;
 
         // Search query
         if (searchTerm.trim()) {

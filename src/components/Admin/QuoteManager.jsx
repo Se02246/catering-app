@@ -1399,7 +1399,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                     { key: 'lactose_free', label: 'Senza Lattosio', color: '#03A9F4', bg: 'rgba(3, 169, 244, 0.1)' },
                                     { key: 'vegetarian', label: 'Vegetariano', color: '#8BC34A', bg: 'rgba(139, 195, 74, 0.1)' },
                                     { key: 'vegan', label: 'Vegano', color: '#388E3C', bg: 'rgba(56, 142, 60, 0.1)' },
-                                    { key: 'traditional', label: 'Tradizionale', color: '#B45309', bg: 'rgba(180, 83, 9, 0.1)' }
+                                    { key: 'traditional', label: 'Tradizionale', color: '#B45309', bg: 'rgba(180, 83, 9, 0.1)' },
+                                    { key: 'salato', label: 'Salato', color: '#0D9488', bg: 'rgba(13, 148, 136, 0.1)' },
+                                    { key: 'dolce', label: 'Dolce', color: '#EC4899', bg: 'rgba(236, 72, 153, 0.1)' }
                                 ].map(chip => {
                                     const isSelected = selectedTagFilter === chip.key;
                                     return (
@@ -1457,6 +1459,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                         if (selectedTagFilter === 'vegetarian' && !p.is_vegetarian && !p.is_vegan) return false;
                                         if (selectedTagFilter === 'vegan' && !p.is_vegan) return false;
                                         if (selectedTagFilter === 'traditional' && !p.is_traditional) return false;
+                                        if (selectedTagFilter === 'salato' && !p.is_savory) return false;
+                                        if (selectedTagFilter === 'dolce' && !p.is_sweet) return false;
                                         return true;
                                     });
 
