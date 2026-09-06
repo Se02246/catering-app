@@ -53,7 +53,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// 2. POST /api/vehicles/ai-analyze - Analyze vehicle name, return clean name, consumption and 3D render URL
+// 2. POST /api/vehicles/ai-analyze - Analyze vehicle name, return clean name and consumption
 router.post('/ai-analyze', async (req, res) => {
     const { prompt } = req.body;
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
@@ -66,13 +66,11 @@ router.post('/ai-analyze', async (req, res) => {
 
 Devi estrarre ed elaborare con precisione:
 1. "name": il nome pulito e canonico del veicolo, RIMUOVENDO colori ed elementi estetici o aggettivi generici (es: se l'utente scrive "fiat panda 2013 nera", il nome pulito DEVE essere "Fiat Panda 2013"; se scrive "furgone ford transit bianco", il nome DEVE essere "Ford Transit").
-2. "visual_description": descrizione visiva in inglese sintetica per generare un render 3D dell'auto con il colore e le caratteristiche indicate (es: "black Fiat Panda 2013 hatchback car" oppure "white refrigerated Ford Transit cargo van").
-3. "consumption_km_l": il consumo medio reale di carburante per questo veicolo espresso rigorosamente in kilometri per litro (km/l), con un valore numerico decimale (es: 17.5). Se non trovi il dato esatto, calcola una stima tecnica realistica (valore tipico tra 10.0 e 22.0 km/l).
+2. "consumption_km_l": il consumo medio reale di carburante per questo veicolo espresso rigorosamente in kilometri per litro (km/l), con un valore numerico decimale (es: 17.5). Se non trovi il dato esatto, calcola una stima tecnica realistica (valore tipico tra 10.0 e 22.0 km/l).
 
 Restituisci ESCLUSIVAMENTE un oggetto JSON valido nel seguente formato:
 {
   "name": "Fiat Panda 2013",
-  "visual_description": "black Fiat Panda 2013 hatchback car",
   "consumption_km_l": 17.5
 }`;
 
@@ -89,37 +87,12 @@ Restituisci ESCLUSIVAMENTE un oggetto JSON valido nel seguente formato:
         console.warn('AI analysis fallback warning:', err.message);
     }
 
-    // Default fallbacks if AI fails or misses fields
-    const colorMap = {
-        'nera': 'black', 'nero': 'black',
-        'bianca': 'white', 'bianco': 'white',
-        'rossa': 'red', 'rosso': 'red',
-        'blu': 'blue', 'azzurra': 'light blue', 'azzurro': 'light blue',
-        'grigia': 'metallic grey', 'grigio': 'metallic grey', 'argento': 'silver',
-        'verde': 'green', 'gialla': 'yellow', 'giallo': 'yellow',
-        'arancione': 'orange', 'marrone': 'brown'
-    };
-
-    let detectedColor = '';
-    for (const [itColor, enColor] of Object.entries(colorMap)) {
-        const regex = new RegExp(`\\b${itColor}\\b`, 'i');
-        if (regex.test(trimmedPrompt)) {
-            detectedColor = enColor;
-            break;
-        }
-    }
-
     let cleanName = (parsedData?.name && typeof parsedData.name === 'string' && parsedData.name.trim()) 
         ? parsedData.name.trim() 
         : trimmedPrompt.replace(/\b(nera|nero|bianca|bianco|rossa|rosso|blu|azzurra|azzurro|grigia|grigio|argento|verde|gialla|giallo|arancione|marrone|macchina|auto|furgone)\b/gi, '').replace(/\s+/g, ' ').trim() || trimmedPrompt;
 
     // Capitalize cleanName
     cleanName = cleanName.split(' ').map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : '').join(' ');
-
-    let visualDesc = parsedData?.visual_description;
-    if (!visualDesc) {
-        visualDesc = `${detectedColor ? detectedColor + ' ' : ''}${cleanName} vehicle`;
-    }
 
     let consumptionKmL = (parsedData?.consumption_km_l && !isNaN(parseFloat(parsedData.consumption_km_l)))
         ? parseFloat(Number(parsedData.consumption_km_l).toFixed(1))
@@ -140,17 +113,11 @@ Restituisci ESCLUSIVAMENTE un oggetto JSON valido nel seguente formato:
         }
     }
 
-    // Generate 3D isometric render URL
-    const seed = Math.floor(Math.random() * 900000) + 100000;
-    const promptFor3D = `3d isometric render of a ${visualDesc}, 3d blender render style, studio lighting, clean background, miniature toy car aesthetic, high quality 3d automotive render`;
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptFor3D)}?width=400&height=300&nologo=true&seed=${seed}`;
-
     res.json({
         success: true,
         name: cleanName,
         consumption_km_l: consumptionKmL,
-        image_url: imageUrl,
-        visual_description: visualDesc,
+        image_url: null,
         original_prompt: trimmedPrompt
     });
 });
@@ -168,8 +135,7 @@ router.post('/', async (req, res) => {
     const isDefaultBool = !!is_default;
 
     // Fallback image if missing
-    const seed = Math.floor(Math.random() * 900000) + 100000;
-    const defaultImage = `https://image.pollinations.ai/prompt/3d%20isometric%20render%20of%20a%20modern%20${encodeURIComponent(trimmedName)}%20car%2C%20studio%20lighting%2C%20clean%20background%2C%203d%20blender%20render%20style?width=400&height=300&nologo=true&seed=${seed}`;
+    const defaultImage = '/consegna.jpeg';
     const finalImageUrl = (image_url && typeof image_url === 'string' && image_url.trim()) ? image_url.trim() : defaultImage;
 
     const client = await pool.connect();

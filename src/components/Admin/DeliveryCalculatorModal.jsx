@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
 import { 
     X, MapPin, Navigation, Car, Fuel, Loader2, Check, RotateCcw, 
-    Clock, ShieldCheck, Plus, Minus, Star, Trash2, Sparkles, AlertCircle, Info 
+    Clock, ShieldCheck, Plus, Minus, Star, Trash2, Sparkles, AlertCircle, Info,
+    Upload, Camera, Link as LinkIcon, Image as ImageIcon
 } from 'lucide-react';
 
 const DEFAULT_ORIGIN = 'Piazza san giuseppe, Irgoli 08020 Sardegna, Italia';
@@ -43,6 +44,10 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
     const [analyzedVehicle, setAnalyzedVehicle] = useState(null);
     const [isSavingVehicle, setIsSavingVehicle] = useState(false);
     const [addVehicleError, setAddVehicleError] = useState(null);
+    const [isDraggingImage, setIsDraggingImage] = useState(false);
+    const [imageUrlInput, setImageUrlInput] = useState('');
+    const [showUrlInput, setShowUrlInput] = useState(false);
+    const fileInputRef = useRef(null);
 
     // Menu Contestuale / Long-press
     const [contextVehicle, setContextVehicle] = useState(null);
@@ -191,6 +196,88 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
         }
     };
 
+    // Helper per elaborare e comprimere l'immagine caricata dall'utente (max 900px, JPEG 0.85)
+    const processImageFile = (file) => {
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            setAddVehicleError('Il file selezionato non è un\'immagine valida (usa JPG, PNG, WEBP).');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (readerEvent) => {
+            const img = new Image();
+            img.onload = () => {
+                const maxDim = 900;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                setAnalyzedVehicle(prev => prev ? ({ ...prev, image_url: compressedDataUrl }) : null);
+                setAddVehicleError(null);
+            };
+            img.onerror = () => {
+                setAddVehicleError('Impossibile caricare l\'immagine selezionata.');
+            };
+            img.src = readerEvent.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleFileInputChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            processImageFile(file);
+        }
+        e.target.value = '';
+    };
+
+    const handleApplyImageUrl = () => {
+        if (!imageUrlInput.trim()) return;
+        setAnalyzedVehicle(prev => prev ? ({ ...prev, image_url: imageUrlInput.trim() }) : null);
+        setImageUrlInput('');
+        setShowUrlInput(false);
+    };
+
+    const handleOpenCloudinary = () => {
+        if (!window.cloudinary) {
+            alert('Cloudinary non è disponibile. Usa il caricamento diretto dal dispositivo.');
+            return;
+        }
+        try {
+            const widget = window.cloudinary.createUploadWidget({
+                cloudName: 'dmdsiwrbo',
+                uploadPreset: 'web_app',
+                multiple: false,
+                sources: ['local', 'url', 'camera']
+            }, (error, result) => {
+                if (!error && result && result.event === "success") {
+                    const optimizedUrl = result.info.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
+                    setAnalyzedVehicle(prev => prev ? ({ ...prev, image_url: optimizedUrl }) : null);
+                }
+            });
+            widget.open();
+        } catch (err) {
+            console.error('Error opening Cloudinary widget:', err);
+        }
+    };
+
     // Analisi IA per Nuovo Veicolo
     const handleAnalyzeNewVehicle = async (e) => {
         if (e) e.preventDefault();
@@ -200,7 +287,10 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
         setAddVehicleError(null);
         try {
             const data = await api.analyzeVehicle(newVehiclePrompt.trim());
-            setAnalyzedVehicle(data);
+            setAnalyzedVehicle({
+                ...data,
+                image_url: data.image_url || ''
+            });
         } catch (err) {
             console.error('Error analyzing vehicle:', err);
             setAddVehicleError(err.message || 'Errore nell\'analisi IA del veicolo');
@@ -216,10 +306,14 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
         setIsSavingVehicle(true);
         setAddVehicleError(null);
         try {
+            const finalImage = (analyzedVehicle.image_url && analyzedVehicle.image_url.trim())
+                ? analyzedVehicle.image_url.trim()
+                : '/consegna.jpeg';
+
             const saved = await api.createVehicle({
                 name: analyzedVehicle.name,
                 consumption_km_l: analyzedVehicle.consumption_km_l,
-                image_url: analyzedVehicle.image_url,
+                image_url: finalImage,
                 is_default: analyzedVehicle.is_default || false
             });
 
@@ -237,6 +331,8 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
             setIsAddModalOpen(false);
             setNewVehiclePrompt('');
             setAnalyzedVehicle(null);
+            setImageUrlInput('');
+            setShowUrlInput(false);
         } catch (err) {
             console.error('Error saving vehicle:', err);
             setAddVehicleError(err.message || 'Errore nel salvataggio del veicolo');
@@ -357,7 +453,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                 Calcola Costo Consegna
                             </h3>
                             <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                                Garage Veicoli 3D • 13€/h tempo • +12% imprevisti
+                                Garage Veicoli • 13€/h tempo • +12% imprevisti
                             </p>
                         </div>
                     </div>
@@ -655,7 +751,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                                 }}
                                                 onError={(e) => {
                                                     e.target.onerror = null;
-                                                    e.target.src = 'https://placehold.co/120x80?text=Auto+3D';
+                                                    e.target.src = '/consegna.jpeg';
                                                 }}
                                             />
                                         </div>
@@ -1236,7 +1332,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                 )}
 
                 {/* ========================================================================= */}
-                {/* MODALE AGGIUNGI VEICOLO (ANALISI IA, NOME CANONICO & RENDER 3D) */}
+                {/* MODALE AGGIUNGI VEICOLO (ANALISI IA + CARICAMENTO FOTO DA PARTE UTENTE) */}
                 {/* ========================================================================= */}
                 {isAddModalOpen && (
                     <div
@@ -1254,7 +1350,13 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                             zIndex: 20,
                             padding: '1.25rem'
                         }}
-                        onClick={() => setIsAddModalOpen(false)}
+                        onClick={() => {
+                            setIsAddModalOpen(false);
+                            setNewVehiclePrompt('');
+                            setAnalyzedVehicle(null);
+                            setImageUrlInput('');
+                            setShowUrlInput(false);
+                        }}
                     >
                         <div
                             className="bounce-in"
@@ -1263,8 +1365,8 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                 borderRadius: '20px',
                                 padding: '1.5rem',
                                 width: '100%',
-                                maxWidth: '440px',
-                                maxHeight: '88vh',
+                                maxWidth: '460px',
+                                maxHeight: '90vh',
                                 overflowY: 'auto',
                                 boxShadow: 'var(--shadow-xl)',
                                 display: 'flex',
@@ -1275,14 +1377,20 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <Sparkles size={20} style={{ color: 'var(--color-primary)' }} />
+                                    <Car size={20} style={{ color: 'var(--color-primary)' }} />
                                     <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--color-primary-dark)' }}>
                                         Aggiungi Auto al Garage
                                     </h4>
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => setIsAddModalOpen(false)}
+                                    onClick={() => {
+                                        setIsAddModalOpen(false);
+                                        setNewVehiclePrompt('');
+                                        setAnalyzedVehicle(null);
+                                        setImageUrlInput('');
+                                        setShowUrlInput(false);
+                                    }}
                                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
                                 >
                                     <X size={18} />
@@ -1290,57 +1398,59 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                             </div>
 
                             <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                                Scrivi il modello e le caratteristiche (anche il colore!). L'IA estrarrà il nome pulito, il consumo medio (km/l) e creerà un <strong>render 3D</strong> personalizzato.
+                                Scrivi il modello del veicolo. L'IA estrarrà il nome pulito e calcolerà il consumo medio (km/l). Subito dopo potrai aggiungere la foto del mezzo!
                             </p>
 
-                            {/* Form Ricerca / Analisi IA */}
-                            <form onSubmit={handleAnalyzeNewVehicle} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                <div>
-                                    <label style={{ fontSize: '0.82rem', fontWeight: 'bold', color: 'var(--color-primary-dark)', display: 'block', marginBottom: '0.3rem' }}>
-                                        Nome o Modello Veicolo
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="Es. Fiat Panda 2013 nera, Kia Sportage bianca, Van Ford Transit..."
-                                        value={newVehiclePrompt}
-                                        onChange={e => setNewVehiclePrompt(e.target.value)}
-                                        autoFocus
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.65rem 0.85rem',
-                                            borderRadius: '10px',
-                                            border: '1.5px solid var(--color-border)',
-                                            fontSize: '0.9rem'
-                                        }}
-                                    />
-                                </div>
+                            {/* Passo 1: Form Ricerca / Analisi IA */}
+                            {!analyzedVehicle && (
+                                <form onSubmit={handleAnalyzeNewVehicle} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    <div>
+                                        <label style={{ fontSize: '0.82rem', fontWeight: 'bold', color: 'var(--color-primary-dark)', display: 'block', marginBottom: '0.3rem' }}>
+                                            Nome o Modello Veicolo
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Es. Fiat Panda 2013, Kia Sportage, Ford Transit, Van refrigerato..."
+                                            value={newVehiclePrompt}
+                                            onChange={e => setNewVehiclePrompt(e.target.value)}
+                                            autoFocus
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.7rem 0.85rem',
+                                                borderRadius: '10px',
+                                                border: '1.5px solid var(--color-border)',
+                                                fontSize: '0.9rem'
+                                            }}
+                                        />
+                                    </div>
 
-                                <button
-                                    type="submit"
-                                    disabled={isAnalyzing || !newVehiclePrompt.trim()}
-                                    className="btn btn-primary"
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '0.5rem',
-                                        padding: '0.75rem',
-                                        fontWeight: 'bold',
-                                        fontSize: '0.9rem',
-                                        borderRadius: '10px'
-                                    }}
-                                >
-                                    {isAnalyzing ? (
-                                        <>
-                                            <Loader2 size={16} className="animate-spin" /> Analisi e Generazione 3D in corso...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Sparkles size={16} /> Analizza con IA (Consumo + Render 3D)
-                                        </>
-                                    )}
-                                </button>
-                            </form>
+                                    <button
+                                        type="submit"
+                                        disabled={isAnalyzing || !newVehiclePrompt.trim()}
+                                        className="btn btn-primary"
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '0.5rem',
+                                            padding: '0.75rem',
+                                            fontWeight: 'bold',
+                                            fontSize: '0.9rem',
+                                            borderRadius: '10px'
+                                        }}
+                                    >
+                                        {isAnalyzing ? (
+                                            <>
+                                                <Loader2 size={16} className="animate-spin" /> Analisi Nome e Consumo in corso...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles size={16} /> Analizza con IA (Nome e Consumo)
+                                            </>
+                                        )}
+                                    </button>
+                                </form>
+                            )}
 
                             {addVehicleError && (
                                 <div style={{ padding: '0.6rem 0.8rem', borderRadius: '8px', backgroundColor: '#ffebee', color: '#c62828', fontSize: '0.8rem' }}>
@@ -1348,41 +1458,253 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                 </div>
                             )}
 
-                            {/* Anteprima Risultato Generato dall'IA */}
+                            {/* Passo 2: Dati IA Rilevati & Caricamento Foto da Parte dell'Utente */}
                             {analyzedVehicle && (
                                 <div style={{
                                     backgroundColor: '#f8fafc',
-                                    borderRadius: '14px',
+                                    borderRadius: '16px',
                                     border: '1.5px solid #cbd5e1',
-                                    padding: '1rem',
+                                    padding: '1.1rem',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: '0.85rem'
+                                    gap: '1rem'
                                 }}>
-                                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#2e7d32', backgroundColor: '#e8f5e9', padding: '3px 8px', borderRadius: '6px', alignSelf: 'flex-start' }}>
-                                        ✓ Dati Elaborati dall'IA
-                                    </span>
-
-                                    {/* Immagine 3D Generata */}
-                                    <div style={{
-                                        width: '100%',
-                                        height: '140px',
-                                        borderRadius: '10px',
-                                        overflow: 'hidden',
-                                        backgroundColor: 'white',
-                                        border: '1px solid #e2e8f0',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        <img
-                                            src={analyzedVehicle.image_url}
-                                            alt={analyzedVehicle.name}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.78rem', fontWeight: 'bold', color: '#2e7d32', backgroundColor: '#e8f5e9', padding: '4px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                            <Check size={14} strokeWidth={3} /> Passo 1 Completato: Dati Rilevati
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setAnalyzedVehicle(null);
+                                                setImageUrlInput('');
+                                                setShowUrlInput(false);
+                                            }}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                color: 'var(--color-text-muted)',
+                                                fontSize: '0.75rem',
+                                                cursor: 'pointer',
+                                                textDecoration: 'underline'
+                                            }}
+                                        >
+                                            Modifica ricerca
+                                        </button>
                                     </div>
 
-                                    {/* Campi Modificabili (Nome Pulito e Consumo) */}
+                                    {/* SEZIONE FOTO VEICOLO CARICATA DALL'UTENTE */}
+                                    <div style={{
+                                        backgroundColor: 'white',
+                                        borderRadius: '12px',
+                                        border: '1px solid var(--color-border)',
+                                        padding: '0.9rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '0.65rem'
+                                    }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.4rem', margin: 0 }}>
+                                                <Camera size={16} style={{ color: 'var(--color-primary)' }} />
+                                                Passo 2: Aggiungi Foto del Veicolo
+                                            </label>
+                                            {analyzedVehicle.image_url && (
+                                                <span style={{ fontSize: '0.7rem', color: '#2e7d32', backgroundColor: '#e8f5e9', padding: '2px 7px', borderRadius: '6px', fontWeight: 'bold' }}>
+                                                    ✓ Foto pronta
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Input file nativo invisibile */}
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            accept="image/*"
+                                            onChange={handleFileInputChange}
+                                            style={{ display: 'none' }}
+                                        />
+
+                                        {analyzedVehicle.image_url ? (
+                                            /* Anteprima Foto Caricata */
+                                            <div style={{
+                                                position: 'relative',
+                                                width: '100%',
+                                                height: '150px',
+                                                borderRadius: '10px',
+                                                overflow: 'hidden',
+                                                border: '2px solid #2e7d32',
+                                                backgroundColor: '#f1f5f9'
+                                            }}>
+                                                <img
+                                                    src={analyzedVehicle.image_url}
+                                                    alt={analyzedVehicle.name}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                />
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: '8px',
+                                                    right: '8px',
+                                                    display: 'flex',
+                                                    gap: '0.4rem',
+                                                    zIndex: 2
+                                                }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        className="btn btn-outline"
+                                                        style={{
+                                                            backgroundColor: 'white',
+                                                            padding: '0.35rem 0.65rem',
+                                                            fontSize: '0.75rem',
+                                                            fontWeight: 'bold',
+                                                            boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                                                        }}
+                                                    >
+                                                        Cambia Foto
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setAnalyzedVehicle(prev => prev ? ({ ...prev, image_url: '' }) : null)}
+                                                        title="Rimuovi foto"
+                                                        style={{
+                                                            backgroundColor: 'white',
+                                                            border: '1px solid #ef9a9a',
+                                                            borderRadius: '6px',
+                                                            width: '30px',
+                                                            height: '30px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: '#e63946',
+                                                            cursor: 'pointer',
+                                                            boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                                                        }}
+                                                    >
+                                                        <Trash2 size={15} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            /* Box di Caricamento / Dropzone */
+                                            <div
+                                                onDragOver={(e) => { e.preventDefault(); setIsDraggingImage(true); }}
+                                                onDragLeave={() => setIsDraggingImage(false)}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    setIsDraggingImage(false);
+                                                    if (e.dataTransfer.files?.[0]) processImageFile(e.dataTransfer.files[0]);
+                                                }}
+                                                onClick={() => fileInputRef.current?.click()}
+                                                style={{
+                                                    border: isDraggingImage ? '2px dashed var(--color-primary)' : '2px dashed #94a3b8',
+                                                    borderRadius: '10px',
+                                                    padding: '1.25rem 1rem',
+                                                    textAlign: 'center',
+                                                    backgroundColor: isDraggingImage ? 'rgba(155, 57, 61, 0.06)' : '#f8fafc',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    gap: '0.4rem',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                            >
+                                                <div style={{
+                                                    width: '44px',
+                                                    height: '44px',
+                                                    borderRadius: '50%',
+                                                    backgroundColor: 'rgba(155, 57, 61, 0.1)',
+                                                    color: 'var(--color-primary)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <Upload size={22} />
+                                                </div>
+                                                <div>
+                                                    <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 'bold', color: 'var(--color-primary-dark)' }}>
+                                                        Carica la foto dal tuo dispositivo
+                                                    </p>
+                                                    <p style={{ margin: '2px 0 0', fontSize: '0.74rem', color: 'var(--color-text-muted)' }}>
+                                                        Clicca qui o trascina il file (JPG, PNG, WEBP, Fotocamera)
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Opzioni Aggiuntive: Link URL o Cloudinary */}
+                                        {!analyzedVehicle.image_url && (
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem' }}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowUrlInput(!showUrlInput)}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: 'var(--color-primary)',
+                                                        fontSize: '0.74rem',
+                                                        cursor: 'pointer',
+                                                        textDecoration: 'underline',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.3rem',
+                                                        padding: 0
+                                                    }}
+                                                >
+                                                    <LinkIcon size={12} />
+                                                    {showUrlInput ? 'Nascondi campo URL' : 'Oppure incolla link URL'}
+                                                </button>
+
+                                                {typeof window !== 'undefined' && window.cloudinary && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleOpenCloudinary}
+                                                        style={{
+                                                            background: 'none',
+                                                            border: 'none',
+                                                            color: '#0288d1',
+                                                            fontSize: '0.74rem',
+                                                            cursor: 'pointer',
+                                                            textDecoration: 'underline',
+                                                            padding: 0
+                                                        }}
+                                                    >
+                                                        Usa Cloudinary
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Campo Inserimento URL se attivo */}
+                                        {showUrlInput && !analyzedVehicle.image_url && (
+                                            <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.3rem' }}>
+                                                <input
+                                                    type="url"
+                                                    placeholder="https://esempio.com/foto-auto.jpg"
+                                                    value={imageUrlInput}
+                                                    onChange={e => setImageUrlInput(e.target.value)}
+                                                    style={{
+                                                        flex: 1,
+                                                        padding: '0.45rem 0.65rem',
+                                                        borderRadius: '8px',
+                                                        border: '1px solid var(--color-border)',
+                                                        fontSize: '0.8rem'
+                                                    }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleApplyImageUrl}
+                                                    disabled={!imageUrlInput.trim()}
+                                                    className="btn btn-primary"
+                                                    style={{ padding: '0.45rem 0.75rem', fontSize: '0.78rem', borderRadius: '8px' }}
+                                                >
+                                                    Applica
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Dati veicolo (Nome pulito e Consumo km/l) */}
                                     <div>
                                         <label style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-text-muted)', display: 'block', marginBottom: '0.2rem' }}>
                                             Nome Canonico (pulito):
@@ -1438,13 +1760,14 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                         </div>
                                     </div>
 
+                                    {/* Tasto Salva nel Garage */}
                                     <button
                                         type="button"
                                         onClick={handleSaveNewVehicle}
                                         disabled={isSavingVehicle || !analyzedVehicle.name.trim()}
                                         className="btn btn-primary"
                                         style={{
-                                            padding: '0.8rem',
+                                            padding: '0.85rem',
                                             fontWeight: 'bold',
                                             fontSize: '0.95rem',
                                             borderRadius: '10px',
@@ -1453,7 +1776,8 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            gap: '0.5rem'
+                                            gap: '0.5rem',
+                                            boxShadow: '0 4px 12px rgba(46, 125, 50, 0.25)'
                                         }}
                                     >
                                         {isSavingVehicle ? (
