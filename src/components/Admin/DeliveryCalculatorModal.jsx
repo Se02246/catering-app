@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
 import { 
     X, MapPin, Navigation, Car, Fuel, Loader2, Check, RotateCcw, 
-    Clock, ShieldCheck, Plus, Minus, Star, Trash2, Sparkles, AlertCircle, Info,
-    Upload, Camera, Link as LinkIcon, Image as ImageIcon
+    Clock, ShieldCheck, Plus, Star, Trash2, Sparkles, AlertCircle, Info,
+    Upload, Camera, Link as LinkIcon, Image as ImageIcon,
+    ChevronDown, ChevronUp, SlidersHorizontal
 } from 'lucide-react';
 
 const DEFAULT_ORIGIN = 'Piazza san giuseppe, Irgoli 08020 Sardegna, Italia';
@@ -30,6 +31,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
     // Prezzo carburante
     const [useAiFuel, setUseAiFuel] = useState(true);
     const [manualFuelPrice, setManualFuelPrice] = useState('');
+    const [showAdvanced, setShowAdvanced] = useState(false);
 
     // Calcolo & Risultato
     const [loading, setLoading] = useState(false);
@@ -534,65 +536,8 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                         </div>
                     </div>
 
-                    {/* Partenza */}
-                    <div>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: 'var(--color-text-muted)', marginBottom: '0.4rem' }}>
-                            <Navigation size={14} /> Sede di Partenza
-                        </label>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <input
-                                type="text"
-                                value={origin}
-                                onChange={e => setOrigin(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '0.65rem 0.9rem',
-                                    borderRadius: '10px',
-                                    border: '1px solid var(--color-border)',
-                                    fontSize: '0.85rem',
-                                    backgroundColor: '#fafafa'
-                                }}
-                            />
-                            {origin !== DEFAULT_ORIGIN && (
-                                <button
-                                    type="button"
-                                    onClick={() => setOrigin(DEFAULT_ORIGIN)}
-                                    title="Ripristina sede Irgoli"
-                                    className="btn btn-outline"
-                                    style={{ padding: '0.5rem 0.75rem' }}
-                                >
-                                    <RotateCcw size={14} />
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Opzioni di Viaggio: A/R vs Solo Andata */}
-                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold', flex: 1, color: roundTrip ? 'var(--color-primary-dark)' : 'var(--color-text)' }}>
-                            <input
-                                type="radio"
-                                name="trip_mode"
-                                checked={roundTrip}
-                                onChange={() => setRoundTrip(true)}
-                                style={{ width: '16px', height: '16px' }}
-                            />
-                            Andata e Ritorno (A/R)
-                        </label>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', flex: 1, color: !roundTrip ? 'var(--color-primary-dark)' : 'var(--color-text-muted)' }}>
-                            <input
-                                type="radio"
-                                name="trip_mode"
-                                checked={!roundTrip}
-                                onChange={() => setRoundTrip(false)}
-                                style={{ width: '16px', height: '16px' }}
-                            />
-                            Solo Andata
-                        </label>
-                    </div>
-
                     {/* ========================================================================= */}
-                    {/* SEZIONE GARAGE VEICOLI (RENDER 3D, MULTI-SELEZIONE & LONG-PRESS) */}
+                    {/* SEZIONE GARAGE VEICOLI (MULTI-SELEZIONE & LONG-PRESS) */}
                     {/* ========================================================================= */}
                     <div style={{
                         backgroundColor: 'rgba(155, 57, 61, 0.03)',
@@ -709,27 +654,27 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                             </div>
                                         )}
 
-                                        {/* Stellina Default (Cliccabile per impostare velocemente) */}
-                                        <button
-                                            type="button"
-                                            onClick={(e) => handleSetDefault(v, e)}
-                                            title={v.is_default ? "Veicolo predefinito" : "Imposta come veicolo predefinito"}
-                                            style={{
-                                                position: 'absolute',
-                                                top: '4px',
-                                                right: '4px',
-                                                background: 'none',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                padding: '3px',
-                                                color: v.is_default ? '#f59e0b' : '#d1d5db',
-                                                zIndex: 2
-                                            }}
-                                        >
-                                            <Star size={16} fill={v.is_default ? '#f59e0b' : 'transparent'} />
-                                        </button>
+                                        {/* Indicatore Veicolo Predefinito (non cliccabile, si cambia solo tenendo premuto sulla card) */}
+                                        {v.is_default && (
+                                            <div
+                                                title="Veicolo predefinito (tieni premuto sulla card per cambiare)"
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: '6px',
+                                                    right: '6px',
+                                                    color: '#f59e0b',
+                                                    pointerEvents: 'none',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    zIndex: 2
+                                                }}
+                                            >
+                                                <Star size={15} fill="#f59e0b" />
+                                            </div>
+                                        )}
 
-                                        {/* Render 3D dell'auto */}
+                                        {/* Foto del veicolo */}
                                         <div style={{
                                             width: '100%',
                                             height: '75px',
@@ -799,272 +744,280 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                             })}
                         </div>
 
-                        {/* Riepilogo Veicoli Selezionati & Override Manuale */}
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: '120px 1fr',
-                            gap: '0.75rem',
-                            marginTop: '0.25rem',
-                            paddingTop: '0.75rem',
-                            borderTop: '1px dashed rgba(155, 57, 61, 0.15)'
-                        }}>
-                            {/* N. Veicoli */}
-                            <div>
-                                <label style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--color-text-muted)', display: 'block', marginBottom: '0.3rem' }}>
-                                    N. Macchine
-                                </label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setVehiclesCount(prev => Math.max(1, (parseInt(prev) || 1) - 1))}
-                                        className="btn btn-outline"
-                                        style={{ padding: '0.5rem 0.55rem', borderRadius: '8px' }}
-                                    >
-                                        <Minus size={14} />
-                                    </button>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max="20"
-                                        value={vehiclesCount}
-                                        onChange={e => setVehiclesCount(Math.max(1, parseInt(e.target.value) || 1))}
-                                        style={{
-                                            width: '46px',
-                                            textAlign: 'center',
-                                            padding: '0.5rem 0.2rem',
-                                            borderRadius: '8px',
-                                            border: '1px solid var(--color-border)',
-                                            fontWeight: 'bold',
-                                            fontSize: '0.95rem'
-                                        }}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setVehiclesCount(prev => (parseInt(prev) || 1) + 1)}
-                                        className="btn btn-outline"
-                                        style={{ padding: '0.5rem 0.55rem', borderRadius: '8px' }}
-                                    >
-                                        <Plus size={14} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Modello Veicolo (Sintesi o personalizzazione) */}
-                            <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
-                                    <label style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--color-text-muted)', margin: 0 }}>
-                                        Modello / Flotta Selezionata
-                                    </label>
-                                    {useAiConsumption ? (
-                                        <button
-                                            type="button"
-                                            onClick={() => setUseAiConsumption(false)}
-                                            style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                color: 'var(--color-primary)',
-                                                fontSize: '0.72rem',
-                                                cursor: 'pointer',
-                                                textDecoration: 'underline',
-                                                padding: 0
-                                            }}
-                                        >
-                                            ✏️ Forza km/l
-                                        </button>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() => setUseAiConsumption(true)}
-                                            style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                color: '#2e7d32',
-                                                fontSize: '0.72rem',
-                                                cursor: 'pointer',
-                                                textDecoration: 'underline',
-                                                padding: 0,
-                                                fontWeight: 'bold'
-                                            }}
-                                        >
-                                            🤖 Stima IA / Default
-                                        </button>
-                                    )}
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Es. Kia Sportage 2026, Fiat Doblò, Van refrigerato..."
-                                    value={vehicleModel}
-                                    onChange={e => {
-                                        setVehicleModel(e.target.value);
-                                        // Se l'utente scrive a mano, svuota la selezione del garage
-                                        if (selectedVehicleIds.length > 0) setSelectedVehicleIds([]);
-                                    }}
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.55rem 0.75rem',
-                                        borderRadius: '8px',
-                                        border: '1px solid var(--color-border)',
-                                        fontSize: '0.88rem'
-                                    }}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Indicatore Consumo (Garage o Manuale o IA) */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-                            {useAiConsumption ? (
-                                <span>
-                                    {vehicleModel.trim()
-                                        ? `🤖 L'IA ricercherà sul web il consumo medio di "${vehicleModel.trim()}"`
-                                        : `ℹ️ Nessun modello indicato: verrà applicato il consumo di default di 16.0 km/l`}
-                                </span>
-                            ) : (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', width: '100%' }}>
-                                    <span style={{ fontWeight: '600', color: 'var(--color-primary-dark)' }}>
-                                        Consumo applicato {selectedVehicleIds.length > 1 ? '(media flotta):' : ':'}
-                                    </span>
-                                    <input
-                                        type="number"
-                                        step="0.1"
-                                        min="3"
-                                        max="50"
-                                        value={manualConsumption}
-                                        onChange={e => setManualConsumption(e.target.value)}
-                                        style={{
-                                            width: '75px',
-                                            padding: '0.2rem 0.4rem',
-                                            borderRadius: '6px',
-                                            border: '1px solid var(--color-border)',
-                                            fontWeight: 'bold',
-                                            textAlign: 'center'
-                                        }}
-                                    />
-                                    <span>km/l</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Prezzo Carburante */}
-                    <div style={{
-                        backgroundColor: '#f8f9fa',
-                        borderRadius: '12px',
-                        border: '1px solid var(--color-border)',
-                        padding: '0.85rem 1rem'
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.35rem', margin: 0 }}>
-                                <Fuel size={15} style={{ color: '#e63946' }} /> Prezzo Benzina al Litro
-                            </label>
-                            {useAiFuel ? (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setUseAiFuel(false);
-                                        setManualFuelPrice(calculationResult?.fuel_price_per_liter ? String(calculationResult.fuel_price_per_liter) : '2.05');
-                                    }}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'var(--color-primary)',
-                                        fontSize: '0.72rem',
-                                        cursor: 'pointer',
-                                        textDecoration: 'underline',
-                                        padding: 0
-                                    }}
-                                >
-                                    ✏️ Personalizza
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setUseAiFuel(true);
-                                        setManualFuelPrice('');
-                                    }}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: '#2e7d32',
-                                        fontSize: '0.72rem',
-                                        cursor: 'pointer',
-                                        textDecoration: 'underline',
-                                        padding: 0,
-                                        fontWeight: 'bold'
-                                    }}
-                                >
-                                    🤖 Rileva con Ricerca IA
-                                </button>
-                            )}
-                        </div>
-
-                        {useAiFuel ? (
+                        {/* Avviso Veicoli Selezionati / Valore di Default */}
+                        {selectedVehicleIds.length === 0 ? (
                             <div style={{
-                                padding: '0.55rem 0.75rem',
-                                borderRadius: '8px',
-                                border: '1px solid #c8e6c9',
-                                backgroundColor: '#f1f8e9',
-                                fontSize: '0.85rem',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'space-between'
+                                gap: '0.5rem',
+                                fontSize: '0.8rem',
+                                color: 'var(--color-text-muted)',
+                                backgroundColor: '#f8fafc',
+                                padding: '0.65rem 0.9rem',
+                                borderRadius: '10px',
+                                border: '1px dashed var(--color-border)',
+                                marginTop: '0.15rem'
                             }}>
-                                <span style={{ fontWeight: 'bold', color: '#2e7d32' }}>
-                                    {calculationResult?.fuel_price_per_liter
-                                        ? `€ ${Number(calculationResult.fuel_price_per_liter).toFixed(2)} / L`
-                                        : '🤖 Ricerca Google in tempo reale'}
-                                </span>
-                                <span style={{ fontSize: '0.7rem', color: '#2e7d32', backgroundColor: 'rgba(46, 125, 50, 0.12)', padding: '2px 6px', borderRadius: '6px', fontWeight: '600' }}>
-                                    {calculationResult?.fuel_price_per_liter ? 'Prezzo Rilevato' : 'Quotazione Media Italia'}
+                                <Info size={16} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+                                <span>
+                                    Nessuna auto selezionata: verrà applicato il valore di default di 1 auto a <strong>16.0 km/l</strong>.
                                 </span>
                             </div>
                         ) : (
-                            <div style={{ position: 'relative' }}>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0.5"
-                                    max="5"
-                                    placeholder="Es. 2.05"
-                                    value={manualFuelPrice}
-                                    onChange={e => setManualFuelPrice(e.target.value)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.55rem 2rem 0.55rem 0.75rem',
-                                        borderRadius: '8px',
-                                        border: '1px solid var(--color-border)',
-                                        fontSize: '0.95rem',
-                                        fontWeight: '700',
-                                        color: '#b71c1c'
-                                    }}
-                                />
-                                <span style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: '500' }}>
-                                    €/l
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                flexWrap: 'wrap',
+                                gap: '0.5rem',
+                                fontSize: '0.8rem',
+                                color: '#1b5e20',
+                                backgroundColor: 'rgba(46, 125, 50, 0.08)',
+                                padding: '0.65rem 0.9rem',
+                                borderRadius: '10px',
+                                border: '1px solid rgba(46, 125, 50, 0.2)',
+                                marginTop: '0.15rem'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                                    <Check size={15} strokeWidth={2.5} style={{ color: '#2e7d32', flexShrink: 0 }} />
+                                    <span>
+                                        <strong>{vehiclesCount} {vehiclesCount === 1 ? 'auto' : 'auto'}</strong>: {vehicleModel}
+                                    </span>
+                                </div>
+                                <span style={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                                    Consumo medio: {manualConsumption} km/l
                                 </span>
                             </div>
                         )}
                     </div>
 
-                    {/* Parametri di Sovrapprezzo (Trasparenza) */}
+                    {/* Sezione Espandibile: Opzioni Avanzate */}
                     <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: '0.5rem',
-                        fontSize: '0.75rem',
-                        color: 'var(--color-text-muted)',
+                        borderRadius: '14px',
+                        border: '1px solid var(--color-border)',
+                        overflow: 'hidden',
                         backgroundColor: '#fafafa',
-                        padding: '0.6rem 0.75rem',
-                        borderRadius: '10px',
-                        border: '1px dashed var(--color-border)'
+                        transition: 'all 0.2s ease'
                     }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                            <Clock size={13} style={{ color: '#0288d1' }} />
-                            <span><strong>Tempo di viaggio:</strong> 13 €/h per macchina</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                            <ShieldCheck size={13} style={{ color: '#B45309' }} />
-                            <span><strong>Imprevisti:</strong> +12% sul carburante</span>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowAdvanced(!showAdvanced)}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem 1rem',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                fontSize: '0.85rem',
+                                fontWeight: '600',
+                                color: 'var(--color-primary-dark)',
+                                transition: 'background-color 0.15s ease'
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <SlidersHorizontal size={15} style={{ color: 'var(--color-primary)' }} />
+                                <span>Opzioni Avanzate</span>
+                                <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', fontWeight: 'normal' }}>
+                                    (Sede partenza, A/R, Prezzo benzina)
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>
+                                {showAdvanced ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                            </div>
+                        </button>
+
+                        {showAdvanced && (
+                            <div style={{
+                                padding: '1rem',
+                                borderTop: '1px solid var(--color-border)',
+                                backgroundColor: 'white',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1rem'
+                            }}>
+                                {/* Sede di Partenza */}
+                                <div>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: '600', color: 'var(--color-text-muted)', marginBottom: '0.4rem' }}>
+                                        <Navigation size={14} /> Sede di Partenza
+                                    </label>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <input
+                                            type="text"
+                                            value={origin}
+                                            onChange={e => setOrigin(e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.65rem 0.9rem',
+                                                borderRadius: '10px',
+                                                border: '1px solid var(--color-border)',
+                                                fontSize: '0.85rem',
+                                                backgroundColor: '#fafafa'
+                                            }}
+                                        />
+                                        {origin !== DEFAULT_ORIGIN && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setOrigin(DEFAULT_ORIGIN)}
+                                                title="Ripristina sede Irgoli"
+                                                className="btn btn-outline"
+                                                style={{ padding: '0.5rem 0.75rem' }}
+                                            >
+                                                <RotateCcw size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Opzioni di Viaggio: A/R vs Solo Andata */}
+                                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold', flex: 1, color: roundTrip ? 'var(--color-primary-dark)' : 'var(--color-text)' }}>
+                                        <input
+                                            type="radio"
+                                            name="trip_mode"
+                                            checked={roundTrip}
+                                            onChange={() => setRoundTrip(true)}
+                                            style={{ width: '16px', height: '16px' }}
+                                        />
+                                        Andata e Ritorno (A/R)
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', flex: 1, color: !roundTrip ? 'var(--color-primary-dark)' : 'var(--color-text-muted)' }}>
+                                        <input
+                                            type="radio"
+                                            name="trip_mode"
+                                            checked={!roundTrip}
+                                            onChange={() => setRoundTrip(false)}
+                                            style={{ width: '16px', height: '16px' }}
+                                        />
+                                        Solo Andata
+                                    </label>
+                                </div>
+
+                                {/* Prezzo Carburante */}
+                                <div style={{
+                                    backgroundColor: '#f8f9fa',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--color-border)',
+                                    padding: '0.85rem 1rem'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                                        <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.35rem', margin: 0 }}>
+                                            <Fuel size={15} style={{ color: '#e63946' }} /> Prezzo Benzina al Litro
+                                        </label>
+                                        {useAiFuel ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setUseAiFuel(false);
+                                                    setManualFuelPrice(calculationResult?.fuel_price_per_liter ? String(calculationResult.fuel_price_per_liter) : '2.05');
+                                                }}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    color: 'var(--color-primary)',
+                                                    fontSize: '0.72rem',
+                                                    cursor: 'pointer',
+                                                    textDecoration: 'underline',
+                                                    padding: 0
+                                                }}
+                                            >
+                                                ✏️ Personalizza
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setUseAiFuel(true);
+                                                    setManualFuelPrice('');
+                                                }}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    color: '#2e7d32',
+                                                    fontSize: '0.72rem',
+                                                    cursor: 'pointer',
+                                                    textDecoration: 'underline',
+                                                    padding: 0,
+                                                    fontWeight: 'bold'
+                                                }}
+                                            >
+                                                🤖 Rileva con Ricerca IA
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {useAiFuel ? (
+                                        <div style={{
+                                            padding: '0.55rem 0.75rem',
+                                            borderRadius: '8px',
+                                            border: '1px solid #c8e6c9',
+                                            backgroundColor: '#f1f8e9',
+                                            fontSize: '0.85rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between'
+                                        }}>
+                                            <span style={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                                                {calculationResult?.fuel_price_per_liter
+                                                    ? `€ ${Number(calculationResult.fuel_price_per_liter).toFixed(2)} / L`
+                                                    : '🤖 Ricerca Google in tempo reale'}
+                                            </span>
+                                            <span style={{ fontSize: '0.7rem', color: '#2e7d32', backgroundColor: 'rgba(46, 125, 50, 0.12)', padding: '2px 6px', borderRadius: '6px', fontWeight: '600' }}>
+                                                {calculationResult?.fuel_price_per_liter ? 'Prezzo Rilevato' : 'Quotazione Media Italia'}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <div style={{ position: 'relative' }}>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0.5"
+                                                max="5"
+                                                placeholder="Es. 2.05"
+                                                value={manualFuelPrice}
+                                                onChange={e => setManualFuelPrice(e.target.value)}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.55rem 2rem 0.55rem 0.75rem',
+                                                    borderRadius: '8px',
+                                                    border: '1px solid var(--color-border)',
+                                                    fontSize: '0.95rem',
+                                                    fontWeight: '700',
+                                                    color: '#b71c1c'
+                                                }}
+                                            />
+                                            <span style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: '500' }}>
+                                                €/l
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Parametri di Sovrapprezzo (Trasparenza) */}
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: '0.5rem',
+                                    fontSize: '0.75rem',
+                                    color: 'var(--color-text-muted)',
+                                    backgroundColor: '#fafafa',
+                                    padding: '0.6rem 0.75rem',
+                                    borderRadius: '10px',
+                                    border: '1px dashed var(--color-border)'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                        <Clock size={13} style={{ color: '#0288d1' }} />
+                                        <span><strong>Tempo di viaggio:</strong> 13 €/h per macchina</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                        <ShieldCheck size={13} style={{ color: '#B45309' }} />
+                                        <span><strong>Imprevisti:</strong> +12% sul carburante</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Tasto Calcola */}
