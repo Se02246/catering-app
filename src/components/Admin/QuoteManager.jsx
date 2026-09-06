@@ -139,7 +139,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 client_name: updatedQuote.client_name,
                 event_date: updatedQuote.event_date
             });
-            
+
             // The backend sets needs_sync to true on every update
             setCurrentQuote(prev => ({ ...prev, needs_sync: true }));
 
@@ -170,11 +170,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 if (item.is_vegan) dietary.push("VEG");
                 if (item.is_traditional) dietary.push("TRAD");
                 const dietaryStr = dietary.length > 0 ? ` [${dietary.join(', ')}]` : "";
-                
+
                 text += `- ${item.name}${dietaryStr}${qty ? ` (${qty})` : ''}\n`;
             });
         }
-        
+
         if (currentQuote?.total_price) {
             text += `\nTotale: € ${Number(currentQuote.total_price).toFixed(2)}\n`;
         }
@@ -184,7 +184,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         }
 
         text += `\nLink della pagina share: ${window.location.origin}/quote/${currentQuote.id}`;
-        
+
         // Add marker for Android app interception
         text += `\n\n[MC-ID: ${currentQuote.id}]`;
 
@@ -225,7 +225,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 textToShare += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
             });
         }
-        
+
         if (currentQuote.total_price) {
             textToShare += `\nTotale: € ${Number(currentQuote.total_price).toFixed(2)}\n`;
         }
@@ -276,7 +276,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 textToShare += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
             });
         }
-        
+
         if (currentQuote.total_price) {
             textToShare += `\nTotale: € ${Number(currentQuote.total_price).toFixed(2)}\n`;
         }
@@ -286,7 +286,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         }
 
         textToShare += `\nLink della pagina share: ${window.location.origin}/quote/${currentQuote.id}`;
-        
+
         // Add marker for Android app interception
         textToShare += `\n\n[MC-ID: ${currentQuote.id}]`;
 
@@ -300,9 +300,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         setMessage(null);
         try {
             const aiData = await api.generateAiQuote(aiPrompt, 'admin');
-            
+
             const newQuote = await api.createQuote({ items: [], total_price: 0 });
-            
+
             const itemsWithIds = (aiData.items || []).map(item => {
                 const catalogProduct = products.find(p => p.id === item.id);
                 return {
@@ -345,7 +345,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
             setSearchId(newQuote.id);
             setCurrentQuote(finalQuote);
-            
+
             await api.updateQuote(newQuote.id, finalQuote, finalQuote.total_price);
 
             setMessage({ type: 'success', text: 'Preventivo generato con l\'IA! Controlla i dati e applica eventuali correzioni.' });
@@ -420,8 +420,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             return item;
         }).filter(Boolean);
 
-        const updatedQuote = { 
-            ...currentQuote, 
+        const updatedQuote = {
+            ...currentQuote,
             items: updatedItems
         };
         setCurrentQuote(updatedQuote);
@@ -430,8 +430,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
     const removeItem = (instanceId) => {
         const updatedItems = currentQuote.items.filter(item => item.instanceId !== instanceId);
-        const updatedQuote = { 
-            ...currentQuote, 
+        const updatedQuote = {
+            ...currentQuote,
             items: updatedItems
         };
         setCurrentQuote(updatedQuote);
@@ -442,11 +442,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         const newItems = [...currentQuote.items];
         const targetIndex = index + direction;
         if (targetIndex < 0 || targetIndex >= newItems.length) return;
-        
+
         const temp = newItems[index];
         newItems[index] = newItems[targetIndex];
         newItems[targetIndex] = temp;
-        
+
         const updatedQuote = { ...currentQuote, items: newItems };
         setCurrentQuote(updatedQuote);
         autoSave(updatedQuote);
@@ -461,8 +461,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             original_menu_description: prod.menu_description
         };
         const updatedItems = [...currentQuote.items, newItem];
-        const updatedQuote = { 
-            ...currentQuote, 
+        const updatedQuote = {
+            ...currentQuote,
             items: updatedItems
         };
         setCurrentQuote(updatedQuote);
@@ -479,7 +479,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 liveProduct = products.find(p => p.name.trim().toLowerCase() === item.name.trim().toLowerCase());
             }
             if (!liveProduct) return item;
-            
+
             return {
                 ...liveProduct,
                 quantity: item.quantity,
@@ -490,8 +490,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             };
         });
 
-        const updatedQuote = { 
-            ...currentQuote, 
+        const updatedQuote = {
+            ...currentQuote,
             items: updatedItems
         };
         setCurrentQuote(updatedQuote);
@@ -518,7 +518,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         if (!currentQuote) return;
         const num = parseFloat(val);
         const existingIndex = currentQuote.items.findIndex(it => it.is_packaging || it.id === 'imballaggio_service' || it.name?.trim().toLowerCase() === 'imballaggio');
-        
+
         let updatedItems;
         if (val === '' || isNaN(num) || num <= 0) {
             if (existingIndex >= 0) {
@@ -553,7 +553,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         if (!currentQuote) return;
         const num = parseFloat(val);
         const existingIndex = currentQuote.items.findIndex(it => it.is_delivery || it.id === 'consegna_service' || it.name?.trim().toLowerCase() === 'consegna');
-        
+
         let updatedItems;
         if (val === '' || isNaN(num) || num <= 0) {
             if (existingIndex >= 0) {
@@ -720,8 +720,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         const updatedItems = currentQuote.items.map(it => {
             if (it.instanceId === item.instanceId) {
                 const newIsPieces = !it.is_sold_by_piece;
-                return { 
-                    ...it, 
+                return {
+                    ...it,
                     is_sold_by_piece: newIsPieces,
                     quantity: !newIsPieces ? Math.ceil(it.quantity) : it.quantity
                 };
@@ -762,11 +762,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     </div>
                 )}
             </div>
-            
+
             <form onSubmit={handleSearch} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                <input 
-                    type="text" 
-                    placeholder="Inserisci ID Preventivo (es: UUID)" 
+                <input
+                    type="text"
+                    placeholder="Inserisci ID Preventivo (es: UUID)"
                     value={searchId}
                     onChange={(e) => setSearchId(e.target.value)}
                     style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)' }}
@@ -780,9 +780,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             </form>
 
             {message && message.type === 'error' && (
-                <div style={{ 
-                    padding: '1rem', 
-                    borderRadius: '8px', 
+                <div style={{
+                    padding: '1rem',
+                    borderRadius: '8px',
                     marginBottom: '1.5rem',
                     backgroundColor: '#ffebee',
                     color: '#c62828',
@@ -858,45 +858,45 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         <h4 style={{ marginBottom: '1rem' }}>Opzioni Dietetiche Globali</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontWeight: 'bold', flexWrap: 'wrap' }}>
-                                <input 
-                                    type="checkbox" 
-                                    checked={currentQuote.is_gluten_free || false} 
+                                <input
+                                    type="checkbox"
+                                    checked={currentQuote.is_gluten_free || false}
                                     onChange={e => toggleGlobalFlag('is_gluten_free', e.target.checked)}
                                     style={{ width: '18px', height: '18px' }}
                                 />
                                 Tutto Senza Glutine
                             </label>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#03A9F4', fontWeight: 'bold', flexWrap: 'wrap' }}>
-                                <input 
-                                    type="checkbox" 
-                                    checked={currentQuote.is_lactose_free || false} 
+                                <input
+                                    type="checkbox"
+                                    checked={currentQuote.is_lactose_free || false}
                                     onChange={e => toggleGlobalFlag('is_lactose_free', e.target.checked)}
                                     style={{ width: '18px', height: '18px' }}
                                 />
                                 Tutto Senza Lattosio
                             </label>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#8BC34A', fontWeight: 'bold', flexWrap: 'wrap' }}>
-                                <input 
-                                    type="checkbox" 
-                                    checked={currentQuote.is_vegetarian || false} 
+                                <input
+                                    type="checkbox"
+                                    checked={currentQuote.is_vegetarian || false}
                                     onChange={e => toggleGlobalFlag('is_vegetarian', e.target.checked)}
                                     style={{ width: '18px', height: '18px' }}
                                 />
                                 Tutto Vegetariano
                             </label>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#388E3C', fontWeight: 'bold', flexWrap: 'wrap' }}>
-                                <input 
-                                    type="checkbox" 
-                                    checked={currentQuote.is_vegan || false} 
+                                <input
+                                    type="checkbox"
+                                    checked={currentQuote.is_vegan || false}
                                     onChange={e => toggleGlobalFlag('is_vegan', e.target.checked)}
                                     style={{ width: '18px', height: '18px' }}
                                 />
                                 Tutto Vegano
                             </label>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#B45309', fontWeight: 'bold', flexWrap: 'wrap' }}>
-                                <input 
-                                    type="checkbox" 
-                                    checked={currentQuote.is_traditional || false} 
+                                <input
+                                    type="checkbox"
+                                    checked={currentQuote.is_traditional || false}
                                     onChange={e => toggleGlobalFlag('is_traditional', e.target.checked)}
                                     style={{ width: '18px', height: '18px' }}
                                 />
@@ -908,9 +908,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     <div style={{ marginBottom: '2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
                             <h4 style={{ margin: 0 }}>Prodotti nel preventivo</h4>
-                            <button 
-                                className="btn btn-outline" 
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }} 
+                            <button
+                                className="btn btn-outline"
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
                                 onClick={refreshProductsFromCatalog}
                                 title="Aggiorna le versioni dei prodotti (immagini, prezzi, descrizioni) con la versione attuale caricata nel catalogo"
                             >
@@ -926,61 +926,61 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                                                 <div style={{ flex: 2, minWidth: '180px' }}>
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Nome Prodotto</label>
-                                                    <input type="text" value={editingItemData.name || ''} onChange={e => setEditingItemData({...editingItemData, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
+                                                    <input type="text" value={editingItemData.name || ''} onChange={e => setEditingItemData({ ...editingItemData, name: e.target.value })} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
                                                 </div>
                                                 <div style={{ flex: 1, minWidth: '100px' }}>
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Pezzi / kg</label>
-                                                    <input 
-                                                        type="number" 
-                                                        step="0.1" 
-                                                        value={editingItemData.pieces_per_kg !== null && editingItemData.pieces_per_kg !== undefined ? editingItemData.pieces_per_kg : ''} 
-                                                        onChange={e => handleEditPiecesPerKgChange(e.target.value)} 
+                                                    <input
+                                                        type="number"
+                                                        step="0.1"
+                                                        value={editingItemData.pieces_per_kg !== null && editingItemData.pieces_per_kg !== undefined ? editingItemData.pieces_per_kg : ''}
+                                                        onChange={e => handleEditPiecesPerKgChange(e.target.value)}
                                                         placeholder="es. 20"
-                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} 
+                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
                                                     />
                                                 </div>
                                                 <div style={{ flex: 1, minWidth: '110px' }}>
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Prezzo pz (€)</label>
-                                                    <input 
-                                                        type="number" 
-                                                        step="0.01" 
-                                                        value={editingItemData.price_per_piece !== null && editingItemData.price_per_piece !== undefined ? editingItemData.price_per_piece : ''} 
-                                                        onChange={e => handleEditPricePerPieceChange(e.target.value)} 
-                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} 
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={editingItemData.price_per_piece !== null && editingItemData.price_per_piece !== undefined ? editingItemData.price_per_piece : ''}
+                                                        onChange={e => handleEditPricePerPieceChange(e.target.value)}
+                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
                                                     />
                                                 </div>
                                                 <div style={{ flex: 1, minWidth: '110px' }}>
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Prezzo kg (€)</label>
-                                                    <input 
-                                                        type="number" 
-                                                        step="0.01" 
-                                                        value={editingItemData.price_per_kg !== null && editingItemData.price_per_kg !== undefined ? editingItemData.price_per_kg : ''} 
-                                                        onChange={e => handleEditPricePerKgChange(e.target.value)} 
-                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} 
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={editingItemData.price_per_kg !== null && editingItemData.price_per_kg !== undefined ? editingItemData.price_per_kg : ''}
+                                                        onChange={e => handleEditPricePerKgChange(e.target.value)}
+                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
                                                     />
                                                 </div>
                                             </div>
                                             <div style={{ marginBottom: '1rem' }}>
                                                 <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione Preventivo</label>
                                                 <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0.4rem' }}>Se vuota, userà la descrizione standard del catalogo.</p>
-                                                <textarea value={editingItemData.description || ''} onChange={e => setEditingItemData({...editingItemData, description: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} />
+                                                <textarea value={editingItemData.description || ''} onChange={e => setEditingItemData({ ...editingItemData, description: e.target.value })} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} />
                                             </div>
                                             <div style={{ marginBottom: '1rem' }}>
                                                 <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Descrizione Menù Digitale e PDF (Sovrascrittura)</label>
                                                 <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0.4rem' }}>Se compilata, <strong>sostituirà</strong> la descrizione menù del catalogo solo in questo preventivo.</p>
-                                                <textarea value={editingItemData.menu_description || ''} onChange={e => setEditingItemData({...editingItemData, menu_description: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} placeholder="Descrizione specifica per il menù..." />
+                                                <textarea value={editingItemData.menu_description || ''} onChange={e => setEditingItemData({ ...editingItemData, menu_description: e.target.value })} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)', minHeight: '60px' }} placeholder="Descrizione specifica per il menù..." />
                                             </div>
                                             <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#FF9800', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                                                    <input type="checkbox" checked={editingItemData.is_gluten_free || false} onChange={e => setEditingItemData({...editingItemData, is_gluten_free: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    <input type="checkbox" checked={editingItemData.is_gluten_free || false} onChange={e => setEditingItemData({ ...editingItemData, is_gluten_free: e.target.checked })} style={{ width: '16px', height: '16px' }} />
                                                     Senza Glutine
                                                 </label>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#03A9F4', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                                                    <input type="checkbox" checked={editingItemData.is_lactose_free || false} onChange={e => setEditingItemData({...editingItemData, is_lactose_free: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    <input type="checkbox" checked={editingItemData.is_lactose_free || false} onChange={e => setEditingItemData({ ...editingItemData, is_lactose_free: e.target.checked })} style={{ width: '16px', height: '16px' }} />
                                                     Senza Lattosio
                                                 </label>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#8BC34A', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                                                    <input type="checkbox" checked={editingItemData.is_vegetarian || false} onChange={e => setEditingItemData({...editingItemData, is_vegetarian: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    <input type="checkbox" checked={editingItemData.is_vegetarian || false} onChange={e => setEditingItemData({ ...editingItemData, is_vegetarian: e.target.checked })} style={{ width: '16px', height: '16px' }} />
                                                     Vegetariano
                                                 </label>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#388E3C', fontSize: '0.9rem', fontWeight: 'bold' }}>
@@ -994,19 +994,19 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                                 is_lactose_free: false
                                                             });
                                                         } else {
-                                                            setEditingItemData({...editingItemData, is_vegan: false});
+                                                            setEditingItemData({ ...editingItemData, is_vegan: false });
                                                         }
                                                     }} style={{ width: '16px', height: '16px' }} />
                                                     Vegano
                                                 </label>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#B45309', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                                                    <input type="checkbox" checked={editingItemData.is_traditional || false} onChange={e => setEditingItemData({...editingItemData, is_traditional: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    <input type="checkbox" checked={editingItemData.is_traditional || false} onChange={e => setEditingItemData({ ...editingItemData, is_traditional: e.target.checked })} style={{ width: '16px', height: '16px' }} />
                                                     Tradizionale
                                                 </label>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--color-primary)', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                                                    <input 
-                                                        type="checkbox" 
-                                                        checked={editingItemData.is_sold_by_piece || false} 
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editingItemData.is_sold_by_piece || false}
                                                         onChange={e => {
                                                             const val = e.target.checked;
                                                             setEditingItemData({
@@ -1014,13 +1014,13 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                                 is_sold_by_piece: val,
                                                                 quantity: !val ? Math.ceil(editingItemData.quantity) : editingItemData.quantity
                                                             });
-                                                        }} 
-                                                        style={{ width: '16px', height: '16px' }} 
+                                                        }}
+                                                        style={{ width: '16px', height: '16px' }}
                                                     />
                                                     Venduto a Pezzi (pz)
                                                 </label>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#666', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                                                    <input type="checkbox" checked={editingItemData.hide_in_menu || false} onChange={e => setEditingItemData({...editingItemData, hide_in_menu: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    <input type="checkbox" checked={editingItemData.hide_in_menu || false} onChange={e => setEditingItemData({ ...editingItemData, hide_in_menu: e.target.checked })} style={{ width: '16px', height: '16px' }} />
                                                     Nascondi nel menù
                                                 </label>
                                             </div>
@@ -1033,139 +1033,139 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 }
 
                                 return (
-                                <div key={item.instanceId} style={{ display: 'flex', flexDirection: 'column', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--color-border)', gap: '1rem' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flex: 1 }}>
-                                            {(() => {
-                                                const liveProduct = products.find(p => p.id === item.id) || products.find(p => p.name?.trim().toLowerCase() === item.name?.trim().toLowerCase());
-                                                const imgUrl = item.image_url || (item.images && item.images[0]) || liveProduct?.image_url || 'https://placehold.co/50x50?text=Food';
-                                                return (
-                                                    <div style={{ width: '50px', height: '50px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
-                                                        <img 
-                                                            src={imgUrl} 
-                                                            alt={item.name} 
-                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50?text=No+Img'; }}
-                                                        />
-                                                    </div>
-                                                );
-                                            })()}
-                                            <div>
-                                                <p style={{ fontWeight: 'bold', margin: 0, fontSize: '1rem' }}>
-                                                    {item.name}
-                                                </p>
-                                                <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
-                                                    {(currentQuote.is_gluten_free || item.is_gluten_free) && (
-                                                        <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                            Senza Glutine
-                                                        </span>
-                                                    )}
-                                                    {(currentQuote.is_lactose_free || item.is_lactose_free) && (
-                                                        <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                            Senza Lattosio
-                                                        </span>
-                                                    )}
-                                                    {(currentQuote.is_vegetarian || item.is_vegetarian) && (
-                                                        <span style={{ color: '#8BC34A', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                            Vegetariano
-                                                        </span>
-                                                    )}
-                                                    {(currentQuote.is_vegan || item.is_vegan) && (
-                                                        <span style={{ color: '#388E3C', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                            Vegano
-                                                        </span>
-                                                    )}
-                                                    {(currentQuote.is_traditional || item.is_traditional) && (
-                                                        <span style={{ color: '#B45309', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                                                            Tradizionale
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: '0.25rem 0 0 0' }}>
-                                                    Unitario: € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            <button 
-                                                className="btn btn-outline" 
-                                                style={{ padding: '0.4rem', border: 'none', color: 'var(--color-primary)' }} 
-                                                onClick={() => { 
+                                    <div key={item.instanceId} style={{ display: 'flex', flexDirection: 'column', padding: '1rem', backgroundColor: 'white', borderRadius: '8px', border: '1px solid var(--color-border)', gap: '1rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flex: 1 }}>
+                                                {(() => {
                                                     const liveProduct = products.find(p => p.id === item.id) || products.find(p => p.name?.trim().toLowerCase() === item.name?.trim().toLowerCase());
-                                                    setEditingItemId(item.instanceId); 
-                                                    setEditingItemData({ 
-                                                        ...item,
-                                                        pieces_per_kg: item.pieces_per_kg !== undefined && item.pieces_per_kg !== null ? item.pieces_per_kg : (liveProduct?.pieces_per_kg || '')
-                                                    }); 
-                                                }}
-                                            >
-                                                <Edit size={18} />
-                                            </button>
-                                            <button style={{ color: '#e63946', background: 'none', border: 'none', cursor: 'pointer', padding: '0.4rem' }} onClick={() => removeItem(item.instanceId)}>
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '6px', flexWrap: 'wrap', gap: '0.75rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'row', gap: '0.25rem', marginRight: '0.5rem' }}>
-                                                <button 
-                                                    className="btn btn-outline" 
-                                                    style={{ padding: '0.2rem', visibility: index === 0 ? 'hidden' : 'visible' }} 
-                                                    onClick={() => moveItem(index, -1)}
-                                                >
-                                                    <ChevronUp size={16} />
-                                                </button>
-                                                <button 
-                                                    className="btn btn-outline" 
-                                                    style={{ padding: '0.2rem', visibility: index === currentQuote.items.length - 1 ? 'hidden' : 'visible' }} 
-                                                    onClick={() => moveItem(index, 1)}
-                                                >
-                                                    <ChevronDown size={16} />
-                                                </button>
+                                                    const imgUrl = item.image_url || (item.images && item.images[0]) || liveProduct?.image_url || 'https://placehold.co/50x50?text=Food';
+                                                    return (
+                                                        <div style={{ width: '50px', height: '50px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                                            <img
+                                                                src={imgUrl}
+                                                                alt={item.name}
+                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/50x50?text=No+Img'; }}
+                                                            />
+                                                        </div>
+                                                    );
+                                                })()}
+                                                <div>
+                                                    <p style={{ fontWeight: 'bold', margin: 0, fontSize: '1rem' }}>
+                                                        {item.name}
+                                                    </p>
+                                                    <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
+                                                        {(currentQuote.is_gluten_free || item.is_gluten_free) && (
+                                                            <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                                Senza Glutine
+                                                            </span>
+                                                        )}
+                                                        {(currentQuote.is_lactose_free || item.is_lactose_free) && (
+                                                            <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                                Senza Lattosio
+                                                            </span>
+                                                        )}
+                                                        {(currentQuote.is_vegetarian || item.is_vegetarian) && (
+                                                            <span style={{ color: '#8BC34A', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                                Vegetariano
+                                                            </span>
+                                                        )}
+                                                        {(currentQuote.is_vegan || item.is_vegan) && (
+                                                            <span style={{ color: '#388E3C', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                                Vegano
+                                                            </span>
+                                                        )}
+                                                        {(currentQuote.is_traditional || item.is_traditional) && (
+                                                            <span style={{ color: '#B45309', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                                Tradizionale
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: '0.25rem 0 0 0' }}>
+                                                        Unitario: € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                                <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, -1)}><Minus size={14} /></button>
-                                                <input 
-                                                    type="number" 
-                                                    value={item.quantity} 
-                                                    onChange={(e) => {
-                                                        const val = parseFloat(e.target.value) || 0;
-                                                        const updatedItems = currentQuote.items.map(it => it.instanceId === item.instanceId ? { ...it, quantity: val } : it);
-                                                        const updatedQuote = { ...currentQuote, items: updatedItems };
-                                                        setCurrentQuote(updatedQuote);
-                                                        autoSave(updatedQuote);
-                                                    }}
-                                                    style={{ width: '60px', textAlign: 'center', padding: '0.3rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
-                                                />
-                                                <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, 1)}><Plus size={14} /></button>
-                                                <button 
-                                                    type="button" 
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button
                                                     className="btn btn-outline"
-                                                    style={{ 
-                                                        padding: '0.2rem 0.5rem', 
-                                                        borderRadius: '4px',
-                                                        marginLeft: '0.25rem',
-                                                        opacity: canToggleUnit ? 1 : 0.4,
-                                                        cursor: canToggleUnit ? 'pointer' : 'not-allowed',
-                                                        color: 'var(--color-primary)',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 'bold',
-                                                        minWidth: '35px'
-                                                    }} 
-                                                    onClick={() => toggleItemUnit(item)}
-                                                    title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
+                                                    style={{ padding: '0.4rem', border: 'none', color: 'var(--color-primary)' }}
+                                                    onClick={() => {
+                                                        const liveProduct = products.find(p => p.id === item.id) || products.find(p => p.name?.trim().toLowerCase() === item.name?.trim().toLowerCase());
+                                                        setEditingItemId(item.instanceId);
+                                                        setEditingItemData({
+                                                            ...item,
+                                                            pieces_per_kg: item.pieces_per_kg !== undefined && item.pieces_per_kg !== null ? item.pieces_per_kg : (liveProduct?.pieces_per_kg || '')
+                                                        });
+                                                    }}
                                                 >
-                                                    {item.is_sold_by_piece ? 'pz' : 'kg'}
+                                                    <Edit size={18} />
+                                                </button>
+                                                <button style={{ color: '#e63946', background: 'none', border: 'none', cursor: 'pointer', padding: '0.4rem' }} onClick={() => removeItem(item.instanceId)}>
+                                                    <Trash2 size={18} />
                                                 </button>
                                             </div>
                                         </div>
-                                        <div style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--color-primary-dark)', fontSize: '1.1rem' }}>
-                                            Tot: € {( (item.is_sold_by_piece ? (Number(item.price_per_piece) || 0) : (Number(item.price_per_kg) || 0)) * (Number(item.quantity) || 0) ).toFixed(2)}
+
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '0.75rem', borderRadius: '6px', flexWrap: 'wrap', gap: '0.75rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'row', gap: '0.25rem', marginRight: '0.5rem' }}>
+                                                    <button
+                                                        className="btn btn-outline"
+                                                        style={{ padding: '0.2rem', visibility: index === 0 ? 'hidden' : 'visible' }}
+                                                        onClick={() => moveItem(index, -1)}
+                                                    >
+                                                        <ChevronUp size={16} />
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-outline"
+                                                        style={{ padding: '0.2rem', visibility: index === currentQuote.items.length - 1 ? 'hidden' : 'visible' }}
+                                                        onClick={() => moveItem(index, 1)}
+                                                    >
+                                                        <ChevronDown size={16} />
+                                                    </button>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                    <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, -1)}><Minus size={14} /></button>
+                                                    <input
+                                                        type="number"
+                                                        value={item.quantity}
+                                                        onChange={(e) => {
+                                                            const val = parseFloat(e.target.value) || 0;
+                                                            const updatedItems = currentQuote.items.map(it => it.instanceId === item.instanceId ? { ...it, quantity: val } : it);
+                                                            const updatedQuote = { ...currentQuote, items: updatedItems };
+                                                            setCurrentQuote(updatedQuote);
+                                                            autoSave(updatedQuote);
+                                                        }}
+                                                        style={{ width: '60px', textAlign: 'center', padding: '0.3rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                                                    />
+                                                    <button className="btn btn-outline" style={{ padding: '0.2rem' }} onClick={() => updateQuantity(item.instanceId, 1)}><Plus size={14} /></button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-outline"
+                                                        style={{
+                                                            padding: '0.2rem 0.5rem',
+                                                            borderRadius: '4px',
+                                                            marginLeft: '0.25rem',
+                                                            opacity: canToggleUnit ? 1 : 0.4,
+                                                            cursor: canToggleUnit ? 'pointer' : 'not-allowed',
+                                                            color: 'var(--color-primary)',
+                                                            fontSize: '0.75rem',
+                                                            fontWeight: 'bold',
+                                                            minWidth: '35px'
+                                                        }}
+                                                        onClick={() => toggleItemUnit(item)}
+                                                        title={canToggleUnit ? "Cambia tra Kg e Pezzi" : "Singolo prezzo disponibile"}
+                                                    >
+                                                        {item.is_sold_by_piece ? 'pz' : 'kg'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--color-primary-dark)', fontSize: '1.1rem' }}>
+                                                Tot: € {((item.is_sold_by_piece ? (Number(item.price_per_piece) || 0) : (Number(item.price_per_kg) || 0)) * (Number(item.quantity) || 0)).toFixed(2)}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
                                 );
                             })}
                         </div>
@@ -1173,7 +1173,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
                     <div style={{ marginBottom: '2rem' }}>
                         <h4 style={{ marginBottom: '1rem' }}>Aggiungi Prodotto</h4>
-                        <button 
+                        <button
                             type="button"
                             className="btn btn-outline"
                             onClick={() => {
@@ -1217,10 +1217,10 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
                             {/* Card Imballaggio */}
-                            <div style={{ 
-                                backgroundColor: packagingItem ? 'rgba(76, 175, 80, 0.04)' : 'white', 
-                                border: `1.5px solid ${packagingItem ? '#4CAF50' : 'var(--color-border)'}`, 
-                                borderRadius: '12px', 
+                            <div style={{
+                                backgroundColor: packagingItem ? 'rgba(76, 175, 80, 0.04)' : 'white',
+                                border: `1.5px solid ${packagingItem ? '#4CAF50' : 'var(--color-border)'}`,
+                                borderRadius: '12px',
                                 padding: '1.25rem',
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -1231,10 +1231,10 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 <div>
                                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.75rem' }}>
                                         <div style={{ width: '56px', height: '56px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
-                                            <img 
-                                                src="/imballaggio.jpeg" 
-                                                alt="Imballaggio" 
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                            <img
+                                                src="/imballaggio.jpeg"
+                                                alt="Imballaggio"
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             />
                                         </div>
                                         <div>
@@ -1263,9 +1263,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                     <div style={{ position: 'relative', flex: 1 }}>
                                         <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>€</span>
-                                        <input 
-                                            type="number" 
-                                            step="0.01" 
+                                        <input
+                                            type="number"
+                                            step="0.01"
                                             min="0"
                                             placeholder="0.00"
                                             value={packagingCostInput}
@@ -1277,18 +1277,18 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                 }
                                             }}
                                             onBlur={() => handleApplyPackagingCost(packagingCostInput)}
-                                            style={{ 
-                                                width: '100%', 
-                                                padding: '0.6rem 0.6rem 0.6rem 2rem', 
-                                                borderRadius: '8px', 
-                                                border: '1px solid var(--color-border)', 
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.6rem 0.6rem 0.6rem 2rem',
+                                                borderRadius: '8px',
+                                                border: '1px solid var(--color-border)',
                                                 fontSize: '0.95rem',
                                                 fontWeight: '600'
                                             }}
                                         />
                                     </div>
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         className="btn btn-primary"
                                         onClick={() => handleApplyPackagingCost(packagingCostInput)}
                                         style={{ padding: '0.6rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
@@ -1296,8 +1296,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                         {packagingItem ? 'Aggiorna' : 'Aggiungi'}
                                     </button>
                                     {packagingItem && (
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             onClick={handleRemovePackaging}
                                             title="Rimuovi imballaggio dal preventivo"
                                             style={{ background: 'none', border: 'none', color: '#e63946', cursor: 'pointer', padding: '0.5rem' }}
@@ -1309,10 +1309,10 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             </div>
 
                             {/* Card Consegna */}
-                            <div style={{ 
-                                backgroundColor: deliveryItem ? 'rgba(76, 175, 80, 0.04)' : 'white', 
-                                border: `1.5px solid ${deliveryItem ? '#4CAF50' : 'var(--color-border)'}`, 
-                                borderRadius: '12px', 
+                            <div style={{
+                                backgroundColor: deliveryItem ? 'rgba(76, 175, 80, 0.04)' : 'white',
+                                border: `1.5px solid ${deliveryItem ? '#4CAF50' : 'var(--color-border)'}`,
+                                borderRadius: '12px',
                                 padding: '1.25rem',
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -1324,10 +1324,10 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                             <div style={{ width: '56px', height: '56px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
-                                                <img 
-                                                    src="/consegna.jpeg" 
-                                                    alt="Consegna" 
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                                <img
+                                                    src="/consegna.jpeg"
+                                                    alt="Consegna"
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                 />
                                             </div>
                                             <div>
@@ -1356,8 +1356,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
                                 {/* Opzione Principale: Calcola con IA e Mappe */}
                                 <div>
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         onClick={() => setIsDeliveryCalcOpen(true)}
                                         className="btn btn-primary"
                                         style={{
@@ -1378,17 +1378,17 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                             border: 'none'
                                         }}
                                     >
-                                        <Navigation size={18} /> Calcola Costo Consegna (Percorso, Auto e Benzina)
+                                        <Navigation size={18} /> Calcola Costo Consegna (IA)
                                     </button>
                                 </div>
 
                                 {/* Opzione Secondaria: Inserimento Manuale */}
-                                <div style={{ 
-                                    paddingTop: '0.75rem', 
-                                    borderTop: '1px dashed var(--color-border)', 
-                                    display: 'flex', 
-                                    flexDirection: 'column', 
-                                    gap: '0.4rem' 
+                                <div style={{
+                                    paddingTop: '0.75rem',
+                                    borderTop: '1px dashed var(--color-border)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '0.4rem'
                                 }}>
                                     <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: '600' }}>
                                         oppure inserisci il prezzo manualmente:
@@ -1396,9 +1396,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                         <div style={{ position: 'relative', flex: 1 }}>
                                             <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>€</span>
-                                            <input 
-                                                type="number" 
-                                                step="0.01" 
+                                            <input
+                                                type="number"
+                                                step="0.01"
                                                 min="0"
                                                 placeholder="0.00"
                                                 value={deliveryCostInput}
@@ -1410,19 +1410,19 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                     }
                                                 }}
                                                 onBlur={() => handleApplyDeliveryCost(deliveryCostInput)}
-                                                style={{ 
-                                                    width: '100%', 
-                                                    padding: '0.5rem 0.6rem 0.5rem 2rem', 
-                                                    borderRadius: '8px', 
-                                                    border: '1px solid var(--color-border)', 
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.5rem 0.6rem 0.5rem 2rem',
+                                                    borderRadius: '8px',
+                                                    border: '1px solid var(--color-border)',
                                                     fontSize: '0.9rem',
                                                     fontWeight: '600',
                                                     backgroundColor: '#fafafa'
                                                 }}
                                             />
                                         </div>
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             className="btn btn-outline"
                                             onClick={() => handleApplyDeliveryCost(deliveryCostInput)}
                                             style={{ padding: '0.5rem 0.9rem', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
@@ -1430,8 +1430,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                             {deliveryItem ? 'Aggiorna manuale' : 'Salva manuale'}
                                         </button>
                                         {deliveryItem && (
-                                            <button 
-                                                type="button" 
+                                            <button
+                                                type="button"
                                                 onClick={handleRemoveDelivery}
                                                 title="Rimuovi consegna dal preventivo"
                                                 style={{ background: 'none', border: 'none', color: '#e63946', cursor: 'pointer', padding: '0.4rem' }}
@@ -1496,11 +1496,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 autoSave(updatedQuote);
                             }}
                             placeholder="Inserisci qui eventuali note o messaggi personalizzati per il cliente..."
-                            style={{ 
-                                width: '100%', 
-                                padding: '1rem', 
-                                borderRadius: '8px', 
-                                border: '1px solid var(--color-border)', 
+                            style={{
+                                width: '100%',
+                                padding: '1rem',
+                                borderRadius: '8px',
+                                border: '1px solid var(--color-border)',
                                 minHeight: '100px',
                                 fontSize: '0.95rem'
                             }}
@@ -1517,11 +1517,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 autoSave(updatedQuote);
                             }}
                             placeholder="Inserisci qui eventuali note che appariranno solo nel menù digitale e nel PDF..."
-                            style={{ 
-                                width: '100%', 
-                                padding: '1rem', 
-                                borderRadius: '8px', 
-                                border: '1px solid var(--color-border)', 
+                            style={{
+                                width: '100%',
+                                padding: '1rem',
+                                borderRadius: '8px',
+                                border: '1px solid var(--color-border)',
                                 minHeight: '100px',
                                 fontSize: '0.95rem'
                             }}
@@ -1534,15 +1534,15 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 Prezzo Totale Preventivo (€)
                             </label>
                             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                <input 
-                                    type="number" 
+                                <input
+                                    type="number"
                                     value={currentQuote.total_price}
                                     onChange={(e) => handleManualPriceChange(e.target.value)}
-                                    style={{ 
-                                        padding: '1rem', 
-                                        borderRadius: '12px', 
-                                        border: '2px solid var(--color-primary)', 
-                                        fontSize: '1.5rem', 
+                                    style={{
+                                        padding: '1rem',
+                                        borderRadius: '12px',
+                                        border: '2px solid var(--color-primary)',
+                                        fontSize: '1.5rem',
                                         fontWeight: '800',
                                         width: '200px',
                                         textAlign: 'center',
@@ -1550,11 +1550,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                         backgroundColor: 'white'
                                     }}
                                 />
-                                <button 
+                                <button
                                     className="btn btn-outline"
                                     onClick={applySuggestedTotal}
-                                    style={{ 
-                                        padding: '0.8rem 1.5rem', 
+                                    style={{
+                                        padding: '0.8rem 1.5rem',
                                         borderRadius: '12px',
                                         fontSize: '1rem',
                                         fontWeight: 'bold',
@@ -1639,16 +1639,16 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         </div>
                         <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>Scegli come vuoi creare il nuovo preventivo:</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <button 
-                                className="btn btn-outline" 
-                                style={{ padding: '1rem', fontSize: '1.1rem' }} 
+                            <button
+                                className="btn btn-outline"
+                                style={{ padding: '1rem', fontSize: '1.1rem' }}
                                 onClick={() => { setIsModeSelectionOpen(false); handleCreateNewQuote(); }}
                             >
                                 Creazione Manuale
                             </button>
-                            <button 
-                                className="btn btn-primary" 
-                                style={{ padding: '1rem', fontSize: '1.1rem', background: 'linear-gradient(45deg, var(--color-primary), #9c27b0)', border: 'none' }} 
+                            <button
+                                className="btn btn-primary"
+                                style={{ padding: '1rem', fontSize: '1.1rem', background: 'linear-gradient(45deg, var(--color-primary), #9c27b0)', border: 'none' }}
                                 onClick={() => { setIsModeSelectionOpen(false); setIsAiPromptOpen(true); }}
                             >
                                 Intelligenza Artificiale
@@ -1679,7 +1679,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 <label style={{ fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem', color: 'var(--color-primary-dark)' }}>
                                     <Package size={16} style={{ color: 'var(--color-primary)' }} /> Imballaggio (€)
                                 </label>
-                                <input 
+                                <input
                                     type="number"
                                     step="0.01"
                                     min="0"
@@ -1694,7 +1694,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 <label style={{ fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem', color: 'var(--color-primary-dark)' }}>
                                     <Truck size={16} style={{ color: 'var(--color-primary)' }} /> Consegna (€)
                                 </label>
-                                <input 
+                                <input
                                     type="number"
                                     step="0.01"
                                     min="0"
@@ -1707,9 +1707,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             </div>
                         </div>
 
-                        <button 
-                            className="btn btn-primary" 
-                            style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} 
+                        <button
+                            className="btn btn-primary"
+                            style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
                             onClick={handleGenerateAiQuote}
                             disabled={aiLoading || !aiPrompt.trim()}
                         >
@@ -1720,29 +1720,29 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             )}
 
             {isProductPickerOpen && (
-                <div 
+                <div
                     className="modal-overlay"
-                    style={{ 
-                        position: 'fixed', 
-                        top: 0, 
-                        left: 0, 
-                        right: 0, 
-                        bottom: 0, 
-                        backgroundColor: 'rgba(0,0,0,0.6)', 
-                        backdropFilter: 'blur(4px)', 
-                        display: 'flex', 
-                        justifyContent: 'center', 
-                        alignItems: 'center', 
-                        zIndex: 3000 
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        backdropFilter: 'blur(4px)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 3000
                     }}
                 >
-                    <div 
-                        className="modal-content bounce-in" 
-                        style={{ 
-                            backgroundColor: 'white', 
-                            borderRadius: '24px', 
-                            width: '95vw', 
-                            maxWidth: '780px', 
+                    <div
+                        className="modal-content bounce-in"
+                        style={{
+                            backgroundColor: 'white',
+                            borderRadius: '24px',
+                            width: '95vw',
+                            maxWidth: '780px',
                             maxHeight: '88vh',
                             display: 'flex',
                             flexDirection: 'column',
@@ -1751,11 +1751,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         }}
                     >
                         {/* Header */}
-                        <div style={{ 
-                            padding: '1.25rem 1.5rem', 
-                            borderBottom: '1px solid var(--color-border)', 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
+                        <div style={{
+                            padding: '1.25rem 1.5rem',
+                            borderBottom: '1px solid var(--color-border)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
                             alignItems: 'center',
                             backgroundColor: 'white'
                         }}>
@@ -1767,8 +1767,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                     Scegli uno o più prodotti da aggiungere al preventivo
                                 </p>
                             </div>
-                            <button 
-                                onClick={() => setIsProductPickerOpen(false)} 
+                            <button
+                                onClick={() => setIsProductPickerOpen(false)}
                                 className="btn btn-outline"
                                 style={{ padding: '0.5rem', borderRadius: '50%', width: '38px', height: '38px' }}
                                 title="Chiudi"
@@ -1778,9 +1778,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         </div>
 
                         {/* Search & Tag Filter Section */}
-                        <div style={{ 
-                            padding: '1rem 1.5rem', 
-                            backgroundColor: 'rgba(155, 57, 61, 0.02)', 
+                        <div style={{
+                            padding: '1rem 1.5rem',
+                            backgroundColor: 'rgba(155, 57, 61, 0.02)',
                             borderBottom: '1px solid var(--color-border)',
                             display: 'flex',
                             flexDirection: 'column',
@@ -1788,16 +1788,16 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         }}>
                             {/* Search Input */}
                             <div style={{ position: 'relative' }}>
-                                <Search 
-                                    size={18} 
-                                    style={{ 
-                                        position: 'absolute', 
-                                        left: '1rem', 
-                                        top: '50%', 
-                                        transform: 'translateY(-50%)', 
+                                <Search
+                                    size={18}
+                                    style={{
+                                        position: 'absolute',
+                                        left: '1rem',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
                                         color: 'var(--color-text-muted)',
                                         pointerEvents: 'none'
-                                    }} 
+                                    }}
                                 />
                                 <input
                                     type="text"
@@ -1861,14 +1861,14 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                             style={{
                                                 padding: '0.35rem 0.75rem',
                                                 borderRadius: '20px',
-                                                border: isSelected 
-                                                    ? `1.5px solid ${chip.color || 'var(--color-primary)'}` 
+                                                border: isSelected
+                                                    ? `1.5px solid ${chip.color || 'var(--color-primary)'}`
                                                     : '1px solid var(--color-border)',
-                                                backgroundColor: isSelected 
-                                                    ? (chip.bg || 'var(--color-primary)') 
+                                                backgroundColor: isSelected
+                                                    ? (chip.bg || 'var(--color-primary)')
                                                     : 'white',
-                                                color: isSelected 
-                                                    ? (chip.color || 'white') 
+                                                color: isSelected
+                                                    ? (chip.color || 'white')
                                                     : 'var(--color-text)',
                                                 fontWeight: isSelected ? '700' : '500',
                                                 fontSize: '0.8rem',
@@ -1884,13 +1884,13 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         </div>
 
                         {/* Product List */}
-                        <div style={{ 
-                            flex: 1, 
-                            overflowY: 'auto', 
-                            padding: '1.25rem', 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            gap: '0.75rem' 
+                        <div style={{
+                            flex: 1,
+                            overflowY: 'auto',
+                            padding: '1.25rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem'
                         }}>
                             {(() => {
                                 const filtered = products
@@ -1928,7 +1928,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                     const imgUrl = p.image_url || (p.images && p.images[0]) || 'https://placehold.co/80x80?text=Food';
 
                                     return (
-                                        <div 
+                                        <div
                                             key={p.id}
                                             style={{
                                                 display: 'flex',
@@ -1936,11 +1936,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                 alignItems: 'center',
                                                 padding: '0.85rem 1rem',
                                                 borderRadius: '12px',
-                                                border: isAddedJustNow 
-                                                    ? '1.5px solid #4CAF50' 
+                                                border: isAddedJustNow
+                                                    ? '1.5px solid #4CAF50'
                                                     : '1px solid var(--color-border)',
-                                                backgroundColor: isAddedJustNow 
-                                                    ? 'rgba(76, 175, 80, 0.05)' 
+                                                backgroundColor: isAddedJustNow
+                                                    ? 'rgba(76, 175, 80, 0.05)'
                                                     : 'white',
                                                 gap: '1rem',
                                                 transition: 'all 0.2s ease',
@@ -1948,14 +1948,14 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                             }}
                                         >
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, minWidth: 0 }}>
-                                                <img 
-                                                    src={imgUrl} 
-                                                    alt={p.name} 
-                                                    style={{ 
-                                                        width: '54px', 
-                                                        height: '54px', 
-                                                        objectFit: 'cover', 
-                                                        borderRadius: '8px', 
+                                                <img
+                                                    src={imgUrl}
+                                                    alt={p.name}
+                                                    style={{
+                                                        width: '54px',
+                                                        height: '54px',
+                                                        objectFit: 'cover',
+                                                        borderRadius: '8px',
                                                         flexShrink: 0,
                                                         border: '1px solid var(--color-border)'
                                                     }}
@@ -1967,13 +1967,13 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                             {p.name}
                                                         </h5>
                                                         {existingCount > 0 && (
-                                                            <span style={{ 
-                                                                fontSize: '0.7rem', 
-                                                                backgroundColor: 'rgba(155, 57, 61, 0.1)', 
-                                                                color: 'var(--color-primary)', 
-                                                                fontWeight: 'bold', 
-                                                                padding: '1px 6px', 
-                                                                borderRadius: '10px' 
+                                                            <span style={{
+                                                                fontSize: '0.7rem',
+                                                                backgroundColor: 'rgba(155, 57, 61, 0.1)',
+                                                                color: 'var(--color-primary)',
+                                                                fontWeight: 'bold',
+                                                                padding: '1px 6px',
+                                                                borderRadius: '10px'
                                                             }}>
                                                                 Nel preventivo ({existingCount})
                                                             </span>
@@ -2063,9 +2063,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         </div>
 
                         {/* Footer */}
-                        <div style={{ 
-                            padding: '1rem 1.5rem', 
-                            borderTop: '1px solid var(--color-border)', 
+                        <div style={{
+                            padding: '1rem 1.5rem',
+                            borderTop: '1px solid var(--color-border)',
                             backgroundColor: '#faf8f6',
                             display: 'flex',
                             justifyContent: 'space-between',
@@ -2074,8 +2074,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
                                 {currentQuote.items.length} {currentQuote.items.length === 1 ? 'prodotto inserito' : 'prodotti inseriti'} nel preventivo
                             </span>
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 className="btn btn-primary"
                                 style={{ padding: '0.6rem 1.5rem', fontWeight: '600' }}
                                 onClick={() => setIsProductPickerOpen(false)}
@@ -2089,7 +2089,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
             {/* OrderMaster FAB - Visible only when currentQuote needs sync and bottom button is NOT visible */}
             {currentQuote && currentQuote.needs_sync && !isBottomButtonVisible && (
-                <div 
+                <div
                     style={{
                         position: 'fixed',
                         bottom: '2rem',
