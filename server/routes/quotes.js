@@ -51,7 +51,7 @@ router.get('/ai-models', async (req, res) => {
 });
 
 
-async function generateWithFallback(modelIndex, prompt, imageParts = []) {
+async function generateWithFallback(modelIndex, prompt, imageParts = [], validator = null) {
     if (modelIndex >= MODEL_WATERFALL.length) {
         throw new Error("Tutti i modelli AI sono momentaneamente non disponibili (Quota esaurita o Errore server).");
     }
@@ -62,6 +62,17 @@ async function generateWithFallback(modelIndex, prompt, imageParts = []) {
     try {
         const model = genAI.getGenerativeModel({ model: currentModelName });
         const result = await model.generateContent([prompt, ...imageParts]);
+        const text = result.response.text();
+
+        // Se è presente un validatore e la risposta non lo soddisfa (es. fuel_price: null), passa al modello successivo!
+        if (validator && typeof validator === 'function') {
+            const isValid = validator(text);
+            if (!isValid) {
+                console.warn(`⚠️ Modello ${currentModelName} ha restituito un output non valido o vuoto (${text.trim().substring(0, 100)}). Passaggio al modello successivo...`);
+                return generateWithFallback(modelIndex + 1, prompt, imageParts, validator);
+            }
+        }
+
         return result;
     } catch (error) {
         const errorMsg = error.message || '';
@@ -75,7 +86,7 @@ async function generateWithFallback(modelIndex, prompt, imageParts = []) {
             errorMsg.includes('500')
         ) {
             console.warn(`⚠️ Modello ${currentModelName} fallito (${errorMsg}). Passaggio al modello successivo...`);
-            return generateWithFallback(modelIndex + 1, prompt, imageParts);
+            return generateWithFallback(modelIndex + 1, prompt, imageParts, validator);
         }
         console.error(`❌ Errore fatale non recuperabile con ${currentModelName}:`, errorMsg);
         throw error;
@@ -450,53 +461,63 @@ Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato:
     return null;
 }
 
-// Helper to get current average petrol price in Italy via AI (senza stime preimpostate o numeri suggeriti)
+// Helper to get current average petrol price in Italy via AI (con validazione e fallback a cascata su tutti i modelli)
 async function getCurrentFuelPrice() {
-    try {
-        const currentDate = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
-        const prompt = `Qual è il prezzo medio della benzina in Italia oggi (${currentDate}) al self service in euro al litro?
-Fornisci il dato attuale più recente. Non basarti su valori preimpostati o stime fittizie.
+    const currentDate = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+    const prompt = `Qual è il prezzo medio attuale della benzina (modalità self-service) in Italia al litro in euro (€/L)?
+Fornisci la quotazione media reale più recente reperibile alle pompe di carburante in Italia (es. Sardegna o media nazionale).
+Non lasciare il campo vuoto o null: inserisci il valore numerico effettivo al litro (es. 2.05).
 
-Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato, senza markdown e senza alcun altro testo:
+Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato:
 {
-  "fuel_price": <prezzo_in_euro_al_litro>
+  "fuel_price": <valore_numerico_al_litro>
 }`;
 
-        console.log(`🤖 Interrogazione AI per prezzo medio benzina (${currentDate})...`);
-        const res = await generateWithFallback(0, prompt);
-        const text = res.response.text();
-        console.log('🤖 Risposta grezza AI per carburante:', text);
-
-        // 1. Prova estrazione da JSON
+    // Estrae e valida il prezzo dal testo dell'IA (deve essere tra 0.50 e 5.00 €/L)
+    const extractFuelPrice = (text) => {
+        if (!text || typeof text !== 'string') return null;
+        // 1. Da JSON
         const jsonMatch = text.match(/\{[\s\S]*?\}/);
         if (jsonMatch) {
             try {
                 const parsed = JSON.parse(jsonMatch[0]);
                 const price = parseFloat(parsed.fuel_price || parsed.price || parsed.prezzo || parsed.price_per_liter);
                 if (!isNaN(price) && price > 0.5 && price < 5.0) {
-                    console.log(`✅ Prezzo benzina rilevato dall'IA (da JSON): ${price} €/L`);
                     return parseFloat(price.toFixed(3));
                 }
-            } catch (e) {
-                // fall-through to regex
-            }
+            } catch (e) {}
         }
-
-        // 2. Estrazione diretta del valore numerico dal testo (es. "2.05" o "2,05 euro")
+        // 2. Da testo con regex
         const numberMatch = text.match(/(\d+[.,]\d{2,3})/);
         if (numberMatch) {
-            const rawVal = numberMatch[1].replace(',', '.');
-            const price = parseFloat(rawVal);
+            const price = parseFloat(numberMatch[1].replace(',', '.'));
             if (!isNaN(price) && price > 0.5 && price < 5.0) {
-                console.log(`✅ Prezzo benzina rilevato dall'IA (da testo): ${price} €/L`);
                 return parseFloat(price.toFixed(3));
             }
         }
+        return null;
+    };
+
+    const priceValidator = (text) => {
+        return extractFuelPrice(text) !== null;
+    };
+
+    try {
+        console.log(`🤖 Interrogazione AI per prezzo medio benzina (${currentDate})...`);
+        const res = await generateWithFallback(0, prompt, [], priceValidator);
+        const text = res.response.text();
+        console.log('🤖 Risposta grezza finale AI per carburante:', text);
+
+        const detectedPrice = extractFuelPrice(text);
+        if (detectedPrice !== null) {
+            console.log(`✅ Prezzo benzina rilevato dall'IA con successo: ${detectedPrice} €/L`);
+            return detectedPrice;
+        }
     } catch (err) {
-        console.warn('⚠️ Impossibile rilevare prezzo carburante via AI, errore:', err.message);
+        console.warn('⚠️ Tutti i modelli AI della waterfall hanno fallito per il prezzo carburante:', err.message);
     }
 
-    // Fallback di sicurezza solo in caso di indisponibilità o errore di rete dell'AI
+    // Fallback di sicurezza solo se TUTTI i modelli falliscono o restituiscono null
     return 2.00;
 }
 
