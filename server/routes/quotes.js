@@ -277,6 +277,10 @@ router.post('/:id/mark-synced', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Error marking quote as synced:', err);
+        res.status(500).json({ error: 'Server error marking quote as synced' });
+    }
+});
+
 // Helper to geocode an address into [lon, lat]
 async function geocodeAddress(address) {
     const orsApiKey = process.env.OPENROUTESERVICE_API_KEY;
