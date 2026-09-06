@@ -457,8 +457,80 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     };
 
 
+    const handleEditPricePerKgChange = (val) => {
+        const pricePerKg = parseFloat(val);
+        const liveProduct = products.find(p => p.id === editingItemData?.id) || products.find(p => p.name?.trim().toLowerCase() === editingItemData?.name?.trim().toLowerCase());
+        const piecesPerKg = parseFloat(editingItemData?.pieces_per_kg) || parseFloat(liveProduct?.pieces_per_kg) || (
+            (parseFloat(editingItemData?.price_per_kg) > 0 && parseFloat(editingItemData?.price_per_piece) > 0)
+                ? (parseFloat(editingItemData.price_per_kg) / parseFloat(editingItemData.price_per_piece))
+                : null
+        );
+
+        let newPricePerPiece = editingItemData?.price_per_piece;
+        if (!isNaN(pricePerKg) && piecesPerKg && piecesPerKg > 0) {
+            newPricePerPiece = parseFloat((pricePerKg / piecesPerKg).toFixed(2));
+        }
+
+        setEditingItemData({
+            ...editingItemData,
+            price_per_kg: val === '' ? '' : (isNaN(pricePerKg) ? val : pricePerKg),
+            price_per_piece: val === '' ? editingItemData?.price_per_piece : newPricePerPiece
+        });
+    };
+
+    const handleEditPricePerPieceChange = (val) => {
+        const pricePerPiece = parseFloat(val);
+        const liveProduct = products.find(p => p.id === editingItemData?.id) || products.find(p => p.name?.trim().toLowerCase() === editingItemData?.name?.trim().toLowerCase());
+        const piecesPerKg = parseFloat(editingItemData?.pieces_per_kg) || parseFloat(liveProduct?.pieces_per_kg) || (
+            (parseFloat(editingItemData?.price_per_kg) > 0 && parseFloat(editingItemData?.price_per_piece) > 0)
+                ? (parseFloat(editingItemData.price_per_kg) / parseFloat(editingItemData.price_per_piece))
+                : null
+        );
+
+        let newPricePerKg = editingItemData?.price_per_kg;
+        if (!isNaN(pricePerPiece) && piecesPerKg && piecesPerKg > 0) {
+            newPricePerKg = parseFloat((pricePerPiece * piecesPerKg).toFixed(2));
+        }
+
+        setEditingItemData({
+            ...editingItemData,
+            price_per_piece: val === '' ? '' : (isNaN(pricePerPiece) ? val : pricePerPiece),
+            price_per_kg: val === '' ? editingItemData?.price_per_kg : newPricePerKg
+        });
+    };
+
+    const handleEditPiecesPerKgChange = (val) => {
+        const piecesPerKg = parseFloat(val);
+        const pricePerKg = parseFloat(editingItemData?.price_per_kg);
+        const pricePerPiece = parseFloat(editingItemData?.price_per_piece);
+
+        let newPricePerPiece = editingItemData?.price_per_piece;
+        let newPricePerKg = editingItemData?.price_per_kg;
+
+        if (!isNaN(piecesPerKg) && piecesPerKg > 0) {
+            if (!isNaN(pricePerKg) && pricePerKg > 0) {
+                newPricePerPiece = parseFloat((pricePerKg / piecesPerKg).toFixed(2));
+            } else if (!isNaN(pricePerPiece) && pricePerPiece > 0) {
+                newPricePerKg = parseFloat((pricePerPiece * piecesPerKg).toFixed(2));
+            }
+        }
+
+        setEditingItemData({
+            ...editingItemData,
+            pieces_per_kg: val === '' ? '' : val,
+            price_per_piece: newPricePerPiece,
+            price_per_kg: newPricePerKg
+        });
+    };
+
     const updateItemDetails = () => {
-        const updatedItems = currentQuote.items.map(it => it.instanceId === editingItemId ? editingItemData : it);
+        const sanitizedItemData = {
+            ...editingItemData,
+            price_per_piece: editingItemData.price_per_piece === '' || editingItemData.price_per_piece === null || editingItemData.price_per_piece === undefined ? null : parseFloat(editingItemData.price_per_piece),
+            price_per_kg: editingItemData.price_per_kg === '' || editingItemData.price_per_kg === null || editingItemData.price_per_kg === undefined ? null : parseFloat(editingItemData.price_per_kg),
+            pieces_per_kg: editingItemData.pieces_per_kg === '' || editingItemData.pieces_per_kg === null || editingItemData.pieces_per_kg === undefined ? null : parseFloat(editingItemData.pieces_per_kg)
+        };
+        const updatedItems = currentQuote.items.map(it => it.instanceId === editingItemId ? sanitizedItemData : it);
         const updatedQuote = { ...currentQuote, items: updatedItems };
         setCurrentQuote(updatedQuote);
         autoSave(updatedQuote);
@@ -677,27 +749,38 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                     return (
                                         <div key={item.instanceId} style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid var(--color-primary)' }}>
                                             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                                                <div style={{ flex: 2, minWidth: '200px' }}>
+                                                <div style={{ flex: 2, minWidth: '180px' }}>
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Nome Prodotto</label>
                                                     <input type="text" value={editingItemData.name || ''} onChange={e => setEditingItemData({...editingItemData, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} />
                                                 </div>
-                                                <div style={{ flex: 1, minWidth: '120px' }}>
+                                                <div style={{ flex: 1, minWidth: '100px' }}>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Pezzi / kg</label>
+                                                    <input 
+                                                        type="number" 
+                                                        step="0.1" 
+                                                        value={editingItemData.pieces_per_kg !== null && editingItemData.pieces_per_kg !== undefined ? editingItemData.pieces_per_kg : ''} 
+                                                        onChange={e => handleEditPiecesPerKgChange(e.target.value)} 
+                                                        placeholder="es. 20"
+                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} 
+                                                    />
+                                                </div>
+                                                <div style={{ flex: 1, minWidth: '110px' }}>
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Prezzo pz (€)</label>
                                                     <input 
                                                         type="number" 
                                                         step="0.01" 
                                                         value={editingItemData.price_per_piece !== null && editingItemData.price_per_piece !== undefined ? editingItemData.price_per_piece : ''} 
-                                                        onChange={e => setEditingItemData({...editingItemData, price_per_piece: e.target.value === '' ? null : parseFloat(e.target.value)})} 
+                                                        onChange={e => handleEditPricePerPieceChange(e.target.value)} 
                                                         style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} 
                                                     />
                                                 </div>
-                                                <div style={{ flex: 1, minWidth: '120px' }}>
+                                                <div style={{ flex: 1, minWidth: '110px' }}>
                                                     <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Prezzo kg (€)</label>
                                                     <input 
                                                         type="number" 
                                                         step="0.01" 
                                                         value={editingItemData.price_per_kg !== null && editingItemData.price_per_kg !== undefined ? editingItemData.price_per_kg : ''} 
-                                                        onChange={e => setEditingItemData({...editingItemData, price_per_kg: e.target.value === '' ? null : parseFloat(e.target.value)})} 
+                                                        onChange={e => handleEditPricePerKgChange(e.target.value)} 
                                                         style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }} 
                                                     />
                                                 </div>
@@ -829,7 +912,18 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            <button className="btn btn-outline" style={{ padding: '0.4rem', border: 'none', color: 'var(--color-primary)' }} onClick={() => { setEditingItemId(item.instanceId); setEditingItemData({ ...item }); }}>
+                                            <button 
+                                                className="btn btn-outline" 
+                                                style={{ padding: '0.4rem', border: 'none', color: 'var(--color-primary)' }} 
+                                                onClick={() => { 
+                                                    const liveProduct = products.find(p => p.id === item.id) || products.find(p => p.name?.trim().toLowerCase() === item.name?.trim().toLowerCase());
+                                                    setEditingItemId(item.instanceId); 
+                                                    setEditingItemData({ 
+                                                        ...item,
+                                                        pieces_per_kg: item.pieces_per_kg !== undefined && item.pieces_per_kg !== null ? item.pieces_per_kg : (liveProduct?.pieces_per_kg || '')
+                                                    }); 
+                                                }}
+                                            >
                                                 <Edit size={18} />
                                             </button>
                                             <button style={{ color: '#e63946', background: 'none', border: 'none', cursor: 'pointer', padding: '0.4rem' }} onClick={() => removeItem(item.instanceId)}>
