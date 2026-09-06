@@ -586,7 +586,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                     {(() => {
                                         const liveProduct = products.find(p => p.id === item.id) || products.find(p => p.name?.trim().toLowerCase() === item.name?.trim().toLowerCase());
-                                        const imgUrl = liveProduct?.image_url || item.image_url || (item.images && item.images[0]) || 'https://placehold.co/50x50?text=Food';
+                                        const imgUrl = item.image_url || (item.images && item.images[0]) || liveProduct?.image_url || 'https://placehold.co/50x50?text=Food';
                                         return (
                                             <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
                                                 <img 

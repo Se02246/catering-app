@@ -1,8 +1,51 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle, Package, Truck, Check } from 'lucide-react';
 
+export const PACKAGING_PRODUCT = {
+    id: 'imballaggio_service',
+    name: 'Imballaggio',
+    description: "La nostra missione è confezionare i prodotti così bene che quasi vi dispiacerà aprirli… quasi😋",
+    original_description: "La nostra missione è confezionare i prodotti così bene che quasi vi dispiacerà aprirli… quasi😋",
+    menu_description: "",
+    original_menu_description: "",
+    image_url: '/imballaggio.jpeg',
+    images: ['/imballaggio.jpeg'],
+    is_sold_by_piece: true,
+    hide_in_menu: true,
+    is_packaging: true
+};
+
+export const DELIVERY_PRODUCT = {
+    id: 'consegna_service',
+    name: 'Consegna',
+    description: "Dalla nostra cucina alla vostra tavola, senza tappe intermedie e con l'aria condizionata al massimo 🛞💨",
+    original_description: "Dalla nostra cucina alla vostra tavola, senza tappe intermedie e con l'aria condizionata al massimo 🛞💨",
+    menu_description: "",
+    original_menu_description: "",
+    image_url: '/consegna.jpeg',
+    images: ['/consegna.jpeg'],
+    is_sold_by_piece: true,
+    hide_in_menu: true,
+    is_delivery: true
+};
+
+const createPackagingItem = (price) => ({
+    ...PACKAGING_PRODUCT,
+    instanceId: `pkg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    price_per_piece: parseFloat(price) || 0,
+    price_per_kg: parseFloat(price) || 0,
+    quantity: 1
+});
+
+const createDeliveryItem = (price) => ({
+    ...DELIVERY_PRODUCT,
+    instanceId: `del-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    price_per_piece: parseFloat(price) || 0,
+    price_per_kg: parseFloat(price) || 0,
+    quantity: 1
+});
 
 const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalOpened }) => {
     const { products } = useProducts();
@@ -21,7 +64,12 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     const [isModeSelectionOpen, setIsModeSelectionOpen] = useState(false);
     const [isAiPromptOpen, setIsAiPromptOpen] = useState(false);
     const [aiPrompt, setAiPrompt] = useState('');
+    const [aiPackagingCost, setAiPackagingCost] = useState('');
+    const [aiDeliveryCost, setAiDeliveryCost] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
+
+    const [packagingCostInput, setPackagingCostInput] = useState('');
+    const [deliveryCostInput, setDeliveryCostInput] = useState('');
 
     const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
     const [productSearchTerm, setProductSearchTerm] = useState('');
@@ -265,10 +313,27 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 };
             });
 
+            let finalItems = [...itemsWithIds];
+            let extraCost = 0;
+
+            const pkgCostNum = parseFloat(aiPackagingCost);
+            if (!isNaN(pkgCostNum) && pkgCostNum > 0) {
+                finalItems.push(createPackagingItem(pkgCostNum));
+                extraCost += pkgCostNum;
+            }
+
+            const delCostNum = parseFloat(aiDeliveryCost);
+            if (!isNaN(delCostNum) && delCostNum > 0) {
+                finalItems.push(createDeliveryItem(delCostNum));
+                extraCost += delCostNum;
+            }
+
+            const finalTotalPrice = (Number(aiData.total_price) || 0) + extraCost;
+
             const finalQuote = {
                 ...newQuote,
-                items: itemsWithIds,
-                total_price: aiData.total_price || 0,
+                items: finalItems,
+                total_price: finalTotalPrice,
                 is_gluten_free: aiData.is_gluten_free || false,
                 is_lactose_free: aiData.is_lactose_free || false,
                 is_vegetarian: aiData.is_vegetarian || false,
@@ -284,6 +349,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             setMessage({ type: 'success', text: 'Preventivo generato con l\'IA! Controlla i dati e applica eventuali correzioni.' });
             setIsAiPromptOpen(false);
             setAiPrompt('');
+            setAiPackagingCost('');
+            setAiDeliveryCost('');
         } catch (err) {
             console.error(err);
             setMessage({ type: 'error', text: err.message || 'Errore durante la generazione con IA.' });
@@ -402,6 +469,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
     const refreshProductsFromCatalog = () => {
         const updatedItems = currentQuote.items.map(item => {
+            if (item.is_packaging || item.is_delivery || item.id === 'imballaggio_service' || item.id === 'consegna_service') {
+                return item;
+            }
             let liveProduct = products.find(p => p.id === item.id);
             if (!liveProduct) {
                 liveProduct = products.find(p => p.name.trim().toLowerCase() === item.name.trim().toLowerCase());
@@ -425,6 +495,109 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         setCurrentQuote(updatedQuote);
         autoSave(updatedQuote);
         setMessage({ type: 'success', text: 'Prodotti sincronizzati e salvati!' });
+    };
+
+    const packagingItem = currentQuote?.items?.find(it => it.is_packaging || it.id === 'imballaggio_service' || it.name?.trim().toLowerCase() === 'imballaggio');
+    const deliveryItem = currentQuote?.items?.find(it => it.is_delivery || it.id === 'consegna_service' || it.name?.trim().toLowerCase() === 'consegna');
+
+    useEffect(() => {
+        if (currentQuote) {
+            const pkg = currentQuote.items?.find(it => it.is_packaging || it.id === 'imballaggio_service' || it.name?.trim().toLowerCase() === 'imballaggio');
+            const del = currentQuote.items?.find(it => it.is_delivery || it.id === 'consegna_service' || it.name?.trim().toLowerCase() === 'consegna');
+            setPackagingCostInput(pkg ? (pkg.price_per_piece !== undefined && pkg.price_per_piece !== null ? String(pkg.price_per_piece) : '') : '');
+            setDeliveryCostInput(del ? (del.price_per_piece !== undefined && del.price_per_piece !== null ? String(del.price_per_piece) : '') : '');
+        } else {
+            setPackagingCostInput('');
+            setDeliveryCostInput('');
+        }
+    }, [currentQuote?.id, currentQuote?.items]);
+
+    const handleApplyPackagingCost = (val) => {
+        if (!currentQuote) return;
+        const num = parseFloat(val);
+        const existingIndex = currentQuote.items.findIndex(it => it.is_packaging || it.id === 'imballaggio_service' || it.name?.trim().toLowerCase() === 'imballaggio');
+        
+        let updatedItems;
+        if (val === '' || isNaN(num) || num <= 0) {
+            if (existingIndex >= 0) {
+                updatedItems = currentQuote.items.filter((_, i) => i !== existingIndex);
+            } else {
+                return;
+            }
+        } else {
+            if (existingIndex >= 0) {
+                updatedItems = currentQuote.items.map((it, idx) => {
+                    if (idx === existingIndex) {
+                        return {
+                            ...it,
+                            price_per_piece: num,
+                            price_per_kg: num,
+                            quantity: it.quantity || 1
+                        };
+                    }
+                    return it;
+                });
+            } else {
+                const newItem = createPackagingItem(num);
+                updatedItems = [...currentQuote.items, newItem];
+            }
+        }
+        const updatedQuote = { ...currentQuote, items: updatedItems };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
+    };
+
+    const handleApplyDeliveryCost = (val) => {
+        if (!currentQuote) return;
+        const num = parseFloat(val);
+        const existingIndex = currentQuote.items.findIndex(it => it.is_delivery || it.id === 'consegna_service' || it.name?.trim().toLowerCase() === 'consegna');
+        
+        let updatedItems;
+        if (val === '' || isNaN(num) || num <= 0) {
+            if (existingIndex >= 0) {
+                updatedItems = currentQuote.items.filter((_, i) => i !== existingIndex);
+            } else {
+                return;
+            }
+        } else {
+            if (existingIndex >= 0) {
+                updatedItems = currentQuote.items.map((it, idx) => {
+                    if (idx === existingIndex) {
+                        return {
+                            ...it,
+                            price_per_piece: num,
+                            price_per_kg: num,
+                            quantity: it.quantity || 1
+                        };
+                    }
+                    return it;
+                });
+            } else {
+                const newItem = createDeliveryItem(num);
+                updatedItems = [...currentQuote.items, newItem];
+            }
+        }
+        const updatedQuote = { ...currentQuote, items: updatedItems };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
+    };
+
+    const handleRemovePackaging = () => {
+        if (!currentQuote) return;
+        const updatedItems = currentQuote.items.filter(it => !(it.is_packaging || it.id === 'imballaggio_service' || it.name?.trim().toLowerCase() === 'imballaggio'));
+        const updatedQuote = { ...currentQuote, items: updatedItems };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
+        setPackagingCostInput('');
+    };
+
+    const handleRemoveDelivery = () => {
+        if (!currentQuote) return;
+        const updatedItems = currentQuote.items.filter(it => !(it.is_delivery || it.id === 'consegna_service' || it.name?.trim().toLowerCase() === 'consegna'));
+        const updatedQuote = { ...currentQuote, items: updatedItems };
+        setCurrentQuote(updatedQuote);
+        autoSave(updatedQuote);
+        setDeliveryCostInput('');
     };
 
     const handleCreateNewQuote = async () => {
@@ -863,7 +1036,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flex: 1 }}>
                                             {(() => {
                                                 const liveProduct = products.find(p => p.id === item.id) || products.find(p => p.name?.trim().toLowerCase() === item.name?.trim().toLowerCase());
-                                                const imgUrl = liveProduct?.image_url || item.image_url || (item.images && item.images[0]) || 'https://placehold.co/50x50?text=Food';
+                                                const imgUrl = item.image_url || (item.images && item.images[0]) || liveProduct?.image_url || 'https://placehold.co/50x50?text=Food';
                                                 return (
                                                     <div style={{ width: '50px', height: '50px', borderRadius: '6px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
                                                         <img 
@@ -1028,6 +1201,203 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             <Plus size={22} style={{ color: 'var(--color-primary)' }} />
                             <span>Cerca e Seleziona Prodotto da Aggiungere</span>
                         </button>
+                    </div>
+
+                    {/* Sezione Imballaggio e Consegna */}
+                    <div style={{ marginBottom: '2.5rem', backgroundColor: 'rgba(255,255,255,0.7)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem' }}>
+                            <Package size={22} style={{ color: 'var(--color-primary)' }} />
+                            Imballaggio e Consegna
+                        </h4>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: '0 0 1.25rem 0' }}>
+                            Configura i costi di imballaggio e consegna. Verranno aggiunti come normali prodotti alla fine del preventivo (non compariranno nel menù digitale né nel PDF).
+                        </p>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                            {/* Card Imballaggio */}
+                            <div style={{ 
+                                backgroundColor: packagingItem ? 'rgba(76, 175, 80, 0.04)' : 'white', 
+                                border: `1.5px solid ${packagingItem ? '#4CAF50' : 'var(--color-border)'}`, 
+                                borderRadius: '12px', 
+                                padding: '1.25rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                gap: '1rem',
+                                transition: 'all 0.2s ease'
+                            }}>
+                                <div>
+                                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                        <div style={{ width: '56px', height: '56px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                            <img 
+                                                src="/imballaggio.jpeg" 
+                                                alt="Imballaggio" 
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                            />
+                                        </div>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                <h5 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--color-primary-dark)' }}>Imballaggio</h5>
+                                                {packagingItem ? (
+                                                    <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#2e7d32', backgroundColor: 'rgba(46, 125, 50, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                                        ✓ Incluso (€ {(Number(packagingItem.price_per_piece) || 0).toFixed(2)})
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', backgroundColor: '#f0f0f0', padding: '2px 6px', borderRadius: '4px' }}>
+                                                        Non incluso
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span style={{ fontSize: '0.7rem', color: '#888', display: 'inline-block', marginTop: '2px' }}>
+                                                Nascosto nel menù/PDF
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontStyle: 'italic', margin: 0, lineHeight: '1.4' }}>
+                                        "{PACKAGING_PRODUCT.description}"
+                                    </p>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <div style={{ position: 'relative', flex: 1 }}>
+                                        <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>€</span>
+                                        <input 
+                                            type="number" 
+                                            step="0.01" 
+                                            min="0"
+                                            placeholder="0.00"
+                                            value={packagingCostInput}
+                                            onChange={e => setPackagingCostInput(e.target.value)}
+                                            onKeyDown={e => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    handleApplyPackagingCost(packagingCostInput);
+                                                }
+                                            }}
+                                            onBlur={() => handleApplyPackagingCost(packagingCostInput)}
+                                            style={{ 
+                                                width: '100%', 
+                                                padding: '0.6rem 0.6rem 0.6rem 2rem', 
+                                                borderRadius: '8px', 
+                                                border: '1px solid var(--color-border)', 
+                                                fontSize: '0.95rem',
+                                                fontWeight: '600'
+                                            }}
+                                        />
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-primary"
+                                        onClick={() => handleApplyPackagingCost(packagingCostInput)}
+                                        style={{ padding: '0.6rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
+                                    >
+                                        {packagingItem ? 'Aggiorna' : 'Aggiungi'}
+                                    </button>
+                                    {packagingItem && (
+                                        <button 
+                                            type="button" 
+                                            onClick={handleRemovePackaging}
+                                            title="Rimuovi imballaggio dal preventivo"
+                                            style={{ background: 'none', border: 'none', color: '#e63946', cursor: 'pointer', padding: '0.5rem' }}
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Card Consegna */}
+                            <div style={{ 
+                                backgroundColor: deliveryItem ? 'rgba(76, 175, 80, 0.04)' : 'white', 
+                                border: `1.5px solid ${deliveryItem ? '#4CAF50' : 'var(--color-border)'}`, 
+                                borderRadius: '12px', 
+                                padding: '1.25rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                gap: '1rem',
+                                transition: 'all 0.2s ease'
+                            }}>
+                                <div>
+                                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                        <div style={{ width: '56px', height: '56px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                            <img 
+                                                src="/consegna.jpeg" 
+                                                alt="Consegna" 
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                            />
+                                        </div>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                <h5 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--color-primary-dark)' }}>Consegna</h5>
+                                                {deliveryItem ? (
+                                                    <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#2e7d32', backgroundColor: 'rgba(46, 125, 50, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                                        ✓ Incluso (€ {(Number(deliveryItem.price_per_piece) || 0).toFixed(2)})
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', backgroundColor: '#f0f0f0', padding: '2px 6px', borderRadius: '4px' }}>
+                                                        Non incluso
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span style={{ fontSize: '0.7rem', color: '#888', display: 'inline-block', marginTop: '2px' }}>
+                                                Nascosto nel menù/PDF
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontStyle: 'italic', margin: 0, lineHeight: '1.4' }}>
+                                        "{DELIVERY_PRODUCT.description}"
+                                    </p>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <div style={{ position: 'relative', flex: 1 }}>
+                                        <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>€</span>
+                                        <input 
+                                            type="number" 
+                                            step="0.01" 
+                                            min="0"
+                                            placeholder="0.00"
+                                            value={deliveryCostInput}
+                                            onChange={e => setDeliveryCostInput(e.target.value)}
+                                            onKeyDown={e => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    handleApplyDeliveryCost(deliveryCostInput);
+                                                }
+                                            }}
+                                            onBlur={() => handleApplyDeliveryCost(deliveryCostInput)}
+                                            style={{ 
+                                                width: '100%', 
+                                                padding: '0.6rem 0.6rem 0.6rem 2rem', 
+                                                borderRadius: '8px', 
+                                                border: '1px solid var(--color-border)', 
+                                                fontSize: '0.95rem',
+                                                fontWeight: '600'
+                                            }}
+                                        />
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-primary"
+                                        onClick={() => handleApplyDeliveryCost(deliveryCostInput)}
+                                        style={{ padding: '0.6rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
+                                    >
+                                        {deliveryItem ? 'Aggiorna' : 'Aggiungi'}
+                                    </button>
+                                    {deliveryItem && (
+                                        <button 
+                                            type="button" 
+                                            onClick={handleRemoveDelivery}
+                                            title="Rimuovi consegna dal preventivo"
+                                            style={{ background: 'none', border: 'none', color: '#e63946', cursor: 'pointer', padding: '0.5rem' }}
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>
@@ -1254,10 +1624,44 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         <textarea
                             value={aiPrompt}
                             onChange={e => setAiPrompt(e.target.value)}
-                            style={{ width: '100%', height: '150px', padding: '1rem', borderRadius: '8px', border: '1px solid var(--color-border)', marginBottom: '1rem', resize: 'none' }}
+                            style={{ width: '100%', height: '120px', padding: '1rem', borderRadius: '8px', border: '1px solid var(--color-border)', marginBottom: '1rem', resize: 'none' }}
                             placeholder="Scrivi qui il tuo prompt..."
                             disabled={aiLoading}
                         />
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                            <div>
+                                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem', color: 'var(--color-primary-dark)' }}>
+                                    <Package size={16} style={{ color: 'var(--color-primary)' }} /> Imballaggio (€)
+                                </label>
+                                <input 
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    placeholder="es. 15.00 (opz.)"
+                                    value={aiPackagingCost}
+                                    onChange={e => setAiPackagingCost(e.target.value)}
+                                    disabled={aiLoading}
+                                    style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--color-border)', fontSize: '0.9rem' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem', color: 'var(--color-primary-dark)' }}>
+                                    <Truck size={16} style={{ color: 'var(--color-primary)' }} /> Consegna (€)
+                                </label>
+                                <input 
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    placeholder="es. 25.00 (opz.)"
+                                    value={aiDeliveryCost}
+                                    onChange={e => setAiDeliveryCost(e.target.value)}
+                                    disabled={aiLoading}
+                                    style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--color-border)', fontSize: '0.9rem' }}
+                                />
+                            </div>
+                        </div>
+
                         <button 
                             className="btn btn-primary" 
                             style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} 
