@@ -381,5 +381,61 @@ export const api = {
             throw new Error(error.error || 'Failed to reorder events');
         }
         return res.json();
+    },
+
+    // Garage Vehicles
+    getVehicles: async () => {
+        const res = await fetch(`${API_URL}/vehicles`);
+        if (!res.ok) throw new Error('Errore nel recupero dei veicoli dal garage');
+        return res.json();
+    },
+
+    analyzeVehicle: async (prompt) => {
+        const res = await fetch(`${API_URL}/vehicles/ai-analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Errore nell\'analisi del veicolo con IA' }));
+            throw new Error(error.error || 'Errore nell\'analisi del veicolo con IA');
+        }
+        return res.json();
+    },
+
+    createVehicle: async (data) => {
+        const res = await fetch(`${API_URL}/vehicles`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Errore nel salvataggio del veicolo' }));
+            throw new Error(error.error || 'Errore nel salvataggio del veicolo');
+        }
+        return res.json();
+    },
+
+    setDefaultVehicle: async (id) => {
+        const res = await fetch(`${API_URL}/vehicles/${id}/set-default`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Errore nell\'impostazione del veicolo predefinito' }));
+            throw new Error(error.error || 'Errore nell\'impostazione del veicolo predefinito');
+        }
+        return res.json();
+    },
+
+    deleteVehicle: async (id) => {
+        const res = await fetch(`${API_URL}/vehicles/${id}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Errore nell\'eliminazione del veicolo' }));
+            throw new Error(error.error || 'Errore nell\'eliminazione del veicolo');
+        }
+        return res.json();
     }
 };
