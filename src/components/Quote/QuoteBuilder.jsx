@@ -675,13 +675,38 @@ const QuoteBuilder = () => {
                                         </p>
                                     )}
                                 </div>
-                                <button
-                                    className={`btn ${isInCart && !p.allow_multiple ? 'btn-primary' : 'btn-outline'}`}
-                                    style={{ width: '36px', height: '36px', padding: 0, borderRadius: '50%', flexShrink: 0 }}
-                                    onClick={(e) => { e.stopPropagation(); addToCart(p); }}
-                                >
-                                    {isInCart && !p.allow_multiple ? <Check size={18} /> : (p.allow_multiple && cartCount > 0 ? <span style={{fontSize:'0.8rem'}}>{cartCount}</span> : <Plus size={18} />)}
-                                </button>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+                                    {p.allow_multiple && cartCount > 0 && (
+                                        <span
+                                            style={{
+                                                background: 'rgba(155, 57, 61, 0.08)',
+                                                color: 'var(--color-primary)',
+                                                fontWeight: '800',
+                                                fontSize: '0.8rem',
+                                                padding: '0.2rem 0.55rem',
+                                                borderRadius: '50px',
+                                                border: '1.5px solid rgba(155, 57, 61, 0.2)',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                minWidth: '24px',
+                                                height: '24px',
+                                                boxSizing: 'border-box',
+                                                boxShadow: '0 2px 4px rgba(155, 57, 61, 0.08)'
+                                            }}
+                                        >
+                                            {cartCount}
+                                        </span>
+                                    )}
+                                    <button
+                                        className={`btn ${isInCart && !p.allow_multiple ? 'btn-primary' : 'btn-outline'}`}
+                                        style={{ width: '36px', height: '36px', padding: 0, borderRadius: '50%', flexShrink: 0 }}
+                                        onClick={(e) => { e.stopPropagation(); addToCart(p); }}
+                                        title={isInCart && !p.allow_multiple ? 'Rimuovi dal preventivo' : 'Aggiungi al preventivo'}
+                                    >
+                                        {isInCart && !p.allow_multiple ? <Check size={18} /> : <Plus size={18} />}
+                                    </button>
+                                </div>
                             </div>
                         );
                     })}
