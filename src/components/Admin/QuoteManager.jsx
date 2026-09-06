@@ -1164,13 +1164,12 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         alignItems: 'center', 
                         zIndex: 3000 
                     }}
-                    onClick={() => setIsProductPickerOpen(false)}
                 >
                     <div 
                         className="modal-content bounce-in" 
                         style={{ 
                             backgroundColor: 'white', 
-                            borderRadius: '16px', 
+                            borderRadius: '24px', 
                             width: '95vw', 
                             maxWidth: '780px', 
                             maxHeight: '88vh',
@@ -1179,7 +1178,6 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             overflow: 'hidden',
                             boxShadow: 'var(--shadow-xl)'
                         }}
-                        onClick={e => e.stopPropagation()}
                     >
                         {/* Header */}
                         <div style={{ 

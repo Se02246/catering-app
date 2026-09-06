@@ -13,6 +13,9 @@ const ProductManager = ({ onCreateQuoteClick }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [isHideModalOpen, setIsHideModalOpen] = useState(false);
     const [productToHide, setProductToHide] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showHidden, setShowHidden] = useState(false);
+    const [selectedDietaryFilters, setSelectedDietaryFilters] = useState([]);
     const [currentProduct, setCurrentProduct] = useState({ 
         name: '', description: '', menu_description: '', price_per_kg: '', image_url: '', images: [], 
         is_visible: true, hide_at: null, allow_multiple: false, order_increment: '', 
@@ -232,12 +235,76 @@ const ProductManager = ({ onCreateQuoteClick }) => {
         }
     };
 
+    const toggleDietaryFilter = (key) => {
+        setSelectedDietaryFilters(prev => 
+            prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+        );
+    };
+
+    const toggleShowHidden = () => {
+        setShowHidden(prev => !prev);
+    };
+
+    const resetFilters = () => {
+        setSearchTerm('');
+        setSelectedDietaryFilters([]);
+        setShowHidden(false);
+    };
+
+    const hiddenCount = (products || []).filter(p => {
+        const isExpired = p.hide_at && new Date(p.hide_at) < new Date();
+        return p.is_visible === false || isExpired;
+    }).length;
+
+    const filterPills = [
+        { key: 'gluten_free', label: 'Senza Glutine', color: '#FF9800', bg: 'rgba(255, 152, 0, 0.12)' },
+        { key: 'lactose_free', label: 'Senza Lattosio', color: '#03A9F4', bg: 'rgba(3, 169, 244, 0.12)' },
+        { key: 'vegetarian', label: 'Vegetariano', color: '#8BC34A', bg: 'rgba(139, 195, 74, 0.12)' },
+        { key: 'vegan', label: 'Vegano', color: '#388E3C', bg: 'rgba(56, 142, 60, 0.12)' },
+        { key: 'hide_from_quotes', label: 'Nascosti nei preventivi', icon: FileMinus, color: 'var(--color-primary)', bg: 'rgba(155, 57, 61, 0.12)' },
+    ];
+
+    const hasActiveFilters = searchTerm.trim() !== '' || selectedDietaryFilters.length > 0 || showHidden;
+
+    const filteredProducts = (products || []).filter(p => {
+        const isExpired = p.hide_at && new Date(p.hide_at) < new Date();
+        const isHidden = p.is_visible === false || isExpired;
+
+        // Hidden from catalog filter (hidden by default)
+        if (!showHidden && isHidden) return false;
+
+        // Combinable filters
+        if (selectedDietaryFilters.includes('gluten_free') && !p.is_gluten_free) return false;
+        if (selectedDietaryFilters.includes('lactose_free') && !p.is_lactose_free) return false;
+        if (selectedDietaryFilters.includes('vegetarian') && (!p.is_vegetarian && !p.is_vegan)) return false;
+        if (selectedDietaryFilters.includes('vegan') && !p.is_vegan) return false;
+        if (selectedDietaryFilters.includes('hide_from_quotes') && !p.hide_from_quotes) return false;
+
+        // Search text filter
+        if (searchTerm.trim()) {
+            const term = searchTerm.toLowerCase();
+            const matchName = (p.name || '').toLowerCase().includes(term);
+            const matchDesc = (p.description || '').toLowerCase().includes(term);
+            const matchMenuDesc = (p.menu_description || '').toLowerCase().includes(term);
+            if (!matchName && !matchDesc && !matchMenuDesc) return false;
+        }
+
+        return true;
+    });
+
     if (isLoading) return <p>Caricamento prodotti...</p>;
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <h2>Gestione Prodotti</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                    <h2 style={{ margin: 0 }}>Gestione Prodotti</h2>
+                    <p style={{ margin: '0.25rem 0 0', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                        {filteredProducts.length === (products || []).length 
+                            ? `${products.length} prodotti in catalogo` 
+                            : `${filteredProducts.length} di ${products.length} prodotti visualizzati`}
+                    </p>
+                </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <button 
                         className="btn btn-outline" 
@@ -251,6 +318,157 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                         <Plus size={18} style={{ marginRight: '8px' }} />
                         Nuovo Prodotto
                     </button>
+                </div>
+            </div>
+
+            {/* Search and Combinable Filters Bar */}
+            <div className="glass-panel" style={{ padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ position: 'relative' }}>
+                    <Search 
+                        size={18} 
+                        style={{ 
+                            position: 'absolute', 
+                            left: '1rem', 
+                            top: '50%', 
+                            transform: 'translateY(-50%)', 
+                            color: 'var(--color-text-muted)',
+                            pointerEvents: 'none'
+                        }} 
+                    />
+                    <input
+                        type="text"
+                        placeholder="Cerca prodotti per nome, descrizione..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '0.75rem 2.5rem 0.75rem 2.75rem',
+                            borderRadius: 'var(--radius-full)',
+                            border: '1px solid var(--color-border)',
+                            backgroundColor: 'white',
+                            fontSize: '0.95rem',
+                            outline: 'none',
+                            boxShadow: 'var(--shadow-sm)'
+                        }}
+                    />
+                    {searchTerm && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchTerm('')}
+                            style={{
+                                position: 'absolute',
+                                right: '0.75rem',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'none',
+                                border: 'none',
+                                padding: '0.25rem',
+                                cursor: 'pointer',
+                                color: 'var(--color-text-muted)',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                            title="Cancella ricerca"
+                        >
+                            <X size={16} />
+                        </button>
+                    )}
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-text-muted)', marginRight: '0.25rem' }}>
+                        Filtri:
+                    </span>
+
+                    {filterPills.map(chip => {
+                        const isSelected = selectedDietaryFilters.includes(chip.key);
+                        const ChipIcon = chip.icon;
+                        return (
+                            <button
+                                key={chip.key}
+                                type="button"
+                                onClick={() => toggleDietaryFilter(chip.key)}
+                                style={{
+                                    padding: '0.4rem 0.85rem',
+                                    borderRadius: '20px',
+                                    border: isSelected 
+                                        ? `2px solid ${chip.color || 'var(--color-primary)'}` 
+                                        : '1px solid var(--color-border)',
+                                    backgroundColor: isSelected 
+                                        ? (chip.bg || 'rgba(155, 57, 61, 0.12)') 
+                                        : 'white',
+                                    color: isSelected 
+                                        ? (chip.color || 'var(--color-primary)') 
+                                        : 'var(--color-text)',
+                                    fontWeight: isSelected ? '700' : '500',
+                                    fontSize: '0.85rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.35rem',
+                                    transition: 'all 0.15s ease',
+                                    boxShadow: isSelected ? '0 2px 6px rgba(0,0,0,0.06)' : 'none'
+                                }}
+                            >
+                                {ChipIcon && <ChipIcon size={15} />}
+                                {chip.label}
+                            </button>
+                        );
+                    })}
+
+                    <button
+                        type="button"
+                        onClick={toggleShowHidden}
+                        style={{
+                            padding: '0.4rem 0.85rem',
+                            borderRadius: '20px',
+                            border: showHidden 
+                                ? '2px solid #5c6bc0' 
+                                : '1px dashed var(--color-border)',
+                            backgroundColor: showHidden 
+                                ? 'rgba(92, 107, 192, 0.12)' 
+                                : 'white',
+                            color: showHidden 
+                                ? '#3949ab' 
+                                : 'var(--color-text-muted)',
+                            fontWeight: showHidden ? '700' : '500',
+                            fontSize: '0.85rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            transition: 'all 0.15s ease',
+                            boxShadow: showHidden ? '0 2px 6px rgba(92, 107, 192, 0.1)' : 'none'
+                        }}
+                        title={showHidden ? "Nascondi i prodotti non visibili" : "Mostra anche i prodotti nascosti"}
+                    >
+                        {showHidden ? <Eye size={15} /> : <EyeOff size={15} />}
+                        {showHidden ? 'Nascosti visibili' : `Mostra nascosti (${hiddenCount})`}
+                    </button>
+
+                    {hasActiveFilters && (
+                        <button
+                            type="button"
+                            onClick={resetFilters}
+                            style={{
+                                padding: '0.4rem 0.75rem',
+                                borderRadius: '20px',
+                                border: 'none',
+                                backgroundColor: 'rgba(0,0,0,0.05)',
+                                color: 'var(--color-text-muted)',
+                                fontWeight: '600',
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                marginLeft: 'auto'
+                            }}
+                            title="Azzera tutti i filtri"
+                        >
+                            <X size={14} /> Azzera filtri
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -589,8 +807,22 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                 </div>
             )}
 
-            <div className="grid-responsive" style={{ gap: '1rem' }}>
-                {products.map(p => {
+            {filteredProducts.length === 0 ? (
+                <div className="glass-panel" style={{ textAlign: 'center', padding: '3rem 1.5rem', color: 'var(--color-text-muted)' }}>
+                    <p style={{ margin: 0, fontSize: '1.1rem', fontWeight: 'bold' }}>Nessun prodotto trovato</p>
+                    <p style={{ margin: '0.5rem 0 1rem', fontSize: '0.9rem' }}>
+                        Nessun prodotto corrisponde ai criteri di ricerca o ai filtri selezionati.
+                        {!showHidden && hiddenCount > 0 && ` (Ci sono ${hiddenCount} prodotti nascosti)`}
+                    </p>
+                    {hasActiveFilters && (
+                        <button className="btn btn-outline" onClick={resetFilters} style={{ margin: '0 auto' }}>
+                            Azzera tutti i filtri
+                        </button>
+                    )}
+                </div>
+            ) : (
+                <div className="grid-responsive" style={{ gap: '1rem' }}>
+                    {filteredProducts.map(p => {
                     const isExpired = p.hide_at && new Date(p.hide_at) < new Date();
                     const isHidden = p.is_visible === false || isExpired;
                     
@@ -682,6 +914,7 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                     );
                 })}
             </div>
+            )}
 
             <HideModal 
                 isOpen={isHideModalOpen}
