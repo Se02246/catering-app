@@ -6,8 +6,14 @@ const router = express.Router();
 
 const configuredModel = process.env.GEMINI_MODEL;
 const DEFAULT_MODELS = [
-    'gemini-flash',
-    'gemini-pro'
+    'gemini-3.8-flash',
+    'gemini-3.7-flash',
+    'gemini-3.9-flash',
+    'gemini-3.1-pro',
+    'gemini-4.0-pro',
+    'gemini-4-pro',
+    'gemini-4.0-flash',
+    'gemini-4-flash'
 ];
 const MODEL_WATERFALL = configuredModel
     ? [configuredModel, ...DEFAULT_MODELS.filter(m => m !== configuredModel)]
