@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, FileText, Lock, LogOut, X } from 'lucide-react';
+import { Home, FileText, Lock, LogOut, X, BookOpen } from 'lucide-react';
 import { useSetting } from '../../hooks/useData';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -47,10 +47,15 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <Home size={20} style={{ marginRight: '12px' }} />
                     Home
                 </Link>
-                {showQuoteBuilder && (
+                {showQuoteBuilder ? (
                     <Link to="/quote" style={linkStyle('/quote')} onClick={onClose}>
                         <FileText size={20} style={{ marginRight: '12px' }} />
                         Crea Preventivo
+                    </Link>
+                ) : (
+                    <Link to="/catalogo" style={linkStyle('/catalogo')} onClick={onClose}>
+                        <BookOpen size={20} style={{ marginRight: '12px' }} />
+                        Catalogo
                     </Link>
                 )}
                 {!isAdmin && (

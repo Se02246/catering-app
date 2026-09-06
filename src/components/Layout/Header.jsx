@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Download, FileText, MessageCircle, ArrowLeft, MessageSquare, Star, MapPin } from 'lucide-react';
+import { Lock, Download, FileText, MessageCircle, ArrowLeft, MessageSquare, Star, MapPin, BookOpen } from 'lucide-react';
 import { useInstallPromptContext } from '../../context/InstallPromptContext';
 import { formatCustomText } from '../../utils/textFormatting';
 import { useSetting } from '../../hooks/useData';
@@ -110,7 +110,7 @@ const Header = ({ isReviewsPage = false }) => {
                     />
 
                     <div style={{ maxWidth: '400px', margin: '1.5rem auto 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        {showQuoteBuilder && (
+                        {showQuoteBuilder ? (
                             <button
                                 onClick={scrollToQuote}
                                 className="btn btn-outline"
@@ -130,6 +130,30 @@ const Header = ({ isReviewsPage = false }) => {
                             >
                                 <FileText size={18} />
                                 Crea il tuo preventivo
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => {
+                                    navigate('/catalogo');
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className="btn btn-outline"
+                                style={{ 
+                                    width: '100%', 
+                                    padding: '0.6rem 1rem', 
+                                    fontSize: '0.9rem', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    gap: '0.5rem',
+                                    borderRadius: '50px',
+                                    border: '1px solid var(--color-primary)',
+                                    color: 'var(--color-primary)',
+                                    background: 'transparent'
+                                }}
+                            >
+                                <BookOpen size={18} />
+                                Vai al catalogo
                             </button>
                         )}
 
