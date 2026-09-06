@@ -666,11 +666,23 @@ const InfiniteProductCarousel = ({ products, openProduct, onCenterProductChange 
         centerIdx: -1
     });
 
+    const randomWeightsRef = React.useRef(new Map());
+
     const displayProducts = React.useMemo(() => {
         if (!products) return [];
-        return products.filter(p => {
+        const filtered = products.filter(p => {
             const isExpired = p.hide_at && new Date(p.hide_at) < new Date();
             return p.image_url && p.is_visible !== false && !isExpired && !p.hide_in_menu;
+        });
+
+        filtered.forEach(p => {
+            if (!randomWeightsRef.current.has(p.id)) {
+                randomWeightsRef.current.set(p.id, Math.random());
+            }
+        });
+
+        return [...filtered].sort((a, b) => {
+            return (randomWeightsRef.current.get(a.id) || 0) - (randomWeightsRef.current.get(b.id) || 0);
         });
     }, [products]);
 
