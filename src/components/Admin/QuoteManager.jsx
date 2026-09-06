@@ -23,6 +23,21 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     const [aiPrompt, setAiPrompt] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
 
+    const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
+    const [productSearchTerm, setProductSearchTerm] = useState('');
+    const [selectedTagFilter, setSelectedTagFilter] = useState('all');
+    const [recentlyAddedId, setRecentlyAddedId] = useState(null);
+
+    // Modal scroll lock
+    useEffect(() => {
+        if (isModeSelectionOpen || isAiPromptOpen || isProductPickerOpen) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+        return () => document.body.classList.remove('modal-open');
+    }, [isModeSelectionOpen, isAiPromptOpen, isProductPickerOpen]);
+
     // Intersection Observer to detect when we are at the bottom of the page
     useEffect(() => {
         if (!currentQuote || !currentQuote.needs_sync) {
@@ -861,28 +876,36 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
                     <div style={{ marginBottom: '2rem' }}>
                         <h4 style={{ marginBottom: '1rem' }}>Aggiungi Prodotto</h4>
-                        <select 
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)' }}
-                            onChange={(e) => {
-                                const prod = products.find(p => p.id === parseInt(e.target.value));
-                                if (prod) addProductToQuote(prod);
-                                e.target.value = "";
+                        <button 
+                            type="button"
+                            className="btn btn-outline"
+                            onClick={() => {
+                                setProductSearchTerm('');
+                                setSelectedTagFilter('all');
+                                setIsProductPickerOpen(true);
                             }}
+                            style={{
+                                width: '100%',
+                                padding: '1rem',
+                                borderRadius: '12px',
+                                border: '2px dashed var(--color-primary)',
+                                backgroundColor: 'rgba(155, 57, 61, 0.03)',
+                                color: 'var(--color-primary-dark)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.75rem',
+                                fontSize: '1.05rem',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(155, 57, 61, 0.08)'}
+                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'rgba(155, 57, 61, 0.03)'}
                         >
-                            <option value="">-- Seleziona un prodotto da aggiungere --</option>
-                            {products
-                                .filter(p => !p.hide_from_quotes)
-                                .map(p => (
-                                <option key={p.id} value={p.id}>
-                                    {p.name} 
-                                    {p.is_gluten_free && ' [SG]'}
-                                    {p.is_lactose_free && ' [SL]'}
-                                    {p.is_vegetarian && ' [VGT]'}
-                                    {p.is_vegan && ' [VEG]'}
-                                    {` (€ ${(Number(p.is_sold_by_piece ? p.price_per_piece : p.price_per_kg) || 0).toFixed(2)})`}
-                                </option>
-                            ))}
-                        </select>
+                            <Plus size={22} style={{ color: 'var(--color-primary)' }} />
+                            <span>Cerca e Seleziona Prodotto da Aggiungere</span>
+                        </button>
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>
@@ -1121,6 +1144,365 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         >
                             {aiLoading ? 'Generazione in corso...' : 'Invia e Genera'}
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {isProductPickerOpen && (
+                <div 
+                    className="modal-overlay"
+                    style={{ 
+                        position: 'fixed', 
+                        top: 0, 
+                        left: 0, 
+                        right: 0, 
+                        bottom: 0, 
+                        backgroundColor: 'rgba(0,0,0,0.6)', 
+                        backdropFilter: 'blur(4px)', 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        alignItems: 'center', 
+                        zIndex: 3000 
+                    }}
+                    onClick={() => setIsProductPickerOpen(false)}
+                >
+                    <div 
+                        className="modal-content bounce-in" 
+                        style={{ 
+                            backgroundColor: 'white', 
+                            borderRadius: '16px', 
+                            width: '95vw', 
+                            maxWidth: '780px', 
+                            maxHeight: '88vh',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                            boxShadow: 'var(--shadow-xl)'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div style={{ 
+                            padding: '1.25rem 1.5rem', 
+                            borderBottom: '1px solid var(--color-border)', 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            backgroundColor: 'white'
+                        }}>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-primary-dark)' }}>
+                                    Seleziona Prodotto
+                                </h3>
+                                <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                    Scegli uno o più prodotti da aggiungere al preventivo
+                                </p>
+                            </div>
+                            <button 
+                                onClick={() => setIsProductPickerOpen(false)} 
+                                className="btn btn-outline"
+                                style={{ padding: '0.5rem', borderRadius: '50%', width: '38px', height: '38px' }}
+                                title="Chiudi"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Search & Tag Filter Section */}
+                        <div style={{ 
+                            padding: '1rem 1.5rem', 
+                            backgroundColor: 'rgba(155, 57, 61, 0.02)', 
+                            borderBottom: '1px solid var(--color-border)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem'
+                        }}>
+                            {/* Search Input */}
+                            <div style={{ position: 'relative' }}>
+                                <Search 
+                                    size={18} 
+                                    style={{ 
+                                        position: 'absolute', 
+                                        left: '1rem', 
+                                        top: '50%', 
+                                        transform: 'translateY(-50%)', 
+                                        color: 'var(--color-text-muted)',
+                                        pointerEvents: 'none'
+                                    }} 
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Cerca per nome, descrizione, tag..."
+                                    value={productSearchTerm}
+                                    onChange={e => setProductSearchTerm(e.target.value)}
+                                    autoFocus
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.75rem 2.5rem 0.75rem 2.75rem',
+                                        borderRadius: 'var(--radius-full)',
+                                        border: '1px solid var(--color-border)',
+                                        backgroundColor: 'white',
+                                        fontSize: '0.95rem',
+                                        outline: 'none',
+                                        boxShadow: 'var(--shadow-sm)'
+                                    }}
+                                />
+                                {productSearchTerm && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setProductSearchTerm('')}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '0.75rem',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            background: 'none',
+                                            border: 'none',
+                                            padding: '0.25rem',
+                                            cursor: 'pointer',
+                                            color: 'var(--color-text-muted)',
+                                            display: 'flex',
+                                            alignItems: 'center'
+                                        }}
+                                        title="Cancella ricerca"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Dietary Chips */}
+                            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                {[
+                                    { key: 'all', label: 'Tutti' },
+                                    { key: 'gluten_free', label: 'Senza Glutine', color: '#FF9800', bg: 'rgba(255, 152, 0, 0.1)' },
+                                    { key: 'lactose_free', label: 'Senza Lattosio', color: '#03A9F4', bg: 'rgba(3, 169, 244, 0.1)' },
+                                    { key: 'vegetarian', label: 'Vegetariano', color: '#8BC34A', bg: 'rgba(139, 195, 74, 0.1)' },
+                                    { key: 'vegan', label: 'Vegano', color: '#388E3C', bg: 'rgba(56, 142, 60, 0.1)' }
+                                ].map(chip => {
+                                    const isSelected = selectedTagFilter === chip.key;
+                                    return (
+                                        <button
+                                            key={chip.key}
+                                            type="button"
+                                            onClick={() => setSelectedTagFilter(chip.key)}
+                                            style={{
+                                                padding: '0.35rem 0.75rem',
+                                                borderRadius: '20px',
+                                                border: isSelected 
+                                                    ? `1.5px solid ${chip.color || 'var(--color-primary)'}` 
+                                                    : '1px solid var(--color-border)',
+                                                backgroundColor: isSelected 
+                                                    ? (chip.bg || 'var(--color-primary)') 
+                                                    : 'white',
+                                                color: isSelected 
+                                                    ? (chip.color || 'white') 
+                                                    : 'var(--color-text)',
+                                                fontWeight: isSelected ? '700' : '500',
+                                                fontSize: '0.8rem',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.15s ease'
+                                            }}
+                                        >
+                                            {chip.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Product List */}
+                        <div style={{ 
+                            flex: 1, 
+                            overflowY: 'auto', 
+                            padding: '1.25rem', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            gap: '0.75rem' 
+                        }}>
+                            {(() => {
+                                const filtered = products
+                                    .filter(p => !p.hide_from_quotes)
+                                    .filter(p => {
+                                        if (productSearchTerm.trim()) {
+                                            const term = productSearchTerm.toLowerCase();
+                                            const matchName = (p.name || '').toLowerCase().includes(term);
+                                            const matchDesc = (p.description || '').toLowerCase().includes(term);
+                                            const matchMenuDesc = (p.menu_description || '').toLowerCase().includes(term);
+                                            if (!matchName && !matchDesc && !matchMenuDesc) return false;
+                                        }
+                                        if (selectedTagFilter === 'gluten_free' && !p.is_gluten_free) return false;
+                                        if (selectedTagFilter === 'lactose_free' && !p.is_lactose_free) return false;
+                                        if (selectedTagFilter === 'vegetarian' && !p.is_vegetarian && !p.is_vegan) return false;
+                                        if (selectedTagFilter === 'vegan' && !p.is_vegan) return false;
+                                        return true;
+                                    });
+
+                                if (filtered.length === 0) {
+                                    return (
+                                        <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--color-text-muted)' }}>
+                                            <p style={{ margin: 0, fontSize: '1.05rem', fontWeight: '600' }}>Nessun prodotto trovato</p>
+                                            <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem' }}>Prova a modificare il termine di ricerca o i filtri dietetici.</p>
+                                        </div>
+                                    );
+                                }
+
+                                return filtered.map(p => {
+                                    const isAddedJustNow = recentlyAddedId === p.id;
+                                    const existingCount = currentQuote.items.filter(it => it.id === p.id || it.name?.trim().toLowerCase() === p.name?.trim().toLowerCase()).length;
+                                    const imgUrl = p.image_url || (p.images && p.images[0]) || 'https://placehold.co/80x80?text=Food';
+
+                                    return (
+                                        <div 
+                                            key={p.id}
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                padding: '0.85rem 1rem',
+                                                borderRadius: '12px',
+                                                border: isAddedJustNow 
+                                                    ? '1.5px solid #4CAF50' 
+                                                    : '1px solid var(--color-border)',
+                                                backgroundColor: isAddedJustNow 
+                                                    ? 'rgba(76, 175, 80, 0.05)' 
+                                                    : 'white',
+                                                gap: '1rem',
+                                                transition: 'all 0.2s ease',
+                                                boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, minWidth: 0 }}>
+                                                <img 
+                                                    src={imgUrl} 
+                                                    alt={p.name} 
+                                                    style={{ 
+                                                        width: '54px', 
+                                                        height: '54px', 
+                                                        objectFit: 'cover', 
+                                                        borderRadius: '8px', 
+                                                        flexShrink: 0,
+                                                        border: '1px solid var(--color-border)'
+                                                    }}
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/80x80?text=Food'; }}
+                                                />
+                                                <div style={{ minWidth: 0, flex: 1 }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                        <h5 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '700', color: 'var(--color-text)' }}>
+                                                            {p.name}
+                                                        </h5>
+                                                        {existingCount > 0 && (
+                                                            <span style={{ 
+                                                                fontSize: '0.7rem', 
+                                                                backgroundColor: 'rgba(155, 57, 61, 0.1)', 
+                                                                color: 'var(--color-primary)', 
+                                                                fontWeight: 'bold', 
+                                                                padding: '1px 6px', 
+                                                                borderRadius: '10px' 
+                                                            }}>
+                                                                Nel preventivo ({existingCount})
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Dietary badges */}
+                                                    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', margin: '0.2rem 0' }}>
+                                                        {p.is_gluten_free && (
+                                                            <span style={{ color: '#FF9800', fontSize: '0.68rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                                Senza Glutine
+                                                            </span>
+                                                        )}
+                                                        {p.is_lactose_free && (
+                                                            <span style={{ color: '#03A9F4', fontSize: '0.68rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                                Senza Lattosio
+                                                            </span>
+                                                        )}
+                                                        {p.is_vegetarian && (
+                                                            <span style={{ color: '#8BC34A', fontSize: '0.68rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                                Vegetariano
+                                                            </span>
+                                                        )}
+                                                        {p.is_vegan && (
+                                                            <span style={{ color: '#388E3C', fontSize: '0.68rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                                Vegano
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Price & info */}
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem' }}>
+                                                        <span style={{ fontWeight: '700', color: 'var(--color-primary)' }}>
+                                                            {p.is_sold_by_piece ? `€ ${p.price_per_piece} / pz` : `€ ${p.price_per_kg} / kg`}
+                                                        </span>
+                                                        {p.description && (
+                                                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.78rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
+                                                                {p.description}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Add button */}
+                                            <button
+                                                type="button"
+                                                className={isAddedJustNow ? "btn btn-primary" : "btn btn-outline"}
+                                                style={{
+                                                    padding: '0.5rem 0.9rem',
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: '600',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.35rem',
+                                                    flexShrink: 0,
+                                                    backgroundColor: isAddedJustNow ? '#4CAF50' : undefined,
+                                                    borderColor: isAddedJustNow ? '#4CAF50' : undefined,
+                                                    color: isAddedJustNow ? 'white' : undefined,
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                onClick={() => {
+                                                    addProductToQuote(p);
+                                                    setRecentlyAddedId(p.id);
+                                                    setTimeout(() => setRecentlyAddedId(null), 1500);
+                                                }}
+                                            >
+                                                {isAddedJustNow ? (
+                                                    <>
+                                                        <CheckCircle2 size={16} /> Aggiunto!
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Plus size={16} /> Aggiungi
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    );
+                                });
+                            })()}
+                        </div>
+
+                        {/* Footer */}
+                        <div style={{ 
+                            padding: '1rem 1.5rem', 
+                            borderTop: '1px solid var(--color-border)', 
+                            backgroundColor: '#faf8f6',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
+                                {currentQuote.items.length} {currentQuote.items.length === 1 ? 'prodotto inserito' : 'prodotti inseriti'} nel preventivo
+                            </span>
+                            <button 
+                                type="button" 
+                                className="btn btn-primary"
+                                style={{ padding: '0.6rem 1.5rem', fontWeight: '600' }}
+                                onClick={() => setIsProductPickerOpen(false)}
+                            >
+                                Fatto
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
