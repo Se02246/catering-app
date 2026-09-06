@@ -483,76 +483,98 @@ Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato:
     return null;
 }
 
-// Helper to get current average petrol price in Italy via AI (con Ricerca Web Google Search Grounding)
-async function getCurrentFuelPrice() {
+// Helper to get fuel price and car consumption via AI with Google Search Grounding
+async function getFuelPriceAndConsumption(vehicleModel) {
     const currentDate = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
-    const prompt = `Effettua una ricerca web in tempo reale sul prezzo medio attuale della benzina al self-service in Italia oggi (${currentDate}).
-Cerca e rileva la quotazione reale più recente alle pompe di carburante in Italia (es. Sardegna o media nazionale).
-Non lasciare il campo vuoto o null: inserisci il valore numerico effettivo al litro (es. 2.05).
+    const hasVehicle = vehicleModel && typeof vehicleModel === 'string' && vehicleModel.trim().length > 0;
+    const vehicleText = hasVehicle ? vehicleModel.trim() : '';
 
-Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato, senza markdown e senza altro testo:
+    const prompt = `Effettua una ricerca web in tempo reale su Google per trovare:
+1. Il prezzo medio attuale della benzina al self-service in Italia oggi (${currentDate}) espresso in euro al litro (€/L).
+2. ${hasVehicle ? `Il consumo medio reale di carburante per il veicolo: "${vehicleText}", espresso rigorosamente in kilometri per litro (km/l). Se non trovi il dato esatto, fornisci una stima tecnica realistica.` : `Poiché il veicolo non è specificato, imposta consumption_km_l esattamente a 18.0 km/l.`}
+
+Non lasciare i campi vuoti o null.
+Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato, senza markdown e senza commenti:
 {
-  "fuel_price": <valore_numerico_al_litro>
+  "fuel_price": <prezzo_medio_benzina_in_euro_al_litro>,
+  "consumption_km_l": <consumo_in_km_al_litro>
 }`;
 
-    // Estrae e valida il prezzo dal testo dell'IA (deve essere tra 0.50 e 5.00 €/L)
-    const extractFuelPrice = (text) => {
+    const extractData = (text) => {
         if (!text || typeof text !== 'string') return null;
+        let fuelPrice = null;
+        let consumptionKmL = null;
+
         // 1. Da JSON
         const jsonMatch = text.match(/\{[\s\S]*?\}/);
         if (jsonMatch) {
             try {
                 const parsed = JSON.parse(jsonMatch[0]);
-                const price = parseFloat(parsed.fuel_price || parsed.price || parsed.prezzo || parsed.price_per_liter);
-                if (!isNaN(price) && price > 0.5 && price < 5.0) {
-                    return parseFloat(price.toFixed(3));
-                }
+                const p = parseFloat(parsed.fuel_price || parsed.price || parsed.prezzo || parsed.price_per_liter);
+                if (!isNaN(p) && p > 0.5 && p < 5.0) fuelPrice = parseFloat(p.toFixed(3));
+                const c = parseFloat(parsed.consumption_km_l || parsed.consumption || parsed.consumo || parsed.km_per_liter);
+                if (!isNaN(c) && c > 2.0 && c < 60.0) consumptionKmL = parseFloat(c.toFixed(1));
             } catch (e) {}
         }
-        // 2. Da testo con regex
-        const numberMatch = text.match(/(\d+[.,]\d{2,3})/);
-        if (numberMatch) {
-            const price = parseFloat(numberMatch[1].replace(',', '.'));
-            if (!isNaN(price) && price > 0.5 && price < 5.0) {
-                return parseFloat(price.toFixed(3));
+
+        // 2. Regex fallback per fuel_price
+        if (!fuelPrice) {
+            const pMatch = text.match(/fuel_price["']?\s*:\s*(\d+[.,]\d+)/i) || text.match(/(\d+[.,]\d{2,3})/);
+            if (pMatch) {
+                const val = parseFloat(pMatch[1].replace(',', '.'));
+                if (!isNaN(val) && val > 0.5 && val < 5.0) fuelPrice = parseFloat(val.toFixed(3));
             }
+        }
+
+        // 3. Regex fallback per consumption_km_l
+        if (!consumptionKmL && hasVehicle) {
+            const cMatch = text.match(/consumption_km_l["']?\s*:\s*(\d+[.,]?\d*)/i) || text.match(/(\d+[.,]?\d*)\s*km\/?l/i);
+            if (cMatch) {
+                const val = parseFloat(cMatch[1].replace(',', '.'));
+                if (!isNaN(val) && val > 2.0 && val < 60.0) consumptionKmL = parseFloat(val.toFixed(1));
+            }
+        }
+
+        if (!consumptionKmL) {
+            consumptionKmL = 18.0; // Default di 18 km/l come richiesto
+        }
+
+        if (fuelPrice) {
+            return { fuel_price: fuelPrice, consumption_km_l: consumptionKmL };
         }
         return null;
     };
 
-    const priceValidator = (text) => {
-        return extractFuelPrice(text) !== null;
-    };
+    const validator = (text) => extractData(text) !== null;
 
     try {
-        console.log(`🤖 Interrogazione AI con Ricerca Web per prezzo medio benzina (${currentDate})...`);
-        const res = await generateWithFallback(0, prompt, [], priceValidator, true);
+        console.log(`🤖 Interrogazione AI con Ricerca Web per carburante e consumo auto ("${vehicleText || 'non specificato'}") - ${currentDate}...`);
+        const res = await generateWithFallback(0, prompt, [], validator, true);
         const text = res.response.text();
-        console.log('🤖 Risposta grezza finale AI per carburante:', text);
+        console.log('🤖 Risposta grezza finale AI:', text);
 
-        const detectedPrice = extractFuelPrice(text);
-        if (detectedPrice !== null) {
-            console.log(`✅ Prezzo benzina rilevato dall'IA con successo: ${detectedPrice} €/L`);
-            return detectedPrice;
+        const data = extractData(text);
+        if (data) {
+            console.log(`✅ Dati rilevati dall'IA: Benzina = ${data.fuel_price} €/L, Consumo = ${data.consumption_km_l} km/l`);
+            return data;
         }
     } catch (err) {
-        console.warn('⚠️ Tutti i modelli AI della waterfall hanno fallito per il prezzo carburante:', err.message);
+        console.warn('⚠️ Tutti i modelli AI hanno fallito per prezzo/consumo:', err.message);
     }
 
-    // Fallback di sicurezza solo se TUTTI i modelli falliscono o restituiscono null
-    return 2.00;
+    return { fuel_price: 2.00, consumption_km_l: 18.0 };
 }
 
-
-
-// Calculate delivery cost based on destination, car consumption and fuel price
+// Calculate delivery cost based on destination, vehicles count, vehicle model, travel time and fuel price
 router.post('/calculate-delivery', async (req, res) => {
     try {
         const {
             destination,
             origin = 'Piazza san giuseppe, Irgoli 08020 Sardegna, Italia',
             round_trip = true,
-            consumption_km_l = 15.5,
+            vehicles_count = 1,
+            vehicle_model = '',
+            consumption_km_l,
             custom_fuel_price
         } = req.body;
 
@@ -562,6 +584,8 @@ router.post('/calculate-delivery', async (req, res) => {
 
         const trimmedDest = destination.trim();
         const trimmedOrigin = (origin && origin.trim()) ? origin.trim() : 'Piazza san giuseppe, Irgoli 08020 Sardegna, Italia';
+        const numVehicles = Math.max(1, parseInt(vehicles_count) || 1);
+        const trimmedVehicleModel = (vehicle_model && typeof vehicle_model === 'string') ? vehicle_model.trim() : '';
 
         // 1. Geocoding
         const [originGeo, destGeo] = await Promise.all([
@@ -583,31 +607,59 @@ router.post('/calculate-delivery', async (req, res) => {
             });
         }
 
-        // 3. Fuel Price
+        // 3. Fuel Price & Vehicle Consumption Detection
         let fuelPrice = parseFloat(custom_fuel_price);
         let fuelPriceDetected = false;
-        if (isNaN(fuelPrice) || fuelPrice <= 0) {
-            fuelPrice = await getCurrentFuelPrice();
-            fuelPriceDetected = true;
+        let consumptionKmL = parseFloat(consumption_km_l);
+        let consumptionDetected = false;
+
+        // Se uno dei due valori manca, interroga l'IA
+        if (isNaN(fuelPrice) || fuelPrice <= 0 || isNaN(consumptionKmL) || consumptionKmL <= 0) {
+            const aiData = await getFuelPriceAndConsumption(trimmedVehicleModel);
+            if (isNaN(fuelPrice) || fuelPrice <= 0) {
+                fuelPrice = aiData.fuel_price;
+                fuelPriceDetected = true;
+            }
+            if (isNaN(consumptionKmL) || consumptionKmL <= 0) {
+                consumptionKmL = aiData.consumption_km_l;
+                consumptionDetected = true;
+            }
+        }
+
+        if (!consumptionKmL || consumptionKmL <= 0) {
+            consumptionKmL = 18.0; // Default di sicurezza: 18 km/l
         }
 
         // 4. Calculations
         const isRoundTrip = round_trip !== false;
         const oneWayKm = route.distance_km;
-        const totalKm = isRoundTrip ? parseFloat((oneWayKm * 2).toFixed(1)) : oneWayKm;
-        const consumptionKmL = parseFloat(consumption_km_l) || 15.5; // Kia Sportage 2026 default: 15.5 km/l
-        const litersNeeded = parseFloat((totalKm / consumptionKmL).toFixed(2));
+        const totalKmPerVehicle = isRoundTrip ? parseFloat((oneWayKm * 2).toFixed(1)) : oneWayKm;
+        const totalKmAllVehicles = parseFloat((totalKmPerVehicle * numVehicles).toFixed(1));
+
+        // Litri totali consumati da tutte le macchine
+        const litersNeeded = parseFloat(((totalKmPerVehicle / consumptionKmL) * numVehicles).toFixed(2));
         const baseFuelCost = parseFloat((litersNeeded * fuelPrice).toFixed(2));
-        const contingencyPercent = 3;
-        const contingencyCost = parseFloat((baseFuelCost * 0.03).toFixed(2));
-        const totalCost = parseFloat((baseFuelCost + contingencyCost).toFixed(2));
+
+        // Maggiorazione Imprevisti: 12% sul costo carburante
+        const contingencyPercent = 12;
+        const contingencyCost = parseFloat((baseFuelCost * 0.12).toFixed(2));
+
+        // Durata e Sovrapprezzo Tempo di Viaggio: 13 € all'ora per macchina
+        const oneWayMinutes = Math.round(Number(route.duration_minutes) || 0);
+        const totalMinutesPerVehicle = isRoundTrip ? (oneWayMinutes * 2) : oneWayMinutes;
+        const hourlyRate = 13.0; // 13 €/ora
+        const durationHoursPerVehicle = totalMinutesPerVehicle / 60;
+        const timeCostPerVehicle = parseFloat((durationHoursPerVehicle * hourlyRate).toFixed(2));
+        const totalTimeCost = parseFloat((timeCostPerVehicle * numVehicles).toFixed(2));
+
+        // Costo Totale Consegna (Carburante + Imprevisti 12% + Tempo 13€/h per mezzo)
+        const totalCost = parseFloat((baseFuelCost + contingencyCost + totalTimeCost).toFixed(2));
 
         // Duration text
         let durationText = '';
-        if (route.duration_minutes) {
-            const mins = isRoundTrip ? route.duration_minutes * 2 : route.duration_minutes;
-            const hours = Math.floor(mins / 60);
-            const remainingMins = mins % 60;
+        if (totalMinutesPerVehicle > 0) {
+            const hours = Math.floor(totalMinutesPerVehicle / 60);
+            const remainingMins = totalMinutesPerVehicle % 60;
             if (hours > 0) {
                 durationText = `${hours}h ${remainingMins} min${isRoundTrip ? ' (A/R)' : ''}`;
             } else {
@@ -620,18 +672,24 @@ router.post('/calculate-delivery', async (req, res) => {
             origin: originGeo?.label || trimmedOrigin,
             destination: destGeo?.label || trimmedDest,
             one_way_km: oneWayKm,
-            total_km: totalKm,
+            total_km: totalKmPerVehicle,
+            total_km_all_vehicles: totalKmAllVehicles,
+            vehicles_count: numVehicles,
+            vehicle_model: trimmedVehicleModel || 'Non specificato (Default 18 km/l)',
             round_trip: isRoundTrip,
-            duration_minutes: isRoundTrip ? (route.duration_minutes * 2) : route.duration_minutes,
+            duration_minutes: totalMinutesPerVehicle,
             duration_text: durationText,
-            car_model: 'Kia Sportage (2026)',
+            duration_hours: parseFloat(durationHoursPerVehicle.toFixed(2)),
             consumption_km_l: consumptionKmL,
+            consumption_detected: consumptionDetected,
             fuel_price_per_liter: fuelPrice,
             fuel_price_detected: fuelPriceDetected,
             liters_needed: litersNeeded,
             base_fuel_cost: baseFuelCost,
             contingency_percent: contingencyPercent,
             contingency_cost: contingencyCost,
+            hourly_rate: hourlyRate,
+            time_cost: totalTimeCost,
             total_cost: totalCost,
             routing_source: route.source
         });
@@ -642,3 +700,4 @@ router.post('/calculate-delivery', async (req, res) => {
 });
 
 export default router;
+

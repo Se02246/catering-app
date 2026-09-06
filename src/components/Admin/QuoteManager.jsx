@@ -1348,78 +1348,98 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                 </span>
                                             </div>
                                         </div>
-                                        <button 
-                                            type="button" 
-                                            onClick={() => setIsDeliveryCalcOpen(true)}
-                                            className="btn btn-outline"
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '0.35rem',
-                                                padding: '0.4rem 0.85rem',
-                                                borderRadius: '8px',
-                                                fontSize: '0.85rem',
-                                                fontWeight: 'bold',
-                                                borderColor: 'var(--color-primary)',
-                                                color: 'var(--color-primary-dark)',
-                                                backgroundColor: 'rgba(155, 57, 61, 0.05)',
-                                                cursor: 'pointer'
-                                            }}
-                                            title="Calcola percorso e costo carburante con OpenRouteService"
-                                        >
-                                            <Navigation size={14} /> Calcola
-                                        </button>
                                     </div>
                                     <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontStyle: 'italic', margin: 0, lineHeight: '1.4' }}>
                                         "{DELIVERY_PRODUCT.description}"
                                     </p>
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                    <div style={{ position: 'relative', flex: 1 }}>
-                                        <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>€</span>
-                                        <input 
-                                            type="number" 
-                                            step="0.01" 
-                                            min="0"
-                                            placeholder="0.00"
-                                            value={deliveryCostInput}
-                                            onChange={e => setDeliveryCostInput(e.target.value)}
-                                            onKeyDown={e => {
-                                                if (e.key === 'Enter') {
-                                                    e.preventDefault();
-                                                    handleApplyDeliveryCost(deliveryCostInput);
-                                                }
-                                            }}
-                                            onBlur={() => handleApplyDeliveryCost(deliveryCostInput)}
-                                            style={{ 
-                                                width: '100%', 
-                                                padding: '0.6rem 0.6rem 0.6rem 2rem', 
-                                                borderRadius: '8px', 
-                                                border: '1px solid var(--color-border)', 
-                                                fontSize: '0.95rem',
-                                                fontWeight: '600'
-                                            }}
-                                        />
-                                    </div>
+                                {/* Opzione Principale: Calcola con IA e Mappe */}
+                                <div>
                                     <button 
                                         type="button" 
+                                        onClick={() => setIsDeliveryCalcOpen(true)}
                                         className="btn btn-primary"
-                                        onClick={() => handleApplyDeliveryCost(deliveryCostInput)}
-                                        style={{ padding: '0.6rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
+                                        style={{
+                                            width: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '0.6rem',
+                                            padding: '0.85rem 1.25rem',
+                                            borderRadius: '12px',
+                                            fontSize: '0.95rem',
+                                            fontWeight: '700',
+                                            background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))',
+                                            boxShadow: '0 4px 14px rgba(155, 57, 61, 0.25)',
+                                            color: 'white',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            border: 'none'
+                                        }}
                                     >
-                                        {deliveryItem ? 'Aggiorna' : 'Aggiungi'}
+                                        <Navigation size={18} /> Calcola Costo Consegna (Percorso, Auto e Benzina)
                                     </button>
-                                    {deliveryItem && (
+                                </div>
+
+                                {/* Opzione Secondaria: Inserimento Manuale */}
+                                <div style={{ 
+                                    paddingTop: '0.75rem', 
+                                    borderTop: '1px dashed var(--color-border)', 
+                                    display: 'flex', 
+                                    flexDirection: 'column', 
+                                    gap: '0.4rem' 
+                                }}>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: '600' }}>
+                                        oppure inserisci il prezzo manualmente:
+                                    </span>
+                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                        <div style={{ position: 'relative', flex: 1 }}>
+                                            <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold', color: 'var(--color-text-muted)' }}>€</span>
+                                            <input 
+                                                type="number" 
+                                                step="0.01" 
+                                                min="0"
+                                                placeholder="0.00"
+                                                value={deliveryCostInput}
+                                                onChange={e => setDeliveryCostInput(e.target.value)}
+                                                onKeyDown={e => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        handleApplyDeliveryCost(deliveryCostInput);
+                                                    }
+                                                }}
+                                                onBlur={() => handleApplyDeliveryCost(deliveryCostInput)}
+                                                style={{ 
+                                                    width: '100%', 
+                                                    padding: '0.5rem 0.6rem 0.5rem 2rem', 
+                                                    borderRadius: '8px', 
+                                                    border: '1px solid var(--color-border)', 
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: '600',
+                                                    backgroundColor: '#fafafa'
+                                                }}
+                                            />
+                                        </div>
                                         <button 
                                             type="button" 
-                                            onClick={handleRemoveDelivery}
-                                            title="Rimuovi consegna dal preventivo"
-                                            style={{ background: 'none', border: 'none', color: '#e63946', cursor: 'pointer', padding: '0.5rem' }}
+                                            className="btn btn-outline"
+                                            onClick={() => handleApplyDeliveryCost(deliveryCostInput)}
+                                            style={{ padding: '0.5rem 0.9rem', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
                                         >
-                                            <Trash2 size={18} />
+                                            {deliveryItem ? 'Aggiorna manuale' : 'Salva manuale'}
                                         </button>
-                                    )}
+                                        {deliveryItem && (
+                                            <button 
+                                                type="button" 
+                                                onClick={handleRemoveDelivery}
+                                                title="Rimuovi consegna dal preventivo"
+                                                style={{ background: 'none', border: 'none', color: '#e63946', cursor: 'pointer', padding: '0.4rem' }}
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
