@@ -3,21 +3,21 @@ import { api } from '../../services/api';
 import { X, MapPin, Navigation, Car, Fuel, Loader2, Check, RotateCcw, Clock, ShieldCheck, Plus, Minus } from 'lucide-react';
 
 const DEFAULT_ORIGIN = 'Piazza san giuseppe, Irgoli 08020 Sardegna, Italia';
-const DEFAULT_CONSUMPTION = 18.0; // Valore di default standard richiesto: 18 km/l
+const DEFAULT_CONSUMPTION = 15.5; // Valore di default standard richiesto: 18 km/l
 
 const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination = '' }) => {
     const [destination, setDestination] = useState(initialDestination);
     const [origin, setOrigin] = useState(DEFAULT_ORIGIN);
     const [roundTrip, setRoundTrip] = useState(true);
-    
+
     // Veicoli
     const [vehiclesCount, setVehiclesCount] = useState(1);
     const [vehicleModel, setVehicleModel] = useState('');
-    
+
     // Consumo carburante
     const [useAiConsumption, setUseAiConsumption] = useState(true);
     const [manualConsumption, setManualConsumption] = useState(DEFAULT_CONSUMPTION);
-    
+
     // Prezzo carburante
     const [useAiFuel, setUseAiFuel] = useState(true);
     const [manualFuelPrice, setManualFuelPrice] = useState('');
@@ -94,7 +94,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
     };
 
     return (
-        <div 
+        <div
             style={{
                 position: 'fixed',
                 top: 0,
@@ -113,7 +113,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
             }}
             onClick={onClose}
         >
-            <div 
+            <div
                 className="bounce-in"
                 style={{
                     backgroundColor: 'white',
@@ -162,7 +162,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                             </p>
                         </div>
                     </div>
-                    <button 
+                    <button
                         type="button"
                         onClick={onClose}
                         style={{
@@ -184,12 +184,12 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                 </div>
 
                 {/* Form Body Scrollabile */}
-                <form 
-                    onSubmit={handleCalculate} 
-                    style={{ 
-                        padding: '1.5rem', 
-                        display: 'flex', 
-                        flexDirection: 'column', 
+                <form
+                    onSubmit={handleCalculate}
+                    style={{
+                        padding: '1.5rem',
+                        display: 'flex',
+                        flexDirection: 'column',
                         gap: '1.25rem',
                         overflowY: 'auto',
                         flex: 1,
@@ -203,7 +203,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                             <MapPin size={16} style={{ color: '#e63946' }} /> Destinazione Consegna *
                         </label>
                         <div style={{ position: 'relative' }}>
-                            <input 
+                            <input
                                 type="text"
                                 placeholder="Es: Nuoro, Olbia, Siniscola, Dorgali, Orosei..."
                                 value={destination}
@@ -245,7 +245,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                             <Navigation size={14} /> Sede di Partenza
                         </label>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <input 
+                            <input
                                 type="text"
                                 value={origin}
                                 onChange={e => setOrigin(e.target.value)}
@@ -275,20 +275,20 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                     {/* Opzioni di Viaggio: A/R vs Solo Andata */}
                     <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', backgroundColor: '#f8f9fa', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 'bold', flex: 1, color: roundTrip ? 'var(--color-primary-dark)' : 'var(--color-text)' }}>
-                            <input 
-                                type="radio" 
+                            <input
+                                type="radio"
                                 name="trip_mode"
-                                checked={roundTrip} 
+                                checked={roundTrip}
                                 onChange={() => setRoundTrip(true)}
                                 style={{ width: '16px', height: '16px' }}
                             />
                             Andata e Ritorno (A/R)
                         </label>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', flex: 1, color: !roundTrip ? 'var(--color-primary-dark)' : 'var(--color-text-muted)' }}>
-                            <input 
-                                type="radio" 
+                            <input
+                                type="radio"
                                 name="trip_mode"
-                                checked={!roundTrip} 
+                                checked={!roundTrip}
                                 onChange={() => setRoundTrip(false)}
                                 style={{ width: '16px', height: '16px' }}
                             />
@@ -325,7 +325,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                     >
                                         <Minus size={14} />
                                     </button>
-                                    <input 
+                                    <input
                                         type="number"
                                         min="1"
                                         max="20"
@@ -393,7 +393,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                         </button>
                                     )}
                                 </div>
-                                <input 
+                                <input
                                     type="text"
                                     placeholder="Es. Kia Sportage 2026, Fiat Doblò, Van refrigerato..."
                                     value={vehicleModel}
@@ -413,14 +413,14 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                         <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.74rem', color: 'var(--color-text-muted)' }}>
                             {useAiConsumption ? (
                                 <span>
-                                    {vehicleModel.trim() 
+                                    {vehicleModel.trim()
                                         ? `🤖 L'IA ricercherà sul web il consumo medio di "${vehicleModel.trim()}"`
                                         : `ℹ️ Nessun modello indicato: verrà applicato il consumo di default di 18.0 km/l`}
                                 </span>
                             ) : (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', width: '100%' }}>
                                     <span style={{ fontWeight: '600', color: 'var(--color-primary-dark)' }}>Consumo manuale:</span>
-                                    <input 
+                                    <input
                                         type="number"
                                         step="0.1"
                                         min="3"
@@ -507,8 +507,8 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                 justifyContent: 'space-between'
                             }}>
                                 <span style={{ fontWeight: 'bold', color: '#2e7d32' }}>
-                                    {calculationResult?.fuel_price_per_liter 
-                                        ? `€ ${Number(calculationResult.fuel_price_per_liter).toFixed(2)} / L` 
+                                    {calculationResult?.fuel_price_per_liter
+                                        ? `€ ${Number(calculationResult.fuel_price_per_liter).toFixed(2)} / L`
                                         : '🤖 Ricerca Google in tempo reale'}
                                 </span>
                                 <span style={{ fontSize: '0.7rem', color: '#2e7d32', backgroundColor: 'rgba(46, 125, 50, 0.12)', padding: '2px 6px', borderRadius: '6px', fontWeight: '600' }}>
@@ -517,7 +517,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                             </div>
                         ) : (
                             <div style={{ position: 'relative' }}>
-                                <input 
+                                <input
                                     type="number"
                                     step="0.01"
                                     min="0.5"
@@ -525,11 +525,11 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                     placeholder="Es. 2.05"
                                     value={manualFuelPrice}
                                     onChange={e => setManualFuelPrice(e.target.value)}
-                                    style={{ 
-                                        width: '100%', 
-                                        padding: '0.55rem 2rem 0.55rem 0.75rem', 
-                                        borderRadius: '8px', 
-                                        border: '1px solid var(--color-border)', 
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.55rem 2rem 0.55rem 0.75rem',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--color-border)',
                                         fontSize: '0.95rem',
                                         fontWeight: '700',
                                         color: '#b71c1c'
@@ -602,7 +602,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
 
                     {/* Box Risultato del Calcolo */}
                     {calculationResult && (
-                        <div 
+                        <div
                             ref={resultRef}
                             style={{
                                 border: '2px solid #4CAF50',
@@ -681,14 +681,14 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                             </div>
 
                             {/* Box Totale con Tasto Applica */}
-                            <div style={{ 
-                                borderTop: '1px solid rgba(76, 175, 80, 0.3)', 
-                                paddingTop: '1rem', 
-                                display: 'flex', 
-                                justifyContent: 'space-between', 
-                                alignItems: 'center', 
-                                flexWrap: 'wrap', 
-                                gap: '0.75rem' 
+                            <div style={{
+                                borderTop: '1px solid rgba(76, 175, 80, 0.3)',
+                                paddingTop: '1rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                gap: '0.75rem'
                             }}>
                                 <div>
                                     <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', display: 'block' }}>Totale consigliato:</span>
