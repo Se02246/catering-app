@@ -806,17 +806,66 @@ const QuoteBuilder = () => {
                     id="mobile-cart-fab"
                     className="animate-float"
                     onClick={() => document.getElementById('quote-summary').scrollIntoView({ behavior: 'smooth' })}
+                    aria-label={`Carrello: ${cart.length} elementi, totale € ${calculateTotal().toFixed(2)}`}
                     style={{
-                        position: 'fixed', bottom: '2rem', right: '2rem', width: '70px', height: '70px',
-                        borderRadius: '50%', background: 'var(--color-primary)', color: 'white',
-                        display: 'flex', justifyContent: 'center', alignItems: 'center', boxShadow: 'var(--shadow-lg)',
-                        border: 'none', zIndex: 1000, opacity: isQuoteVisible ? 0 : 1, 
+                        position: 'fixed',
+                        bottom: '2rem',
+                        right: '2rem',
+                        height: '56px',
+                        padding: '0 1.25rem 0 1rem',
+                        borderRadius: '50px',
+                        background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)',
+                        color: 'white',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        boxShadow: '0 8px 25px rgba(155, 57, 61, 0.45)',
+                        border: '1.5px solid rgba(255, 255, 255, 0.25)',
+                        zIndex: 1000,
+                        opacity: isQuoteVisible ? 0 : 1, 
                         visibility: isQuoteVisible ? 'hidden' : 'visible',
-                        transition: 'all 0.4s'
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        cursor: 'pointer'
                     }}
                 >
-                    <ShoppingCart size={32} />
-                    <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: 'var(--color-white)', color: 'var(--color-primary)', width: '26px', height: '26px', borderRadius: '50%', fontSize: '0.85rem', fontWeight: '800', border: '2px solid var(--color-primary)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>{cart.length}</span>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <ShoppingCart size={24} />
+                        <span style={{
+                            position: 'absolute',
+                            top: '-8px',
+                            right: '-10px',
+                            background: '#FFFFFF',
+                            color: 'var(--color-primary)',
+                            minWidth: '20px',
+                            height: '20px',
+                            borderRadius: '10px',
+                            fontSize: '0.75rem',
+                            fontWeight: '800',
+                            border: '1.5px solid var(--color-primary)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            padding: '0 4px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
+                        }}>
+                            {cart.length}
+                        </span>
+                    </div>
+
+                    <div style={{
+                        width: '1px',
+                        height: '22px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.35)',
+                        margin: '0 2px'
+                    }} />
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: '1.1' }}>
+                        <span style={{ fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.85, fontWeight: '700' }}>Totale</span>
+                        <span style={{ fontSize: '1.05rem', fontWeight: '800', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
+                            € {calculateTotal().toFixed(2)}
+                        </span>
+                    </div>
                 </button>
             )}
 
