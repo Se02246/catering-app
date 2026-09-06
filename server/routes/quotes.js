@@ -51,17 +51,39 @@ router.get('/ai-models', async (req, res) => {
 });
 
 
-async function generateWithFallback(modelIndex, prompt, imageParts = [], validator = null) {
+async function generateWithFallback(modelIndex, prompt, imageParts = [], validator = null, enableSearch = false) {
     if (modelIndex >= MODEL_WATERFALL.length) {
         throw new Error("Tutti i modelli AI sono momentaneamente non disponibili (Quota esaurita o Errore server).");
     }
 
     const currentModelName = MODEL_WATERFALL[modelIndex];
-    console.log(`🤖 Tentativo AI con modello: ${currentModelName} (Priorità ${modelIndex + 1}/${MODEL_WATERFALL.length})`);
+    console.log(`🤖 Tentativo AI con modello: ${currentModelName} (Priorità ${modelIndex + 1}/${MODEL_WATERFALL.length})${enableSearch ? ' [🔍 Ricerca Web Google Search Attiva]' : ''}`);
 
     try {
-        const model = genAI.getGenerativeModel({ model: currentModelName });
-        const result = await model.generateContent([prompt, ...imageParts]);
+        const modelConfig = { model: currentModelName };
+        if (enableSearch) {
+            // Abilita la ricerca web Google Search Grounding in tempo reale
+            modelConfig.tools = currentModelName.includes('1.5')
+                ? [{ googleSearchRetrieval: {} }]
+                : [{ googleSearch: {} }];
+        }
+
+        let model;
+        let result;
+        try {
+            model = genAI.getGenerativeModel(modelConfig);
+            result = await model.generateContent([prompt, ...imageParts]);
+        } catch (toolError) {
+            // Se la ricerca web non è supportata dal modello specifico, ritenta con il modello standard
+            if (enableSearch) {
+                console.warn(`⚠️ Ricerca web non supportata da ${currentModelName} (${toolError.message}). Tentativo standard senza ricerca...`);
+                model = genAI.getGenerativeModel({ model: currentModelName });
+                result = await model.generateContent([prompt, ...imageParts]);
+            } else {
+                throw toolError;
+            }
+        }
+
         const text = result.response.text();
 
         // Se è presente un validatore e la risposta non lo soddisfa (es. fuel_price: null), passa al modello successivo!
@@ -69,7 +91,7 @@ async function generateWithFallback(modelIndex, prompt, imageParts = [], validat
             const isValid = validator(text);
             if (!isValid) {
                 console.warn(`⚠️ Modello ${currentModelName} ha restituito un output non valido o vuoto (${text.trim().substring(0, 100)}). Passaggio al modello successivo...`);
-                return generateWithFallback(modelIndex + 1, prompt, imageParts, validator);
+                return generateWithFallback(modelIndex + 1, prompt, imageParts, validator, enableSearch);
             }
         }
 
@@ -86,7 +108,7 @@ async function generateWithFallback(modelIndex, prompt, imageParts = [], validat
             errorMsg.includes('500')
         ) {
             console.warn(`⚠️ Modello ${currentModelName} fallito (${errorMsg}). Passaggio al modello successivo...`);
-            return generateWithFallback(modelIndex + 1, prompt, imageParts, validator);
+            return generateWithFallback(modelIndex + 1, prompt, imageParts, validator, enableSearch);
         }
         console.error(`❌ Errore fatale non recuperabile con ${currentModelName}:`, errorMsg);
         throw error;
@@ -461,14 +483,14 @@ Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato:
     return null;
 }
 
-// Helper to get current average petrol price in Italy via AI (con validazione e fallback a cascata su tutti i modelli)
+// Helper to get current average petrol price in Italy via AI (con Ricerca Web Google Search Grounding)
 async function getCurrentFuelPrice() {
     const currentDate = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
-    const prompt = `Qual è il prezzo medio attuale della benzina (modalità self-service) in Italia al litro in euro (€/L)?
-Fornisci la quotazione media reale più recente reperibile alle pompe di carburante in Italia (es. Sardegna o media nazionale).
+    const prompt = `Effettua una ricerca web in tempo reale sul prezzo medio attuale della benzina al self-service in Italia oggi (${currentDate}).
+Cerca e rileva la quotazione reale più recente alle pompe di carburante in Italia (es. Sardegna o media nazionale).
 Non lasciare il campo vuoto o null: inserisci il valore numerico effettivo al litro (es. 2.05).
 
-Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato:
+Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato, senza markdown e senza altro testo:
 {
   "fuel_price": <valore_numerico_al_litro>
 }`;
@@ -503,8 +525,8 @@ Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato:
     };
 
     try {
-        console.log(`🤖 Interrogazione AI per prezzo medio benzina (${currentDate})...`);
-        const res = await generateWithFallback(0, prompt, [], priceValidator);
+        console.log(`🤖 Interrogazione AI con Ricerca Web per prezzo medio benzina (${currentDate})...`);
+        const res = await generateWithFallback(0, prompt, [], priceValidator, true);
         const text = res.response.text();
         console.log('🤖 Risposta grezza finale AI per carburante:', text);
 
