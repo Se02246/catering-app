@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle, Package, Truck, Check } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle, Package, Truck, Check, Navigation } from 'lucide-react';
+import DeliveryCalculatorModal from './DeliveryCalculatorModal';
 
 export const PACKAGING_PRODUCT = {
     id: 'imballaggio_service',
@@ -70,6 +71,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
     const [packagingCostInput, setPackagingCostInput] = useState('');
     const [deliveryCostInput, setDeliveryCostInput] = useState('');
+    const [isDeliveryCalcOpen, setIsDeliveryCalcOpen] = useState(false);
 
     const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
     const [productSearchTerm, setProductSearchTerm] = useState('');
@@ -78,13 +80,13 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
     // Modal scroll lock
     useEffect(() => {
-        if (isModeSelectionOpen || isAiPromptOpen || isProductPickerOpen) {
+        if (isModeSelectionOpen || isAiPromptOpen || isProductPickerOpen || isDeliveryCalcOpen) {
             document.body.classList.add('modal-open');
         } else {
             document.body.classList.remove('modal-open');
         }
         return () => document.body.classList.remove('modal-open');
-    }, [isModeSelectionOpen, isAiPromptOpen, isProductPickerOpen]);
+    }, [isModeSelectionOpen, isAiPromptOpen, isProductPickerOpen, isDeliveryCalcOpen]);
 
     // Intersection Observer to detect when we are at the bottom of the page
     useEffect(() => {
@@ -1319,31 +1321,54 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 transition: 'all 0.2s ease'
                             }}>
                                 <div>
-                                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.75rem' }}>
-                                        <div style={{ width: '56px', height: '56px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
-                                            <img 
-                                                src="/consegna.jpeg" 
-                                                alt="Consegna" 
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                            />
-                                        </div>
-                                        <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                                <h5 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--color-primary-dark)' }}>Consegna</h5>
-                                                {deliveryItem ? (
-                                                    <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#2e7d32', backgroundColor: 'rgba(46, 125, 50, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
-                                                        ✓ Incluso (€ {(Number(deliveryItem.price_per_piece) || 0).toFixed(2)})
-                                                    </span>
-                                                ) : (
-                                                    <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', backgroundColor: '#f0f0f0', padding: '2px 6px', borderRadius: '4px' }}>
-                                                        Non incluso
-                                                    </span>
-                                                )}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                            <div style={{ width: '56px', height: '56px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+                                                <img 
+                                                    src="/consegna.jpeg" 
+                                                    alt="Consegna" 
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                                />
                                             </div>
-                                            <span style={{ fontSize: '0.7rem', color: '#888', display: 'inline-block', marginTop: '2px' }}>
-                                                Nascosto nel menù/PDF
-                                            </span>
+                                            <div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                    <h5 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--color-primary-dark)' }}>Consegna</h5>
+                                                    {deliveryItem ? (
+                                                        <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#2e7d32', backgroundColor: 'rgba(46, 125, 50, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                                            ✓ Incluso (€ {(Number(deliveryItem.price_per_piece) || 0).toFixed(2)})
+                                                        </span>
+                                                    ) : (
+                                                        <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', backgroundColor: '#f0f0f0', padding: '2px 6px', borderRadius: '4px' }}>
+                                                            Non incluso
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span style={{ fontSize: '0.7rem', color: '#888', display: 'inline-block', marginTop: '2px' }}>
+                                                    Nascosto nel menù/PDF
+                                                </span>
+                                            </div>
                                         </div>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setIsDeliveryCalcOpen(true)}
+                                            className="btn btn-outline"
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.35rem',
+                                                padding: '0.4rem 0.85rem',
+                                                borderRadius: '8px',
+                                                fontSize: '0.85rem',
+                                                fontWeight: 'bold',
+                                                borderColor: 'var(--color-primary)',
+                                                color: 'var(--color-primary-dark)',
+                                                backgroundColor: 'rgba(155, 57, 61, 0.05)',
+                                                cursor: 'pointer'
+                                            }}
+                                            title="Calcola percorso e costo carburante con OpenRouteService"
+                                        >
+                                            <Navigation size={14} /> Calcola
+                                        </button>
                                     </div>
                                     <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontStyle: 'italic', margin: 0, lineHeight: '1.4' }}>
                                         "{DELIVERY_PRODUCT.description}"
@@ -2080,6 +2105,16 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
             {/* Sentinel at the very bottom to hide FAB when user scrolls to the end */}
             <div ref={bottomSentinelRef} style={{ height: '10px', width: '100%' }}></div>
+
+            <DeliveryCalculatorModal
+                isOpen={isDeliveryCalcOpen}
+                onClose={() => setIsDeliveryCalcOpen(false)}
+                onApply={(totalCost) => {
+                    handleApplyDeliveryCost(totalCost);
+                    setDeliveryCostInput(String(totalCost));
+                }}
+                initialDestination=""
+            />
         </div>
     );
 };

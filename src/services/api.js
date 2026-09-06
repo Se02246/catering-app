@@ -266,6 +266,19 @@ export const api = {
         return res.json();
     },
 
+    calculateDelivery: async (data) => {
+        const res = await fetch(`${API_URL}/quotes/calculate-delivery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Errore nel calcolo del percorso di consegna' }));
+            throw new Error(error.error || 'Errore nel calcolo del percorso di consegna');
+        }
+        return res.json();
+    },
+
     recalculateProductsPrices: async (percentage) => {
         const res = await fetch(`${API_URL}/products/recalculate`, {
             method: 'POST',

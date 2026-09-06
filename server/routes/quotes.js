@@ -5,8 +5,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const router = express.Router();
 
 const MODEL_WATERFALL = [
-  'gemini-2.5-flash',
-  'gemini-2.5-pro'
+  'gemini-flash',
+  'gemini-pro'
 ];
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || "");
@@ -277,7 +277,251 @@ router.post('/:id/mark-synced', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Error marking quote as synced:', err);
-        res.status(500).json({ error: 'Server error marking quote as synced' });
+// Helper to geocode an address into [lon, lat]
+async function geocodeAddress(address) {
+    const orsApiKey = process.env.OPENROUTESERVICE_API_KEY;
+    if (orsApiKey) {
+        try {
+            const url = `https://api.openrouteservice.org/geocode/search?api_key=${encodeURIComponent(orsApiKey)}&text=${encodeURIComponent(address)}&size=1`;
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.features && data.features.length > 0 && data.features[0].geometry) {
+                    return {
+                        coordinates: data.features[0].geometry.coordinates, // [lon, lat]
+                        label: data.features[0].properties?.label || address,
+                        source: 'OpenRouteService'
+                    };
+                }
+            }
+        } catch (err) {
+            console.warn('OpenRouteService geocode error, attempting fallback:', err.message);
+        }
+    }
+
+    // Fallback: OpenStreetMap Nominatim
+    try {
+        const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+        const nomRes = await fetch(nomUrl, {
+            headers: {
+                'User-Agent': 'MuseCateringDeliveryCalculator/1.0 (info@musecatering.it)',
+                'Accept': 'application/json'
+            }
+        });
+        if (nomRes.ok) {
+            const nomData = await nomRes.json();
+            if (nomData && nomData.length > 0) {
+                return {
+                    coordinates: [parseFloat(nomData[0].lon), parseFloat(nomData[0].lat)],
+                    label: nomData[0].display_name || address,
+                    source: 'Nominatim'
+                };
+            }
+        }
+    } catch (err) {
+        console.warn('Nominatim geocode error:', err.message);
+    }
+
+    return null;
+}
+
+// Helper to compute driving distance and duration between coordinates
+async function getDrivingRoute(startCoord, endCoord, originText, destText) {
+    const orsApiKey = process.env.OPENROUTESERVICE_API_KEY;
+    if (orsApiKey && startCoord && endCoord) {
+        try {
+            const url = 'https://api.openrouteservice.org/v2/directions/driving-car';
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': orsApiKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    coordinates: [startCoord, endCoord]
+                })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.routes && data.routes.length > 0) {
+                    const summary = data.routes[0].summary;
+                    return {
+                        distance_km: parseFloat((summary.distance / 1000).toFixed(1)),
+                        duration_minutes: Math.round(summary.duration / 60),
+                        source: 'OpenRouteService'
+                    };
+                }
+            }
+        } catch (err) {
+            console.warn('OpenRouteService directions error, attempting fallback:', err.message);
+        }
+    }
+
+    // Fallback: OSRM
+    if (startCoord && endCoord) {
+        try {
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoord[0]},${startCoord[1]};${endCoord[0]},${endCoord[1]}?overview=false`;
+            const osrmRes = await fetch(osrmUrl, {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (osrmRes.ok) {
+                const osrmData = await osrmRes.json();
+                if (osrmData.routes && osrmData.routes.length > 0) {
+                    return {
+                        distance_km: parseFloat((osrmData.routes[0].distance / 1000).toFixed(1)),
+                        duration_minutes: Math.round(osrmData.routes[0].duration / 60),
+                        source: 'OSRM'
+                    };
+                }
+            }
+        } catch (err) {
+            console.warn('OSRM directions error:', err.message);
+        }
+    }
+
+    // Fallback: AI estimation
+    try {
+        const aiPrompt = `Calcola la distanza stradale in auto approssimativa in km e la durata del tragitto in minuti tra:
+Partenza: "${originText}"
+Destinazione: "${destText}"
+Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato:
+{"distance_km": 45.0, "duration_minutes": 40}`;
+        const aiRes = await generateWithFallback(0, aiPrompt);
+        const text = aiRes.response.text();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            if (parsed.distance_km && parsed.distance_km > 0) {
+                return {
+                    distance_km: parseFloat(Number(parsed.distance_km).toFixed(1)),
+                    duration_minutes: Math.round(Number(parsed.duration_minutes) || 0),
+                    source: 'AI (Gemini)'
+                };
+            }
+        }
+    } catch (err) {
+        console.warn('Gemini distance fallback error:', err.message);
+    }
+
+    return null;
+}
+
+// Helper to get current average petrol price in Italy
+async function getCurrentFuelPrice() {
+    try {
+        const prompt = `Qual è il prezzo medio attuale stimato della benzina self-service in Italia al litro in euro (€/L)?
+Fornisci una stima accurata e realistica attuale (es. tra 1.70 e 1.90 €/L).
+Rispondi ESCLUSIVAMENTE con un JSON nel formato:
+{"fuel_price": 1.82}`;
+        const res = await generateWithFallback(0, prompt);
+        const text = res.response.text();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            const price = parseFloat(parsed.fuel_price || parsed.price_per_liter);
+            if (!isNaN(price) && price >= 1.20 && price <= 2.80) {
+                return parseFloat(price.toFixed(3));
+            }
+        }
+    } catch (err) {
+        console.warn('Failed to detect fuel price via AI, using default:', err.message);
+    }
+    return 1.82; // Fallback price
+}
+
+// Calculate delivery cost based on destination, car consumption and fuel price
+router.post('/calculate-delivery', async (req, res) => {
+    try {
+        const {
+            destination,
+            origin = 'Piazza san giuseppe, Irgoli 08020 Sardegna, Italia',
+            round_trip = true,
+            consumption_km_l = 15.5,
+            custom_fuel_price
+        } = req.body;
+
+        if (!destination || typeof destination !== 'string' || !destination.trim()) {
+            return res.status(400).json({ error: 'Destinazione richiesta per il calcolo del percorso' });
+        }
+
+        const trimmedDest = destination.trim();
+        const trimmedOrigin = (origin && origin.trim()) ? origin.trim() : 'Piazza san giuseppe, Irgoli 08020 Sardegna, Italia';
+
+        // 1. Geocoding
+        const [originGeo, destGeo] = await Promise.all([
+            geocodeAddress(trimmedOrigin),
+            geocodeAddress(trimmedDest)
+        ]);
+
+        // 2. Driving Route
+        const route = await getDrivingRoute(
+            originGeo?.coordinates,
+            destGeo?.coordinates,
+            trimmedOrigin,
+            trimmedDest
+        );
+
+        if (!route || !route.distance_km || route.distance_km <= 0) {
+            return res.status(422).json({
+                error: `Impossibile calcolare il percorso tra "${trimmedOrigin}" e "${trimmedDest}". Verifica che l'indirizzo sia corretto.`
+            });
+        }
+
+        // 3. Fuel Price
+        let fuelPrice = parseFloat(custom_fuel_price);
+        let fuelPriceDetected = false;
+        if (isNaN(fuelPrice) || fuelPrice <= 0) {
+            fuelPrice = await getCurrentFuelPrice();
+            fuelPriceDetected = true;
+        }
+
+        // 4. Calculations
+        const isRoundTrip = round_trip !== false;
+        const oneWayKm = route.distance_km;
+        const totalKm = isRoundTrip ? parseFloat((oneWayKm * 2).toFixed(1)) : oneWayKm;
+        const consumptionKmL = parseFloat(consumption_km_l) || 15.5; // Kia Sportage 2026 default: 15.5 km/l
+        const litersNeeded = parseFloat((totalKm / consumptionKmL).toFixed(2));
+        const baseFuelCost = parseFloat((litersNeeded * fuelPrice).toFixed(2));
+        const contingencyPercent = 3;
+        const contingencyCost = parseFloat((baseFuelCost * 0.03).toFixed(2));
+        const totalCost = parseFloat((baseFuelCost + contingencyCost).toFixed(2));
+
+        // Duration text
+        let durationText = '';
+        if (route.duration_minutes) {
+            const mins = isRoundTrip ? route.duration_minutes * 2 : route.duration_minutes;
+            const hours = Math.floor(mins / 60);
+            const remainingMins = mins % 60;
+            if (hours > 0) {
+                durationText = `${hours}h ${remainingMins} min${isRoundTrip ? ' (A/R)' : ''}`;
+            } else {
+                durationText = `${remainingMins} min${isRoundTrip ? ' (A/R)' : ''}`;
+            }
+        }
+
+        res.json({
+            success: true,
+            origin: originGeo?.label || trimmedOrigin,
+            destination: destGeo?.label || trimmedDest,
+            one_way_km: oneWayKm,
+            total_km: totalKm,
+            round_trip: isRoundTrip,
+            duration_minutes: isRoundTrip ? (route.duration_minutes * 2) : route.duration_minutes,
+            duration_text: durationText,
+            car_model: 'Kia Sportage (2026)',
+            consumption_km_l: consumptionKmL,
+            fuel_price_per_liter: fuelPrice,
+            fuel_price_detected: fuelPriceDetected,
+            liters_needed: litersNeeded,
+            base_fuel_cost: baseFuelCost,
+            contingency_percent: contingencyPercent,
+            contingency_cost: contingencyCost,
+            total_cost: totalCost,
+            routing_source: route.source
+        });
+    } catch (err) {
+        console.error('Error in calculate-delivery:', err);
+        res.status(500).json({ error: err.message || 'Errore nel calcolo del percorso' });
     }
 });
 
