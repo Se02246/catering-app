@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText, Minus, Search, Send, Scale, Hash, ChevronUp, ChevronDown, FileMinus } from 'lucide-react';
+import { Trash2, Edit, Plus, Eye, EyeOff, Clock, X, Save, FileText, Minus, Search, Send, Scale, Hash, ChevronUp, ChevronDown, FileMinus, Copy } from 'lucide-react';
 import ImageUpload from '../Common/ImageUpload';
 import HideModal from '../Common/HideModal';
 import { useNavigate } from 'react-router-dom';
@@ -191,6 +191,44 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                 console.error('Failed to update quote visibility', err);
                 alert('Errore durante l\'aggiornamento della visibilità nei preventivi');
             }
+        }
+    };
+
+    const handleDuplicate = async (product) => {
+        try {
+            const duplicatedProduct = {
+                name: `${product.name} copia`,
+                description: product.description || '',
+                menu_description: product.menu_description || '',
+                price_per_kg: (product.price_per_kg !== undefined && product.price_per_kg !== null && product.price_per_kg !== '') ? parseFloat(product.price_per_kg) : 0,
+                image_url: product.image_url || '',
+                images: product.images || (product.image_url ? [product.image_url] : []),
+                pieces_per_kg: (product.pieces_per_kg !== '' && product.pieces_per_kg !== null && product.pieces_per_kg !== undefined) ? parseFloat(product.pieces_per_kg) : null,
+                min_order_quantity: (product.min_order_quantity !== '' && product.min_order_quantity !== null && product.min_order_quantity !== undefined) ? parseFloat(product.min_order_quantity) : 1,
+                order_increment: (product.order_increment !== '' && product.order_increment !== null && product.order_increment !== undefined) ? parseFloat(product.order_increment) : 1,
+                show_servings: product.show_servings || false,
+                servings_per_unit: (product.servings_per_unit !== '' && product.servings_per_unit !== null && product.servings_per_unit !== undefined) ? parseFloat(product.servings_per_unit) : null,
+                is_visible: product.is_visible !== undefined ? product.is_visible : true,
+                hide_at: product.hide_at || null,
+                allow_multiple: product.allow_multiple || false,
+                max_order_quantity: (product.max_order_quantity !== '' && product.max_order_quantity !== null && product.max_order_quantity !== undefined) ? parseFloat(product.max_order_quantity) : null,
+                is_gluten_free: product.is_gluten_free || false,
+                is_lactose_free: product.is_lactose_free || false,
+                is_vegetarian: product.is_vegetarian || false,
+                is_vegan: product.is_vegan || false,
+                is_sold_by_piece: product.is_sold_by_piece || false,
+                price_per_piece: (product.price_per_piece !== '' && product.price_per_piece !== null && product.price_per_piece !== undefined) ? parseFloat(product.price_per_piece) : null,
+                hide_quantity: product.hide_quantity || false,
+                hide_unit_price: product.hide_unit_price || false,
+                hide_in_menu: product.hide_in_menu || false,
+                hide_from_quotes: product.hide_from_quotes || false
+            };
+
+            await api.addProduct(duplicatedProduct);
+            mutate();
+        } catch (err) {
+            console.error('Failed to duplicate product', err);
+            alert(err.message || 'Errore durante la duplicazione del prodotto');
         }
     };
 
@@ -625,10 +663,18 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                                 >
                                     {p.hide_from_quotes ? <FileMinus size={18} /> : <FileText size={18} />}
                                 </button>
-                                <button className="btn btn-outline" style={{ padding: '0.6rem' }} onClick={() => { setCurrentProduct(p); setIsEditing(true); }}>
+                                <button 
+                                    className="btn btn-outline" 
+                                    style={{ padding: '0.6rem' }} 
+                                    onClick={() => handleDuplicate(p)}
+                                    title="Duplica prodotto"
+                                >
+                                    <Copy size={18} />
+                                </button>
+                                <button className="btn btn-outline" style={{ padding: '0.6rem' }} onClick={() => { setCurrentProduct(p); setIsEditing(true); }} title="Modifica">
                                     <Edit size={18} />
                                 </button>
-                                <button className="btn btn-outline" style={{ padding: '0.6rem', color: 'red', borderColor: 'red' }} onClick={() => handleDelete(p.id)}>
+                                <button className="btn btn-outline" style={{ padding: '0.6rem', color: 'red', borderColor: 'red' }} onClick={() => handleDelete(p.id)} title="Elimina">
                                     <Trash2 size={18} />
                                 </button>
                             </div>
