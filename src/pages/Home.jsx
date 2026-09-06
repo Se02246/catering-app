@@ -1158,13 +1158,13 @@ const Home = () => {
 
     // Statistics for Reviews Summary
     const stats = React.useMemo(() => {
-        if (!sortedReviews || sortedReviews.length === 0) return null;
+        if (!reviews || reviews.length === 0) return null;
 
-        const total = sortedReviews.length;
-        const sum = sortedReviews.reduce((acc, r) => acc + r.rating, 0);
+        const total = reviews.length;
+        const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
         const avg = (sum / total).toFixed(1);
 
-        const recommendedCount = sortedReviews.filter(r => r.rating >= 4).length;
+        const recommendedCount = reviews.filter(r => r.rating >= 4).length;
         const rate = Math.round((recommendedCount / total) * 100);
 
         return {
@@ -1172,7 +1172,7 @@ const Home = () => {
             totalReviews: total,
             recommendationRate: rate
         };
-    }, [sortedReviews]);
+    }, [reviews]);
 
     const getRatingLabel = (rating) => {
         const r = parseFloat(rating);
@@ -1578,8 +1578,6 @@ const Home = () => {
                                 </div>
                                 <div style={{ fontSize: '1rem', color: 'var(--color-text)' }}>
                                     <span style={{ fontWeight: '600' }}>{getRatingLabel(stats.averageRating)}</span>
-                                    <span style={{ margin: '0 0.4rem', color: 'var(--color-text-muted)' }}>·</span>
-                                    <span style={{ color: 'var(--color-text-muted)' }}>{stats.totalReviews} Recensioni</span>
                                 </div>
                             </div>
                         </div>
@@ -1617,7 +1615,7 @@ const Home = () => {
                                 }}
                                 onClick={() => navigate('/recensioni')}
                             >
-                                <Star size={22} /> Leggi tutte le recensioni
+                                <Star size={22} /> {stats?.totalReviews ? `Visualizza tutte le ${stats.totalReviews} recensioni` : 'Visualizza tutte le recensioni'}
                             </button>
                         </div>
                     </>
