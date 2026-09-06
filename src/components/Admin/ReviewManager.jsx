@@ -248,7 +248,7 @@ const ReviewManager = () => {
                                         const totalWidth = 880; 
                                         const imgSize = 234; 
                                         const step = arr.length > 1 ? (totalWidth - imgSize) / (arr.length - 1) : 0;
-                                        const startX = -(totalWidth - imgSize) / 2;
+                                        const startX = arr.length > 1 ? -(totalWidth - imgSize) / 2 : 0;
                                         const xPos = startX + (idx * step);
 
                                         return (

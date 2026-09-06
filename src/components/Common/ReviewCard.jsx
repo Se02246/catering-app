@@ -251,7 +251,7 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                                         const totalWidth = 880; 
                                         const imgSize = 234; 
                                         const step = arr.length > 1 ? (totalWidth - imgSize) / (arr.length - 1) : 0;
-                                        const startX = -(totalWidth - imgSize) / 2;
+                                        const startX = arr.length > 1 ? -(totalWidth - imgSize) / 2 : 0;
                                         const xPos = startX + (idx * step);
                                         return (
                                             <div key={idx} style={{ position: 'absolute', width: `${imgSize}px`, height: `${imgSize}px`, borderRadius: '22px', padding: '5px', background: 'white', transform: `translateX(${xPos}px) rotate(${rotations[idx % 4]}deg)`, zIndex: idx + 1, overflow: 'hidden', boxShadow: '0 12px 35px rgba(0,0,0,0.16)', border: '1px solid rgba(0,0,0,0.05)' }}>
@@ -333,15 +333,17 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                         const isLast = idx === maxFrames - 1;
                         const showOverlay = isLast && remainingCount > 0;
                         const rotations = [-6, 4, -4, 5];
-                        const rotation = visibleImages.length > 1 ? rotations[idx % 4] : 0;
+                        const rotation = visibleImages.length > 1 ? rotations[idx % 4] : -2;
                         
                         return (
                             <div 
                                 key={idx} 
                                 onClick={() => { setActiveLightboxImg(idx); setLightboxOpen(true); }}
                                 style={{ 
-                                    flex: 1, 
-                                    aspectRatio: visibleImages.length === 1 ? '4/5' : '1', 
+                                    flex: visibleImages.length === 1 ? '0 0 auto' : 1, 
+                                    width: visibleImages.length === 1 ? '135px' : 'auto',
+                                    maxWidth: visibleImages.length === 1 ? '140px' : 'none',
+                                    aspectRatio: '1', 
                                     borderRadius: '12px', 
                                     overflow: 'hidden', 
                                     cursor: 'pointer',
@@ -349,21 +351,17 @@ const ReviewCard = ({ review, layout = 'vertical' }) => {
                                     zIndex: idx,
                                     transform: `rotate(${rotation}deg)`,
                                     marginLeft: idx > 0 ? '-12%' : '0',
-                                    border: visibleImages.length > 1 ? '3px solid white' : 'none',
-                                    boxShadow: visibleImages.length > 1 ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+                                    border: '3px solid white',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                                     transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                                 }}
                                 onMouseEnter={(e) => {
-                                    if (visibleImages.length > 1) {
-                                        e.currentTarget.style.transform = `rotate(0deg) scale(1.1) translateY(-4px)`;
-                                        e.currentTarget.style.zIndex = 10;
-                                    }
+                                    e.currentTarget.style.transform = `rotate(0deg) scale(1.1) translateY(-4px)`;
+                                    e.currentTarget.style.zIndex = 10;
                                 }}
                                 onMouseLeave={(e) => {
-                                    if (visibleImages.length > 1) {
-                                        e.currentTarget.style.transform = `rotate(${rotation}deg)`;
-                                        e.currentTarget.style.zIndex = idx;
-                                    }
+                                    e.currentTarget.style.transform = `rotate(${rotation}deg)`;
+                                    e.currentTarget.style.zIndex = idx;
                                 }}
                             >
                                 <img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={`Servizio Muse Catering ${idx + 1}`} />
