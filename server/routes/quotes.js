@@ -356,10 +356,18 @@ router.post('/:id/mark-synced', async (req, res) => {
 
 // Helper to geocode an address into [lon, lat]
 async function geocodeAddress(address) {
+    if (!address || typeof address !== 'string' || !address.trim()) return null;
+
+    // Assicura che la ricerca includa ", Italia" per evitare ambiguità geografiche (es: Lula in Sardegna vs Lula in Georgia, USA)
+    let searchAddress = address.trim();
+    if (!/,\s*(italia|italy)\b/i.test(searchAddress) && !/\b(italia|italy)$/i.test(searchAddress)) {
+        searchAddress = `${searchAddress}, Italia`;
+    }
+
     const orsApiKey = process.env.OPENROUTESERVICE_API_KEY;
     if (orsApiKey) {
         try {
-            const url = `https://api.openrouteservice.org/geocode/search?api_key=${encodeURIComponent(orsApiKey)}&text=${encodeURIComponent(address)}&size=1`;
+            const url = `https://api.openrouteservice.org/geocode/search?api_key=${encodeURIComponent(orsApiKey)}&text=${encodeURIComponent(searchAddress)}&size=1`;
             const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
             if (res.ok) {
                 const data = await res.json();
@@ -378,7 +386,7 @@ async function geocodeAddress(address) {
 
     // Fallback: OpenStreetMap Nominatim
     try {
-        const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+        const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchAddress)}&limit=1`;
         const nomRes = await fetch(nomUrl, {
             headers: {
                 'User-Agent': 'MuseCateringDeliveryCalculator/1.0 (info@musecatering.it)',
@@ -491,7 +499,7 @@ async function getFuelPriceAndConsumption(vehicleModel) {
 
     const prompt = `Effettua una ricerca web in tempo reale su Google per trovare:
 1. Il prezzo medio attuale della benzina al self-service in Italia oggi (${currentDate}) espresso in euro al litro (€/L).
-2. ${hasVehicle ? `Il consumo medio reale di carburante per il veicolo: "${vehicleText}", espresso rigorosamente in kilometri per litro (km/l). Se non trovi il dato esatto, fornisci una stima tecnica realistica.` : `Poiché il veicolo non è specificato, imposta consumption_km_l esattamente a 18.0 km/l.`}
+2. ${hasVehicle ? `Il consumo medio reale di carburante per il veicolo: "${vehicleText}", espresso rigorosamente in kilometri per litro (km/l). Se non trovi il dato esatto, fornisci una stima tecnica realistica.` : `Poiché il veicolo non è specificato, imposta consumption_km_l esattamente a 16.0 km/l.`}
 
 Non lasciare i campi vuoti o null.
 Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato, senza markdown e senza commenti:
@@ -536,7 +544,7 @@ Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato, senza m
         }
 
         if (!consumptionKmL) {
-            consumptionKmL = 18.0; // Default di 18 km/l come richiesto
+            consumptionKmL = 16.0; // Default di 16 km/l come richiesto
         }
 
         if (fuelPrice) {
@@ -562,7 +570,7 @@ Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato, senza m
         console.warn('⚠️ Tutti i modelli AI hanno fallito per prezzo/consumo:', err.message);
     }
 
-    return { fuel_price: 2.00, consumption_km_l: 18.0 };
+    return { fuel_price: 2.00, consumption_km_l: 16.0 };
 }
 
 // Calculate delivery cost based on destination, vehicles count, vehicle model, travel time and fuel price
@@ -587,10 +595,16 @@ router.post('/calculate-delivery', async (req, res) => {
         const numVehicles = Math.max(1, parseInt(vehicles_count) || 1);
         const trimmedVehicleModel = (vehicle_model && typeof vehicle_model === 'string') ? vehicle_model.trim() : '';
 
+        // Assicura ", Italia" alla destinazione digitata dall'utente
+        let destinationQuery = trimmedDest;
+        if (!/,\s*(italia|italy)\b/i.test(destinationQuery) && !/\b(italia|italy)$/i.test(destinationQuery)) {
+            destinationQuery = `${trimmedDest}, Italia`;
+        }
+
         // 1. Geocoding
         const [originGeo, destGeo] = await Promise.all([
             geocodeAddress(trimmedOrigin),
-            geocodeAddress(trimmedDest)
+            geocodeAddress(destinationQuery)
         ]);
 
         // 2. Driving Route
@@ -598,12 +612,12 @@ router.post('/calculate-delivery', async (req, res) => {
             originGeo?.coordinates,
             destGeo?.coordinates,
             trimmedOrigin,
-            trimmedDest
+            destinationQuery
         );
 
         if (!route || !route.distance_km || route.distance_km <= 0) {
             return res.status(422).json({
-                error: `Impossibile calcolare il percorso tra "${trimmedOrigin}" e "${trimmedDest}". Verifica che l'indirizzo sia corretto.`
+                error: `Impossibile calcolare il percorso tra "${trimmedOrigin}" e "${destinationQuery}". Verifica che l'indirizzo sia corretto.`
             });
         }
 
@@ -627,7 +641,7 @@ router.post('/calculate-delivery', async (req, res) => {
         }
 
         if (!consumptionKmL || consumptionKmL <= 0) {
-            consumptionKmL = 18.0; // Default di sicurezza: 18 km/l
+            consumptionKmL = 16.0; // Default di sicurezza: 16 km/l
         }
 
         // 4. Calculations
@@ -675,7 +689,7 @@ router.post('/calculate-delivery', async (req, res) => {
             total_km: totalKmPerVehicle,
             total_km_all_vehicles: totalKmAllVehicles,
             vehicles_count: numVehicles,
-            vehicle_model: trimmedVehicleModel || 'Non specificato (Default 18 km/l)',
+            vehicle_model: trimmedVehicleModel || 'Non specificato (Default 16 km/l)',
             round_trip: isRoundTrip,
             duration_minutes: totalMinutesPerVehicle,
             duration_text: durationText,

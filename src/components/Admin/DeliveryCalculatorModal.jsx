@@ -3,7 +3,7 @@ import { api } from '../../services/api';
 import { X, MapPin, Navigation, Car, Fuel, Loader2, Check, RotateCcw, Clock, ShieldCheck, Plus, Minus } from 'lucide-react';
 
 const DEFAULT_ORIGIN = 'Piazza san giuseppe, Irgoli 08020 Sardegna, Italia';
-const DEFAULT_CONSUMPTION = 18.0; // Valore di default standard richiesto: 18 km/l
+const DEFAULT_CONSUMPTION = 16.0; // Valore di default standard richiesto: 16 km/l
 
 const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination = '' }) => {
     const [destination, setDestination] = useState(initialDestination);
@@ -413,7 +413,7 @@ const DeliveryCalculatorModal = ({ isOpen, onClose, onApply, initialDestination 
                                 <span>
                                     {vehicleModel.trim()
                                         ? `🤖 L'IA ricercherà sul web il consumo medio di "${vehicleModel.trim()}"`
-                                        : `ℹ️ Nessun modello indicato: verrà applicato il consumo di default di 18.0 km/l`}
+                                        : `ℹ️ Nessun modello indicato: verrà applicato il consumo di default di 16.0 km/l`}
                                 </span>
                             ) : (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', width: '100%' }}>
