@@ -4,12 +4,46 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const router = express.Router();
 
-const MODEL_WATERFALL = [
+const configuredModel = process.env.GEMINI_MODEL;
+const DEFAULT_MODELS = [
     'gemini-flash',
     'gemini-pro'
 ];
+const MODEL_WATERFALL = configuredModel
+    ? [configuredModel, ...DEFAULT_MODELS.filter(m => m !== configuredModel)]
+    : DEFAULT_MODELS;
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || "");
+
+// Helper endpoint per ispezionare i modelli disponibili per la chiave API attuale
+router.get('/ai-models', async (req, res) => {
+    try {
+        const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+        if (!apiKey) {
+            return res.status(400).json({ error: 'GOOGLE_GENERATIVE_AI_API_KEY non configurata' });
+        }
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const data = await response.json();
+        if (!response.ok) {
+            return res.status(response.status).json(data);
+        }
+        const generateModels = (data.models || [])
+            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+            .map(m => ({
+                id: m.name.replace('models/', ''),
+                displayName: m.displayName,
+                description: m.description
+            }));
+        res.json({
+            count: generateModels.length,
+            active_waterfall: MODEL_WATERFALL,
+            available_models: generateModels
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 async function generateWithFallback(modelIndex, prompt, imageParts = []) {
     if (modelIndex >= MODEL_WATERFALL.length) {
