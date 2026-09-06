@@ -260,6 +260,7 @@ const ProductDetailsModal = ({ product, onClose, onAddToCart, isClosing, isMenuM
                                     {product.is_lactose_free && <span className="badge-dietary badge-lf">Senza Lattosio</span>}
                                     {product.is_vegetarian && <span className="badge-dietary badge-v">Vegetariano</span>}
                                     {product.is_vegan && <span className="badge-dietary badge-vg">Vegano</span>}
+                                    {product.is_traditional && <span className="badge-dietary badge-trad">Tradizionale</span>}
                                 </div>
                                 <h2 style={{ fontSize: window.innerWidth > 768 ? '2rem' : '1.6rem', color: 'var(--color-primary-dark)', margin: 0 }}>{product.name}</h2>
                             </div>

@@ -41,7 +41,7 @@ const ProductManager = ({ onCreateQuoteClick }) => {
             name: '', description: '', menu_description: '', price_per_kg: '', image_url: '', images: [],
             pieces_per_kg: '', min_order_quantity: '', order_increment: '', max_order_quantity: '',
             show_servings: false, servings_per_unit: '', is_visible: true, hide_at: null, allow_multiple: false,
-            is_gluten_free: false, is_lactose_free: false, is_sold_by_piece: false, price_per_piece: '',
+            is_gluten_free: false, is_lactose_free: false, is_vegetarian: false, is_vegan: false, is_traditional: false, is_sold_by_piece: false, price_per_piece: '',
             hide_quantity: false, hide_unit_price: false, hide_in_menu: false, hide_from_quotes: false
         });
         setCalcError('');
@@ -126,6 +126,9 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                 max_order_quantity: currentProduct.max_order_quantity ? parseFloat(currentProduct.max_order_quantity) : null,
                 is_gluten_free: currentProduct.is_gluten_free || false,
                 is_lactose_free: currentProduct.is_lactose_free || false,
+                is_vegetarian: currentProduct.is_vegetarian || false,
+                is_vegan: currentProduct.is_vegan || false,
+                is_traditional: currentProduct.is_traditional || false,
                 is_sold_by_piece: currentProduct.is_sold_by_piece || false,
                 price_per_piece: currentProduct.price_per_piece ? parseFloat(currentProduct.price_per_piece) : null,
                 hide_quantity: currentProduct.hide_quantity || false,
@@ -219,6 +222,7 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                 is_lactose_free: product.is_lactose_free || false,
                 is_vegetarian: product.is_vegetarian || false,
                 is_vegan: product.is_vegan || false,
+                is_traditional: product.is_traditional || false,
                 is_sold_by_piece: product.is_sold_by_piece || false,
                 price_per_piece: (product.price_per_piece !== '' && product.price_per_piece !== null && product.price_per_piece !== undefined) ? parseFloat(product.price_per_piece) : null,
                 hide_quantity: product.hide_quantity || false,
@@ -261,6 +265,7 @@ const ProductManager = ({ onCreateQuoteClick }) => {
         { key: 'lactose_free', label: 'Senza Lattosio', color: '#03A9F4', bg: 'rgba(3, 169, 244, 0.12)' },
         { key: 'vegetarian', label: 'Vegetariano', color: '#8BC34A', bg: 'rgba(139, 195, 74, 0.12)' },
         { key: 'vegan', label: 'Vegano', color: '#388E3C', bg: 'rgba(56, 142, 60, 0.12)' },
+        { key: 'traditional', label: 'Tradizionale', color: '#B45309', bg: 'rgba(180, 83, 9, 0.12)' },
         { key: 'hide_from_quotes', label: 'Nascosti nei preventivi', icon: FileMinus, color: 'var(--color-primary)', bg: 'rgba(155, 57, 61, 0.12)' },
     ];
 
@@ -278,6 +283,7 @@ const ProductManager = ({ onCreateQuoteClick }) => {
         if (selectedDietaryFilters.includes('lactose_free') && !p.is_lactose_free) return false;
         if (selectedDietaryFilters.includes('vegetarian') && (!p.is_vegetarian && !p.is_vegan)) return false;
         if (selectedDietaryFilters.includes('vegan') && !p.is_vegan) return false;
+        if (selectedDietaryFilters.includes('traditional') && !p.is_traditional) return false;
         if (selectedDietaryFilters.includes('hide_from_quotes') && !p.hide_from_quotes) return false;
 
         // Search text filter
@@ -784,6 +790,16 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                                             />
                                             <label htmlFor="is_vegan" style={{ fontWeight: 'bold', color: '#388E3C', cursor: 'pointer' }}>Vegano!</label>
                                         </div>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <input
+                                                type="checkbox"
+                                                id="is_traditional"
+                                                checked={currentProduct.is_traditional || false}
+                                                onChange={e => setCurrentProduct({ ...currentProduct, is_traditional: e.target.checked })}
+                                                style={{ marginRight: '0.75rem', width: '18px', height: '18px' }}
+                                            />
+                                            <label htmlFor="is_traditional" style={{ fontWeight: 'bold', color: '#B45309', cursor: 'pointer' }}>Tradizionale!</label>
+                                        </div>
                                     </div>
                                 </div>
                             </form>
@@ -865,6 +881,11 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                                         {p.is_vegan && (
                                             <span style={{ color: '#388E3C', fontSize: '0.7rem', fontWeight: 'bold' }}>
                                                 Vegano!
+                                            </span>
+                                        )}
+                                        {p.is_traditional && (
+                                            <span style={{ color: '#B45309', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                Tradizionale!
                                             </span>
                                         )}
                                     </div>

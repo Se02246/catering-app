@@ -32,6 +32,7 @@ router.get('/', async (req, res) => {
                             'is_lactose_free', COALESCE(ci.is_lactose_free, p.is_lactose_free),
                             'is_vegetarian', COALESCE(ci.is_vegetarian, p.is_vegetarian),
                             'is_vegan', COALESCE(ci.is_vegan, p.is_vegan),
+                            'is_traditional', COALESCE(ci.is_traditional, p.is_traditional),
                             'is_sold_by_piece', COALESCE(ci.is_sold_by_piece, p.is_sold_by_piece),
                             'price_per_piece', COALESCE(ci.price_per_piece, p.price_per_piece),
                             'hide_quantity', p.hide_quantity,
@@ -88,7 +89,7 @@ router.put('/reorder', async (req, res) => {
 
 // Create a new catering package
 router.post('/', async (req, res) => {
-    const { name, description, total_price, image_url, items, discount_percentage, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_visible, hide_at } = req.body;
+    const { name, description, total_price, image_url, items, discount_percentage, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, is_visible, hide_at } = req.body;
     // items is an array of { product_id, quantity }
 
     const client = await pool.connect();
@@ -100,8 +101,8 @@ router.post('/', async (req, res) => {
         const mainImage = imagesArray.length > 0 ? imagesArray[0] : image_url;
 
         const cateringResult = await client.query(
-            'INSERT INTO caterings (name, description, total_price, image_url, discount_percentage, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_visible, hide_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
-            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_visible !== undefined ? is_visible : true, hide_at || null]
+            'INSERT INTO caterings (name, description, total_price, image_url, discount_percentage, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, is_visible, hide_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *',
+            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, is_visible !== undefined ? is_visible : true, hide_at || null]
         );
         const cateringId = cateringResult.rows[0].id;
 
@@ -110,8 +111,8 @@ router.post('/', async (req, res) => {
                 `INSERT INTO catering_items (
                     catering_id, product_id, quantity, name, description, image_url, 
                     is_sold_by_piece, price_per_kg, price_per_piece, 
-                    is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, sort_order
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+                    is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, sort_order
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
                 [
                     cateringId, item.product_id, item.quantity, item.name || null, item.description || null, item.image_url || null,
                     item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : null,
@@ -120,6 +121,7 @@ router.post('/', async (req, res) => {
                     item.is_lactose_free !== undefined ? item.is_lactose_free : null,
                     item.is_vegetarian !== undefined ? item.is_vegetarian : null,
                     item.is_vegan !== undefined ? item.is_vegan : null,
+                    item.is_traditional !== undefined ? item.is_traditional : null,
                     idx
                 ]
             );
@@ -139,7 +141,7 @@ router.post('/', async (req, res) => {
 // Update a catering package
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { name, description, total_price, image_url, items, discount_percentage, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_visible, hide_at } = req.body;
+    const { name, description, total_price, image_url, items, discount_percentage, images, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, is_visible, hide_at } = req.body;
 
     const client = await pool.connect();
     try {
@@ -150,8 +152,8 @@ router.put('/:id', async (req, res) => {
 
         // Update catering details
         const cateringResult = await client.query(
-            'UPDATE caterings SET name = $1, description = $2, total_price = $3, image_url = $4, discount_percentage = $5, images = $6, is_gluten_free = $7, is_lactose_free = $8, is_vegetarian = $9, is_vegan = $10, is_visible = $11, hide_at = $12 WHERE id = $13 RETURNING *',
-            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_visible !== undefined ? is_visible : true, hide_at || null, id]
+            'UPDATE caterings SET name = $1, description = $2, total_price = $3, image_url = $4, discount_percentage = $5, images = $6, is_gluten_free = $7, is_lactose_free = $8, is_vegetarian = $9, is_vegan = $10, is_traditional = $11, is_visible = $12, hide_at = $13 WHERE id = $14 RETURNING *',
+            [name, description, total_price, mainImage, discount_percentage || 0, imagesArray, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, is_visible !== undefined ? is_visible : true, hide_at || null, id]
         );
 
         if (cateringResult.rows.length === 0) {
@@ -168,8 +170,8 @@ router.put('/:id', async (req, res) => {
                 `INSERT INTO catering_items (
                     catering_id, product_id, quantity, name, description, image_url, 
                     is_sold_by_piece, price_per_kg, price_per_piece, 
-                    is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, sort_order
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+                    is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, sort_order
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
                 [
                     id, item.product_id, item.quantity, item.name || null, item.description || null, item.image_url || null,
                     item.is_sold_by_piece !== undefined ? item.is_sold_by_piece : null,
@@ -178,6 +180,7 @@ router.put('/:id', async (req, res) => {
                     item.is_lactose_free !== undefined ? item.is_lactose_free : null,
                     item.is_vegetarian !== undefined ? item.is_vegetarian : null,
                     item.is_vegan !== undefined ? item.is_vegan : null,
+                    item.is_traditional !== undefined ? item.is_traditional : null,
                     idx
                 ]
             );

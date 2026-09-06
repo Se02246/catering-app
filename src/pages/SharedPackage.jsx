@@ -119,6 +119,7 @@ const SharedPackage = () => {
         const isPkgLactoseFree = pkg.is_lactose_free || (pkg.items.length > 0 && pkg.items.every(item => item.is_lactose_free));
         const isPkgVegetarian = pkg.is_vegetarian || (pkg.items.length > 0 && pkg.items.every(item => item.is_vegetarian));
         const isPkgVegan = pkg.is_vegan || (pkg.items.length > 0 && pkg.items.every(item => item.is_vegan));
+        const isPkgTraditional = pkg.is_traditional || (pkg.items.length > 0 && pkg.items.every(item => item.is_traditional));
 
         const labels = [];
         if (isPkgVegan) labels.push("vegano");
@@ -126,6 +127,7 @@ const SharedPackage = () => {
         
         if (isPkgGlutenFree) labels.push("gluten free");
         if (isPkgLactoseFree) labels.push("senza lattosio");
+        if (isPkgTraditional) labels.push("tradizionale");
 
         if (labels.length > 0) {
             globalSubtitle = "Menù " + labels.join(" e ");
@@ -213,6 +215,7 @@ const SharedPackage = () => {
             if (item.is_lactose_free && !isPkgLactoseFree) labels.push("Senza Lattosio");
             if (item.is_vegetarian && !isPkgVegetarian) labels.push("Vegetariano");
             if (item.is_vegan && !isPkgVegan) labels.push("Vegano");
+            if (item.is_traditional && !isPkgTraditional) labels.push("Tradizionale");
             
             if (labels.length > 0) {
                 doc.setFontSize(10);
@@ -305,6 +308,11 @@ const SharedPackage = () => {
                                         Vegano
                                     </span>
                                 )}
+                                {pkg.is_traditional && (
+                                    <span style={{ color: '#B45309', fontSize: '0.9rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '4px 10px', borderRadius: '6px' }}>
+                                        Tradizionale
+                                    </span>
+                                )}
                             </span>
                         </h1>
                         <p 
@@ -368,6 +376,11 @@ const SharedPackage = () => {
                                                 {item.is_vegan && !pkg.is_vegan && (
                                                     <span style={{ color: '#388E3C', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
                                                         Vegano
+                                                    </span>
+                                                )}
+                                                {item.is_traditional && !pkg.is_traditional && (
+                                                    <span style={{ color: '#B45309', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        Tradizionale
                                                     </span>
                                                 )}
                                             </div>

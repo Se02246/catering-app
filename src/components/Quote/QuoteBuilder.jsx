@@ -244,6 +244,7 @@ const QuoteBuilder = () => {
         { key: 'lactose_free', label: 'Senza Lattosio', badge: 'LF', color: '#03A9F4', bg: 'rgba(3, 169, 244, 0.12)' },
         { key: 'vegetarian', label: 'Vegetariano', badge: 'VGT', color: '#8BC34A', bg: 'rgba(139, 195, 74, 0.12)' },
         { key: 'vegan', label: 'Vegano', badge: 'VEG', color: '#388E3C', bg: 'rgba(56, 142, 60, 0.12)' },
+        { key: 'traditional', label: 'Tradizionale', badge: 'TRAD', color: '#B45309', bg: 'rgba(180, 83, 9, 0.12)' },
     ];
 
     const hasActiveFilters = searchTerm.trim() !== '' || selectedDietaryFilters.length > 0;
@@ -263,6 +264,7 @@ const QuoteBuilder = () => {
                 if (selectedDietaryFilters.includes('lactose_free') && !p.is_lactose_free) return false;
                 if (selectedDietaryFilters.includes('vegetarian') && (!p.is_vegetarian && !p.is_vegan)) return false;
                 if (selectedDietaryFilters.includes('vegan') && !p.is_vegan) return false;
+                if (selectedDietaryFilters.includes('traditional') && !p.is_traditional) return false;
 
                 // Search query
                 if (searchTerm.trim()) {
@@ -661,6 +663,7 @@ const QuoteBuilder = () => {
                                         {p.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Lattosio</span>}
                                         {p.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VGT</span>}
                                         {p.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VEG</span>}
+                                        {p.is_traditional && <span className="badge-elegant badge-elegant-trad" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>Tradizionale</span>}
 
                                     </div>
 
@@ -759,6 +762,7 @@ const QuoteBuilder = () => {
                                                     {item.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>No Lattosio</span>}
                                                     {item.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VGT</span>}
                                                     {item.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>VEG</span>}
+                                                    {item.is_traditional && <span className="badge-elegant badge-elegant-trad" style={{ padding: '0.2rem 0.4rem', fontSize: '0.55rem' }}>Tradizionale</span>}
                                                 </div>
 
                                             </div>

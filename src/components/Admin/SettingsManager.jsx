@@ -25,6 +25,7 @@ DATI PRODOTTI CORRENTI:
         if (p.is_lactose_free) allergeni.push("Senza Lattosio");
         if (p.is_vegetarian) allergeni.push("Vegetariano");
         if (p.is_vegan) allergeni.push("Vegano");
+        if (p.is_traditional) allergeni.push("Tradizionale");
 
         const tags = allergeni.length > 0 ? allergeni.join(", ") : "Nessuno";
 
@@ -52,6 +53,7 @@ DATI PRODOTTI CORRENTI:
         if (c.is_lactose_free) allergeni.push("Senza Lattosio");
         if (c.is_vegetarian) allergeni.push("Vegetariano");
         if (c.is_vegan) allergeni.push("Vegano");
+        if (c.is_traditional) allergeni.push("Tradizionale");
 
         const tags = allergeni.length > 0 ? allergeni.join(", ") : "Nessuno";
         const price = parseFloat(c.total_price || 0);

@@ -787,6 +787,7 @@ const SharedEvent = () => {
                                         {prod.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ fontSize: '0.6rem', padding: '1px 5px' }}>LF</span>}
                                         {prod.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ fontSize: '0.6rem', padding: '1px 5px' }}>VGT</span>}
                                         {prod.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ fontSize: '0.6rem', padding: '1px 5px' }}>VEG</span>}
+                                        {prod.is_traditional && <span className="badge-elegant badge-elegant-trad" style={{ fontSize: '0.6rem', padding: '1px 5px' }}>TRAD</span>}
                                     </div>
                                 </div>
                             </div>
@@ -931,6 +932,7 @@ const SharedEvent = () => {
                                                     {pkg.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ fontSize: '0.5rem', padding: '1px 3px' }}>LF</span>}
                                                     {pkg.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ fontSize: '0.5rem', padding: '1px 3px' }}>VGT</span>}
                                                     {pkg.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ fontSize: '0.5rem', padding: '1px 3px' }}>VEG</span>}
+                                                    {pkg.is_traditional && <span className="badge-elegant badge-elegant-trad" style={{ fontSize: '0.5rem', padding: '1px 3px' }}>TRAD</span>}
                                                 </div>
                                                 <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.4rem', borderTop: '1px dashed rgba(0,0,0,0.05)' }}>
                                                     <span style={{ fontWeight: '800', fontSize: '1.05rem', color: 'var(--color-primary-dark)' }}>
@@ -1196,6 +1198,7 @@ const SharedEvent = () => {
                                                 {selectedPackage.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
                                                 {selectedPackage.is_vegetarian && <span className="badge-elegant badge-elegant-v">Vegetariano</span>}
                                                 {selectedPackage.is_vegan && <span className="badge-elegant badge-elegant-vg">Vegano</span>}
+                                                {selectedPackage.is_traditional && <span className="badge-elegant badge-elegant-trad">Tradizionale</span>}
                                             </div>
                                             <h2 style={{ fontSize: window.innerWidth > 768 ? '2.2rem' : '1.8rem', color: 'var(--color-primary-dark)', marginBottom: '1.2rem', lineHeight: '1.1' }}>
                                                 {selectedPackage.name}
@@ -1260,6 +1263,11 @@ const SharedEvent = () => {
                                                                 {item.is_vegan && !selectedPackage.is_vegan && (
                                                                     <span style={{ color: '#388E3C', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
                                                                         Vegano
+                                                                    </span>
+                                                                )}
+                                                                {item.is_traditional && !selectedPackage.is_traditional && (
+                                                                    <span style={{ color: '#B45309', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                                                        Tradizionale
                                                                     </span>
                                                                 )}
                                                             </div>

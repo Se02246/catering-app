@@ -37,6 +37,7 @@ const Catalog = () => {
         { key: 'lactose_free', label: 'Senza Lattosio', badge: 'LF', color: '#03A9F4', bg: 'rgba(3, 169, 244, 0.12)' },
         { key: 'vegetarian', label: 'Vegetariano', badge: 'VGT', color: '#8BC34A', bg: 'rgba(139, 195, 74, 0.12)' },
         { key: 'vegan', label: 'Vegano', badge: 'VEG', color: '#388E3C', bg: 'rgba(56, 142, 60, 0.12)' },
+        { key: 'traditional', label: 'Tradizionale', badge: 'TRAD', color: '#B45309', bg: 'rgba(180, 83, 9, 0.12)' },
     ];
 
     const hasActiveFilters = searchTerm.trim() !== '' || selectedDietaryFilters.length > 0;
@@ -52,6 +53,7 @@ const Catalog = () => {
         if (selectedDietaryFilters.includes('lactose_free') && !p.is_lactose_free) return false;
         if (selectedDietaryFilters.includes('vegetarian') && (!p.is_vegetarian && !p.is_vegan)) return false;
         if (selectedDietaryFilters.includes('vegan') && !p.is_vegan) return false;
+        if (selectedDietaryFilters.includes('traditional') && !p.is_traditional) return false;
 
         // Search query
         if (searchTerm.trim()) {
@@ -277,6 +279,9 @@ const Catalog = () => {
                                     )}
                                     {product.is_vegan && (
                                         <span className="badge-elegant badge-elegant-vg" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>VEG</span>
+                                    )}
+                                    {product.is_traditional && (
+                                        <span className="badge-elegant badge-elegant-trad" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>TRAD</span>
                                     )}
                                 </div>
                                 <h3 style={{ 

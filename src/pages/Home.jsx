@@ -103,6 +103,7 @@ const PackageCard = ({ pkg, index, openPackage, showProductPrices }) => {
                     {pkg.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
                     {pkg.is_vegetarian && <span className="badge-elegant badge-elegant-v">Vegetariano</span>}
                     {pkg.is_vegan && <span className="badge-elegant badge-elegant-vg">Vegano</span>}
+                    {pkg.is_traditional && <span className="badge-elegant badge-elegant-trad">Tradizionale</span>}
                 </div>
 
                 <h3 className="card-title">{pkg.name}</h3>
@@ -1879,6 +1880,7 @@ const Home = () => {
                                                 {selectedPackage.is_lactose_free && <span className="badge-elegant badge-elegant-lf">Senza Lattosio</span>}
                                                 {selectedPackage.is_vegetarian && <span className="badge-elegant badge-elegant-v">Vegetariano</span>}
                                                 {selectedPackage.is_vegan && <span className="badge-elegant badge-elegant-vg">Vegano</span>}
+                                                {selectedPackage.is_traditional && <span className="badge-elegant badge-elegant-trad">Tradizionale</span>}
                                             </div>
                                             <h2 style={{ fontSize: window.innerWidth > 768 ? '2.2rem' : '1.8rem', color: 'var(--color-primary-dark)', marginBottom: '1.2rem', lineHeight: '1.1' }}>
                                                 {selectedPackage.name}
@@ -1943,6 +1945,11 @@ const Home = () => {
                                                                 {item.is_vegan && !selectedPackage.is_vegan && (
                                                                     <span style={{ color: '#388E3C', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
                                                                         Vegano
+                                                                    </span>
+                                                                )}
+                                                                {item.is_traditional && !selectedPackage.is_traditional && (
+                                                                    <span style={{ color: '#B45309', fontSize: '0.6rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                                                        Tradizionale
                                                                     </span>
                                                                 )}
                                                             </div>

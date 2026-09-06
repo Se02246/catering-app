@@ -97,6 +97,7 @@ router.post('/ai-generate', async (req, res) => {
             is_lactose_free: p.is_lactose_free,
             is_vegetarian: p.is_vegetarian,
             is_vegan: p.is_vegan,
+            is_traditional: p.is_traditional,
             servings_per_unit: p.servings_per_unit,
             min_order_quantity: p.min_order_quantity,
             order_increment: p.order_increment
@@ -124,13 +125,15 @@ Estrai le informazioni e restituisci un oggetto JSON con la seguente struttura e
       "is_gluten_free": booleano,
       "is_lactose_free": booleano,
       "is_vegetarian": booleano,
-      "is_vegan": booleano
+      "is_vegan": booleano,
+      "is_traditional": booleano
     }
   ],
   "is_gluten_free": booleano (true se l'utente richiede esplicitamente che TUTTO il preventivo sia senza glutine, altrimenti false),
   "is_lactose_free": booleano (true se l'utente richiede esplicitamente che TUTTO il preventivo sia senza lattosio, altrimenti false),
   "is_vegetarian": booleano (true se l'utente richiede esplicitamente che TUTTO il preventivo sia vegetariano, altrimenti false),
   "is_vegan": booleano (true se l'utente richiede esplicitamente che TUTTO il preventivo sia vegano, altrimenti false),
+  "is_traditional": booleano (true se l'utente richiede esplicitamente che TUTTO il preventivo sia tradizionale, altrimenti false),
   "manual_total_price": numero o null (se l'utente specifica un budget o un prezzo totale globale per l'intero preventivo, inserisci qui il numero, altrimenti null),
   "ai_explanation": "string (spiega in modo chiaro, accattivante e persuasivo le scelte fatte per questo preventivo, giustificando perché hai selezionato questi prodotti specifici e come si adattano perfettamente alla richiesta. Rivolgiti direttamente al cliente in tono cordiale e professionale. Massimo 3-4 frasi brevi.)"
 }
@@ -178,11 +181,11 @@ ${!isAdmin ? "- RISPETTA TASSATIVAMENTE il valore di \"is_sold_by_piece\" che tr
 
 // Save a new quote and get its unique ID
 router.post('/', async (req, res) => {
-    const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, notes, menu_notes, event_date, client_name } = req.body;
+    const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name } = req.body;
     try {
         const result = await pool.query(
-            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, notes, menu_notes, event_date, client_name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
-            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, notes || null, menu_notes || null, event_date || null, client_name || null]
+            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id',
+            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes || null, menu_notes || null, event_date || null, client_name || null]
         );
         res.status(201).json({ id: result.rows[0].id });
     } catch (err) {
@@ -244,11 +247,11 @@ router.get('/:id', async (req, res) => {
 // Update an existing quote (Admin)
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, notes, menu_notes, event_date, client_name } = req.body;
+    const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, is_vegetarian = $5, is_vegan = $6, notes = $7, menu_notes = $8, event_date = $9, client_name = $10, needs_sync = true WHERE id = $11 RETURNING *',
-            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, notes, menu_notes, event_date || null, client_name || null, id]
+            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, is_vegetarian = $5, is_vegan = $6, is_traditional = $7, notes = $8, menu_notes = $9, event_date = $10, client_name = $11, needs_sync = true WHERE id = $12 RETURNING *',
+            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes, menu_notes, event_date || null, client_name || null, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Quote not found' });

@@ -83,6 +83,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 is_lactose_free: updatedQuote.is_lactose_free,
                 is_vegetarian: updatedQuote.is_vegetarian,
                 is_vegan: updatedQuote.is_vegan,
+                is_traditional: updatedQuote.is_traditional,
                 notes: updatedQuote.notes,
                 menu_notes: updatedQuote.menu_notes,
                 client_name: updatedQuote.client_name,
@@ -117,6 +118,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 if (item.is_lactose_free) dietary.push("SL");
                 if (item.is_vegetarian) dietary.push("VGT");
                 if (item.is_vegan) dietary.push("VEG");
+                if (item.is_traditional) dietary.push("TRAD");
                 const dietaryStr = dietary.length > 0 ? ` [${dietary.join(', ')}]` : "";
                 
                 text += `- ${item.name}${dietaryStr}${qty ? ` (${qty})` : ''}\n`;
@@ -268,7 +270,10 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 items: itemsWithIds,
                 total_price: aiData.total_price || 0,
                 is_gluten_free: aiData.is_gluten_free || false,
-                is_lactose_free: aiData.is_lactose_free || false
+                is_lactose_free: aiData.is_lactose_free || false,
+                is_vegetarian: aiData.is_vegetarian || false,
+                is_vegan: aiData.is_vegan || false,
+                is_traditional: aiData.is_traditional || false
             };
 
             setSearchId(newQuote.id);
@@ -568,6 +573,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                             Vegano
                                         </span>
                                     )}
+                                    {(currentQuote.is_traditional || (currentQuote.items.length > 0 && currentQuote.items.every(i => i.is_traditional))) && (
+                                        <span style={{ color: '#B45309', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                            Tradizionale
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -635,6 +645,15 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                     style={{ width: '18px', height: '18px' }}
                                 />
                                 Tutto Vegano
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#B45309', fontWeight: 'bold', flexWrap: 'wrap' }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={currentQuote.is_traditional || false} 
+                                    onChange={e => toggleGlobalFlag('is_traditional', e.target.checked)}
+                                    style={{ width: '18px', height: '18px' }}
+                                />
+                                Tutto Tradizionale
                             </label>
                         </div>
                     </div>
@@ -722,6 +741,10 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                     }} style={{ width: '16px', height: '16px' }} />
                                                     Vegano
                                                 </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#B45309', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input type="checkbox" checked={editingItemData.is_traditional || false} onChange={e => setEditingItemData({...editingItemData, is_traditional: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                                                    Tradizionale
+                                                </label>
                                                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--color-primary)', fontSize: '0.9rem', fontWeight: 'bold' }}>
                                                     <input 
                                                         type="checkbox" 
@@ -792,6 +815,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                     {(currentQuote.is_vegan || item.is_vegan) && (
                                                         <span style={{ color: '#388E3C', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
                                                             Vegano
+                                                        </span>
+                                                    )}
+                                                    {(currentQuote.is_traditional || item.is_traditional) && (
+                                                        <span style={{ color: '#B45309', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                            Tradizionale
                                                         </span>
                                                     )}
                                                 </div>
@@ -1276,7 +1304,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                     { key: 'gluten_free', label: 'Senza Glutine', color: '#FF9800', bg: 'rgba(255, 152, 0, 0.1)' },
                                     { key: 'lactose_free', label: 'Senza Lattosio', color: '#03A9F4', bg: 'rgba(3, 169, 244, 0.1)' },
                                     { key: 'vegetarian', label: 'Vegetariano', color: '#8BC34A', bg: 'rgba(139, 195, 74, 0.1)' },
-                                    { key: 'vegan', label: 'Vegano', color: '#388E3C', bg: 'rgba(56, 142, 60, 0.1)' }
+                                    { key: 'vegan', label: 'Vegano', color: '#388E3C', bg: 'rgba(56, 142, 60, 0.1)' },
+                                    { key: 'traditional', label: 'Tradizionale', color: '#B45309', bg: 'rgba(180, 83, 9, 0.1)' }
                                 ].map(chip => {
                                     const isSelected = selectedTagFilter === chip.key;
                                     return (
@@ -1333,6 +1362,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                         if (selectedTagFilter === 'lactose_free' && !p.is_lactose_free) return false;
                                         if (selectedTagFilter === 'vegetarian' && !p.is_vegetarian && !p.is_vegan) return false;
                                         if (selectedTagFilter === 'vegan' && !p.is_vegan) return false;
+                                        if (selectedTagFilter === 'traditional' && !p.is_traditional) return false;
                                         return true;
                                     });
 
@@ -1423,6 +1453,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                         {p.is_vegan && (
                                                             <span style={{ color: '#388E3C', fontSize: '0.68rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
                                                                 Vegano
+                                                            </span>
+                                                        )}
+                                                        {p.is_traditional && (
+                                                            <span style={{ color: '#B45309', fontSize: '0.68rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                                Tradizionale
                                                             </span>
                                                         )}
                                                     </div>

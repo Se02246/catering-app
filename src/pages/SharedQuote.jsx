@@ -151,6 +151,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
     const isQuoteLactoseFree = quote.is_lactose_free || (quote.items.length > 0 && quote.items.every(item => item.is_lactose_free));
     const isQuoteVegetarian = quote.is_vegetarian || (quote.items.length > 0 && quote.items.every(item => item.is_vegetarian));
     const isQuoteVegan = quote.is_vegan || (quote.items.length > 0 && quote.items.every(item => item.is_vegan));
+    const isQuoteTraditional = quote.is_traditional || (quote.items.length > 0 && quote.items.every(item => item.is_traditional));
 
     const suggestedTotal = quote.items.reduce((sum, item) => {
         const price = item.is_sold_by_piece 
@@ -290,6 +291,9 @@ const SharedQuote = ({ isMenuMode = false }) => {
             let labels = [];
             if (isQuoteGlutenFree || item.is_gluten_free) labels.push("Gluten Free");
             if (isQuoteLactoseFree || item.is_lactose_free) labels.push("Senza Lattosio");
+            if (isQuoteVegetarian || item.is_vegetarian) labels.push("Vegetariano");
+            if (isQuoteVegan || item.is_vegan) labels.push("Vegano");
+            if (isQuoteTraditional || item.is_traditional) labels.push("Tradizionale");
             
             if (labels.length > 0) {
                 doc.setFontSize(10);
@@ -616,6 +620,11 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                                 {(quote.is_vegan || item.is_vegan) && (
                                                     <span style={{ color: '#388E3C', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
                                                         Vegano
+                                                    </span>
+                                                )}
+                                                {(quote.is_traditional || item.is_traditional) && (
+                                                    <span style={{ color: '#B45309', fontSize: '0.7rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                                                        Tradizionale
                                                     </span>
                                                 )}
                                             </span>

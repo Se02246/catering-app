@@ -29,6 +29,9 @@ const PackageBuilder = () => {
         items: [], // { product_id, quantity, tempId, is_sold_by_piece, ...overrides }
         is_gluten_free: false,
         is_lactose_free: false,
+        is_vegetarian: false,
+        is_vegan: false,
+        is_traditional: false,
         is_visible: true,
         hide_at: null
     });
@@ -109,7 +112,7 @@ const PackageBuilder = () => {
             }
             setIsCreating(false);
             setEditingId(null);
-            setNewPackage({ name: '', description: '', image_url: '', images: [], total_price: 0, discount_percentage: 0, items: [], is_visible: true, hide_at: null });
+            setNewPackage({ name: '', description: '', image_url: '', images: [], total_price: 0, discount_percentage: 0, items: [], is_gluten_free: false, is_lactose_free: false, is_vegetarian: false, is_vegan: false, is_traditional: false, is_visible: true, hide_at: null });
             setDiscountedPriceInput('');
             mutateCaterings();
         } catch {
@@ -137,6 +140,9 @@ const PackageBuilder = () => {
             })),
             is_gluten_free: pkg.is_gluten_free || false,
             is_lactose_free: pkg.is_lactose_free || false,
+            is_vegetarian: pkg.is_vegetarian || false,
+            is_vegan: pkg.is_vegan || false,
+            is_traditional: pkg.is_traditional || false,
             is_visible: pkg.is_visible !== undefined ? pkg.is_visible : true,
             hide_at: pkg.hide_at || null
         });
@@ -454,6 +460,10 @@ const PackageBuilder = () => {
                                                 <input type="checkbox" checked={newPackage.is_vegan || false} readOnly style={{ marginRight: '0.5rem', width: '18px', height: '18px' }} />
                                                 <label style={{ fontWeight: 'bold', color: '#388E3C', cursor: 'pointer' }}>Vegano!</label>
                                             </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setNewPackage({ ...newPackage, is_traditional: !newPackage.is_traditional })}>
+                                                <input type="checkbox" checked={newPackage.is_traditional || false} readOnly style={{ marginRight: '0.5rem', width: '18px', height: '18px' }} />
+                                                <label style={{ fontWeight: 'bold', color: '#B45309', cursor: 'pointer' }}>Tradizionale!</label>
+                                            </div>
                                         </div>
 
                                         <div style={{ marginBottom: '1.5rem' }}>
@@ -534,6 +544,10 @@ const PackageBuilder = () => {
                                                                             }} style={{ width: '14px', height: '14px' }} />
                                                                             Vegano
                                                                         </label>
+                                                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: '#B45309', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                                            <input type="checkbox" checked={editingItemData.is_traditional || false} onChange={e => setEditingItemData({...editingItemData, is_traditional: e.target.checked})} style={{ width: '14px', height: '14px' }} />
+                                                                            Tradizionale
+                                                                        </label>
                                                                     </div>
                                                                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                                                                         <button type="button" className="btn btn-outline" style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }} onClick={() => { setEditingItemId(null); setEditingItemData(null); }}>Annulla</button>
@@ -567,6 +581,9 @@ const PackageBuilder = () => {
                                                                                 {(item.is_vegan ?? product?.is_vegan) && (
                                                                                     <span style={{ color: '#388E3C', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>VEG</span>
                                                                                 )}
+                                                                                {(item.is_traditional ?? product?.is_traditional) && (
+                                                                                    <span style={{ color: '#B45309', fontSize: '0.55rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '1px 4px', borderRadius: '3px' }}>TRAD</span>
+                                                                                )}
                                                                             </div>
                                                                         </div>
                                                                         <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
@@ -574,7 +591,7 @@ const PackageBuilder = () => {
                                                                         </div>
                                                                     </div>
                                                                     <div style={{ display: 'flex', gap: '0.4rem' }}>
-                                                                        <button type="button" className="btn btn-outline" style={{ padding: '0.3rem', border: 'none', color: 'var(--color-primary)' }} onClick={() => { setEditingItemId(item.tempId); setEditingItemData({ ...item, name: item.name || product?.name, description: item.description || product?.description, image_url: item.image_url || product?.image_url, is_gluten_free: item.is_gluten_free ?? product?.is_gluten_free, is_lactose_free: item.is_lactose_free ?? product?.is_lactose_free }); }}>
+                                                                        <button type="button" className="btn btn-outline" style={{ padding: '0.3rem', border: 'none', color: 'var(--color-primary)' }} onClick={() => { setEditingItemId(item.tempId); setEditingItemData({ ...item, name: item.name || product?.name, description: item.description || product?.description, image_url: item.image_url || product?.image_url, is_gluten_free: item.is_gluten_free ?? product?.is_gluten_free, is_lactose_free: item.is_lactose_free ?? product?.is_lactose_free, is_vegetarian: item.is_vegetarian ?? product?.is_vegetarian, is_vegan: item.is_vegan ?? product?.is_vegan, is_traditional: item.is_traditional ?? product?.is_traditional }); }}>
                                                                             <Edit size={16} />
                                                                         </button>
                                                                         <button type="button" style={{ background: 'none', border: 'none', color: '#E11D48', cursor: 'pointer', padding: '0.3rem' }} onClick={() => removeItem(item.tempId)}>
@@ -732,6 +749,7 @@ const PackageBuilder = () => {
                                     {pkg.is_lactose_free && <span className="badge-elegant badge-elegant-lf" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>LF</span>}
                                     {pkg.is_vegetarian && <span className="badge-elegant badge-elegant-v" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>VGT</span>}
                                     {pkg.is_vegan && <span className="badge-elegant badge-elegant-vg" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>VEG</span>}
+                                    {pkg.is_traditional && <span className="badge-elegant badge-elegant-trad" style={{ fontSize: '0.6rem', padding: '0.2rem 0.5rem' }}>TRAD</span>}
                                 </div>
                                 
                                 <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.2rem', fontSize: '0.9rem', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
