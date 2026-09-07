@@ -932,9 +932,10 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         className="btn btn-outline"
                         disabled={loading}
                         title="Cerca per ID esatto"
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', borderRadius: '10px' }}
+                        aria-label="Cerca per ID esatto"
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px' }}
                     >
-                        {loading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />} Cerca ID
+                        {loading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
                     </button>
                     <button
                         type="button"

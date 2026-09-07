@@ -36,6 +36,7 @@ const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState(queryParams.get('tab') || 'quotes');
     const [autoOpenQuoteModal, setAutoOpenQuoteModal] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const searchId = queryParams.get('searchId') || '';
 
     useEffect(() => {
@@ -55,24 +56,28 @@ const AdminDashboard = () => {
 
     // Modal / Sidebar scroll lock
     useEffect(() => {
-        if (isSidebarOpen) {
+        if (isSidebarOpen || isLogoutModalOpen) {
             document.body.classList.add('modal-open');
         } else {
             document.body.classList.remove('modal-open');
         }
         return () => document.body.classList.remove('modal-open');
-    }, [isSidebarOpen]);
+    }, [isSidebarOpen, isLogoutModalOpen]);
 
     // Close on escape
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (e.key === 'Escape' && isSidebarOpen) {
-                setIsSidebarOpen(false);
+            if (e.key === 'Escape') {
+                if (isLogoutModalOpen) {
+                    setIsLogoutModalOpen(false);
+                } else if (isSidebarOpen) {
+                    setIsSidebarOpen(false);
+                }
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isSidebarOpen]);
+    }, [isSidebarOpen, isLogoutModalOpen]);
 
     const handleTabSelect = (tabId) => {
         setActiveTab(tabId);
@@ -127,51 +132,6 @@ const AdminDashboard = () => {
                             Pannello Admin
                         </span>
                     </div>
-                </div>
-
-                {/* Right: Quick actions (View public site + Logout) */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <a
-                        href="/"
-                        className="btn btn-outline"
-                        style={{
-                            padding: '0.55rem 0.9rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.4rem',
-                            fontSize: '0.88rem',
-                            textDecoration: 'none',
-                            borderRadius: '10px',
-                            backgroundColor: 'white'
-                        }}
-                        title="Vai al sito pubblico"
-                    >
-                        <Home size={17} style={{ color: 'var(--color-primary)' }} />
-                        <span style={{ display: 'inline-block' }}>Vedi Sito</span>
-                    </a>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            localStorage.removeItem('token');
-                            window.location.href = '/login';
-                        }}
-                        className="btn btn-outline"
-                        style={{
-                            padding: '0.55rem 1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.4rem',
-                            borderColor: 'rgba(220, 38, 38, 0.4)',
-                            color: '#dc2626',
-                            fontSize: '0.88rem',
-                            borderRadius: '10px',
-                            backgroundColor: 'white'
-                        }}
-                        title="Disconnetti"
-                    >
-                        <LogOut size={17} />
-                        <span>Logout</span>
-                    </button>
                 </div>
             </div>
 
@@ -333,10 +293,7 @@ const AdminDashboard = () => {
                         </a>
                         <button
                             type="button"
-                            onClick={() => {
-                                localStorage.removeItem('token');
-                                window.location.href = '/login';
-                            }}
+                            onClick={() => setIsLogoutModalOpen(true)}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -348,7 +305,8 @@ const AdminDashboard = () => {
                                 color: '#fca5a5',
                                 fontSize: '0.92rem',
                                 cursor: 'pointer',
-                                textAlign: 'left'
+                                textAlign: 'left',
+                                transition: 'all 0.2s ease'
                             }}
                         >
                             <LogOut size={18} />
@@ -371,6 +329,117 @@ const AdminDashboard = () => {
             {activeTab === 'events' && <EventManager />}
             {activeTab === 'reviews' && <ReviewManager />}
             {activeTab === 'settings' && <SettingsManager />}
+
+            {/* Modale di Conferma Logout */}
+            {isLogoutModalOpen && (
+                <div
+                    className="modal-overlay"
+                    onClick={() => setIsLogoutModalOpen(false)}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        backdropFilter: 'blur(4px)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 6000,
+                        padding: '1rem'
+                    }}
+                >
+                    <div
+                        className="modal-content bounce-in"
+                        onClick={e => e.stopPropagation()}
+                        style={{
+                            backgroundColor: 'white',
+                            borderRadius: '20px',
+                            width: '100%',
+                            maxWidth: '440px',
+                            padding: '1.75rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.25rem',
+                            boxShadow: 'var(--shadow-xl)',
+                            border: '1px solid rgba(0,0,0,0.08)'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                            <div style={{
+                                width: '46px',
+                                height: '46px',
+                                borderRadius: '12px',
+                                backgroundColor: 'rgba(220, 38, 38, 0.12)',
+                                color: '#dc2626',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                            }}>
+                                <LogOut size={22} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <h3 style={{ margin: '0 0 0.35rem 0', fontSize: '1.2rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>
+                                    Conferma Logout
+                                </h3>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
+                                    Sei sicuro di voler effettuare la disconnessione dal pannello di amministrazione?
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setIsLogoutModalOpen(false)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: 'var(--color-text-muted)',
+                                    padding: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '50%'
+                                }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+                            <button
+                                type="button"
+                                className="btn btn-outline"
+                                onClick={() => setIsLogoutModalOpen(false)}
+                                style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem' }}
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={() => {
+                                    localStorage.removeItem('token');
+                                    window.location.href = '/login';
+                                }}
+                                style={{
+                                    padding: '0.65rem 1.25rem',
+                                    fontSize: '0.9rem',
+                                    backgroundColor: '#dc2626',
+                                    borderColor: '#dc2626',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)'
+                                }}
+                            >
+                                <LogOut size={16} /> Disconnetti
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
