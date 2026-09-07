@@ -247,8 +247,13 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         }
     };
 
-    const shareToOrderMaster = async (targetQuote = currentQuote) => {
-        if (!targetQuote) return;
+    const shareToOrderMaster = async (quoteOrEvent) => {
+        // If called from an onClick event or quoteOrEvent is not a valid quote object with an id, fall back to currentQuote
+        const targetQuote = (quoteOrEvent && quoteOrEvent.id) ? quoteOrEvent : currentQuote;
+        if (!targetQuote || !targetQuote.id) {
+            console.error('shareToOrderMaster: nessun preventivo valido trovato da sincronizzare.', { quoteOrEvent, currentQuote });
+            return;
+        }
 
         let textToShare = `Riepilogo preventivo\n`;
         if (targetQuote.client_name) {
@@ -261,8 +266,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             }
         }
         textToShare += `Prodotti:\n`;
-        if (targetQuote.items) {
-            targetQuote.items.forEach(item => {
+        const itemsList = Array.isArray(targetQuote.items) ? targetQuote.items : (typeof targetQuote.items === 'string' ? JSON.parse(targetQuote.items || '[]') : []);
+        if (itemsList && itemsList.length > 0) {
+            itemsList.forEach(item => {
                 const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : 'kg'}` : "";
                 textToShare += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
             });
@@ -2145,7 +2151,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
                     <button
                         ref={bottomButtonRef}
-                        onClick={shareToOrderMaster}
+                        onClick={() => shareToOrderMaster(currentQuote)}
                         className={`btn btn-primary ${currentQuote.needs_sync ? 'animate-pulse-strong' : ''}`}
                         style={{
                             width: '100%',
@@ -2629,7 +2635,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     }}
                 >
                     <button
-                        onClick={shareToOrderMaster}
+                        onClick={() => shareToOrderMaster(currentQuote)}
                         className="btn btn-primary animate-pulse-strong"
                         style={{
                             pointerEvents: 'auto', // Re-enable clicks for the button
