@@ -90,7 +90,7 @@ const AdminDashboard = () => {
     return (
         <div className="container admin-dashboard" style={{ position: 'relative', minHeight: '100vh', paddingBottom: '3rem' }}>
             
-            {/* Top Navigation Bar with Sidebar Trigger */}
+            {/* Top Navigation Bar with Sidebar Trigger on the right */}
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -101,38 +101,37 @@ const AdminDashboard = () => {
                 flexWrap: 'wrap',
                 gap: '1rem'
             }}>
-                {/* Left: Button to open sidebar + Current section label */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                    <button
-                        type="button"
-                        onClick={() => setIsSidebarOpen(true)}
-                        className="btn btn-outline"
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.6rem',
-                            padding: '0.6rem 1.1rem',
-                            borderRadius: '12px',
-                            fontWeight: '700',
-                            backgroundColor: 'white',
-                            boxShadow: 'var(--shadow-sm)',
-                            border: '1.5px solid var(--color-border)'
-                        }}
-                        title="Apri menu sezioni"
-                    >
-                        <Menu size={20} style={{ color: 'var(--color-primary)' }} />
-                        <span>Menu</span>
-                    </button>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--color-primary-dark)', letterSpacing: '-0.3px' }}>
-                            {currentTabObj.label}
-                        </span>
-                        <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', backgroundColor: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: '6px' }}>
-                            Pannello Admin
-                        </span>
-                    </div>
+                {/* Left: Current section label */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--color-primary-dark)', letterSpacing: '-0.3px' }}>
+                        {currentTabObj.label}
+                    </span>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', backgroundColor: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: '6px' }}>
+                        Pannello Admin
+                    </span>
                 </div>
+
+                {/* Right: Button to open sidebar */}
+                <button
+                    type="button"
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="btn btn-outline"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.6rem',
+                        padding: '0.6rem 1.1rem',
+                        borderRadius: '12px',
+                        fontWeight: '700',
+                        backgroundColor: 'white',
+                        boxShadow: 'var(--shadow-sm)',
+                        border: '1.5px solid var(--color-border)'
+                    }}
+                    title="Apri menu sezioni"
+                >
+                    <Menu size={20} style={{ color: 'var(--color-primary)' }} />
+                    <span>Menu</span>
+                </button>
             </div>
 
             {/* Sidebar Drawer and Backdrop */}
@@ -159,16 +158,16 @@ const AdminDashboard = () => {
                     style={{
                         position: 'fixed',
                         top: 0,
-                        left: 0,
+                        right: 0,
                         bottom: 0,
                         width: '320px',
                         maxWidth: '85vw',
                         backgroundColor: '#1E1214',
                         color: 'white',
-                        boxShadow: '6px 0 30px rgba(0, 0, 0, 0.5)',
+                        boxShadow: '-6px 0 30px rgba(0, 0, 0, 0.5)',
                         display: 'flex',
                         flexDirection: 'column',
-                        transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+                        transform: isSidebarOpen ? 'translateX(0)' : 'translateX(100%)',
                         transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
                         zIndex: 5001,
                         overflowY: 'auto'
