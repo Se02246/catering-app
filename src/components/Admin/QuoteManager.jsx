@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle, Package, Truck, Check, Navigation } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle, Package, Truck, Check, Navigation, AlertTriangle } from 'lucide-react';
 import DeliveryCalculatorModal from './DeliveryCalculatorModal';
 
 export const PACKAGING_PRODUCT = {
@@ -77,16 +77,17 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     const [productSearchTerm, setProductSearchTerm] = useState('');
     const [selectedTagFilter, setSelectedTagFilter] = useState('all');
     const [recentlyAddedId, setRecentlyAddedId] = useState(null);
+    const [isConfirmRefreshOpen, setIsConfirmRefreshOpen] = useState(false);
 
     // Modal scroll lock
     useEffect(() => {
-        if (isModeSelectionOpen || isAiPromptOpen || isProductPickerOpen || isDeliveryCalcOpen) {
+        if (isModeSelectionOpen || isAiPromptOpen || isProductPickerOpen || isDeliveryCalcOpen || isConfirmRefreshOpen) {
             document.body.classList.add('modal-open');
         } else {
             document.body.classList.remove('modal-open');
         }
         return () => document.body.classList.remove('modal-open');
-    }, [isModeSelectionOpen, isAiPromptOpen, isProductPickerOpen, isDeliveryCalcOpen]);
+    }, [isModeSelectionOpen, isAiPromptOpen, isProductPickerOpen, isDeliveryCalcOpen, isConfirmRefreshOpen]);
 
     // Intersection Observer to detect when we are at the bottom of the page
     useEffect(() => {
@@ -909,12 +910,35 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
                             <h4 style={{ margin: 0 }}>Prodotti nel preventivo</h4>
                             <button
-                                className="btn btn-outline"
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-                                onClick={refreshProductsFromCatalog}
+                                type="button"
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.4rem',
+                                    padding: '0.35rem 0.75rem',
+                                    fontSize: '0.8rem',
+                                    color: 'var(--color-text-muted)',
+                                    background: 'rgba(0, 0, 0, 0.02)',
+                                    border: '1px solid rgba(0, 0, 0, 0.12)',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    fontWeight: '500'
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.color = 'var(--color-text)';
+                                    e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.25)';
+                                    e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.color = 'var(--color-text-muted)';
+                                    e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.12)';
+                                    e.currentTarget.style.background = 'rgba(0, 0, 0, 0.02)';
+                                }}
+                                onClick={() => setIsConfirmRefreshOpen(true)}
                                 title="Aggiorna le versioni dei prodotti (immagini, prezzi, descrizioni) con la versione attuale caricata nel catalogo"
                             >
-                                <RefreshCw size={16} /> Aggiorna prodotti dal catalogo
+                                <RefreshCw size={13} style={{ opacity: 0.7 }} /> Aggiorna prodotti dal catalogo
                             </button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -2125,6 +2149,131 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
             {/* Sentinel at the very bottom to hide FAB when user scrolls to the end */}
             <div ref={bottomSentinelRef} style={{ height: '10px', width: '100%' }}></div>
+
+            {/* Confirmation Modal for Refreshing Products from Catalog */}
+            {isConfirmRefreshOpen && (
+                <div
+                    className="modal-overlay"
+                    onClick={() => setIsConfirmRefreshOpen(false)}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        backdropFilter: 'blur(4px)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 3000,
+                        padding: '1rem'
+                    }}
+                >
+                    <div
+                        className="modal-content bounce-in"
+                        onClick={e => e.stopPropagation()}
+                        style={{
+                            backgroundColor: 'white',
+                            borderRadius: '20px',
+                            width: '100%',
+                            maxWidth: '480px',
+                            padding: '1.75rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.25rem',
+                            boxShadow: 'var(--shadow-xl)',
+                            border: '1px solid rgba(0,0,0,0.08)'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                            <div style={{
+                                width: '46px',
+                                height: '46px',
+                                borderRadius: '12px',
+                                backgroundColor: 'rgba(217, 119, 6, 0.12)',
+                                color: '#D97706',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                            }}>
+                                <AlertTriangle size={24} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <h3 style={{ margin: '0 0 0.35rem 0', fontSize: '1.2rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>
+                                    Aggiornare i prodotti dal catalogo?
+                                </h3>
+                                <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
+                                    Questa operazione sincronizzerà tutti i prodotti di questo preventivo con la versione attualmente presente nel catalogo.
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setIsConfirmRefreshOpen(false)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: 'var(--color-text-muted)',
+                                    padding: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '50%'
+                                }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div style={{
+                            padding: '0.9rem 1rem',
+                            borderRadius: '12px',
+                            backgroundColor: 'rgba(217, 119, 6, 0.08)',
+                            border: '1px solid rgba(217, 119, 6, 0.25)',
+                            fontSize: '0.85rem',
+                            color: '#92400E',
+                            lineHeight: '1.45'
+                        }}>
+                            <strong>Attenzione:</strong> Eventuali prezzi personalizzati, descrizioni modificate o impostazioni modificate manualmente solo per questo preventivo verranno <strong>sovrascritte</strong> con i valori correnti del catalogo.
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+                            <button
+                                type="button"
+                                className="btn btn-outline"
+                                onClick={() => setIsConfirmRefreshOpen(false)}
+                                style={{
+                                    padding: '0.65rem 1.25rem',
+                                    fontSize: '0.9rem'
+                                }}
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={() => {
+                                    setIsConfirmRefreshOpen(false);
+                                    refreshProductsFromCatalog();
+                                }}
+                                style={{
+                                    padding: '0.65rem 1.25rem',
+                                    fontSize: '0.9rem',
+                                    backgroundColor: '#D97706',
+                                    borderColor: '#D97706',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                <RefreshCw size={15} /> Conferma aggiornamento
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <DeliveryCalculatorModal
                 isOpen={isDeliveryCalcOpen}
