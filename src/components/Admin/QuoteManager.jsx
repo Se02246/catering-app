@@ -975,7 +975,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             boxShadow: 'var(--shadow-sm)'
                         }}
                     >
-                        <ArrowLeft size={18} /> ← Torna alla lista dei preventivi
+                        <ArrowLeft size={18} /> Torna alla lista dei preventivi
                     </button>
                     <button
                         type="button"
