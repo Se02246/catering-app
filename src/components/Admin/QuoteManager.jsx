@@ -3,6 +3,7 @@ import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
 import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle, Package, Truck, Check, Navigation, AlertTriangle } from 'lucide-react';
 import DeliveryCalculatorModal from './DeliveryCalculatorModal';
+import { formatDateForInput, formatDateItalian } from '../../utils/dateFormatting';
 
 export const PACKAGING_PRODUCT = {
     id: 'imballaggio_service',
@@ -160,6 +161,12 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         if (currentQuote && currentQuote.client_name) {
             text += `Nome: ${currentQuote.client_name}\n`;
         }
+        if (currentQuote && currentQuote.event_date) {
+            const itDate = formatDateItalian(currentQuote.event_date);
+            if (itDate) {
+                text += `Data evento: ${itDate}\n`;
+            }
+        }
         text += `Prodotti:\n`;
         if (currentQuote && currentQuote.items) {
             currentQuote.items.forEach(item => {
@@ -219,6 +226,12 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         if (currentQuote.client_name) {
             textToShare += `Nome: ${currentQuote.client_name}\n`;
         }
+        if (currentQuote.event_date) {
+            const itDate = formatDateItalian(currentQuote.event_date);
+            if (itDate) {
+                textToShare += `Data evento: ${itDate}\n`;
+            }
+        }
         textToShare += `Prodotti:\n`;
         if (currentQuote.items) {
             currentQuote.items.forEach(item => {
@@ -269,6 +282,12 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         let textToShare = `Riepilogo preventivo\n`;
         if (currentQuote.client_name) {
             textToShare += `Nome: ${currentQuote.client_name}\n`;
+        }
+        if (currentQuote.event_date) {
+            const itDate = formatDateItalian(currentQuote.event_date);
+            if (itDate) {
+                textToShare += `Data evento: ${itDate}\n`;
+            }
         }
         textToShare += `Prodotti:\n`;
         if (currentQuote.items) {
@@ -1494,7 +1513,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         <h4 style={{ marginBottom: '1rem' }}>Data Evento (Opzionale)</h4>
                         <input
                             type="date"
-                            value={currentQuote.event_date ? new Date(currentQuote.event_date).toISOString().split('T')[0] : ''}
+                            value={formatDateForInput(currentQuote.event_date)}
                             onChange={e => {
                                 const updatedQuote = { ...currentQuote, event_date: e.target.value || null };
                                 setCurrentQuote(updatedQuote);

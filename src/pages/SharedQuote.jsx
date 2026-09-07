@@ -6,6 +6,7 @@ import ProductDetailsModal from '../components/Common/ProductDetailsModal';
 import { useProducts } from '../hooks/useData';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
+import { formatDateItalian } from '../utils/dateFormatting';
 
 const SharedQuote = ({ isMenuMode = false }) => {
     const { id, menuId } = useParams();
@@ -29,7 +30,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
     const handleShareQuote = async () => {
         let text = `Riepilogo preventivo\n`;
         if (quote?.event_date) {
-            text += `Data evento: ${new Date(quote.event_date).toLocaleDateString('it-IT')}\n`;
+            text += `Data evento: ${formatDateItalian(quote.event_date)}\n`;
         }
         text += `\nProdotti:\n`;
         if (quote && quote.items) {
@@ -500,7 +501,7 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                 )}
                                 {quote.event_date && (
                                     <p style={{ color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: '600' }}>
-                                        <Calendar size={16} style={{ color: 'var(--color-primary)' }} /> Data Evento: {new Date(quote.event_date).toLocaleDateString('it-IT')}
+                                        <Calendar size={16} style={{ color: 'var(--color-primary)' }} /> Data Evento: {formatDateItalian(quote.event_date)}
                                     </p>
                                 )}
                             </>
