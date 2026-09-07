@@ -876,98 +876,99 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         </span>
                     )}
                 </div>
-                {saving && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                        <Loader2 size={16} className="animate-spin" /> Salvataggio in corso...
-                    </div>
-                )}
-                {message?.type === 'success' && !saving && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2e7d32', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                        <CheckCircle2 size={16} /> Modifiche salvate
-                    </div>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    {saving && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                            <Loader2 size={16} className="animate-spin" /> Salvataggio in corso...
+                        </div>
+                    )}
+                    {message?.type === 'success' && !saving && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#2e7d32', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                            <CheckCircle2 size={16} /> Modifiche salvate
+                        </div>
+                    )}
+                    {!currentQuote && (
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            disabled={loading}
+                            onClick={() => setIsModeSelectionOpen(true)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                borderRadius: '9999px',
+                                padding: '0.65rem 1.35rem',
+                                fontWeight: 'bold',
+                                boxShadow: '0 4px 14px rgba(155, 57, 61, 0.35)'
+                            }}
+                        >
+                            <Plus size={18} /> Nuovo Preventivo
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Barra Navigazione / Ricerca per la Lista Preventivi */}
             {!currentQuote ? (
-                <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
+                    <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
+                        <Search size={18} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                        <input
+                            type="text"
+                            placeholder="Filtra per cliente, data, note o cerca per ID..."
+                            value={searchId}
+                            onChange={(e) => setSearchId(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem 2.2rem 0.75rem 2.5rem',
+                                borderRadius: '10px',
+                                border: '1px solid var(--color-border)',
+                                fontSize: '0.95rem'
+                            }}
+                        />
+                        {searchId && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchId('')}
+                                style={{
+                                    position: 'absolute',
+                                    right: '0.75rem',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: 'var(--color-text-muted)',
+                                    padding: '2px'
+                                }}
+                                title="Cancella ricerca"
+                            >
+                                <X size={16} />
+                            </button>
+                        )}
+                    </div>
+                    <button
+                        type="submit"
+                        className="btn btn-outline"
+                        disabled={loading}
+                        title="Cerca per ID esatto"
+                        aria-label="Cerca per ID esatto"
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px' }}
+                    >
+                        {loading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+                    </button>
                     <button
                         type="button"
-                        className="btn btn-primary"
-                        disabled={loading}
-                        onClick={() => setIsModeSelectionOpen(true)}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.45rem',
-                            borderRadius: '50px',
-                            padding: '0.65rem 1.35rem',
-                            fontWeight: 'bold',
-                            boxShadow: 'var(--shadow-sm)'
-                        }}
+                        className="btn btn-outline"
+                        onClick={fetchQuotes}
+                        title="Ricarica lista"
+                        style={{ borderRadius: '10px' }}
+                        disabled={loadingList}
                     >
-                        <Plus size={18} /> Nuovo Preventivo
+                        <RefreshCw size={18} className={loadingList ? 'animate-spin' : ''} />
                     </button>
-
-                    <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.75rem', flex: 1, minWidth: '300px', flexWrap: 'wrap' }}>
-                        <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
-                            <Search size={18} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                            <input
-                                type="text"
-                                placeholder="Filtra per cliente, data, note o cerca per ID..."
-                                value={searchId}
-                                onChange={(e) => setSearchId(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '0.75rem 2.2rem 0.75rem 2.5rem',
-                                    borderRadius: '10px',
-                                    border: '1px solid var(--color-border)',
-                                    fontSize: '0.95rem'
-                                }}
-                            />
-                            {searchId && (
-                                <button
-                                    type="button"
-                                    onClick={() => setSearchId('')}
-                                    style={{
-                                        position: 'absolute',
-                                        right: '0.75rem',
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        background: 'none',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        color: 'var(--color-text-muted)',
-                                        padding: '2px'
-                                    }}
-                                    title="Cancella ricerca"
-                                >
-                                    <X size={16} />
-                                </button>
-                            )}
-                        </div>
-                        <button
-                            type="submit"
-                            className="btn btn-outline"
-                            disabled={loading}
-                            title="Cerca per ID esatto"
-                            aria-label="Cerca per ID esatto"
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px' }}
-                        >
-                            {loading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-outline"
-                            onClick={fetchQuotes}
-                            title="Ricarica lista"
-                            style={{ borderRadius: '10px' }}
-                            disabled={loadingList}
-                        >
-                            <RefreshCw size={18} className={loadingList ? 'animate-spin' : ''} />
-                        </button>
-                    </form>
-                </div>
+                </form>
             ) : (
                 /* Pulsante Torna alla Lista quando si è in modalità Modifica */
                 <div style={{ marginBottom: '1.25rem' }}>
