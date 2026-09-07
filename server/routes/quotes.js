@@ -176,11 +176,55 @@ router.post('/ai-generate', async (req, res) => {
             order_increment: p.order_increment
         }));
 
+        // Carica fino a 20 preventivi sincronizzati (finiti e approvati) come esempi per guidare l'IA
+        let syncedQuotesExamples = [];
+        try {
+            const syncedResult = await pool.query(
+                `SELECT client_name, event_date, notes, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, items 
+                 FROM quotes 
+                 WHERE needs_sync = false AND items IS NOT NULL AND jsonb_array_length(items) > 0 
+                 ORDER BY updated_at DESC NULLS LAST, created_at DESC NULLS LAST 
+                 LIMIT 20`
+            );
+            syncedQuotesExamples = syncedResult.rows.map(q => {
+                const itemsList = Array.isArray(q.items) ? q.items : [];
+                return {
+                    cliente: q.client_name || undefined,
+                    data_evento: q.event_date ? new Date(q.event_date).toISOString().split('T')[0] : undefined,
+                    note: q.notes || undefined,
+                    prezzo_totale: q.total_price ? Number(q.total_price) : undefined,
+                    regime_alimentare: {
+                        senza_glutine: q.is_gluten_free || false,
+                        senza_lattosio: q.is_lactose_free || false,
+                        vegetariano: q.is_vegetarian || false,
+                        vegano: q.is_vegan || false,
+                        tradizionale: q.is_traditional || false
+                    },
+                    prodotti_inclusi: itemsList
+                        .filter(i => !i.is_packaging && !i.is_delivery && i.name !== 'Imballaggio🎁' && i.name !== 'Consegna⛽')
+                        .map(i => ({
+                            prodotto: i.name,
+                            quantita: Number(i.quantity) || 1,
+                            unita: i.is_sold_by_piece ? 'pezzi' : 'kg'
+                        }))
+                };
+            }).filter(q => q.prodotti_inclusi.length > 0);
+            console.log(`🤖 Inclusi ${syncedQuotesExamples.length} preventivi sincronizzati di esempio nel prompt AI`);
+        } catch (e) {
+            console.warn('⚠️ Impossibile caricare i preventivi sincronizzati di esempio:', e.message);
+        }
+
+        const examplesSection = syncedQuotesExamples.length > 0 ? `
+Ecco 20 esempi reali di preventivi "sincronizzati" (preventivi completati, validati e approvati per eventi reali dell'attività).
+Usali come guida e modello di riferimento per capire lo stile della cucina, le proporzioni, i dosaggi tipici e gli abbinamenti ideali per i vari tipi di eventi e catering:
+${JSON.stringify(syncedQuotesExamples, null, 2)}
+` : '';
+
         const aiPrompt = `
 Analizza la seguente richiesta di preventivo per un servizio di catering. 
 Ecco la lista dei prodotti disponibili nel nostro database in formato JSON:
 ${JSON.stringify(productsList)}
-
+${examplesSection}
 Richiesta dell'utente:
 "${prompt}"
 
@@ -211,6 +255,7 @@ Estrai le informazioni e restituisci un oggetto JSON con la seguente struttura e
   "ai_explanation": "string (spiega in modo chiaro, accattivante e persuasivo le scelte fatte per questo preventivo, giustificando perché hai selezionato questi prodotti specifici e come si adattano perfettamente alla richiesta. Rivolgiti direttamente al cliente in tono cordiale e professionale. Massimo 3-4 frasi brevi.)"
 }
 IMPORTANTE:
+- ESEMPI REALI DI RIFERIMENTO: Consulta attentamente i 20 preventivi sincronizzati forniti sopra. Osserva come sono state bilanciate le portate, le quantità calcolate e la varietà di prodotti scelti per trarre ispirazione diretta su come comporre questo preventivo.
 ${!isAdmin ? "- RISPETTA TASSATIVAMENTE il valore di \"is_sold_by_piece\" che trovi nel database per ogni prodotto. NON ALTERARLO MAI." : "- Se decidi di cambiare l'unità di misura (da KG a PEZZI o viceversa), assicurati che il prezzo corrispondente (price_per_piece o price_per_kg) sia presente e non sia zero."}
 - PORZIONI (servings_per_unit): Se per un prodotto è specificato quante persone sazia un pezzo o un kg ("servings_per_unit"), usalo ESATTAMENTE per calcolare la quantità necessaria in base al numero degli invitati.
 - LIMITI D'ORDINE: Assicurati che la quantità calcolata non sia mai inferiore a "min_order_quantity". Inoltre, la quantità finale deve rispettare l'incremento specificato in "order_increment" (es. se min è 10 e l'incremento è 5, le quantità valide sono 10, 15, 20...).

@@ -2178,7 +2178,24 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             <h3 style={{ margin: 0 }}>Genera con IA</h3>
                             <button onClick={() => setIsAiPromptOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }} disabled={aiLoading}><X size={24} /></button>
                         </div>
-                        <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Descrivi il catering (es. "Preventivo per un matrimonio di 50 persone, tutto senza glutine, includi 2 tipi di pasta e 1 dolce").</p>
+                        <p style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Descrivi il catering (es. "Preventivo per un matrimonio di 50 persone, tutto senza glutine, includi 2 tipi di pasta e 1 dolce").</p>
+                        
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.55rem 0.85rem',
+                            borderRadius: '8px',
+                            backgroundColor: 'rgba(126, 34, 206, 0.08)',
+                            color: '#7e22ce',
+                            fontSize: '0.8rem',
+                            fontWeight: '600',
+                            marginBottom: '1rem'
+                        }}>
+                            <Sparkles size={16} style={{ flexShrink: 0 }} />
+                            <span>L'IA analizzerà gli ultimi 20 preventivi sincronizzati per apprendere abbinamenti e dosaggi ideali.</span>
+                        </div>
+
                         <textarea
                             value={aiPrompt}
                             onChange={e => setAiPrompt(e.target.value)}
