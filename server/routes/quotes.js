@@ -252,12 +252,25 @@ ${!isAdmin ? "- RISPETTA TASSATIVAMENTE il valore di \"is_sold_by_piece\" che tr
     }
 });
 
+// Get all quotes (Admin list)
+router.get('/', async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM quotes ORDER BY updated_at DESC NULLS LAST, created_at DESC NULLS LAST'
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching quotes list:', err);
+        res.status(500).json({ error: 'Server error fetching quotes list' });
+    }
+});
+
 // Save a new quote and get its unique ID
 router.post('/', async (req, res) => {
     const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name } = req.body;
     try {
         const result = await pool.query(
-            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id',
+            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id',
             [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes || null, menu_notes || null, event_date || null, client_name || null]
         );
         res.status(201).json({ id: result.rows[0].id });
@@ -323,7 +336,7 @@ router.put('/:id', async (req, res) => {
     const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, is_vegetarian = $5, is_vegan = $6, is_traditional = $7, notes = $8, menu_notes = $9, event_date = $10, client_name = $11, needs_sync = true WHERE id = $12 RETURNING *',
+            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, is_vegetarian = $5, is_vegan = $6, is_traditional = $7, notes = $8, menu_notes = $9, event_date = $10, client_name = $11, needs_sync = true, updated_at = CURRENT_TIMESTAMP WHERE id = $12 RETURNING *',
             [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes, menu_notes, event_date || null, client_name || null, id]
         );
         if (result.rows.length === 0) {
@@ -333,6 +346,21 @@ router.put('/:id', async (req, res) => {
     } catch (err) {
         console.error('Error updating quote:', err);
         res.status(500).json({ error: 'Server error updating quote' });
+    }
+});
+
+// Delete a quote (Admin)
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM quotes WHERE id = $1 RETURNING id', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Quote not found' });
+        }
+        res.json({ message: 'Quote deleted successfully', id: result.rows[0].id });
+    } catch (err) {
+        console.error('Error deleting quote:', err);
+        res.status(500).json({ error: 'Server error deleting quote' });
     }
 });
 

@@ -230,9 +230,23 @@ export const api = {
         return res.json();
     },
 
+    getQuotes: async () => {
+        const res = await fetch(`${API_URL}/quotes`);
+        if (!res.ok) throw new Error('Failed to fetch quotes');
+        return res.json();
+    },
+
     getQuote: async (id) => {
         const res = await fetch(`${API_URL}/quotes/${id}`);
         if (!res.ok) throw new Error('Quote not found');
+        return res.json();
+    },
+
+    deleteQuote: async (id) => {
+        const res = await fetch(`${API_URL}/quotes/${id}`, {
+            method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Failed to delete quote');
         return res.json();
     },
 

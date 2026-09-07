@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle, Package, Truck, Check, Navigation, AlertTriangle } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle, Package, Truck, Check, Navigation, AlertTriangle, ArrowLeft, Calendar, User, Clock, Eye } from 'lucide-react';
 import DeliveryCalculatorModal from './DeliveryCalculatorModal';
-import { formatDateForInput, formatDateItalian } from '../../utils/dateFormatting';
+import { formatDateForInput, formatDateItalian, formatDateTimeItalian } from '../../utils/dateFormatting';
 
 export const PACKAGING_PRODUCT = {
     id: 'imballaggio_service',
@@ -53,6 +53,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     const { products } = useProducts();
     const [searchId, setSearchId] = useState(initialSearchId);
     const [currentQuote, setCurrentQuote] = useState(null);
+    const [quotesList, setQuotesList] = useState([]);
+    const [loadingList, setLoadingList] = useState(true);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -79,6 +81,23 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     const [selectedTagFilter, setSelectedTagFilter] = useState('all');
     const [recentlyAddedId, setRecentlyAddedId] = useState(null);
     const [isConfirmRefreshOpen, setIsConfirmRefreshOpen] = useState(false);
+
+    // Fetch all quotes for the list view
+    const fetchQuotes = async () => {
+        setLoadingList(true);
+        try {
+            const data = await api.getQuotes();
+            setQuotesList(data || []);
+        } catch (err) {
+            console.error('Error fetching quotes:', err);
+        } finally {
+            setLoadingList(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchQuotes();
+    }, []);
 
     // Modal scroll lock
     useEffect(() => {
@@ -144,6 +163,13 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
             // The backend sets needs_sync to true on every update
             setCurrentQuote(prev => ({ ...prev, needs_sync: true }));
+
+            // Update in quotesList too so the list is always in sync with recent changes!
+            setQuotesList(prev => {
+                const now = new Date().toISOString();
+                const filtered = prev.filter(q => q.id !== updatedQuote.id);
+                return [{ ...updatedQuote, needs_sync: true, updated_at: now }, ...filtered];
+            });
 
             // Show a brief success indicator
             setMessage({ type: 'success', text: 'Modifiche salvate automaticamente' });
@@ -365,6 +391,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
             setSearchId(newQuote.id);
             setCurrentQuote(finalQuote);
+            setQuotesList(prev => [finalQuote, ...prev.filter(q => q.id !== finalQuote.id)]);
 
             await api.updateQuote(newQuote.id, finalQuote, finalQuote.total_price);
 
@@ -384,13 +411,13 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     // Auto-search if initialSearchId is provided
     React.useEffect(() => {
         if (initialSearchId) {
-            handleSearch(new Event('submit'));
+            handleSearch(null, initialSearchId);
         }
     }, [initialSearchId]);
 
-    const handleSearch = async (e) => {
+    const handleSearch = async (e, idParam) => {
         if (e) e.preventDefault();
-        let idToSearch = searchId.trim();
+        let idToSearch = (idParam || searchId).trim();
         if (!idToSearch) return;
 
         if (idToSearch.includes('/quote/')) {
@@ -414,6 +441,52 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             setCurrentQuote(null);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const openQuote = async (quoteOrId) => {
+        const id = typeof quoteOrId === 'string' ? quoteOrId : quoteOrId.id;
+        setLoading(true);
+        setMessage(null);
+        try {
+            const data = await api.getQuote(id);
+            const itemsWithIds = (data.items || []).map(item => ({
+                ...item,
+                instanceId: item.instanceId || `${Date.now()}-${Math.random()}`
+            }));
+            setCurrentQuote({ ...data, items: itemsWithIds });
+            setSearchId(data.id);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (err) {
+            console.error('Error opening quote:', err);
+            setMessage({ type: 'error', text: 'Impossibile aprire il preventivo.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleBackToList = () => {
+        setCurrentQuote(null);
+        setSearchId('');
+        fetchQuotes();
+    };
+
+    const handleDeleteQuote = async (id, e) => {
+        if (e) e.stopPropagation();
+        if (!window.confirm('Sei sicuro di voler eliminare definitivamente questo preventivo?')) {
+            return;
+        }
+        try {
+            await api.deleteQuote(id);
+            setMessage({ type: 'success', text: 'Preventivo eliminato con successo.' });
+            if (currentQuote && currentQuote.id === id) {
+                setCurrentQuote(null);
+            }
+            setQuotesList(prev => prev.filter(q => q.id !== id));
+            setTimeout(() => setMessage(null), 3000);
+        } catch (err) {
+            console.error('Error deleting quote:', err);
+            setMessage({ type: 'error', text: 'Errore durante l\'eliminazione del preventivo.' });
         }
     };
 
@@ -628,7 +701,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         try {
             const newQuote = await api.createQuote({ items: [], total_price: 0 });
             setSearchId(newQuote.id);
-            setCurrentQuote({ ...newQuote, items: [], total_price: 0 });
+            const fullQuote = { ...newQuote, items: [], total_price: 0 };
+            setCurrentQuote(fullQuote);
+            setQuotesList(prev => [fullQuote, ...prev.filter(q => q.id !== fullQuote.id)]);
             setMessage({ type: 'success', text: 'Nuovo preventivo creato!' });
         } catch (err) {
             console.error(err);
@@ -764,13 +839,31 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         handleManualPriceChange(suggested);
     };
 
+    const filteredQuotes = quotesList.filter(q => {
+        if (!searchId.trim() || currentQuote) return true;
+        const term = searchId.trim().toLowerCase();
+        const client = (q.client_name || '').toLowerCase();
+        const id = (q.id || '').toLowerCase();
+        const notes = (q.notes || '').toLowerCase();
+        const eventDateIt = formatDateItalian(q.event_date).toLowerCase();
+        const eventDateRaw = (q.event_date || '').toLowerCase();
+        return client.includes(term) || id.includes(term) || notes.includes(term) || eventDateIt.includes(term) || eventDateRaw.includes(term);
+    });
+
     const isQuoteGlutenFree = currentQuote && (currentQuote.is_gluten_free || (currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_gluten_free)));
     const isQuoteLactoseFree = currentQuote && (currentQuote.is_lactose_free || (currentQuote.items.length > 0 && currentQuote.items.every(item => item.is_lactose_free)));
 
     return (
         <div className="admin-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>Gestione Preventivi</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    <h2 style={{ margin: 0, color: 'var(--color-primary-dark)' }}>Gestione Preventivi</h2>
+                    {!currentQuote && !loadingList && (
+                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-text-muted)', backgroundColor: '#f0f0f0', padding: '4px 12px', borderRadius: '12px' }}>
+                            {quotesList.length} {quotesList.length === 1 ? 'preventivo' : 'preventivi'}
+                        </span>
+                    )}
+                </div>
                 {saving && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)', fontSize: '0.9rem', fontWeight: 'bold' }}>
                         <Loader2 size={16} className="animate-spin" /> Salvataggio in corso...
@@ -783,21 +876,104 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 )}
             </div>
 
-            <form onSubmit={handleSearch} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                <input
-                    type="text"
-                    placeholder="Inserisci ID Preventivo (es: UUID)"
-                    value={searchId}
-                    onChange={(e) => setSearchId(e.target.value)}
-                    style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)' }}
-                />
-                <button type="submit" className="btn btn-primary" disabled={loading} title="Cerca">
-                    {loading ? <Loader2 size={20} className="animate-spin" /> : <Search size={20} />}
-                </button>
-                <button type="button" className="btn btn-outline" disabled={loading} onClick={() => setIsModeSelectionOpen(true)}>
-                    Nuovo
-                </button>
-            </form>
+            {/* Barra Navigazione / Ricerca per la Lista Preventivi */}
+            {!currentQuote ? (
+                <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
+                    <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
+                        <Search size={18} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                        <input
+                            type="text"
+                            placeholder="Filtra per cliente, data, note o cerca per ID..."
+                            value={searchId}
+                            onChange={(e) => setSearchId(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem 2.2rem 0.75rem 2.5rem',
+                                borderRadius: '10px',
+                                border: '1px solid var(--color-border)',
+                                fontSize: '0.95rem'
+                            }}
+                        />
+                        {searchId && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchId('')}
+                                style={{
+                                    position: 'absolute',
+                                    right: '0.75rem',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: 'var(--color-text-muted)',
+                                    padding: '2px'
+                                }}
+                                title="Cancella ricerca"
+                            >
+                                <X size={16} />
+                            </button>
+                        )}
+                    </div>
+                    <button
+                        type="submit"
+                        className="btn btn-outline"
+                        disabled={loading}
+                        title="Cerca per ID esatto"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', borderRadius: '10px' }}
+                    >
+                        {loading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />} Cerca ID
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-outline"
+                        onClick={fetchQuotes}
+                        title="Ricarica lista"
+                        style={{ borderRadius: '10px' }}
+                        disabled={loadingList}
+                    >
+                        <RefreshCw size={18} className={loadingList ? 'animate-spin' : ''} />
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        disabled={loading}
+                        onClick={() => setIsModeSelectionOpen(true)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', borderRadius: '10px', fontWeight: 'bold' }}
+                    >
+                        <Plus size={18} /> Nuovo Preventivo
+                    </button>
+                </form>
+            ) : (
+                /* Pulsante Torna alla Lista quando si è in modalità Modifica */
+                <div style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <button
+                        type="button"
+                        onClick={handleBackToList}
+                        className="btn btn-outline"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.6rem 1.1rem',
+                            fontWeight: '600',
+                            borderRadius: '10px',
+                            backgroundColor: 'white',
+                            boxShadow: 'var(--shadow-sm)'
+                        }}
+                    >
+                        <ArrowLeft size={18} /> ← Torna alla lista dei preventivi
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => setIsModeSelectionOpen(true)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1.1rem', borderRadius: '10px' }}
+                    >
+                        <Plus size={18} /> Nuovo Preventivo
+                    </button>
+                </div>
+            )}
 
             {message && message.type === 'error' && (
                 <div style={{
@@ -809,6 +985,254 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                     border: `1px solid #ef9a9a`
                 }}>
                     {message.text}
+                </div>
+            )}
+
+            {/* LISTA DEI PREVENTIVI (quando non è aperto alcun preventivo per la modifica) */}
+            {!currentQuote && (
+                <div>
+                    {loadingList ? (
+                        <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--color-text-muted)' }}>
+                            <Loader2 size={36} className="animate-spin" style={{ color: 'var(--color-primary)', margin: '0 auto 1rem auto' }} />
+                            <p style={{ fontSize: '1rem', fontWeight: '600', margin: 0 }}>Caricamento preventivi...</p>
+                        </div>
+                    ) : quotesList.length === 0 ? (
+                        <div style={{
+                            textAlign: 'center',
+                            padding: '3rem 1.5rem',
+                            backgroundColor: '#faf8f6',
+                            borderRadius: '16px',
+                            border: '2px dashed var(--color-border)',
+                            margin: '1rem 0'
+                        }}>
+                            <Package size={48} style={{ color: 'var(--color-primary)', margin: '0 auto 1rem auto', opacity: 0.6 }} />
+                            <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--color-primary-dark)' }}>Nessun preventivo presente</h3>
+                            <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+                                Non hai ancora nessun preventivo salvato nel sistema.
+                            </p>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={() => setIsModeSelectionOpen(true)}
+                                style={{ padding: '0.75rem 1.5rem', fontWeight: 'bold' }}
+                            >
+                                <Plus size={18} /> Crea il primo preventivo
+                            </button>
+                        </div>
+                    ) : filteredQuotes.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--color-text-muted)' }}>
+                            <p style={{ fontSize: '1.05rem', marginBottom: '1rem' }}>
+                                Nessun preventivo corrisponde a "<strong>{searchId}</strong>"
+                            </p>
+                            <button type="button" className="btn btn-outline" onClick={() => setSearchId('')}>
+                                Mostra tutti ({quotesList.length})
+                            </button>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                            {filteredQuotes.map((q) => {
+                                const itemCount = Array.isArray(q.items) ? q.items.length : 0;
+                                const formattedEventDate = formatDateItalian(q.event_date);
+                                const formattedUpdated = formatDateTimeItalian(q.updated_at || q.created_at);
+
+                                return (
+                                    <div
+                                        key={q.id}
+                                        style={{
+                                            backgroundColor: 'white',
+                                            border: '1px solid var(--color-border)',
+                                            borderRadius: '14px',
+                                            padding: '1.15rem 1.25rem',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '0.75rem',
+                                            transition: 'all 0.2s ease',
+                                            position: 'relative'
+                                        }}
+                                    >
+                                        {/* Riga Superiore: Cliente, ID, Prezzo Totale */}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                                <div style={{
+                                                    width: '38px',
+                                                    height: '38px',
+                                                    borderRadius: '10px',
+                                                    backgroundColor: 'rgba(155, 57, 61, 0.1)',
+                                                    color: 'var(--color-primary)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    flexShrink: 0
+                                                }}>
+                                                    <User size={20} />
+                                                </div>
+                                                <div>
+                                                    <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--color-primary-dark)', fontWeight: '700' }}>
+                                                        {q.client_name ? q.client_name : <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', fontWeight: 'normal' }}>Cliente non specificato</span>}
+                                                    </h4>
+                                                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>
+                                                        ID: {q.id.substring(0, 8)}...
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                <span style={{
+                                                    fontSize: '1.15rem',
+                                                    fontWeight: '800',
+                                                    color: 'var(--color-primary-dark)',
+                                                    backgroundColor: 'rgba(155, 57, 61, 0.08)',
+                                                    border: '1px solid rgba(155, 57, 61, 0.2)',
+                                                    padding: '0.35rem 0.85rem',
+                                                    borderRadius: '8px',
+                                                    letterSpacing: '-0.3px'
+                                                }}>
+                                                    € {Number(q.total_price || 0).toFixed(2)}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Riga Intermedia: Dati Evento, Modifica, Prodotti, Badge */}
+                                        <div style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            alignItems: 'center',
+                                            gap: '1rem',
+                                            fontSize: '0.85rem',
+                                            color: 'var(--color-text-muted)',
+                                            paddingTop: '0.35rem',
+                                            borderTop: '1px dashed var(--color-border)'
+                                        }}>
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: q.event_date ? 'var(--color-primary-dark)' : 'inherit', fontWeight: q.event_date ? '600' : 'normal' }}>
+                                                <Calendar size={15} style={{ color: 'var(--color-primary)' }} />
+                                                {formattedEventDate ? `Data evento: ${formattedEventDate}` : 'Nessuna data evento'}
+                                            </span>
+
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                <Clock size={15} />
+                                                {formattedUpdated ? `Modificato: ${formattedUpdated}` : 'Recente'}
+                                            </span>
+
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                <Package size={15} />
+                                                {itemCount} {itemCount === 1 ? 'prodotto' : 'prodotti'}
+                                            </span>
+
+                                            {q.needs_sync ? (
+                                                <span style={{ fontSize: '0.72rem', fontWeight: 'bold', color: '#b45309', backgroundColor: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '2px 8px', borderRadius: '12px' }}>
+                                                    Da sincronizzare
+                                                </span>
+                                            ) : (
+                                                <span style={{ fontSize: '0.72rem', fontWeight: 'bold', color: '#15803d', backgroundColor: 'rgba(34, 197, 94, 0.12)', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '2px 8px', borderRadius: '12px' }}>
+                                                    ✓ Sincronizzato
+                                                </span>
+                                            )}
+
+                                            <div style={{ display: 'inline-flex', gap: '0.3rem', alignItems: 'center' }}>
+                                                {q.is_gluten_free && (
+                                                    <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        SG
+                                                    </span>
+                                                )}
+                                                {q.is_lactose_free && (
+                                                    <span style={{ color: '#03A9F4', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(3, 169, 244, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        SL
+                                                    </span>
+                                                )}
+                                                {q.is_vegetarian && (
+                                                    <span style={{ color: '#8BC34A', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(139, 195, 74, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        VGT
+                                                    </span>
+                                                )}
+                                                {q.is_vegan && (
+                                                    <span style={{ color: '#388E3C', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(56, 142, 60, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        VEG
+                                                    </span>
+                                                )}
+                                                {q.is_traditional && (
+                                                    <span style={{ color: '#B45309', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
+                                                        TRAD
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Note se presenti */}
+                                        {q.notes && (
+                                            <p style={{
+                                                margin: 0,
+                                                fontSize: '0.83rem',
+                                                color: 'var(--color-text-muted)',
+                                                fontStyle: 'italic',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap'
+                                            }}>
+                                                Note: "{q.notes}"
+                                            </p>
+                                        )}
+
+                                        {/* Riga Azioni: Modifica, Condividi, Elimina */}
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.6rem', marginTop: '0.2rem' }}>
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline"
+                                                onClick={(e) => handleDeleteQuote(q.id, e)}
+                                                title="Elimina preventivo"
+                                                style={{
+                                                    padding: '0.5rem 0.65rem',
+                                                    color: '#c62828',
+                                                    borderColor: '#ffcdd2',
+                                                    backgroundColor: 'rgba(244, 67, 54, 0.04)',
+                                                    borderRadius: '8px'
+                                                }}
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+
+                                            <a
+                                                href={`/quote/${q.id}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="btn btn-outline"
+                                                style={{
+                                                    padding: '0.5rem 0.9rem',
+                                                    fontSize: '0.85rem',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.4rem',
+                                                    borderRadius: '8px',
+                                                    textDecoration: 'none'
+                                                }}
+                                                title="Apri riepilogo pubblico cliente"
+                                            >
+                                                <ExternalLink size={15} /> Vedi
+                                            </a>
+
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary"
+                                                onClick={() => openQuote(q)}
+                                                style={{
+                                                    padding: '0.5rem 1.25rem',
+                                                    fontSize: '0.9rem',
+                                                    fontWeight: '700',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.45rem',
+                                                    borderRadius: '8px',
+                                                    boxShadow: '0 2px 8px rgba(155, 57, 61, 0.2)'
+                                                }}
+                                            >
+                                                <Edit size={16} /> Modifica
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             )}
 
