@@ -131,6 +131,7 @@ ISTRUZIONI PER I 10 PENSIERI:
 4. Parla di "ottimizzazione delle porzioni" e "riduzione degli sprechi".
 5. Inserisci riferimenti alla qualità e alla presentazione Muse.
 6. Termina con la preparazione della proposta finale.
+7. REGOLA DI RISERVATEZZA: Non menzionare MAI archivi, preventivi precedenti, statistiche o dati di altri clienti. Parla sempre in modo personalizzato per questo evento.
 
 Restituisci SOLO un array JSON di 10 stringhe.
 Esempio: ["Analizzando la tua festa per Marco...", "Consultando il catalogo Muse Catering...", "Selezionando prodotti adatti a 20 bambini...", "Ottimizzando le quantità per evitare sprechi...", ...]
@@ -189,9 +190,8 @@ router.post('/ai-generate', async (req, res) => {
             syncedQuotesExamples = syncedResult.rows.map(q => {
                 const itemsList = Array.isArray(q.items) ? q.items : [];
                 return {
-                    cliente: q.client_name || undefined,
                     data_evento: q.event_date ? new Date(q.event_date).toISOString().split('T')[0] : undefined,
-                    note: q.notes || undefined,
+                    note_evento: q.notes ? q.notes.substring(0, 150) : undefined,
                     prezzo_totale: q.total_price ? Number(q.total_price) : undefined,
                     regime_alimentare: {
                         senza_glutine: q.is_gluten_free || false,
@@ -209,7 +209,7 @@ router.post('/ai-generate', async (req, res) => {
                         }))
                 };
             }).filter(q => q.prodotti_inclusi.length > 0);
-            console.log(`🤖 Inclusi ${syncedQuotesExamples.length} preventivi sincronizzati di esempio nel prompt AI`);
+            console.log(`🤖 Inclusi ${syncedQuotesExamples.length} preventivi sincronizzati anonimizzati nel prompt AI`);
         } catch (e) {
             console.warn('⚠️ Impossibile caricare i preventivi sincronizzati di esempio:', e.message);
         }
@@ -252,10 +252,11 @@ Estrai le informazioni e restituisci un oggetto JSON con la seguente struttura e
   "is_vegan": booleano (true se l'utente richiede esplicitamente che TUTTO il preventivo sia vegano, altrimenti false),
   "is_traditional": booleano (true se l'utente richiede esplicitamente che TUTTO il preventivo sia tradizionale, altrimenti false),
   "manual_total_price": numero o null (se l'utente specifica un budget o un prezzo totale globale per l'intero preventivo, inserisci qui il numero, altrimenti null),
-  "ai_explanation": "string (spiega in modo chiaro, accattivante e persuasivo le scelte fatte per questo preventivo, giustificando perché hai selezionato questi prodotti specifici e come si adattano perfettamente alla richiesta. Rivolgiti direttamente al cliente in tono cordiale e professionale. Massimo 3-4 frasi brevi.)"
+  "ai_explanation": "string (spiega in modo chiaro, accattivante e persuasivo le scelte fatte per questo preventivo, giustificando perché hai selezionato questi prodotti specifici e come si adattano perfettamente alla richiesta. Rivolgiti direttamente al cliente in tono cordiale e professionale. Massimo 3-4 frasi brevi. REGOLA FONDAMENTALE DI RISERVATEZZA: NON rivelare, menzionare o alludere MAI all'esistenza di preventivi precedenti, archivi, statistiche o altri clienti: parla al cliente come se la proposta fosse stata creata e calibrata esclusivamente per lui.)"
 }
 IMPORTANTE:
-- ESEMPI REALI DI RIFERIMENTO: Consulta attentamente i 20 preventivi sincronizzati forniti sopra. Osserva come sono state bilanciate le portate, le quantità calcolate e la varietà di prodotti scelti per trarre ispirazione diretta su come comporre questo preventivo.
+- RISERVATEZZA ASSOLUTA SUGLI ESEMPI DI ARCHIVIO: I 20 preventivi di esempio forniti sopra sono ad ESCLUSIVO uso interno tuo per apprendere dosaggi e combinazioni. NON dire, citare o far capire MAI al cliente (né in \"ai_explanation\" né altrove) di avere consultato preventivi passati, dati di archivio o esempi di altri eventi. Rivolgiti sempre al cliente facendolo sentire unico, presentando la proposta come una soluzione artigianale ed esclusiva concepita appositamente per la sua occasione.
+- ESEMPI REALI DI RIFERIMENTO: Consulta attentamente i 20 preventivi sincronizzati forniti sopra per calcolare porzioni realistiche e proporzionate. Osserva come sono state bilanciate le portate, le quantità e la varietà di prodotti per trarre ispirazione diretta su come comporre questo preventivo.
 ${!isAdmin ? "- RISPETTA TASSATIVAMENTE il valore di \"is_sold_by_piece\" che trovi nel database per ogni prodotto. NON ALTERARLO MAI." : "- Se decidi di cambiare l'unità di misura (da KG a PEZZI o viceversa), assicurati che il prezzo corrispondente (price_per_piece o price_per_kg) sia presente e non sia zero."}
 - PORZIONI (servings_per_unit): Se per un prodotto è specificato quante persone sazia un pezzo o un kg ("servings_per_unit"), usalo ESATTAMENTE per calcolare la quantità necessaria in base al numero degli invitati.
 - LIMITI D'ORDINE: Assicurati che la quantità calcolata non sia mai inferiore a "min_order_quantity". Inoltre, la quantità finale deve rispettare l'incremento specificato in "order_increment" (es. se min è 10 e l'incremento è 5, le quantità valide sono 10, 15, 20...).
