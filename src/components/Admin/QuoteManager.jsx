@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useProducts } from '../../hooks/useData';
-import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle, Package, Truck, Check, Navigation, AlertTriangle, ArrowLeft, Calendar, User, Clock, Eye } from 'lucide-react';
+import { Search, Save, Trash2, Plus, Minus, ExternalLink, RefreshCw, Edit, X, Scale, Hash, ChevronUp, ChevronDown, CheckCircle2, Loader2, Share2, Send, MessageCircle, Package, Truck, Check, Navigation, AlertTriangle, ArrowLeft, Calendar, User, Clock, Eye, Sparkles } from 'lucide-react';
 import DeliveryCalculatorModal from './DeliveryCalculatorModal';
 import { formatDateForInput, formatDateItalian, formatDateTimeItalian } from '../../utils/dateFormatting';
 
@@ -65,7 +65,6 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     const bottomButtonRef = useRef(null);
     const bottomSentinelRef = useRef(null);
 
-    const [isModeSelectionOpen, setIsModeSelectionOpen] = useState(false);
     const [isAiPromptOpen, setIsAiPromptOpen] = useState(false);
     const [aiPrompt, setAiPrompt] = useState('');
     const [aiPackagingCost, setAiPackagingCost] = useState('');
@@ -104,13 +103,13 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
     // Modal scroll lock
     useEffect(() => {
-        if (isModeSelectionOpen || isAiPromptOpen || isProductPickerOpen || isDeliveryCalcOpen || isConfirmRefreshOpen || quoteToDelete || quoteToSync) {
+        if (isAiPromptOpen || isProductPickerOpen || isDeliveryCalcOpen || isConfirmRefreshOpen || quoteToDelete || quoteToSync) {
             document.body.classList.add('modal-open');
         } else {
             document.body.classList.remove('modal-open');
         }
         return () => document.body.classList.remove('modal-open');
-    }, [isModeSelectionOpen, isAiPromptOpen, isProductPickerOpen, isDeliveryCalcOpen, isConfirmRefreshOpen, quoteToDelete, quoteToSync]);
+    }, [isAiPromptOpen, isProductPickerOpen, isDeliveryCalcOpen, isConfirmRefreshOpen, quoteToDelete, quoteToSync]);
 
     // Intersection Observer to detect when we are at the bottom of the page
     useEffect(() => {
@@ -138,10 +137,10 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         };
     }, [currentQuote]);
 
-    // Auto-open modal if requested
+    // Auto-open new quote if requested
     useEffect(() => {
         if (autoOpenNewModal) {
-            setIsModeSelectionOpen(true);
+            handleCreateNewQuote();
             if (onModalOpened) onModalOpened();
         }
     }, [autoOpenNewModal, onModalOpened]);
@@ -876,7 +875,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         </span>
                     )}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginLeft: 'auto', justifyContent: 'flex-end' }}>
                     {saving && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)', fontSize: '0.9rem', fontWeight: 'bold' }}>
                             <Loader2 size={16} className="animate-spin" /> Salvataggio in corso...
@@ -888,23 +887,47 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                         </div>
                     )}
                     {!currentQuote && (
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            disabled={loading}
-                            onClick={() => setIsModeSelectionOpen(true)}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                borderRadius: '9999px',
-                                padding: '0.65rem 1.35rem',
-                                fontWeight: 'bold',
-                                boxShadow: '0 4px 14px rgba(155, 57, 61, 0.35)'
-                            }}
-                        >
-                            <Plus size={18} /> Nuovo Preventivo
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap', marginLeft: 'auto' }}>
+                            <button
+                                type="button"
+                                className="btn btn-outline"
+                                disabled={loading}
+                                onClick={() => setIsAiPromptOpen(true)}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.45rem',
+                                    borderRadius: '9999px',
+                                    padding: '0.65rem 1.25rem',
+                                    fontWeight: 'bold',
+                                    background: 'linear-gradient(135deg, #7e22ce 0%, var(--color-primary) 100%)',
+                                    color: 'white',
+                                    border: 'none',
+                                    boxShadow: '0 4px 14px rgba(126, 34, 206, 0.35)',
+                                    cursor: 'pointer'
+                                }}
+                                title="Crea un preventivo con l'Intelligenza Artificiale"
+                            >
+                                <Sparkles size={17} /> Preventivo AI
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                disabled={loading}
+                                onClick={handleCreateNewQuote}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.45rem',
+                                    borderRadius: '9999px',
+                                    padding: '0.65rem 1.35rem',
+                                    fontWeight: 'bold',
+                                    boxShadow: '0 4px 14px rgba(155, 57, 61, 0.35)'
+                                }}
+                            >
+                                <Plus size={18} /> Nuovo Preventivo
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
@@ -1030,8 +1053,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             <button
                                 type="button"
                                 className="btn btn-primary"
-                                onClick={() => setIsModeSelectionOpen(true)}
-                                style={{ padding: '0.75rem 1.5rem', fontWeight: 'bold' }}
+                                onClick={handleCreateNewQuote}
+                                style={{ padding: '0.75rem 1.5rem', fontWeight: 'bold', borderRadius: '9999px' }}
                             >
                                 <Plus size={18} /> Crea il primo preventivo
                             </button>
@@ -2146,33 +2169,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 </div>
             )}
 
-            {isModeSelectionOpen && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-                    <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '400px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                            <h3 style={{ margin: 0 }}>Nuovo</h3>
-                            <button onClick={() => setIsModeSelectionOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
-                        </div>
-                        <p style={{ marginBottom: '2rem', color: 'var(--color-text-muted)' }}>Scegli come vuoi creare il nuovo preventivo:</p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <button
-                                className="btn btn-outline"
-                                style={{ padding: '1rem', fontSize: '1.1rem' }}
-                                onClick={() => { setIsModeSelectionOpen(false); handleCreateNewQuote(); }}
-                            >
-                                Creazione Manuale
-                            </button>
-                            <button
-                                className="btn btn-primary"
-                                style={{ padding: '1rem', fontSize: '1.1rem', background: 'linear-gradient(45deg, var(--color-primary), #9c27b0)', border: 'none' }}
-                                onClick={() => { setIsModeSelectionOpen(false); setIsAiPromptOpen(true); }}
-                            >
-                                Intelligenza Artificiale
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
 
             {isAiPromptOpen && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
