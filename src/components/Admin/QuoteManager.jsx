@@ -99,15 +99,18 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         fetchQuotes();
     }, []);
 
+    const [quoteToDelete, setQuoteToDelete] = useState(null);
+    const [quoteToSync, setQuoteToSync] = useState(null);
+
     // Modal scroll lock
     useEffect(() => {
-        if (isModeSelectionOpen || isAiPromptOpen || isProductPickerOpen || isDeliveryCalcOpen || isConfirmRefreshOpen) {
+        if (isModeSelectionOpen || isAiPromptOpen || isProductPickerOpen || isDeliveryCalcOpen || isConfirmRefreshOpen || quoteToDelete || quoteToSync) {
             document.body.classList.add('modal-open');
         } else {
             document.body.classList.remove('modal-open');
         }
         return () => document.body.classList.remove('modal-open');
-    }, [isModeSelectionOpen, isAiPromptOpen, isProductPickerOpen, isDeliveryCalcOpen, isConfirmRefreshOpen]);
+    }, [isModeSelectionOpen, isAiPromptOpen, isProductPickerOpen, isDeliveryCalcOpen, isConfirmRefreshOpen, quoteToDelete, quoteToSync]);
 
     // Intersection Observer to detect when we are at the bottom of the page
     useEffect(() => {
@@ -245,39 +248,39 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         }
     };
 
-    const shareToOrderMaster = async () => {
-        if (!currentQuote) return;
+    const shareToOrderMaster = async (targetQuote = currentQuote) => {
+        if (!targetQuote) return;
 
         let textToShare = `Riepilogo preventivo\n`;
-        if (currentQuote.client_name) {
-            textToShare += `Nome: ${currentQuote.client_name}\n`;
+        if (targetQuote.client_name) {
+            textToShare += `Nome: ${targetQuote.client_name}\n`;
         }
-        if (currentQuote.event_date) {
-            const itDate = formatDateItalian(currentQuote.event_date);
+        if (targetQuote.event_date) {
+            const itDate = formatDateItalian(targetQuote.event_date);
             if (itDate) {
                 textToShare += `Data evento: ${itDate}\n`;
             }
         }
         textToShare += `Prodotti:\n`;
-        if (currentQuote.items) {
-            currentQuote.items.forEach(item => {
+        if (targetQuote.items) {
+            targetQuote.items.forEach(item => {
                 const qty = !item.hide_quantity ? `${parseFloat(item.quantity)} ${item.is_sold_by_piece ? 'pz' : 'kg'}` : "";
                 textToShare += `- ${item.name}${qty ? ` (${qty})` : ''}\n`;
             });
         }
 
-        if (currentQuote.total_price) {
-            textToShare += `\nTotale: € ${Number(currentQuote.total_price).toFixed(2)}\n`;
+        if (targetQuote.total_price) {
+            textToShare += `\nTotale: € ${Number(targetQuote.total_price).toFixed(2)}\n`;
         }
 
-        if (currentQuote.notes) {
-            textToShare += `\nNote sul preventivo:\n${currentQuote.notes}\n`;
+        if (targetQuote.notes) {
+            textToShare += `\nNote sul preventivo:\n${targetQuote.notes}\n`;
         }
 
-        textToShare += `\nLink della pagina share: ${window.location.origin}/quote/${currentQuote.id}`;
+        textToShare += `\nLink della pagina share: ${window.location.origin}/quote/${targetQuote.id}`;
 
         // Add marker for Android app interception
-        textToShare += `\n\n[MC-ID: ${currentQuote.id}]`;
+        textToShare += `\n\n[MC-ID: ${targetQuote.id}]`;
 
         const encodedText = encodeURIComponent(textToShare);
         const appPackage = "com.ordermaster.app";
@@ -295,8 +298,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
         // Mark as synced
         try {
-            await api.markQuoteSynced(currentQuote.id);
-            setCurrentQuote(prev => ({ ...prev, needs_sync: false }));
+            await api.markQuoteSynced(targetQuote.id);
+            if (currentQuote && currentQuote.id === targetQuote.id) {
+                setCurrentQuote(prev => ({ ...prev, needs_sync: false }));
+            }
+            setQuotesList(prev => prev.map(q => q.id === targetQuote.id ? { ...q, needs_sync: false } : q));
         } catch (err) {
             console.error('Failed to mark quote as synced:', err);
         }
@@ -471,23 +477,29 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         fetchQuotes();
     };
 
-    const handleDeleteQuote = async (id, e) => {
-        if (e) e.stopPropagation();
-        if (!window.confirm('Sei sicuro di voler eliminare definitivamente questo preventivo?')) {
-            return;
-        }
+    const confirmDeleteQuote = async () => {
+        if (!quoteToDelete) return;
+        const idToDelete = quoteToDelete.id;
         try {
-            await api.deleteQuote(id);
+            await api.deleteQuote(idToDelete);
             setMessage({ type: 'success', text: 'Preventivo eliminato con successo.' });
-            if (currentQuote && currentQuote.id === id) {
+            if (currentQuote && currentQuote.id === idToDelete) {
                 setCurrentQuote(null);
             }
-            setQuotesList(prev => prev.filter(q => q.id !== id));
+            setQuotesList(prev => prev.filter(q => q.id !== idToDelete));
+            setQuoteToDelete(null);
             setTimeout(() => setMessage(null), 3000);
         } catch (err) {
             console.error('Error deleting quote:', err);
             setMessage({ type: 'error', text: 'Errore durante l\'eliminazione del preventivo.' });
         }
+    };
+
+    const confirmSyncQuote = async () => {
+        if (!quoteToSync) return;
+        const target = quoteToSync;
+        setQuoteToSync(null);
+        await shareToOrderMaster(target);
     };
 
     const calculateSuggestedTotal = (items) => {
@@ -1077,7 +1089,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                 </div>
                                             </div>
 
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                                                 <span style={{
                                                     fontSize: '1.15rem',
                                                     fontWeight: '800',
@@ -1090,6 +1102,35 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                 }}>
                                                     € {Number(q.total_price || 0).toFixed(2)}
                                                 </span>
+
+                                                {/* Icona in alto a destra nel caso di mancata sincronizzazione con OrderMaster */}
+                                                {q.needs_sync && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setQuoteToSync(q);
+                                                        }}
+                                                        title="Mancata sincronizzazione: clicca per salvare su OrderMaster"
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            width: '34px',
+                                                            height: '34px',
+                                                            borderRadius: '50%',
+                                                            backgroundColor: '#0052cc',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            cursor: 'pointer',
+                                                            boxShadow: '0 2px 8px rgba(0, 82, 204, 0.4)',
+                                                            flexShrink: 0
+                                                        }}
+                                                        className="animate-pulse-strong"
+                                                    >
+                                                        <Send size={15} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
 
@@ -1178,7 +1219,10 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                             <button
                                                 type="button"
                                                 className="btn btn-outline"
-                                                onClick={(e) => handleDeleteQuote(q.id, e)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setQuoteToDelete(q);
+                                                }}
                                                 title="Elimina preventivo"
                                                 style={{
                                                     padding: '0.5rem 0.65rem',
@@ -2712,6 +2756,257 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                 }}
                             >
                                 <RefreshCw size={15} /> Conferma aggiornamento
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modale di Conferma Eliminazione Preventivo */}
+            {quoteToDelete && (
+                <div
+                    className="modal-overlay"
+                    onClick={() => setQuoteToDelete(null)}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        backdropFilter: 'blur(4px)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 3000,
+                        padding: '1rem'
+                    }}
+                >
+                    <div
+                        className="modal-content bounce-in"
+                        onClick={e => e.stopPropagation()}
+                        style={{
+                            backgroundColor: 'white',
+                            borderRadius: '20px',
+                            width: '100%',
+                            maxWidth: '460px',
+                            padding: '1.75rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.25rem',
+                            boxShadow: 'var(--shadow-xl)',
+                            border: '1px solid rgba(0,0,0,0.08)'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                            <div style={{
+                                width: '46px',
+                                height: '46px',
+                                borderRadius: '12px',
+                                backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                                color: '#DC2626',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                            }}>
+                                <Trash2 size={24} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <h3 style={{ margin: '0 0 0.35rem 0', fontSize: '1.2rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>
+                                    Eliminare questo preventivo?
+                                </h3>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
+                                    Sei sicuro di voler eliminare definitivamente il preventivo di <strong>{quoteToDelete.client_name || 'questo cliente'}</strong>?
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setQuoteToDelete(null)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: 'var(--color-text-muted)',
+                                    padding: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '50%'
+                                }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div style={{
+                            padding: '0.85rem 1rem',
+                            borderRadius: '10px',
+                            backgroundColor: '#fff5f5',
+                            border: '1px solid #fed7d7',
+                            fontSize: '0.85rem',
+                            color: '#c53030',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.25rem'
+                        }}>
+                            <span><strong>Totale:</strong> € {Number(quoteToDelete.total_price || 0).toFixed(2)}</span>
+                            {quoteToDelete.event_date && (
+                                <span><strong>Data evento:</strong> {formatDateItalian(quoteToDelete.event_date)}</span>
+                            )}
+                            <span style={{ fontSize: '0.8rem', marginTop: '0.2rem' }}>⚠️ Questa operazione non può essere annullata.</span>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+                            <button
+                                type="button"
+                                className="btn btn-outline"
+                                onClick={() => setQuoteToDelete(null)}
+                                style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem' }}
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={confirmDeleteQuote}
+                                style={{
+                                    padding: '0.65rem 1.25rem',
+                                    fontSize: '0.9rem',
+                                    backgroundColor: '#DC2626',
+                                    borderColor: '#DC2626',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                <Trash2 size={15} /> Elimina definitivamente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modale di Conferma Salvataggio su OrderMaster */}
+            {quoteToSync && (
+                <div
+                    className="modal-overlay"
+                    onClick={() => setQuoteToSync(null)}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        backdropFilter: 'blur(4px)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 3000,
+                        padding: '1rem'
+                    }}
+                >
+                    <div
+                        className="modal-content bounce-in"
+                        onClick={e => e.stopPropagation()}
+                        style={{
+                            backgroundColor: 'white',
+                            borderRadius: '20px',
+                            width: '100%',
+                            maxWidth: '460px',
+                            padding: '1.75rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.25rem',
+                            boxShadow: 'var(--shadow-xl)',
+                            border: '1px solid rgba(0,0,0,0.08)'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                            <div style={{
+                                width: '46px',
+                                height: '46px',
+                                borderRadius: '12px',
+                                backgroundColor: 'rgba(0, 82, 204, 0.12)',
+                                color: '#0052cc',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                            }}>
+                                <Send size={22} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <h3 style={{ margin: '0 0 0.35rem 0', fontSize: '1.2rem', color: 'var(--color-primary-dark)', fontWeight: 'bold' }}>
+                                    Salvare su OrderMaster?
+                                </h3>
+                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
+                                    Questo preventivo non è ancora sincronizzato. Vuoi inviarlo all'applicazione OrderMaster?
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setQuoteToSync(null)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: 'var(--color-text-muted)',
+                                    padding: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '50%'
+                                }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div style={{
+                            padding: '0.85rem 1rem',
+                            borderRadius: '10px',
+                            backgroundColor: '#f0f7ff',
+                            border: '1px solid #cce4ff',
+                            fontSize: '0.85rem',
+                            color: '#004085',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.25rem'
+                        }}>
+                            <span><strong>Cliente:</strong> {quoteToSync.client_name || 'Cliente non specificato'}</span>
+                            <span><strong>Totale:</strong> € {Number(quoteToSync.total_price || 0).toFixed(2)}</span>
+                            {quoteToSync.event_date && (
+                                <span><strong>Data evento:</strong> {formatDateItalian(quoteToSync.event_date)}</span>
+                            )}
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+                            <button
+                                type="button"
+                                className="btn btn-outline"
+                                onClick={() => setQuoteToSync(null)}
+                                style={{ padding: '0.65rem 1.25rem', fontSize: '0.9rem' }}
+                            >
+                                Annulla
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={confirmSyncQuote}
+                                style={{
+                                    padding: '0.65rem 1.25rem',
+                                    fontSize: '0.9rem',
+                                    backgroundColor: '#0052cc',
+                                    borderColor: '#0052cc',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    boxShadow: '0 4px 12px rgba(0, 82, 204, 0.3)'
+                                }}
+                            >
+                                <Send size={15} /> Salva su OrderMaster
                             </button>
                         </div>
                     </div>

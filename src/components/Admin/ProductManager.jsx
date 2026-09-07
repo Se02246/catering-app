@@ -320,14 +320,6 @@ const ProductManager = ({ onCreateQuoteClick }) => {
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button 
-                        className="btn btn-outline" 
-                        onClick={onCreateQuoteClick}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                    >
-                        <FileText size={18} />
-                        Crea Preventivo
-                    </button>
                     <button className="btn btn-primary" onClick={() => { resetForm(); setIsEditing(true); }}>
                         <Plus size={18} style={{ marginRight: '8px' }} />
                         Nuovo Prodotto
