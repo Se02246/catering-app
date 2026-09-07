@@ -298,6 +298,167 @@ ${!isAdmin ? "- RISPETTA TASSATIVAMENTE il valore di \"is_sold_by_piece\" che tr
     }
 });
 
+// Modifica interattiva di un preventivo esistente tramite IA (Chat Assistente Admin)
+router.post('/ai-modify', async (req, res) => {
+    const { quote, message, chatHistory = [] } = req.body;
+    if (!quote || !message) {
+        return res.status(400).json({ error: 'Dati preventivo o messaggio mancanti' });
+    }
+
+    try {
+        // Catalogo completo prodotti per aggiunte o sostituzioni
+        const productsResult = await pool.query('SELECT * FROM products WHERE is_visible = true');
+        const catalogProducts = productsResult.rows.map(p => ({
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            price_per_kg: p.price_per_kg,
+            price_per_piece: p.price_per_piece,
+            is_sold_by_piece: p.is_sold_by_piece,
+            is_gluten_free: p.is_gluten_free,
+            is_lactose_free: p.is_lactose_free,
+            is_vegetarian: p.is_vegetarian,
+            is_vegan: p.is_vegan,
+            is_traditional: p.is_traditional,
+            servings_per_unit: p.servings_per_unit,
+            min_order_quantity: p.min_order_quantity,
+            order_increment: p.order_increment
+        }));
+
+        // Preventivi sincronizzati come riferimento
+        let syncedQuotesExamples = [];
+        try {
+            const syncedResult = await pool.query(
+                `SELECT event_date, notes, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, items 
+                 FROM quotes 
+                 WHERE needs_sync = false AND items IS NOT NULL AND jsonb_array_length(items) > 0 
+                 ORDER BY updated_at DESC NULLS LAST, created_at DESC NULLS LAST 
+                 LIMIT 20`
+            );
+            syncedQuotesExamples = syncedResult.rows.map(q => {
+                const itemsList = Array.isArray(q.items) ? q.items : [];
+                return {
+                    data_evento: q.event_date ? new Date(q.event_date).toISOString().split('T')[0] : undefined,
+                    note: q.notes ? q.notes.substring(0, 120) : undefined,
+                    prezzo_totale: q.total_price ? Number(q.total_price) : undefined,
+                    prodotti_inclusi: itemsList
+                        .filter(i => !i.is_packaging && !i.is_delivery && i.name !== 'Imballaggio🎁' && i.name !== 'Consegna⛽')
+                        .map(i => ({
+                            prodotto: i.name,
+                            quantita: Number(i.quantity) || 1,
+                            unita: i.is_sold_by_piece ? 'pezzi' : 'kg'
+                        }))
+                };
+            }).filter(q => q.prodotti_inclusi.length > 0);
+        } catch (e) {
+            console.warn('Could not fetch synced quotes for AI modify:', e.message);
+        }
+
+        const currentItemsCleaned = (quote.items || [])
+            .filter(i => !i.is_packaging && !i.is_delivery && i.id !== 'imballaggio_service' && i.id !== 'consegna_service' && i.name !== 'Imballaggio🎁' && i.name !== 'Consegna⛽')
+            .map(i => ({
+                id: i.id,
+                name: i.name,
+                quantity: Number(i.quantity) || 1,
+                is_sold_by_piece: Boolean(i.is_sold_by_piece),
+                price_per_piece: i.price_per_piece ? Number(i.price_per_piece) : null,
+                price_per_kg: i.price_per_kg ? Number(i.price_per_kg) : null,
+                is_gluten_free: Boolean(i.is_gluten_free),
+                is_lactose_free: Boolean(i.is_lactose_free),
+                is_vegetarian: Boolean(i.is_vegetarian),
+                is_vegan: Boolean(i.is_vegan),
+                is_traditional: Boolean(i.is_traditional)
+            }));
+
+        const chatContext = Array.isArray(chatHistory) && chatHistory.length > 0
+            ? `Cronologia recente della conversazione:\n${chatHistory.slice(-6).map(m => `${m.sender === 'user' ? 'Admin' : 'Assistente IA'}: ${m.text}`).join('\n')}\n`
+            : '';
+
+        const aiPrompt = `
+Sei l'assistente chef e catering manager esperto di Muse Catering.
+L'amministratore sta modificando un preventivo ESISTENTE e ti ha dato un'istruzione testuale per aggiornarlo.
+Il tuo compito è applicare le modifiche richieste all'elenco dei prodotti nel preventivo.
+
+PUOI COMPIERE TUTTE QUESTE AZIONI:
+1. RIMUOVERE prodotti: se l'amministratore chiede di eliminare, sostituire o togliere prodotti (o categorie di prodotti), rimuovili dall'elenco "items" finale.
+2. MODIFICARE prodotti esistenti: aumenta o riduci le quantità, o cambia l'unità di misura (da kg a pezzi o viceversa, se supportata dal prodotto).
+3. AGGIUNGERE nuovi prodotti: se l'amministratore chiede di aggiungere o sostituire prodotti, seleziona i prodotti più appropriati dal catalogo sottostante con quantità realistiche e porzioni adeguate.
+4. AGGIORNARE i regimi alimentari (es. se chiede "rendilo tutto senza glutine", rimuovi i prodotti con glutine o sostituiscili con alternative senza glutine e aggiorna i flag dietetici).
+
+---
+DATI DEL PREVENTIVO ATTUALE:
+- Cliente: "${quote.client_name || 'Non specificato'}"
+- Data evento: "${quote.event_date || 'Non specificata'}"
+- Note attuali: "${quote.notes || ''}"
+- Prodotti ATTUALMENTE presenti nel preventivo:
+${JSON.stringify(currentItemsCleaned, null, 2)}
+
+---
+CATALOGO COMPLETO DEI PRODOTTI DISPONIBILI:
+${JSON.stringify(catalogProducts)}
+
+${syncedQuotesExamples.length > 0 ? `---
+ESEMPI REALI DI PREVENTIVI SINCRONIZZATI DELL'ATTIVITÀ (come riferimento su porzioni e dosaggi):
+${JSON.stringify(syncedQuotesExamples, null, 2)}
+` : ''}
+
+${chatContext}
+---
+ISTRUZIONE DI MODIFICA DELL'AMMINISTRATORE:
+"${message}"
+
+---
+Restituisci ESCLUSIVAMENTE un oggetto JSON valido con la seguente struttura esatta (senza blocchi di codice markdown \`\`\` o altro testo):
+{
+  "items": [
+    {
+      "id": ID del prodotto dal database (intero),
+      "name": "nome prodotto esatto dal database",
+      "quantity": quantità (numero),
+      "is_sold_by_piece": booleano,
+      "price_per_piece": prezzo unitario dal db o null,
+      "price_per_kg": prezzo al kg dal db o null,
+      "is_gluten_free": booleano,
+      "is_lactose_free": booleano,
+      "is_vegetarian": booleano,
+      "is_vegan": booleano,
+      "is_traditional": booleano
+    }
+  ],
+  "removed_items": ["Nome prodotto 1 rimosso", ...],
+  "added_items": ["Nome prodotto 2 aggiunto (quantità)", ...],
+  "modified_items": ["Nome prodotto 3 modificato (nuova quantità)", ...],
+  "notes": "note aggiornate per il preventivo o mantieni quelle attuali se invariate",
+  "is_gluten_free": booleano,
+  "is_lactose_free": booleano,
+  "is_vegetarian": booleano,
+  "is_vegan": booleano,
+  "is_traditional": booleano,
+  "ai_response": "Risposta amichevole, professionale e sintetica per l'amministratore (2-3 frasi) in cui riassumi chiaramente le modifiche apportate (cosa hai rimosso, cosa hai aggiunto e come hai regolato le porzioni)."
+}
+`;
+
+        const result = await generateWithFallback(0, aiPrompt);
+        const responseText = result.response.text();
+        let jsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const parsedData = JSON.parse(jsonStr);
+
+        let total = 0;
+        if (parsedData.items) {
+            parsedData.items.forEach(item => {
+                const price = item.is_sold_by_piece ? Number(item.price_per_piece) : Number(item.price_per_kg);
+                total += (price || 0) * (Number(item.quantity) || 0);
+            });
+        }
+        parsedData.total_price = total;
+
+        res.json(parsedData);
+    } catch (error) {
+        console.error('Error modifying AI quote:', error);
+        res.status(500).json({ error: "Errore durante la modifica del preventivo con l'IA: " + (error.message || '') });
+    }
+});
+
 // Get all quotes (Admin list)
 router.get('/', async (req, res) => {
     try {
@@ -313,11 +474,11 @@ router.get('/', async (req, res) => {
 
 // Save a new quote and get its unique ID
 router.post('/', async (req, res) => {
-    const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name } = req.body;
+    const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name, created_by_ai, ai_chat_history } = req.body;
     try {
         const result = await pool.query(
-            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id',
-            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes || null, menu_notes || null, event_date || null, client_name || null]
+            'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name, created_by_ai, ai_chat_history, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id',
+            [JSON.stringify(items || []), total_price || 0, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes || null, menu_notes || null, event_date || null, client_name || null, Boolean(created_by_ai), JSON.stringify(ai_chat_history || [])]
         );
         res.status(201).json({ id: result.rows[0].id });
     } catch (err) {
@@ -379,11 +540,11 @@ router.get('/:id', async (req, res) => {
 // Update an existing quote (Admin)
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name } = req.body;
+    const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name, created_by_ai, ai_chat_history } = req.body;
     try {
         const result = await pool.query(
-            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, is_vegetarian = $5, is_vegan = $6, is_traditional = $7, notes = $8, menu_notes = $9, event_date = $10, client_name = $11, needs_sync = true, updated_at = CURRENT_TIMESTAMP WHERE id = $12 RETURNING *',
-            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes, menu_notes, event_date || null, client_name || null, id]
+            'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, is_vegetarian = $5, is_vegan = $6, is_traditional = $7, notes = $8, menu_notes = $9, event_date = $10, client_name = $11, created_by_ai = COALESCE($12, created_by_ai), ai_chat_history = COALESCE($13, ai_chat_history), needs_sync = true, updated_at = CURRENT_TIMESTAMP WHERE id = $14 RETURNING *',
+            [JSON.stringify(items || []), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes, menu_notes, event_date || null, client_name || null, created_by_ai !== undefined ? Boolean(created_by_ai) : null, ai_chat_history !== undefined ? JSON.stringify(ai_chat_history) : null, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Quote not found' });

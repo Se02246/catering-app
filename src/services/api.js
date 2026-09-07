@@ -220,6 +220,19 @@ export const api = {
         return res.json();
     },
 
+    modifyAiQuote: async ({ quote, message, chatHistory = [] }) => {
+        const res = await fetch(`${API_URL}/quotes/ai-modify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quote, message, chatHistory })
+        });
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Failed to modify quote with AI' }));
+            throw new Error(error.error || 'Failed to modify quote with AI');
+        }
+        return res.json();
+    },
+
     createQuote: async (quote) => {
         const res = await fetch(`${API_URL}/quotes`, {
             method: 'POST',

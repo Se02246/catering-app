@@ -70,6 +70,8 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
     const [aiPackagingCost, setAiPackagingCost] = useState('');
     const [aiDeliveryCost, setAiDeliveryCost] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
+    const [aiChatInput, setAiChatInput] = useState('');
+    const [isAiModifying, setIsAiModifying] = useState(false);
 
     const [packagingCostInput, setPackagingCostInput] = useState('');
     const [deliveryCostInput, setDeliveryCostInput] = useState('');
@@ -160,7 +162,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 notes: updatedQuote.notes,
                 menu_notes: updatedQuote.menu_notes,
                 client_name: updatedQuote.client_name,
-                event_date: updatedQuote.event_date
+                event_date: updatedQuote.event_date,
+                created_by_ai: updatedQuote.created_by_ai,
+                ai_chat_history: updatedQuote.ai_chat_history
             });
 
             // The backend sets needs_sync to true on every update
@@ -352,7 +356,7 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         try {
             const aiData = await api.generateAiQuote(aiPrompt, 'admin');
 
-            const newQuote = await api.createQuote({ items: [], total_price: 0 });
+            const newQuote = await api.createQuote({ items: [], total_price: 0, created_by_ai: true });
 
             const itemsWithIds = (aiData.items || []).map(item => {
                 const catalogProduct = products.find(p => p.id === item.id);
@@ -383,6 +387,19 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
 
             const finalTotalPrice = (Number(aiData.total_price) || 0) + extraCost;
 
+            const initialHistory = [
+                {
+                    sender: 'user',
+                    text: aiPrompt,
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    sender: 'ai',
+                    text: aiData.description || 'Preventivo generato con l\'IA in base alla tua richiesta.',
+                    timestamp: new Date().toISOString()
+                }
+            ];
+
             const finalQuote = {
                 ...newQuote,
                 items: finalItems,
@@ -391,7 +408,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                 is_lactose_free: aiData.is_lactose_free || false,
                 is_vegetarian: aiData.is_vegetarian || false,
                 is_vegan: aiData.is_vegan || false,
-                is_traditional: aiData.is_traditional || false
+                is_traditional: aiData.is_traditional || false,
+                created_by_ai: true,
+                ai_chat_history: initialHistory
             };
 
             setSearchId(newQuote.id);
@@ -410,6 +429,105 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
             setMessage({ type: 'error', text: err.message || 'Errore durante la generazione con IA.' });
         } finally {
             setAiLoading(false);
+        }
+    };
+
+    const handleAiModifySubmit = async (customMessage = null) => {
+        const messageToSend = typeof customMessage === 'string' ? customMessage.trim() : aiChatInput.trim();
+        if (!messageToSend || !currentQuote || isAiModifying) return;
+
+        setIsAiModifying(true);
+        setMessage(null);
+
+        const userMsg = {
+            sender: 'user',
+            text: messageToSend,
+            timestamp: new Date().toISOString()
+        };
+
+        const existingHistory = Array.isArray(currentQuote.ai_chat_history) ? [...currentQuote.ai_chat_history] : [];
+        const optimisticHistory = [...existingHistory, userMsg];
+
+        // Optimistically update currentQuote chat history
+        setCurrentQuote(prev => ({
+            ...prev,
+            ai_chat_history: optimisticHistory
+        }));
+        setAiChatInput('');
+
+        try {
+            const result = await api.modifyAiQuote({
+                quote: currentQuote,
+                message: messageToSend,
+                chatHistory: existingHistory
+            });
+
+            // Preserve any packaging and delivery items present in currentQuote
+            const packagingItem = currentQuote.items?.find(it => it.is_packaging || it.id === 'imballaggio_service' || it.name?.trim().toLowerCase() === 'imballaggio');
+            const deliveryItem = currentQuote.items?.find(it => it.is_delivery || it.id === 'consegna_service' || it.name?.trim().toLowerCase() === 'consegna');
+
+            // Merge returned items with products catalog
+            const updatedItems = (result.items || []).map(item => {
+                let catalogProduct = products.find(p => p.id === item.id);
+                if (!catalogProduct && item.name) {
+                    catalogProduct = products.find(p => p.name.trim().toLowerCase() === item.name.trim().toLowerCase());
+                }
+
+                return {
+                    ...catalogProduct,
+                    ...item,
+                    instanceId: item.instanceId || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    quantity: Number(item.quantity) || 1,
+                    images: catalogProduct?.images || (catalogProduct?.image_url ? [catalogProduct.image_url] : (item.images || []))
+                };
+            });
+
+            let extraCost = 0;
+            if (packagingItem && !updatedItems.some(it => it.is_packaging || it.id === 'imballaggio_service' || it.name?.trim().toLowerCase() === 'imballaggio')) {
+                updatedItems.push(packagingItem);
+                extraCost += (Number(packagingItem.price_per_piece) || 0) * (Number(packagingItem.quantity) || 1);
+            }
+            if (deliveryItem && !updatedItems.some(it => it.is_delivery || it.id === 'consegna_service' || it.name?.trim().toLowerCase() === 'consegna')) {
+                updatedItems.push(deliveryItem);
+                extraCost += (Number(deliveryItem.price_per_piece) || 0) * (Number(deliveryItem.quantity) || 1);
+            }
+
+            const finalTotalPrice = (Number(result.total_price) || calculateSuggestedTotal(updatedItems)) + extraCost;
+
+            const aiMsg = {
+                sender: 'ai',
+                text: result.explanation || 'Preventivo modificato con successo.',
+                changes: Array.isArray(result.changes) ? result.changes : [],
+                timestamp: new Date().toISOString()
+            };
+
+            const finalHistory = [...optimisticHistory, aiMsg];
+
+            const updatedQuote = {
+                ...currentQuote,
+                items: updatedItems,
+                total_price: finalTotalPrice,
+                is_gluten_free: result.is_gluten_free !== undefined ? Boolean(result.is_gluten_free) : currentQuote.is_gluten_free,
+                is_lactose_free: result.is_lactose_free !== undefined ? Boolean(result.is_lactose_free) : currentQuote.is_lactose_free,
+                is_vegetarian: result.is_vegetarian !== undefined ? Boolean(result.is_vegetarian) : currentQuote.is_vegetarian,
+                is_vegan: result.is_vegan !== undefined ? Boolean(result.is_vegan) : currentQuote.is_vegan,
+                is_traditional: result.is_traditional !== undefined ? Boolean(result.is_traditional) : currentQuote.is_traditional,
+                created_by_ai: true,
+                ai_chat_history: finalHistory
+            };
+
+            setCurrentQuote(updatedQuote);
+            await autoSave(updatedQuote);
+            setMessage({ type: 'success', text: 'Preventivo aggiornato dall\'IA!' });
+        } catch (err) {
+            console.error('AI modify error:', err);
+            setMessage({ type: 'error', text: err.message || 'Errore durante la modifica del preventivo con l\'IA.' });
+            setCurrentQuote(prev => ({
+                ...prev,
+                ai_chat_history: existingHistory
+            }));
+        } finally {
+            setIsAiModifying(false);
         }
     };
 
@@ -1198,6 +1316,12 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                 </span>
                                             )}
 
+                                            {q.created_by_ai && (
+                                                <span style={{ fontSize: '0.72rem', fontWeight: 'bold', color: '#7e22ce', backgroundColor: 'rgba(126, 34, 206, 0.12)', border: '1px solid rgba(126, 34, 206, 0.3)', padding: '2px 8px', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                                    <Sparkles size={11} /> IA
+                                                </span>
+                                            )}
+
                                             <div style={{ display: 'inline-flex', gap: '0.3rem', alignItems: 'center' }}>
                                                 {q.is_gluten_free && (
                                                     <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
@@ -1315,6 +1439,11 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>Modifica Preventivo</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                                 <h3 style={{ margin: 0 }}>ID: {currentQuote.id.substring(0, 8)}...</h3>
+                                {currentQuote.created_by_ai && (
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#7e22ce', backgroundColor: 'rgba(126, 34, 206, 0.12)', border: '1px solid rgba(126, 34, 206, 0.3)', padding: '3px 8px', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                        <Sparkles size={12} /> Creato con IA
+                                    </span>
+                                )}
                                 <div style={{ display: 'flex', gap: '0.25rem' }}>
                                     {isQuoteGlutenFree && (
                                         <span style={{ color: '#FF9800', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(255, 152, 0, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
@@ -1420,6 +1549,204 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             </label>
                         </div>
                     </div>
+
+                    {/* Sezione Assistente IA - Visibile SOLO se il preventivo è stato creato con l'IA */}
+                    {currentQuote.created_by_ai && (
+                        <div style={{
+                            marginBottom: '2rem',
+                            padding: '1.25rem 1.5rem',
+                            borderRadius: '16px',
+                            background: 'linear-gradient(135deg, rgba(126, 34, 206, 0.04) 0%, rgba(155, 57, 61, 0.04) 100%)',
+                            border: '1.5px solid rgba(126, 34, 206, 0.25)',
+                            boxShadow: '0 4px 20px rgba(126, 34, 206, 0.08)'
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                                    <div style={{
+                                        width: '36px',
+                                        height: '36px',
+                                        borderRadius: '10px',
+                                        background: 'linear-gradient(135deg, #7e22ce 0%, var(--color-primary) 100%)',
+                                        color: 'white',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 2px 8px rgba(126, 34, 206, 0.35)',
+                                        flexShrink: 0
+                                    }}>
+                                        <Sparkles size={20} />
+                                    </div>
+                                    <div>
+                                        <h4 style={{ margin: 0, fontSize: '1.05rem', color: '#581c87', fontWeight: '800' }}>
+                                            Assistente IA - Modifica Intelligente Preventivo
+                                        </h4>
+                                        <p style={{ margin: '0.15rem 0 0', fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                                            Comunica con l'IA per aggiungere nuovi prodotti, modificare quantità o rimuovere portate esistenti.
+                                        </p>
+                                    </div>
+                                </div>
+                                <span style={{
+                                    fontSize: '0.75rem',
+                                    fontWeight: '700',
+                                    color: '#7e22ce',
+                                    backgroundColor: 'rgba(126, 34, 206, 0.1)',
+                                    padding: '4px 10px',
+                                    borderRadius: '20px',
+                                    border: '1px solid rgba(126, 34, 206, 0.25)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                }}>
+                                    <Sparkles size={12} /> Modifica attiva
+                                </span>
+                            </div>
+
+                            {/* Suggerimenti rapidi */}
+                            <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                                {[
+                                    "Aumenta tutte le quantità del 20%",
+                                    "Rimuovi tutti i dolci",
+                                    "Rendi tutto senza glutine con alternative adatte",
+                                    "Aggiungi 30 pizzette margherita",
+                                    "Raddoppia le quantità delle portate salate"
+                                ].map((promptText, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        disabled={isAiModifying}
+                                        onClick={() => handleAiModifySubmit(promptText)}
+                                        style={{
+                                            fontSize: '0.78rem',
+                                            fontWeight: '600',
+                                            color: '#6b21a8',
+                                            backgroundColor: 'white',
+                                            border: '1px solid rgba(126, 34, 206, 0.25)',
+                                            borderRadius: '16px',
+                                            padding: '4px 10px',
+                                            cursor: isAiModifying ? 'not-allowed' : 'pointer',
+                                            transition: 'all 0.15s ease',
+                                            opacity: isAiModifying ? 0.6 : 1,
+                                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                                        }}
+                                        onMouseEnter={e => { if (!isAiModifying) e.currentTarget.style.backgroundColor = 'rgba(126, 34, 206, 0.08)'; }}
+                                        onMouseLeave={e => { if (!isAiModifying) e.currentTarget.style.backgroundColor = 'white'; }}
+                                    >
+                                        💡 {promptText}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Cronologia messaggi con IA */}
+                            {currentQuote.ai_chat_history && currentQuote.ai_chat_history.length > 0 && (
+                                <div style={{
+                                    maxHeight: '260px',
+                                    overflowY: 'auto',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '0.65rem',
+                                    padding: '0.85rem',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(126, 34, 206, 0.15)',
+                                    marginBottom: '1rem'
+                                }}>
+                                    {currentQuote.ai_chat_history.map((msg, index) => {
+                                        const isUser = msg.sender === 'user';
+                                        return (
+                                            <div
+                                                key={index}
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignSelf: isUser ? 'flex-end' : 'flex-start',
+                                                    maxWidth: '85%'
+                                                }}
+                                            >
+                                                <div style={{
+                                                    padding: '0.65rem 0.95rem',
+                                                    borderRadius: isUser ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                                                    backgroundColor: isUser ? '#7e22ce' : '#f3e8ff',
+                                                    color: isUser ? 'white' : '#3b0764',
+                                                    fontSize: '0.88rem',
+                                                    lineHeight: '1.45',
+                                                    boxShadow: '0 1px 4px rgba(0,0,0,0.05)'
+                                                }}>
+                                                    <div style={{ fontWeight: '700', fontSize: '0.72rem', marginBottom: '0.2rem', opacity: 0.85, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                        {isUser ? <User size={11} /> : <Sparkles size={11} />}
+                                                        {isUser ? 'Tu' : 'Assistente IA'}
+                                                    </div>
+                                                    <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
+                                                    {msg.changes && msg.changes.length > 0 && (
+                                                        <ul style={{ margin: '0.45rem 0 0 0', paddingLeft: '1.2rem', fontSize: '0.8rem', color: isUser ? '#f3e8ff' : '#4c1d95' }}>
+                                                            {msg.changes.map((c, ci) => (
+                                                                <li key={ci} style={{ marginBottom: '2px' }}>{c}</li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {/* Modulo di input chat */}
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    handleAiModifySubmit();
+                                }}
+                                style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}
+                            >
+                                <input
+                                    type="text"
+                                    placeholder="Es: Rimuovi le crostate, aggiungi 40 pizzette margherita e raddoppia i rustici..."
+                                    value={aiChatInput}
+                                    onChange={e => setAiChatInput(e.target.value)}
+                                    disabled={isAiModifying}
+                                    style={{
+                                        flex: 1,
+                                        padding: '0.75rem 1rem',
+                                        borderRadius: '10px',
+                                        border: '1px solid rgba(126, 34, 206, 0.3)',
+                                        fontSize: '0.9rem',
+                                        outline: 'none',
+                                        backgroundColor: 'white'
+                                    }}
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={isAiModifying || !aiChatInput.trim()}
+                                    style={{
+                                        padding: '0.75rem 1.35rem',
+                                        borderRadius: '10px',
+                                        border: 'none',
+                                        background: 'linear-gradient(135deg, #7e22ce 0%, var(--color-primary) 100%)',
+                                        color: 'white',
+                                        fontWeight: 'bold',
+                                        fontSize: '0.9rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.45rem',
+                                        cursor: isAiModifying || !aiChatInput.trim() ? 'not-allowed' : 'pointer',
+                                        opacity: isAiModifying || !aiChatInput.trim() ? 0.6 : 1,
+                                        boxShadow: '0 2px 10px rgba(126, 34, 206, 0.3)',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {isAiModifying ? (
+                                        <>
+                                            <Loader2 size={16} className="animate-spin" /> Modifica in corso...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Sparkles size={16} /> Modifica con IA
+                                        </>
+                                    )}
+                                </button>
+                            </form>
+                        </div>
+                    )}
 
                     <div style={{ marginBottom: '2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
