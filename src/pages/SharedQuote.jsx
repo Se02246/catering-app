@@ -82,7 +82,18 @@ const SharedQuote = ({ isMenuMode = false }) => {
         const fetchQuote = async (isFirstLoad = false) => {
             if (isFirstLoad) setLoading(true);
             try {
-                const data = menuId ? await api.getQuoteByMenuId(menuId) : await api.getQuote(id);
+                const rawData = menuId ? await api.getQuoteByMenuId(menuId) : await api.getQuote(id);
+                const data = {
+                    ...rawData,
+                    items: (rawData?.items || []).map(item => {
+                        const isPkgOrDel = item.is_packaging || item.is_delivery ||
+                            item.id === 'imballaggio_service' || item.id === 'consegna_service' ||
+                            (typeof item.name === 'string' && (item.name.trim().toLowerCase() === 'imballaggio' || item.name.trim().toLowerCase() === 'consegna'));
+                        return isPkgOrDel
+                            ? { ...item, hide_quantity: true, hide_unit_price: true }
+                            : item;
+                    })
+                };
                 setQuote(data);
                 
                 // Synchronize selected product if modal is open, using the ref to avoid dependency loop
@@ -631,20 +642,20 @@ const SharedQuote = ({ isMenuMode = false }) => {
                                             </span>
 
                                         </p>
-                                        {!isMenuMode && (
+                                        {!isMenuMode && (!item.hide_quantity || !item.hide_unit_price || (item.show_servings && item.servings_per_unit && !item.hide_quantity)) && (
                                             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
                                                 {!item.hide_quantity && (
                                                     <span style={{ marginRight: '0.4rem' }}>
                                                         {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : 'kg'}
                                                     </span>
                                                 )}
-                                                <span>
-                                                    {item.hide_quantity ? '' : '('}
-                                                    {!item.hide_unit_price ? (
-                                                        <>€ {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}</>
-                                                    ) : null}
-                                                    {item.hide_quantity ? '' : ')'}
-                                                </span>
+                                                {!item.hide_unit_price && (
+                                                    <span>
+                                                        {!item.hide_quantity ? '(' : ''}
+                                                        € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}
+                                                        {!item.hide_quantity ? ')' : ''}
+                                                    </span>
+                                                )}
                                                 {item.show_servings && item.servings_per_unit && !item.hide_quantity && (
                                                     <span style={{ color: 'var(--color-primary)', marginLeft: '0.5rem' }}>
                                                         ({(Number(item.servings_per_unit) * Number(item.quantity)).toFixed(0)} persone)

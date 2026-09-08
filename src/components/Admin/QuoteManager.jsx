@@ -16,6 +16,8 @@ export const PACKAGING_PRODUCT = {
     images: ['/imballaggio.jpeg'],
     is_sold_by_piece: true,
     hide_in_menu: true,
+    hide_quantity: true,
+    hide_unit_price: true,
     is_packaging: true
 };
 
@@ -30,6 +32,8 @@ export const DELIVERY_PRODUCT = {
     images: ['/consegna.jpeg'],
     is_sold_by_piece: true,
     hide_in_menu: true,
+    hide_quantity: true,
+    hide_unit_price: true,
     is_delivery: true
 };
 
@@ -38,7 +42,9 @@ const createPackagingItem = (price) => ({
     instanceId: `pkg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     price_per_piece: parseFloat(price) || 0,
     price_per_kg: parseFloat(price) || 0,
-    quantity: 1
+    quantity: 1,
+    hide_quantity: true,
+    hide_unit_price: true
 });
 
 const createDeliveryItem = (price) => ({
@@ -46,7 +52,9 @@ const createDeliveryItem = (price) => ({
     instanceId: `del-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     price_per_piece: parseFloat(price) || 0,
     price_per_kg: parseFloat(price) || 0,
-    quantity: 1
+    quantity: 1,
+    hide_quantity: true,
+    hide_unit_price: true
 });
 
 const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalOpened }) => {
@@ -440,10 +448,19 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         setMessage(null);
         try {
             const data = await api.getQuote(idToSearch);
-            const itemsWithIds = (data.items || []).map(item => ({
-                ...item,
-                instanceId: item.instanceId || `${Date.now()}-${Math.random()}`
-            }));
+            const itemsWithIds = (data.items || []).map(item => {
+                const isPkgOrDel = item.is_packaging || item.is_delivery || 
+                    item.id === 'imballaggio_service' || item.id === 'consegna_service' || 
+                    item.name?.trim().toLowerCase() === 'imballaggio' || item.name?.trim().toLowerCase() === 'consegna';
+                return {
+                    ...item,
+                    instanceId: item.instanceId || `${Date.now()}-${Math.random()}`,
+                    ...(isPkgOrDel ? {
+                        hide_quantity: item.hide_quantity !== undefined ? item.hide_quantity : true,
+                        hide_unit_price: item.hide_unit_price !== undefined ? item.hide_unit_price : true
+                    } : {})
+                };
+            });
             setCurrentQuote({ ...data, items: itemsWithIds });
             setSearchId(data.id);
         } catch (err) {
@@ -461,10 +478,19 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
         setMessage(null);
         try {
             const data = await api.getQuote(id);
-            const itemsWithIds = (data.items || []).map(item => ({
-                ...item,
-                instanceId: item.instanceId || `${Date.now()}-${Math.random()}`
-            }));
+            const itemsWithIds = (data.items || []).map(item => {
+                const isPkgOrDel = item.is_packaging || item.is_delivery || 
+                    item.id === 'imballaggio_service' || item.id === 'consegna_service' || 
+                    item.name?.trim().toLowerCase() === 'imballaggio' || item.name?.trim().toLowerCase() === 'consegna';
+                return {
+                    ...item,
+                    instanceId: item.instanceId || `${Date.now()}-${Math.random()}`,
+                    ...(isPkgOrDel ? {
+                        hide_quantity: item.hide_quantity !== undefined ? item.hide_quantity : true,
+                        hide_unit_price: item.hide_unit_price !== undefined ? item.hide_unit_price : true
+                    } : {})
+                };
+            });
             setCurrentQuote({ ...data, items: itemsWithIds });
             setSearchId(data.id);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -644,7 +670,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             ...it,
                             price_per_piece: num,
                             price_per_kg: num,
-                            quantity: it.quantity || 1
+                            quantity: it.quantity || 1,
+                            hide_quantity: it.hide_quantity !== undefined ? it.hide_quantity : true,
+                            hide_unit_price: it.hide_unit_price !== undefined ? it.hide_unit_price : true
                         };
                     }
                     return it;
@@ -679,7 +707,9 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                             ...it,
                             price_per_piece: num,
                             price_per_kg: num,
-                            quantity: it.quantity || 1
+                            quantity: it.quantity || 1,
+                            hide_quantity: it.hide_quantity !== undefined ? it.hide_quantity : true,
+                            hide_unit_price: it.hide_unit_price !== undefined ? it.hide_unit_price : true
                         };
                     }
                     return it;
@@ -1568,6 +1598,14 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                     <input type="checkbox" checked={editingItemData.hide_in_menu || false} onChange={e => setEditingItemData({ ...editingItemData, hide_in_menu: e.target.checked })} style={{ width: '16px', height: '16px' }} />
                                                     Nascondi nel menù
                                                 </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#666', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input type="checkbox" checked={editingItemData.hide_quantity || false} onChange={e => setEditingItemData({ ...editingItemData, hide_quantity: e.target.checked })} style={{ width: '16px', height: '16px' }} />
+                                                    Nascondi quantità
+                                                </label>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#666', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                    <input type="checkbox" checked={editingItemData.hide_unit_price || false} onChange={e => setEditingItemData({ ...editingItemData, hide_unit_price: e.target.checked })} style={{ width: '16px', height: '16px' }} />
+                                                    Nascondi prezzo unitario
+                                                </label>
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                                                 <button className="btn btn-outline" style={{ padding: '0.4rem 1rem' }} onClick={() => { setEditingItemId(null); setEditingItemData(null); }}>Annulla</button>
@@ -1623,6 +1661,21 @@ const QuoteManager = ({ initialSearchId = '', autoOpenNewModal = false, onModalO
                                                         {(currentQuote.is_traditional || item.is_traditional) && (
                                                             <span style={{ color: '#B45309', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: 'rgba(180, 83, 9, 0.1)', padding: '1px 5px', borderRadius: '4px' }}>
                                                                 Tradizionale
+                                                            </span>
+                                                        )}
+                                                        {item.hide_in_menu && (
+                                                            <span style={{ color: '#666', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: '#f0f0f0', padding: '1px 5px', borderRadius: '4px' }}>
+                                                                Nascosto nel menù
+                                                            </span>
+                                                        )}
+                                                        {item.hide_quantity && (
+                                                            <span style={{ color: '#555', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: '#eef2ff', padding: '1px 5px', borderRadius: '4px', border: '1px solid #c7d2fe' }}>
+                                                                Quantità nascosta
+                                                            </span>
+                                                        )}
+                                                        {item.hide_unit_price && (
+                                                            <span style={{ color: '#555', fontSize: '0.65rem', fontWeight: 'bold', backgroundColor: '#fef3c7', padding: '1px 5px', borderRadius: '4px', border: '1px solid #fde68a' }}>
+                                                                Prezzo unit. nascosto
                                                             </span>
                                                         )}
                                                     </div>

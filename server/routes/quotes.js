@@ -298,6 +298,24 @@ ${!isAdmin ? "- RISPETTA TASSATIVAMENTE il valore di \"is_sold_by_piece\" che tr
     }
 });
 
+function sanitizeQuoteItems(items) {
+    if (!Array.isArray(items)) return items;
+    return items.map(item => {
+        if (!item || typeof item !== 'object') return item;
+        const isPkgOrDel = item.is_packaging || item.is_delivery ||
+            item.id === 'imballaggio_service' || item.id === 'consegna_service' ||
+            (typeof item.name === 'string' && (item.name.trim().toLowerCase() === 'imballaggio' || item.name.trim().toLowerCase() === 'consegna'));
+        if (isPkgOrDel) {
+            return {
+                ...item,
+                hide_quantity: true,
+                hide_unit_price: true
+            };
+        }
+        return item;
+    });
+}
+
 // Get all quotes (Admin list)
 router.get('/', async (req, res) => {
     try {
@@ -315,9 +333,10 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name } = req.body;
     try {
+        const sanitizedItems = sanitizeQuoteItems(items);
         const result = await pool.query(
             'INSERT INTO quotes (items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id',
-            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes || null, menu_notes || null, event_date || null, client_name || null]
+            [JSON.stringify(sanitizedItems), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes || null, menu_notes || null, event_date || null, client_name || null]
         );
         res.status(201).json({ id: result.rows[0].id });
     } catch (err) {
@@ -339,7 +358,9 @@ router.get('/menu/:menuId', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Menu not found' });
         }
-        res.json(result.rows[0]);
+        const quote = result.rows[0];
+        quote.items = sanitizeQuoteItems(quote.items);
+        res.json(quote);
     } catch (err) {
         console.error('Error fetching quote by menu_id:', err);
         res.status(500).json({ error: 'Server error fetching menu' });
@@ -355,7 +376,9 @@ router.get('/:id', async (req, res) => {
         if (uuidRegex.test(id)) {
             const result = await pool.query('SELECT * FROM quotes WHERE id = $1', [id]);
             if (result.rows.length > 0) {
-                return res.json(result.rows[0]);
+                const quote = result.rows[0];
+                quote.items = sanitizeQuoteItems(quote.items);
+                return res.json(quote);
             }
         }
 
@@ -369,7 +392,9 @@ router.get('/:id', async (req, res) => {
         if (partialResult.rows.length === 0) {
             return res.status(404).json({ error: 'Quote not found' });
         }
-        res.json(partialResult.rows[0]);
+        const quote = partialResult.rows[0];
+        quote.items = sanitizeQuoteItems(quote.items);
+        res.json(quote);
     } catch (err) {
         console.error('Error fetching quote:', err);
         res.status(500).json({ error: 'Server error fetching quote' });
@@ -381,14 +406,17 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { items, total_price, is_gluten_free, is_lactose_free, is_vegetarian, is_vegan, is_traditional, notes, menu_notes, event_date, client_name } = req.body;
     try {
+        const sanitizedItems = sanitizeQuoteItems(items);
         const result = await pool.query(
             'UPDATE quotes SET items = $1, total_price = $2, is_gluten_free = $3, is_lactose_free = $4, is_vegetarian = $5, is_vegan = $6, is_traditional = $7, notes = $8, menu_notes = $9, event_date = $10, client_name = $11, needs_sync = true, updated_at = CURRENT_TIMESTAMP WHERE id = $12 RETURNING *',
-            [JSON.stringify(items), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes, menu_notes, event_date || null, client_name || null, id]
+            [JSON.stringify(sanitizedItems), total_price, is_gluten_free || false, is_lactose_free || false, is_vegetarian || false, is_vegan || false, is_traditional || false, notes, menu_notes, event_date || null, client_name || null, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Quote not found' });
         }
-        res.json(result.rows[0]);
+        const quote = result.rows[0];
+        quote.items = sanitizeQuoteItems(quote.items);
+        res.json(quote);
     } catch (err) {
         console.error('Error updating quote:', err);
         res.status(500).json({ error: 'Server error updating quote' });

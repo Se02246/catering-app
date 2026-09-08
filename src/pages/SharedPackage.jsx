@@ -385,20 +385,22 @@ const SharedPackage = () => {
                                                 )}
                                             </div>
                                         </div>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', margin: 0 }}>
-                                            {!item.hide_quantity && (
-                                                <span style={{ marginRight: '0.4rem' }}>
-                                                    {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : 'kg'}
-                                                </span>
-                                            )}
-                                            <span>
-                                                {item.hide_quantity ? '' : '('}
-                                                {!item.hide_unit_price ? (
-                                                    <>€ {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}</>
-                                                ) : null}
-                                                {item.hide_quantity ? '' : ')'}
-                                            </span>
-                                        </p>
+                                        {(!item.hide_quantity || !item.hide_unit_price) && (
+                                            <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', margin: 0 }}>
+                                                {!item.hide_quantity && (
+                                                    <span style={{ marginRight: '0.4rem' }}>
+                                                        {parseFloat(item.quantity)} {item.is_sold_by_piece ? 'pz' : 'kg'}
+                                                    </span>
+                                                )}
+                                                {!item.hide_unit_price && (
+                                                    <span>
+                                                        {!item.hide_quantity ? '(' : ''}
+                                                        € {(Number(item.is_sold_by_piece ? item.price_per_piece : item.price_per_kg) || 0).toFixed(2)} /{item.is_sold_by_piece ? 'pz' : 'kg'}
+                                                        {!item.hide_quantity ? ')' : ''}
+                                                    </span>
+                                                )}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             ))}
